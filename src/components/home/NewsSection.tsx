@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { ArrowRight, ChevronRight } from 'lucide-react'
+import { ChevronRight, ArrowRight } from 'lucide-react'
 
 const SIDE_NEWS = [
   { title: 'ACLEDA Bank Teams Up with GreenTech Solutions to Launch Sustainable Financing Programs for Small Businesses', image: '/images/news-thumb-1.jpg' },
@@ -11,59 +11,67 @@ const SIDE_NEWS = [
 export default function NewsSection() {
   return (
     <section className="w-full py-[80px] px-[40px] xl:px-[46px]">
-      <div className="max-w-[1352px] mx-auto flex flex-col gap-[60px]">
+      <div className="max-w-[1352px] mx-auto flex flex-col gap-[80px]">
 
-        <h2 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none text-center">
-          News
-        </h2>
+        {/* Heading */}
+        <div className="flex flex-col gap-[12px] text-center w-full">
+          <h2 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none w-full">
+            News
+          </h2>
+          <p className="font-dm-sans text-[20px] text-gold-800 leading-none w-full">
+            A selected team of experts committed to your health
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_533px] gap-[40px] xl:gap-[52px]">
+        {/* Content row */}
+        <div className="flex gap-[37px] items-center justify-center">
 
-          {/* Main news item */}
-          <div className="relative group cursor-pointer h-[578px] rounded-[12px] overflow-hidden shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] border border-[rgba(234,214,164,0.60)]">
-            <Image
-              src="/images/news-featured.jpg"
-              alt="News Featured"
-              fill
-              className="object-cover"
-              sizes="800px"
-            />
-            {/* Overlay content */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-[40px] gap-[20px]">
-              <p className="font-dm-sans font-medium text-[16px] text-white/80 uppercase tracking-wider">
-                Medical News — May 24, 2026
+          {/* Featured — 760×588, no border-radius, frosted caption */}
+          <div className="relative bg-white overflow-hidden shrink-0 shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]" style={{ width: 760, height: 588 }}>
+            <div className="absolute left-0 w-[760px]" style={{ height: 516, top: -4 }}>
+              <Image
+                src="/images/news-featured.jpg"
+                alt="Cambodian Oknha Association, Orienda International Hospital Signing MoU"
+                fill
+                className="object-cover"
+                sizes="760px"
+              />
+            </div>
+            {/* Frosted caption */}
+            <div className="absolute bottom-0 left-0 w-full backdrop-blur-[6.45px] bg-[rgba(255,255,255,0.9)] p-[24px] flex flex-col gap-[12px] items-end">
+              <p className="font-dm-sans font-medium text-[16px] text-black leading-[1.5] w-full">
+                Cambodian Oknha Association , Orienda International Hospital Signing MoU
               </p>
-              <h3 className="font-cormorant font-bold text-[32px] text-white leading-tight">
-                Cambodian Oknha Association, Orienda International Hospital Signing MoU for Strategic Healthcare Partnership
-              </h3>
-              <div className="flex items-center gap-[12px] text-white font-dm-sans font-medium">
-                Read More
-                <div className="w-[32px] h-[32px] rounded-full bg-gold-500 flex items-center justify-center">
-                  <ArrowRight size={18} />
-                </div>
-              </div>
+              <button className="flex items-center gap-[8px] border border-gold-500 rounded-[12px] h-[32px] px-[12px] py-[8px] shrink-0 hover:bg-gold-50 transition-colors">
+                <span className="font-dm-sans text-[12px] text-gold-800">Read More</span>
+                <ArrowRight size={16} className="text-gold-800" />
+              </button>
             </div>
           </div>
 
-          {/* Side news list */}
-          <div className="flex flex-col gap-[20px]">
+          {/* Side items — plain rows with border-b */}
+          <div className="flex flex-col shrink-0" style={{ width: 632 }}>
             {SIDE_NEWS.map((item, i) => (
               <div
                 key={i}
-                className="group flex gap-[20px] items-center p-[20px] bg-white rounded-[12px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] border border-[rgba(234,214,164,0.60)] cursor-pointer hover:bg-gold-50/10 transition-colors"
+                className="bg-white flex items-center overflow-hidden cursor-pointer hover:bg-gold-50/30 transition-colors"
+                style={{ borderBottom: i < SIDE_NEWS.length - 1 ? '0.5px solid rgba(89,69,34,0.8)' : '0.5px solid rgba(89,69,34,0.2)' }}
               >
-                <div className="relative w-[130px] h-[100px] shrink-0 rounded-[8px] overflow-hidden">
-                  <Image src={item.image} alt={item.title} fill className="object-cover" />
+                {/* Thumbnail — no border-radius */}
+                <div className="relative shrink-0 overflow-hidden" style={{ width: 240, height: 147 }}>
+                  <Image src={item.image} alt={item.title} fill className="object-cover" sizes="240px" />
                 </div>
-                <div className="flex flex-col gap-[8px] flex-1">
-                  <p className="font-cormorant font-bold text-[18px] text-gold-900 leading-tight line-clamp-3">
+                {/* Text + chevron */}
+                <div className="flex flex-1 gap-[10px] items-center justify-center pl-[22px] pr-[12px] py-[12px]">
+                  <p className="flex-1 font-dm-sans text-[16px] text-neutral-black leading-[1.5]">
                     {item.title}
                   </p>
-                  <ChevronRight className="w-5 h-5 text-gold-500 shrink-0" strokeWidth={1.5} />
+                  <ChevronRight className="shrink-0 w-[24px] h-[24px] text-gold-700" strokeWidth={1.5} />
                 </div>
               </div>
             ))}
           </div>
+
         </div>
       </div>
     </section>
