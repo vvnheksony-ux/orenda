@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Orienda Color Tokens */
+  --color-gold-900: #3b2d17;
+  --color-gold-800: #594522;
+  --color-gold-700: #7a5f2c;
+  --color-gold-500: #b89148;
+  --color-gold-200: #ead6a4;
+  --color-gold-50: #fbf7ee;
+  --color-neutral-0: #ffffff;
+  --color-neutral-800: #2a2620;
+  --color-neutral-black: #050505;
+  --color-star: #ffcc00;
+
+  /* Font families — map next/font vars (--*-font) to Tailwind utility names */
+  --font-cormorant: var(--cormorant-font);
+  --font-dm-sans: var(--dm-sans-font);
+  --font-inter: var(--inter-font);
+  --font-script: var(--script-font);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #fbf7ee;
+  --foreground: #3b2d17;
+}
+
+html, body {
+  overflow-x: hidden;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--dm-sans-font), 'DM Sans', sans-serif;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0) }
+  to { transform: translateX(-50%) }
+}
+.animate-marquee {
+  animation: marquee 24s linear infinite;
 }
