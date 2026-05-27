@@ -119,43 +119,40 @@ export default function TourSection() {
   return (
     <>
       {/* ── Discovers Our Facilities ── */}
-      <section className="w-full px-[40px] xl:px-[46px] py-[80px]">
-        <div className="flex flex-col gap-[40px] items-center">
+      <section className="w-full px-[40px] xl:px-[80px] py-[120px] lg:py-[160px]">
+        <div className="flex flex-col gap-[60px] items-center">
 
           {/* Header */}
-          <div className="flex flex-col gap-[16px] items-center w-full">
-            <h2 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none text-center">
+          <div className="flex flex-col gap-[20px] items-center w-full">
+            <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none text-center">
               Discovers Our facilities
             </h2>
-            <p className="font-dm-sans text-[20px] text-gold-800 text-center">
+            <p className="font-dm-sans text-[20px] lg:text-[24px] xl:text-[26px] text-gold-800 text-center max-w-3xl">
               Choose an option below to quickly find the service you need
             </p>
           </div>
 
           {/* Two cards */}
-          <div className="flex gap-[40px] items-start justify-center w-full max-w-[1285px] mx-auto">
+          <div className="flex flex-col lg:flex-row gap-[40px] lg:gap-[60px] xl:gap-[80px] items-start justify-center w-full max-w-[1800px] mx-auto">
             {FACILITY_CARDS.map((card) => (
-              <div key={card.title} className="flex flex-col gap-[24px] items-center flex-1">
+              <div key={card.title} className="flex flex-col gap-[24px] xl:gap-[32px] items-center flex-1">
                 {/* Image */}
-                <div
-                  className="relative w-full rounded-[16px] overflow-hidden shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]"
-                  style={{ height: '320px' }}
-                >
+                <div className="relative w-full rounded-[16px] xl:rounded-[24px] overflow-hidden shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] h-[320px] lg:h-[400px] xl:h-[480px]">
                   <Image
                     src={card.image}
                     alt={card.title}
                     fill
                     className="object-cover object-center"
-                    sizes="616px"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                 </div>
 
                 {/* Text */}
-                <div className="flex flex-col gap-[16px] items-center w-full">
-                  <h3 className="font-cormorant font-bold text-[40px] text-gold-900 leading-none text-center">
+                <div className="flex flex-col gap-[16px] xl:gap-[20px] items-center w-full">
+                  <h3 className="font-cormorant font-bold text-[40px] lg:text-[48px] xl:text-[56px] text-gold-900 leading-none text-center">
                     {card.title}
                   </h3>
-                  <p className="font-dm-sans text-[16px] text-gold-900 leading-[1.6] text-center">
+                  <p className="font-dm-sans text-[16px] lg:text-[18px] xl:text-[20px] text-gold-900 leading-[1.6] text-center max-w-2xl">
                     {card.description}
                   </p>
                 </div>

@@ -1,0 +1,410 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - link "Orienda International Hospital" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img "Orienda International Hospital" [ref=e6]
+      - navigation [ref=e7]:
+        - link "About Orienda" [ref=e8] [cursor=pointer]:
+          - /url: /about
+          - text: About Orienda
+          - img [ref=e9]
+        - link "Doctors" [ref=e11] [cursor=pointer]:
+          - /url: /doctors
+          - text: Doctors
+          - img [ref=e12]
+        - link "Promotion & Package" [ref=e14] [cursor=pointer]:
+          - /url: /promotions
+          - text: Promotion & Package
+          - img [ref=e15]
+        - link "News" [ref=e17] [cursor=pointer]:
+          - /url: /news
+          - text: News
+          - img [ref=e18]
+        - link "Career" [ref=e20] [cursor=pointer]:
+          - /url: /career
+          - text: Career
+          - img [ref=e21]
+        - link "Testimonials" [ref=e23] [cursor=pointer]:
+          - /url: /testimonials
+          - text: Testimonials
+          - img [ref=e24]
+      - generic [ref=e26]:
+        - button "CH" [ref=e27]:
+          - img [ref=e28]
+          - generic [ref=e32]: CH
+          - img [ref=e33]
+        - button "Switch language" [ref=e35]:
+          - img "ភាសាខ្មែរ" [ref=e37]
+  - main [ref=e38]:
+    - generic [ref=e39]:
+      - img "Orienda International Hospital" [ref=e40]
+      - link "Contact Now" [ref=e41] [cursor=pointer]:
+        - /url: tel:+85581593789
+        - generic [ref=e42]:
+          - generic [ref=e43]: Contact Now
+          - img [ref=e44]
+      - generic [ref=e46]:
+        - paragraph [ref=e47]: Welcome To
+        - paragraph [ref=e48]: Orienda International Hospital
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - paragraph [ref=e52]: Dr. Emily Ross
+            - paragraph [ref=e53]: Physician
+          - generic [ref=e54]:
+            - img [ref=e55]
+            - img [ref=e57]
+            - img [ref=e59]
+            - img [ref=e61]
+            - img [ref=e63]
+        - paragraph [ref=e65]: Timmy's progress has been remarkable, showing resilience and cooperation during each appointment.
+      - button "Previous slide" [ref=e66]:
+        - img [ref=e67]
+      - button "Next slide" [ref=e69]:
+        - img [ref=e70]
+      - generic [ref=e72]:
+        - generic [ref=e73]: Ask AI
+        - button [ref=e74]:
+          - img [ref=e75]
+    - generic [ref=e79]:
+      - generic [ref=e80]:
+        - heading "Centered Of Excellences" [level=2] [ref=e81]
+        - paragraph [ref=e82]: Choose an option below to quickly find the service you need
+      - generic [ref=e83]:
+        - generic [ref=e84]:
+          - button "Previous specialty" [ref=e85]:
+            - img [ref=e86]
+          - generic [ref=e88]:
+            - generic [ref=e89]:
+              - generic [ref=e90]: 99%
+              - generic [ref=e91]: Success
+            - generic [ref=e92]:
+              - generic [ref=e93]: 20k
+              - generic [ref=e94]: Surgeries
+            - generic [ref=e95]:
+              - generic [ref=e96]: 100%
+              - generic [ref=e97]: Satisfactions
+          - button "Next specialty" [ref=e98]:
+            - img [ref=e99]
+        - generic [ref=e101]:
+          - img "Neuro Surgery" [ref=e103]
+          - paragraph [ref=e104]: Neuro Surgery
+        - generic [ref=e105]:
+          - button "Obstetric Obstetric" [ref=e106]:
+            - img "Obstetric" [ref=e108]
+            - generic [ref=e109]: Obstetric
+          - button "Gynecology Gynecology" [ref=e110]:
+            - img "Gynecology" [ref=e112]
+            - generic [ref=e113]: Gynecology
+          - button "Pediatric Pediatric" [ref=e114]:
+            - img "Pediatric" [ref=e116]
+            - generic [ref=e117]: Pediatric
+          - button "Imaging Center Imaging Center" [ref=e118]:
+            - img "Imaging Center" [ref=e120]
+            - generic [ref=e121]: Imaging Center
+    - generic [ref=e122]:
+      - img "Orienda Hospital" [ref=e123]
+      - generic [ref=e125]:
+        - generic [ref=e126]:
+          - heading "Why Orienda Is Your Best Choice?" [level=2] [ref=e127]
+          - paragraph [ref=e128]: Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with a proven track record of life-saving success. As an ISO-certified institution, we provide 24/7 comprehensive medical services.
+        - link "Discover More" [ref=e129] [cursor=pointer]:
+          - /url: /about
+          - text: Discover More
+          - img [ref=e130]
+      - generic [ref=e133]:
+        - generic [ref=e134]:
+          - generic [ref=e135]: 99%
+          - generic [ref=e136]: Patient satisfaction
+        - paragraph [ref=e137]: Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.
+      - generic [ref=e139]:
+        - generic [ref=e140]:
+          - generic [ref=e141]: 99%
+          - generic [ref=e142]: Patient satisfaction
+        - paragraph [ref=e143]: Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.
+      - generic [ref=e145]:
+        - generic [ref=e146]:
+          - generic [ref=e147]: 99%
+          - generic [ref=e148]: Patient satisfaction
+        - paragraph [ref=e149]: Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.
+      - generic [ref=e151]:
+        - generic [ref=e152]:
+          - generic [ref=e153]: 99%
+          - generic [ref=e154]: Patient satisfaction
+        - paragraph [ref=e155]: Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.
+    - generic [ref=e157]:
+      - generic [ref=e158]:
+        - heading "Discovers Our facilities" [level=2] [ref=e159]
+        - paragraph [ref=e160]: Choose an option below to quickly find the service you need
+      - generic [ref=e161]:
+        - generic [ref=e162]:
+          - img "Visit" [ref=e164]
+          - generic [ref=e165]:
+            - heading "Visit" [level=3] [ref=e166]
+            - paragraph [ref=e167]: Orienda International Hospital is committed to transparent and compassionate healthcare. Our focus on patient satisfaction and well-being, drives our continuous improvement in providing exceptional medical care.
+          - link "Discover More" [ref=e168] [cursor=pointer]:
+            - /url: "#"
+        - generic [ref=e169]:
+          - img "Our Medical Facilities" [ref=e171]
+          - generic [ref=e172]:
+            - heading "Our Medical Facilities" [level=3] [ref=e173]
+            - paragraph [ref=e174]: Explore our modern and fully-equipped medical facilities, designed to meet the diverse needs of our patients with comfort and advanced care.
+          - link "Discover More" [ref=e175] [cursor=pointer]:
+            - /url: "#"
+    - generic [ref=e176]:
+      - img "Orienda Hospital Interior" [ref=e177]
+      - generic [ref=e179]:
+        - paragraph [ref=e180]:
+          - text: "360"
+          - superscript [ref=e181]: °
+        - img [ref=e183]
+      - link "Start Discovering" [ref=e186] [cursor=pointer]:
+        - /url: "#"
+      - generic [ref=e187]:
+        - generic [ref=e188]:
+          - img "Resting Room" [ref=e189]
+          - paragraph [ref=e191]: Resting Room
+        - generic [ref=e192]:
+          - img "Operating Theatre" [ref=e193]
+          - paragraph [ref=e195]: Operating Theatre
+        - generic [ref=e196]:
+          - img "ICU Ward" [ref=e197]
+          - paragraph [ref=e199]: ICU Ward
+        - generic [ref=e200]:
+          - img "Recovery Room" [ref=e201]
+          - paragraph [ref=e203]: Recovery Room
+        - generic [ref=e204]:
+          - img "Consultation Room" [ref=e205]
+          - paragraph [ref=e207]: Consultation Room
+    - generic [ref=e209]:
+      - generic [ref=e210]:
+        - heading "Meet Our Specialist" [level=2] [ref=e211]
+        - paragraph [ref=e212]: A selected team of experts committed to your health
+      - generic [ref=e213]:
+        - generic [ref=e214]:
+          - img "DR. Eudaldo Gonzalez Martines" [ref=e217]
+          - generic [ref=e218]:
+            - generic [ref=e219]:
+              - paragraph [ref=e220]: DR. Eudaldo Gonzalez Martines
+              - paragraph [ref=e221]: Orthopedic and Trauma Specialist
+            - button "View Profile" [ref=e222]
+        - generic [ref=e224]:
+          - img "DR. Eudaldo Gonzalez Martines" [ref=e227]
+          - generic [ref=e228]:
+            - generic [ref=e229]:
+              - paragraph [ref=e230]: DR. Eudaldo Gonzalez Martines
+              - paragraph [ref=e231]: Orthopedic and Trauma Specialist
+            - button "View Profile" [ref=e232]
+        - generic [ref=e234]:
+          - img "DR. Eudaldo Gonzalez Martines" [ref=e237]
+          - generic [ref=e238]:
+            - generic [ref=e239]:
+              - paragraph [ref=e240]: DR. Eudaldo Gonzalez Martines
+              - paragraph [ref=e241]: Orthopedic and Trauma Specialist
+            - button "View Profile" [ref=e242]
+        - generic [ref=e243]:
+          - img "DR. Eudaldo Gonzalez Martines" [ref=e246]
+          - generic [ref=e247]:
+            - generic [ref=e248]:
+              - paragraph [ref=e249]: DR. Eudaldo Gonzalez Martines
+              - paragraph [ref=e250]: Orthopedic and Trauma Specialist
+            - button "View Profile" [ref=e251]
+        - generic [ref=e253]:
+          - img "DR. Eudaldo Gonzalez Martines" [ref=e256]
+          - generic [ref=e257]:
+            - generic [ref=e258]:
+              - paragraph [ref=e259]: DR. Eudaldo Gonzalez Martines
+              - paragraph [ref=e260]: Orthopedic and Trauma Specialist
+            - button "View Profile" [ref=e261]
+    - generic [ref=e264]:
+      - generic [ref=e265]:
+        - generic [ref=e266]:
+          - heading "FAQ & AI" [level=2] [ref=e267]
+          - paragraph [ref=e268]: Learn more about us, Ask us what you want to know
+        - generic [ref=e269]:
+          - generic [ref=e270]: Ask AI
+          - button [ref=e271]:
+            - img [ref=e272]
+      - generic [ref=e275]:
+        - button "How to make an appointment?" [ref=e276]:
+          - generic [ref=e277]:
+            - paragraph [ref=e278]: How to make an appointment?
+            - img [ref=e279]
+        - button "What insurance does Orienda accept? We accept all major Cambodian and international insurance plans including AIA, Forte, Manulife, Pacific Cross, and many others. Contact us for a full list of accepted providers." [ref=e281]:
+          - generic [ref=e282]:
+            - paragraph [ref=e283]: What insurance does Orienda accept?
+            - img [ref=e284]
+          - paragraph [ref=e286]: We accept all major Cambodian and international insurance plans including AIA, Forte, Manulife, Pacific Cross, and many others. Contact us for a full list of accepted providers.
+        - button "What are the hospital visiting hours?" [ref=e287]:
+          - generic [ref=e288]:
+            - paragraph [ref=e289]: What are the hospital visiting hours?
+            - img [ref=e290]
+        - button "Do you offer emergency services?" [ref=e292]:
+          - generic [ref=e293]:
+            - paragraph [ref=e294]: Do you offer emergency services?
+            - img [ref=e295]
+        - button "Are international doctors available?" [ref=e297]:
+          - generic [ref=e298]:
+            - paragraph [ref=e299]: Are international doctors available?
+            - img [ref=e300]
+    - generic [ref=e303]:
+      - generic [ref=e304]:
+        - heading "News" [level=2] [ref=e305]
+        - paragraph [ref=e306]: Latest updates, partnerships, and milestones from Orienda International Hospital
+      - generic [ref=e307]:
+        - generic [ref=e308]:
+          - img "Cambodian Oknha Association signing" [ref=e310]
+          - generic [ref=e311]:
+            - paragraph [ref=e312]: Cambodian Oknha Association, Orienda International Hospital Signing MoU
+            - button "Read More" [ref=e313]:
+              - text: Read More
+              - img [ref=e314]
+        - generic [ref=e316]:
+          - generic [ref=e317] [cursor=pointer]:
+            - img "ACCOR Bank Teams Up with SmartTech Solutions to Launch Sustainable Financing Programs for Small Businesses" [ref=e319]
+            - generic [ref=e320]:
+              - paragraph [ref=e321]: ACCOR Bank Teams Up with SmartTech Solutions to Launch Sustainable Financing Programs for Small Businesses
+              - img [ref=e322]
+          - generic [ref=e324] [cursor=pointer]:
+            - img "ACCOR Bank Collaboration with Friends International on Providing the First International Hospital on Providing Quality Standards for Health Workers" [ref=e326]
+            - generic [ref=e327]:
+              - paragraph [ref=e328]: ACCOR Bank Collaboration with Friends International on Providing the First International Hospital on Providing Quality Standards for Health Workers
+              - img [ref=e329]
+          - generic [ref=e331] [cursor=pointer]:
+            - img "Orienda Hospital Achieves New Milestone, Marking Significant Customer Service Initiatives" [ref=e333]
+            - generic [ref=e334]:
+              - paragraph [ref=e335]: Orienda Hospital Achieves New Milestone, Marking Significant Customer Service Initiatives
+              - img [ref=e336]
+          - generic [ref=e338] [cursor=pointer]:
+            - img "Orienda Hospital Achieves New Milestone, Marking Significant Customer Service Initiatives" [ref=e340]
+            - generic [ref=e341]:
+              - paragraph [ref=e342]: Orienda Hospital Achieves New Milestone, Marking Significant Customer Service Initiatives
+              - img [ref=e343]
+    - generic [ref=e346]:
+      - generic [ref=e347]:
+        - heading "Book Appointment" [level=2] [ref=e348]
+        - paragraph [ref=e349]: Learn more about our healthcare services and patient support.
+      - link "Start Discovering" [ref=e350] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=e352]:
+      - generic [ref=e353]:
+        - heading "Partners" [level=2] [ref=e354]
+        - paragraph [ref=e355]: Orienda's International Hospital Partners
+      - generic [ref=e356]:
+        - generic [ref=e358]: ACLEDA Bank
+        - generic [ref=e360]: P
+        - generic [ref=e362]: Baby Plus
+        - generic [ref=e364]: ACLEDA Bank
+        - generic [ref=e366]: P
+        - generic [ref=e368]: ACLEDA Bank
+        - generic [ref=e370]: Baby Plus
+        - generic [ref=e372]: P
+        - generic [ref=e374]: ACLEDA Bank
+        - generic [ref=e376]: Baby Plus
+        - generic [ref=e378]: P
+        - generic [ref=e380]: ACLEDA Bank
+        - generic [ref=e382]: Baby Plus
+    - generic [ref=e383]:
+      - generic [ref=e384]:
+        - img "Orienda International Hospital Branch" [ref=e385]
+        - generic [ref=e386]:
+          - generic [ref=e387]:
+            - heading "Orienda International Hospital (Branch)" [level=3] [ref=e388]:
+              - text: Orienda International Hospital
+              - text: (Branch)
+            - paragraph [ref=e389]: 66, Street 31cc, 3, Phnom Penh 120605
+          - generic [ref=e390]:
+            - paragraph [ref=e391]: Open 24 hours
+            - paragraph [ref=e392]: (+855) 081 811 789
+          - link "View Map" [ref=e393] [cursor=pointer]:
+            - /url: "#"
+      - generic [ref=e394]:
+        - img "Orienda International Hospital Chamkarmon Branch" [ref=e395]
+        - generic [ref=e397]:
+          - generic [ref=e398]:
+            - heading "Orienda International Hospital (Chamkarmon Branch)" [level=3] [ref=e399]:
+              - text: Orienda International Hospital
+              - text: (Chamkarmon Branch)
+            - paragraph [ref=e400]: 66, Street 31cc, 3, Phnom Penh 120605
+          - generic [ref=e401]:
+            - paragraph [ref=e402]: Open 24 hours
+            - paragraph [ref=e403]: (+855) 081 811 789
+          - link "View Map" [ref=e404] [cursor=pointer]:
+            - /url: "#"
+  - contentinfo [ref=e405]:
+    - generic [ref=e406]:
+      - generic [ref=e407]:
+        - generic [ref=e408]:
+          - generic [ref=e409]:
+            - img "Orienda International Hospital" [ref=e411]
+            - paragraph [ref=e412]:
+              - text: Orienda
+              - text: International Hospital
+          - paragraph [ref=e413]: Premier healthcare in Cambodia. ISO-certified, 24/7 comprehensive medical services.
+          - generic [ref=e414]:
+            - link "Facebook" [ref=e415] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e416]
+            - link "YouTube" [ref=e418] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e419]
+            - link "Instagram" [ref=e422] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e423]
+        - generic [ref=e427]:
+          - paragraph [ref=e428]: Hospital
+          - list [ref=e429]:
+            - listitem [ref=e430]:
+              - link "About Orienda" [ref=e431] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e432]:
+              - link "Doctors" [ref=e433] [cursor=pointer]:
+                - /url: /doctors
+            - listitem [ref=e434]:
+              - link "Departments" [ref=e435] [cursor=pointer]:
+                - /url: /departments
+            - listitem [ref=e436]:
+              - link "Career" [ref=e437] [cursor=pointer]:
+                - /url: /career
+        - generic [ref=e438]:
+          - paragraph [ref=e439]: Patients
+          - list [ref=e440]:
+            - listitem [ref=e441]:
+              - link "Promotions & Packages" [ref=e442] [cursor=pointer]:
+                - /url: /promotions
+            - listitem [ref=e443]:
+              - link "What to Expect" [ref=e444] [cursor=pointer]:
+                - /url: /what-to-expect
+            - listitem [ref=e445]:
+              - link "FAQs" [ref=e446] [cursor=pointer]:
+                - /url: /faqs
+            - listitem [ref=e447]:
+              - link "Testimonials" [ref=e448] [cursor=pointer]:
+                - /url: /testimonials
+        - generic [ref=e449]:
+          - paragraph [ref=e450]: Contact
+          - list [ref=e451]:
+            - listitem [ref=e452]:
+              - link "+855 81 593 789" [ref=e453] [cursor=pointer]:
+                - /url: tel:+85581593789
+                - img [ref=e454]
+                - generic [ref=e456]: +855 81 593 789
+            - listitem [ref=e457]:
+              - link "info@orienda.com" [ref=e458] [cursor=pointer]:
+                - /url: mailto:info@orienda.com
+                - img [ref=e459]
+                - generic [ref=e462]: info@orienda.com
+            - listitem [ref=e463]:
+              - generic [ref=e464]:
+                - img [ref=e465]
+                - generic [ref=e468]: Phnom Penh, Cambodia
+      - generic [ref=e469]:
+        - paragraph [ref=e470]: © 2026 Orienda International Hospital. All rights reserved.
+        - generic [ref=e471]:
+          - link "Privacy Policy" [ref=e472] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms of Use" [ref=e473] [cursor=pointer]:
+            - /url: /terms
+  - button "Open Next.js Dev Tools" [ref=e479] [cursor=pointer]:
+    - img [ref=e480]

@@ -1,0 +1,144 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Orienda International Hospital" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "Orienda International Hospital" [ref=e6]
+        - navigation [ref=e7]:
+          - link "About Orienda" [ref=e8] [cursor=pointer]:
+            - /url: /about
+            - text: About Orienda
+            - img [ref=e9]
+          - link "Doctors" [ref=e11] [cursor=pointer]:
+            - /url: /doctors
+            - text: Doctors
+            - img [ref=e12]
+          - link "Promotion & Package" [ref=e14] [cursor=pointer]:
+            - /url: /promotions
+            - text: Promotion & Package
+            - img [ref=e15]
+          - link "News" [ref=e17] [cursor=pointer]:
+            - /url: /news
+            - text: News
+            - img [ref=e18]
+          - link "Career" [ref=e20] [cursor=pointer]:
+            - /url: /career
+            - text: Career
+            - img [ref=e21]
+          - link "Testimonials" [ref=e23] [cursor=pointer]:
+            - /url: /testimonials
+            - text: Testimonials
+            - img [ref=e24]
+        - generic [ref=e26]:
+          - button "CH" [ref=e27]:
+            - img [ref=e28]
+            - generic [ref=e32]: CH
+            - img [ref=e33]
+          - button "Switch language" [ref=e35]:
+            - img "ភាសាខ្មែរ" [ref=e37]
+      - link "Contact Now" [ref=e38] [cursor=pointer]:
+        - /url: tel:+85581593789
+        - generic [ref=e39]: Contact Now
+        - img [ref=e40]
+  - main [ref=e42]:
+    - generic [ref=e43]:
+      - img "Orienda International Hospital" [ref=e44]
+      - generic [ref=e45]:
+        - paragraph [ref=e46]: Welcome To
+        - paragraph [ref=e47]: Orienda International Hospital
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - paragraph [ref=e50]: Dr. Emily Ross
+          - paragraph [ref=e51]: Physician
+          - generic [ref=e52]:
+            - img [ref=e53]
+            - img [ref=e55]
+            - img [ref=e57]
+            - img [ref=e59]
+            - img [ref=e61]
+        - paragraph [ref=e63]: Timmy's progress has been remarkable, showing resilience and cooperation during each appointment.
+      - generic [ref=e64]:
+        - generic [ref=e65]: Ask AI
+        - button [ref=e66]:
+          - img [ref=e67]
+      - button "Previous slide" [ref=e70]:
+        - img [ref=e71]
+      - button "Next slide" [ref=e73]:
+        - img [ref=e74]
+  - contentinfo [ref=e76]:
+    - generic [ref=e77]:
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - img "Orienda International Hospital" [ref=e82]
+            - paragraph [ref=e83]:
+              - text: Orienda
+              - text: International Hospital
+          - paragraph [ref=e84]: Premier healthcare in Cambodia. ISO-certified, 24/7 comprehensive medical services.
+          - generic [ref=e85]:
+            - link "Facebook" [ref=e86] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e87]
+            - link "YouTube" [ref=e89] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e90]
+            - link "Instagram" [ref=e93] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e94]
+        - generic [ref=e98]:
+          - paragraph [ref=e99]: Hospital
+          - list [ref=e100]:
+            - listitem [ref=e101]:
+              - link "About Orienda" [ref=e102] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e103]:
+              - link "Doctors" [ref=e104] [cursor=pointer]:
+                - /url: /doctors
+            - listitem [ref=e105]:
+              - link "Departments" [ref=e106] [cursor=pointer]:
+                - /url: /departments
+            - listitem [ref=e107]:
+              - link "Career" [ref=e108] [cursor=pointer]:
+                - /url: /career
+        - generic [ref=e109]:
+          - paragraph [ref=e110]: Patients
+          - list [ref=e111]:
+            - listitem [ref=e112]:
+              - link "Promotions & Packages" [ref=e113] [cursor=pointer]:
+                - /url: /promotions
+            - listitem [ref=e114]:
+              - link "What to Expect" [ref=e115] [cursor=pointer]:
+                - /url: /what-to-expect
+            - listitem [ref=e116]:
+              - link "FAQs" [ref=e117] [cursor=pointer]:
+                - /url: /faqs
+            - listitem [ref=e118]:
+              - link "Testimonials" [ref=e119] [cursor=pointer]:
+                - /url: /testimonials
+        - generic [ref=e120]:
+          - paragraph [ref=e121]: Contact
+          - list [ref=e122]:
+            - listitem [ref=e123]:
+              - link "+855 81 593 789" [ref=e124] [cursor=pointer]:
+                - /url: tel:+85581593789
+                - img [ref=e125]
+                - generic [ref=e127]: +855 81 593 789
+            - listitem [ref=e128]:
+              - link "info@orienda.com" [ref=e129] [cursor=pointer]:
+                - /url: mailto:info@orienda.com
+                - img [ref=e130]
+                - generic [ref=e133]: info@orienda.com
+            - listitem [ref=e134]:
+              - generic [ref=e135]:
+                - img [ref=e136]
+                - generic [ref=e139]: Phnom Penh, Cambodia
+      - generic [ref=e140]:
+        - paragraph [ref=e141]: © 2026 Orienda International Hospital. All rights reserved.
+        - generic [ref=e142]:
+          - link "Privacy Policy" [ref=e143] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms of Use" [ref=e144] [cursor=pointer]:
+            - /url: /terms
+  - button "Open Next.js Dev Tools" [ref=e150] [cursor=pointer]:
+    - img [ref=e151]

@@ -10,21 +10,21 @@ const SIDE_NEWS = [
 
 export default function NewsSection() {
   return (
-    <section className="w-full py-[80px] px-[40px] xl:px-[46px]">
-      <div className="max-w-[1352px] mx-auto flex flex-col gap-[80px]">
+    <section className="w-full py-[120px] lg:py-[160px] px-[40px] xl:px-[80px]">
+      <div className="max-w-[1800px] mx-auto flex flex-col gap-[60px]">
 
         {/* Heading */}
-        <div className="flex flex-col gap-[12px] text-center w-full">
-          <h2 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none w-full">
+        <div className="flex flex-col gap-[20px] text-center w-full">
+          <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none w-full">
             News
           </h2>
-          <p className="font-dm-sans text-[20px] text-gold-800 leading-none w-full">
+          <p className="font-dm-sans text-[20px] lg:text-[24px] xl:text-[26px] text-gold-800 leading-none w-full">
             A selected team of experts committed to your health
           </p>
         </div>
 
         {/* Content row */}
-        <div className="flex gap-[37px] items-center justify-center">
+        <div className="flex flex-col lg:flex-row gap-[40px] xl:gap-[60px] items-stretch justify-center w-full">
 
           {/* Featured — 760×588, no border-radius, frosted caption */}
           <div className="relative bg-white overflow-hidden shrink-0 shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]" style={{ width: 760, height: 588 }}>

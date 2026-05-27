@@ -6,41 +6,55 @@ import Image from 'next/image'
 
 export default function MapSection() {
   return (
-    <section className="flex flex-col lg:flex-row w-full h-[450px] overflow-hidden">
+    <section className="flex flex-col lg:flex-row w-full h-[650px] overflow-hidden">
       
-      {/* Branch 1 — Chamkarmon (Left) */}
-      <div className="relative flex-1 group overflow-hidden">
+      {/* Left Side (Blur + Text) */}
+      <div className="relative flex-1 overflow-hidden">
         <Image
           src="/images/branch-building.jpg"
-          alt="Orienda International Hospital Chamkarmon"
+          alt="Orienda International Hospital Chamkarmon Background"
           fill
-          className="object-cover object-center transition-transform duration-1000 group-hover:scale-110"
-          sizes="756px"
+          className="object-cover object-left"
+          sizes="(max-width: 1024px) 100vw, 50vw"
         />
-        {/* Info Card Overlay */}
-        <div className="absolute bottom-[40px] left-[40px] right-[40px] bg-white p-[24px] rounded-[12px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] border border-[rgba(234,214,164,0.60)]">
-          <p className="font-cormorant font-bold text-[24px] text-gold-900 leading-tight">
-            Orienda International Hospital (Chamkarmon Branch)
-          </p>
-          <div className="flex justify-between items-end mt-[12px]">
-            <p className="font-dm-sans text-[14px] text-gold-800 max-w-[400px]">
+        {/* Full blur overlay - transparent with heavy glass blur */}
+        <div 
+          className="absolute inset-0 bg-white/30"
+          style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
+        />
+        
+        {/* Info Content */}
+        <div className="absolute inset-0 flex flex-col justify-center px-[40px] lg:px-[60px] xl:px-[80px] z-10">
+          <div className="max-w-[460px]">
+            <h3 className="font-cormorant font-bold text-[32px] xl:text-[40px] text-[#3e2c1c] leading-[1.2] mb-4 drop-shadow-sm">
+              Orienda International Hospital<br />(Chamkarmon Branch)
+            </h3>
+            <p className="font-dm-sans text-[16px] xl:text-[18px] text-[#3e2c1c] mb-6 font-medium">
               66, Street 31cc, 3, Phnom Penh 120605
             </p>
-            <button className="px-[24px] py-[10px] bg-gold-500 text-white font-dm-sans font-bold text-[14px] uppercase tracking-wider rounded-[8px] hover:bg-gold-600 transition-colors">
+            <div className="flex flex-col gap-2 mb-8 font-medium">
+              <p className="font-dm-sans text-[16px] xl:text-[18px] text-[#5e4b37]">
+                Open 24 hours
+              </p>
+              <p className="font-dm-sans text-[16px] xl:text-[18px] text-[#5e4b37]">
+                (+855) 081 811 789
+              </p>
+            </div>
+            <button className="self-start px-[32px] py-[12px] bg-[#b89552] text-white font-dm-sans font-medium text-[16px] rounded-[24px] hover:bg-[#a3803d] transition-colors shadow-lg">
               View Map
             </button>
           </div>
         </div>
       </div>
 
-      {/* Branch 2 — Sen Sok (Right) */}
-      <div className="relative flex-1 group overflow-hidden">
+      {/* Right Side (Just Image) */}
+      <div className="relative flex-1 overflow-hidden">
         <Image
-          src="/images/map-branch.png"
-          alt="Orienda International Hospital Branch"
+          src="/images/branch-building.jpg"
+          alt="Orienda International Hospital Chamkarmon"
           fill
-          className="object-cover object-center"
-          sizes="756px"
+          className="object-cover object-right"
+          sizes="(max-width: 1024px) 100vw, 50vw"
         />
       </div>
     </section>

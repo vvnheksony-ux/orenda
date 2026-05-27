@@ -19,14 +19,14 @@ const PARTNERS = [
 
 export default function PartnersSection() {
   return (
-    <section className="w-full overflow-hidden" style={{ background: '#fbf7ee', paddingTop: 12, paddingBottom: 120 }}>
+    <section className="w-full overflow-hidden bg-[#fbf7ee] py-[120px] lg:py-[160px]">
 
       {/* Header */}
-      <div className="flex flex-col gap-[12px] items-center text-center pb-[16px]">
-        <h2 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none">
+      <div className="flex flex-col gap-[20px] items-center text-center pb-[40px] xl:pb-[60px]">
+        <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none">
           Partners
         </h2>
-        <p className="font-dm-sans text-[20px] text-gold-800">
+        <p className="font-dm-sans text-[20px] lg:text-[24px] xl:text-[26px] text-gold-800">
           Orienda&apos;s International Hospital Partners
         </p>
       </div>

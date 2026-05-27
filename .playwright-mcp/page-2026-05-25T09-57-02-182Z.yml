@@ -1,0 +1,625 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - banner [ref=e4]:
+        - generic [ref=e11]:
+          - link [ref=e16] [cursor=pointer]:
+            - /url: https://oriendainternationalhospital.com.kh/
+          - generic [ref=e19]:
+            - generic:
+              - generic:
+                - navigation "Widget menu":
+                  - list [ref=e20]:
+                    - listitem [ref=e21]:
+                      - link "About Orienda " [ref=e22] [cursor=pointer]:
+                        - /url: https://oriendainternationalhospital.com.kh/
+                      - text: + + + +
+                    - listitem [ref=e23]:
+                      - link "Clinics & Centers " [ref=e24] [cursor=pointer]:
+                        - /url: https://oriendainternationalhospital.com.kh/clinics-centers/
+                      - text: + + + + + + + + + + + + + + + + + +
+                    - listitem [ref=e25]:
+                      - link "Doctors " [ref=e26] [cursor=pointer]:
+                        - /url: https://oriendainternationalhospital.com.kh/our-doctors/
+                      - text: +
+                    - listitem [ref=e27]:
+                      - link "Health Tip " [ref=e28] [cursor=pointer]:
+                        - /url: https://oriendainternationalhospital.com.kh/health-tip/
+                      - text: + +
+                    - listitem [ref=e29]:
+                      - link "News " [ref=e30] [cursor=pointer]:
+                        - /url: https://oriendainternationalhospital.com.kh/news/
+                      - text: +
+                    - listitem [ref=e31]:
+                      - link "Contact Us " [ref=e32] [cursor=pointer]:
+                        - /url: https://oriendainternationalhospital.com.kh/contact-us-2/
+                      - text: + + +
+          - link "EMERGENCY" [ref=e38] [cursor=pointer]:
+            - /url: tel:+85581811789
+            - generic [ref=e39]:
+              - generic [ref=e41]: 
+              - generic [ref=e42]: EMERGENCY
+      - main [ref=e62]:
+        - generic [ref=e66]:
+          - navigation [ref=e73]:
+            - link "English EN" [ref=e75] [cursor=pointer]:
+              - /url: https://oriendainternationalhospital.com.kh/doctor-kuon-linka/
+              - img "English" [ref=e77]
+              - generic [ref=e78]: EN
+              - generic [ref=e79]: 
+            - list:
+              - listitem [ref=e80]:
+                - link "ភាសាខ្មែរ KM" [ref=e81] [cursor=pointer]:
+                  - /url: https://oriendainternationalhospital.com.kh/km/doctor-kuon-linka-2/
+                  - img "ភាសាខ្មែរ" [ref=e83]
+                  - generic [ref=e84]: KM
+          - region "Image Carousel" [ref=e91]:
+            - generic [ref=e92]:
+              - group [ref=e93]:
+                - link [ref=e94] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e95]:
+                    - img [ref=e96]
+              - group "1 / 10" [ref=e97]:
+                - link [ref=e98] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e99]:
+                    - img "banner-slide-ord2-new-update-25" [ref=e100]
+              - group [ref=e101]:
+                - link [ref=e102] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e103]:
+                    - img [ref=e104]
+              - group [ref=e105]:
+                - link [ref=e106] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e107]:
+                    - img [ref=e108]
+              - group [ref=e109]:
+                - link [ref=e110] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e111]:
+                    - img [ref=e112]
+              - group [ref=e113]:
+                - link [ref=e114] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e115]:
+                    - img [ref=e116]
+              - group [ref=e117]:
+                - link [ref=e118] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e119]:
+                    - img [ref=e120]
+              - group [ref=e121]:
+                - link [ref=e122] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e123]:
+                    - img [ref=e124]
+              - group [ref=e125]:
+                - link [ref=e126] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e127]:
+                    - img [ref=e128]
+              - group [ref=e129]:
+                - link [ref=e130] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e131]:
+                    - img [ref=e132]
+              - group [ref=e133]:
+                - link [ref=e134] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e135]:
+                    - img [ref=e136]
+              - group [ref=e137]:
+                - link [ref=e138] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/clinics-centers/
+                  - figure [ref=e139]:
+                    - img [ref=e140]
+            - button "Previous slide" [ref=e141] [cursor=pointer]:
+              - generic [ref=e142]: 
+            - button "Next slide" [ref=e143] [cursor=pointer]:
+              - generic [ref=e144]: 
+          - generic [ref=e146]:
+            - generic [ref=e151]:
+              - figure [ref=e152]:
+                - link [ref=e153] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/our-doctors/
+              - generic [ref=e154]:
+                - heading "Find a Doctor" [level=4] [ref=e155]:
+                  - link "Find a Doctor" [ref=e156] [cursor=pointer]:
+                    - /url: https://oriendahospital.com/our-doctors/
+                - paragraph [ref=e157]: Choose by name, specialty and more.
+            - generic [ref=e162]:
+              - figure [ref=e163]:
+                - link [ref=e164] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/send-an-inquiry-2/
+              - generic [ref=e165]:
+                - heading "Send an Inquiry" [level=4] [ref=e166]:
+                  - link "Send an Inquiry" [ref=e167] [cursor=pointer]:
+                    - /url: https://oriendahospital.com/send-an-inquiry-2/
+                - paragraph [ref=e168]: Ask about our treatments and services
+            - generic [ref=e173]:
+              - figure [ref=e174]:
+                - link [ref=e175] [cursor=pointer]:
+                  - /url: https://oriendahospital.com/make-appointment/
+              - generic [ref=e176]:
+                - heading "Book Appointment" [level=4] [ref=e177]:
+                  - link "Book Appointment" [ref=e178] [cursor=pointer]:
+                    - /url: https://oriendahospital.com/make-appointment/
+                - paragraph [ref=e179]: Schedule your visit online.
+          - generic [ref=e183]:
+            - heading "Doctor Profile" [level=5] [ref=e190]
+            - generic [ref=e202]:
+              - heading "Dr. Kuon Linka" [level=1] [ref=e205]
+              - paragraph [ref=e208]: "Specialist: Gynecologist Obstetrician and Infertility"
+              - generic [ref=e210]:
+                - paragraph [ref=e211]: Education
+                - paragraph [ref=e212]:
+                  - text: – Certificate of Clinical Medicine and Master’s degree in Obstetrics and Gynecology from China
+                  - text: – In 2017, she completed her medical training in Reproductive Medicine at Fertility Center, Queensland and Fertility Group, Brisbane City in Australia.
+                - paragraph [ref=e213]: Degree / Certificate
+                - paragraph [ref=e214]: Certificate of Clinical Medicine and Master’s degree in Obstetrics and Gynecology from China
+                - paragraph [ref=e215]: Experience
+                - paragraph [ref=e216]:
+                  - text: – In 2014, she started her career at the Khmer Soviet Friendship Hospital which is known as one of the most famous and good-quality hospitals that serve the Kingdom of Cambodia for many years.
+                  - text: – With her long years of experience in medicine coupled with high education and training from local and international institutes, she has been making multiple achievements in the healthcare industry. She has served for many years with her expertise in Gynecology, Obstetrics, and fertility treatment; and implements Gynecology Sonography.
+                  - text: – In 2017, she completed her medical training in Reproductive Medicine at Fertility Center, Queensland and Fertility Group, Brisbane City in Australia.
+                  - text: – She became a member of the Improving Comprehensive Services for Cervical Cancer and training course in Japan in 2016. With her clinical experience, passion for high-quality care, and proven specialization through the years, she is committed to helping all women in Cambodia achieved the care they need.
+                - paragraph [ref=e217]: Language
+                - paragraph [ref=e218]: Khmer, English, Chinese
+          - generic [ref=e222]:
+            - heading "Infertility Team" [level=5] [ref=e229]
+            - generic [ref=e240]:
+              - generic [ref=e242]:
+                - generic [ref=e245]:
+                  - heading [level=5]
+                  - generic [ref=e246]:
+                    - img "Doctor profile-04" [ref=e248]
+                    - generic [ref=e250]:
+                      - heading [level=5]
+                      - paragraph:
+                        - link:
+                          - /url: https://oriendainternationalhospital.com.kh/chhit-maryan
+                      - paragraph [ref=e251]:
+                        - 'link "Dr. Chhit Maryan Specialist : Gynecologist Obstetrician and Infertility" [ref=e252] [cursor=pointer]':
+                          - /url: https://oriendainternationalhospital.com.kh/chhit-maryan
+                          - text: Dr. Chhit Maryan
+                          - text: "Specialist : Gynecologist Obstetrician and Infertility"
+                      - paragraph
+                - generic [ref=e255]:
+                  - heading [level=5]
+                  - generic [ref=e256]:
+                    - img "Doctor profile-06" [ref=e258]
+                    - generic [ref=e260]:
+                      - heading [level=5]
+                      - paragraph:
+                        - link:
+                          - /url: https://oriendainternationalhospital.com.kh/sin-rachana
+                      - paragraph [ref=e261]:
+                        - 'link "Dr. Sin Rachana Specialist : Gynecologist Obstetrician and Infertility" [ref=e262] [cursor=pointer]':
+                          - /url: https://oriendainternationalhospital.com.kh/sin-rachana
+                          - text: Dr. Sin Rachana
+                          - text: "Specialist : Gynecologist Obstetrician and Infertility"
+                      - paragraph
+              - text:  
+      - generic [ref=e263]:
+        - heading "latest news" [level=4] [ref=e274]
+        - generic [ref=e285]:
+          - generic [ref=e287]:
+            - generic [ref=e290]:
+              - heading [level=5]
+              - generic [ref=e291]:
+                - img "076A8397" [ref=e293]
+                - generic [ref=e295]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e296]: Cambodian Oknha Association , Orienda International Hospital Signing MoU
+                  - link "Read More >" [ref=e297] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxl/
+                  - paragraph
+            - generic [ref=e300]:
+              - heading [level=5]
+              - generic [ref=e301]:
+                - img "photo_2023-03-06_22-37-55" [ref=e303]
+                - generic [ref=e305]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e306]: Grand Opening Orienda International Hospital
+                  - link "Read More >" [ref=e307] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/grand-opening
+                  - paragraph
+            - generic [ref=e310]:
+              - heading [level=5]
+              - generic [ref=e311]:
+                - img "photo_2022-10-31_09-46-59" [ref=e313]
+                - generic [ref=e315]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e316]: Your Health Concern Is Our Duty, Eat Healthy Life
+                  - link "Read More >" [ref=e317] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/food
+                  - paragraph
+            - generic [ref=e320]:
+              - heading [level=5]
+              - generic [ref=e321]:
+                - img "Our-technology" [ref=e323]
+                - generic [ref=e325]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e326]: Orienda International Hospital is one of bigger Hospitals in Cambodia
+                  - link "Read More >" [ref=e327] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ord-bigger
+                  - paragraph
+            - generic [ref=e330]:
+              - heading [level=5]
+              - generic [ref=e331]:
+                - img "image_601" [ref=e333]
+                - generic [ref=e335]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e336]: Orienda International Hospital commitment to bringing our patients most modern technology and international Stardard
+                  - link "Read More >" [ref=e337] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ord-commitment
+                  - paragraph
+            - generic [ref=e340]:
+              - heading [level=5]
+              - generic [ref=e341]:
+                - img "Our-technology" [ref=e343]
+                - generic [ref=e345]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e346]: Orienda International Hospital is one of bigger Hospitals in Cambodia
+                  - link "Read More >" [ref=e347] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ord-bigger
+                  - paragraph
+            - generic [ref=e350]:
+              - heading [level=5]
+              - generic [ref=e351]:
+                - img "image_601" [ref=e353]
+                - generic [ref=e355]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e356]: Orienda International Hospital commitment to bringing our patients most modern technology and international Stardard
+                  - link "Read More >" [ref=e357] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ord-commitment
+                  - paragraph
+            - generic [ref=e360]:
+              - heading [level=5]
+              - generic [ref=e361]:
+                - img "146A4062" [ref=e363]
+                - generic [ref=e365]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e366]: Orienda International Hospital brings the latest in spine and neurology treatment technology to Cambodia
+                  - link "Read More >" [ref=e367] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/spinexneurology/
+                  - paragraph
+            - generic [ref=e370]:
+              - heading [level=5]
+              - generic [ref=e371]:
+                - img "076A9023" [ref=e373]
+                - generic [ref=e375]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e376]: Cooperation and Membership Cards Launch Between Orienda International Hospital and Orchid Koh Pich Hospital
+                  - link "Read More >" [ref=e377] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/cooperationxokp
+                  - paragraph
+            - generic [ref=e380]:
+              - heading [level=5]
+              - generic [ref=e381]:
+                - img "076A0932" [ref=e383]
+                - generic [ref=e385]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e386]: Soma Group Collaborates with Orienda International Hospital on Providing the International Quality Standards for Health Services
+                  - link "Read More >" [ref=e387] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ordxsoma
+                  - paragraph
+            - generic [ref=e390]:
+              - heading [level=5]
+              - generic [ref=e391]:
+                - img "076A0409" [ref=e393]
+                - generic [ref=e395]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e396]: ACLEDA Bank Collaborates with Orienda International Hospital on Providing the International Quality Standards for Health Services
+                  - link "Read More >" [ref=e397] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxac
+                  - paragraph
+            - generic [ref=e400]:
+              - heading [level=5]
+              - generic [ref=e401]:
+                - img "3H3A9617" [ref=e403]
+                - generic [ref=e405]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e406]: Ministry of water resources and meteorology, Orienda International Hospital Sign MoU to Provide Healthcare Services to Ministry’s Officials
+                  - link "Read More >" [ref=e407] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxmow/
+                  - paragraph
+            - generic [ref=e410]:
+              - heading [level=5]
+              - generic [ref=e411]:
+                - img "146A1393" [ref=e413]
+                - generic [ref=e415]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e416]: MISTI, Orienda International Hospital Sign MoU to Provide Healthcare Services to Ministry’s Officials
+                  - link "Read More >" [ref=e417] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxmoi/
+                  - paragraph
+            - generic [ref=e420]:
+              - heading [level=5]
+              - generic [ref=e421]:
+                - img "3" [ref=e423]
+                - generic [ref=e425]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e426]: The Council for the Development of Cambodia (CDC), Orienda International Hospital Signing MoU
+                  - link "Read More >" [ref=e427] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxct/
+                  - paragraph
+            - generic [ref=e430]:
+              - heading [level=5]
+              - generic [ref=e431]:
+                - img "076A8397" [ref=e433]
+                - generic [ref=e435]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e436]: Cambodian Oknha Association , Orienda International Hospital Signing MoU
+                  - link "Read More >" [ref=e437] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxl/
+                  - paragraph
+            - generic [ref=e440]:
+              - heading [level=5]
+              - generic [ref=e441]:
+                - img "photo_2023-03-06_22-37-55" [ref=e443]
+                - generic [ref=e445]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e446]: Grand Opening Orienda International Hospital
+                  - link "Read More >" [ref=e447] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/grand-opening
+                  - paragraph
+            - generic [ref=e450]:
+              - heading [level=5]
+              - generic [ref=e451]:
+                - img "photo_2022-10-31_09-46-59" [ref=e453]
+                - generic [ref=e455]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e456]: Your Health Concern Is Our Duty, Eat Healthy Life
+                  - link "Read More >" [ref=e457] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/food
+                  - paragraph
+            - generic [ref=e460]:
+              - heading [level=5]
+              - generic [ref=e461]:
+                - img "Our-technology" [ref=e463]
+                - generic [ref=e465]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e466]: Orienda International Hospital is one of bigger Hospitals in Cambodia
+                  - link "Read More >" [ref=e467] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ord-bigger
+                  - paragraph
+            - generic [ref=e470]:
+              - heading [level=5]
+              - generic [ref=e471]:
+                - img "image_601" [ref=e473]
+                - generic [ref=e475]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e476]: Orienda International Hospital commitment to bringing our patients most modern technology and international Stardard
+                  - link "Read More >" [ref=e477] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ord-commitment
+                  - paragraph
+            - generic [ref=e480]:
+              - heading [level=5]
+              - generic [ref=e481]:
+                - img "Our-technology" [ref=e483]
+                - generic [ref=e485]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e486]: Orienda International Hospital is one of bigger Hospitals in Cambodia
+                  - link "Read More >" [ref=e487] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ord-bigger
+                  - paragraph
+            - generic [ref=e490]:
+              - heading [level=5]
+              - generic [ref=e491]:
+                - img "image_601" [ref=e493]
+                - generic [ref=e495]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e496]: Orienda International Hospital commitment to bringing our patients most modern technology and international Stardard
+                  - link "Read More >" [ref=e497] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ord-commitment
+                  - paragraph
+            - generic [ref=e500]:
+              - heading [level=5]
+              - generic [ref=e501]:
+                - img "146A4062" [ref=e503]
+                - generic [ref=e505]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e506]: Orienda International Hospital brings the latest in spine and neurology treatment technology to Cambodia
+                  - link "Read More >" [ref=e507] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/spinexneurology/
+                  - paragraph
+            - generic [ref=e510]:
+              - heading [level=5]
+              - generic [ref=e511]:
+                - img "076A9023" [ref=e513]
+                - generic [ref=e515]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e516]: Cooperation and Membership Cards Launch Between Orienda International Hospital and Orchid Koh Pich Hospital
+                  - link "Read More >" [ref=e517] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/cooperationxokp
+                  - paragraph
+            - generic [ref=e520]:
+              - heading [level=5]
+              - generic [ref=e521]:
+                - img "076A0932" [ref=e523]
+                - generic [ref=e525]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e526]: Soma Group Collaborates with Orienda International Hospital on Providing the International Quality Standards for Health Services
+                  - link "Read More >" [ref=e527] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/ordxsoma
+                  - paragraph
+            - generic [ref=e530]:
+              - heading [level=5]
+              - generic [ref=e531]:
+                - img "076A0409" [ref=e533]
+                - generic [ref=e535]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e536]: ACLEDA Bank Collaborates with Orienda International Hospital on Providing the International Quality Standards for Health Services
+                  - link "Read More >" [ref=e537] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxac
+                  - paragraph
+            - generic [ref=e540]:
+              - heading [level=5]
+              - generic [ref=e541]:
+                - img "3H3A9617" [ref=e543]
+                - generic [ref=e545]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e546]: Ministry of water resources and meteorology, Orienda International Hospital Sign MoU to Provide Healthcare Services to Ministry’s Officials
+                  - link "Read More >" [ref=e547] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxmow/
+                  - paragraph
+            - generic [ref=e550]:
+              - heading [level=5]
+              - generic [ref=e551]:
+                - img "146A1393" [ref=e553]
+                - generic [ref=e555]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e556]: MISTI, Orienda International Hospital Sign MoU to Provide Healthcare Services to Ministry’s Officials
+                  - link "Read More >" [ref=e557] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxmoi/
+                  - paragraph
+            - generic [ref=e560]:
+              - heading [level=5]
+              - generic [ref=e561]:
+                - img "3" [ref=e563]
+                - generic [ref=e565]:
+                  - heading [level=5]
+                  - paragraph
+                  - generic [ref=e566]: The Council for the Development of Cambodia (CDC), Orienda International Hospital Signing MoU
+                  - link "Read More >" [ref=e567] [cursor=pointer]:
+                    - /url: https://oriendainternationalhospital.com.kh/mouxct/
+                  - paragraph
+          - text:  
+        - link "See All >" [ref=e575] [cursor=pointer]:
+          - /url: https://oriendainternationalhospital.com.kh/news/
+        - generic [ref=e583]:
+          - heading "Our Partners" [level=5] [ref=e590]
+          - generic [ref=e658]:
+            - generic [ref=e667]:
+              - figure [ref=e668]
+              - paragraph [ref=e670]:
+                - text: 023 232 789 /078 233 789 /096 6233 789
+                - text: Emergencies-Appointments-Ambulance
+                - text: Available 24 hours every day
+            - generic [ref=e680]:
+              - figure [ref=e681]
+              - paragraph [ref=e683]:
+                - text: Call Orienda
+                - text: 016 593 789 / 012 593 789
+                - text: Available 24 hours every day
+            - generic [ref=e693]:
+              - figure [ref=e694]
+              - generic [ref=e695]:
+                - paragraph [ref=e696]: Message to our Mail
+                - paragraph
+                - paragraph [ref=e697]:
+                  - button "SIGN UP NOW" [ref=e698] [cursor=pointer]
+            - generic [ref=e708]:
+              - figure [ref=e709]
+              - generic [ref=e710]:
+                - paragraph [ref=e711]: Map and Directions
+                - paragraph
+                - paragraph [ref=e712]:
+                  - button "GET DIRECTIONS" [ref=e713] [cursor=pointer]:
+                    - link "GET DIRECTIONS" [ref=e714]:
+                      - /url: https://goo.gl/maps/fAS5KbPVpoybszHn6
+          - generic [ref=e721]:
+            - generic [ref=e727]:
+              - link "Follow Us" [ref=e729] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e730]: 
+              - heading "Follow Us" [level=6] [ref=e732]:
+                - link "Follow Us" [ref=e733] [cursor=pointer]:
+                  - /url: "#"
+            - generic [ref=e737]:
+              - link [ref=e742] [cursor=pointer]:
+                - /url: https://www.facebook.com/oriendainternationalhospital
+              - link [ref=e747] [cursor=pointer]:
+                - /url: https://www.instagram.com/oriendainternationalhospital/
+              - link [ref=e752] [cursor=pointer]:
+                - /url: https://www.tiktok.com/@orienda_hospital
+              - link [ref=e757] [cursor=pointer]:
+                - /url: https://www.youtube.com/channel/UCAbXY96Fn0OCYvyyF31GnRg
+              - link [ref=e762] [cursor=pointer]:
+                - /url: https://t.me/orienda
+              - link [ref=e767] [cursor=pointer]:
+                - /url: https://www.linkedin.com/company/orienda-polyclinic-and-maternity
+          - generic [ref=e773]:
+            - generic [ref=e775]:
+              - heading "About Us" [level=6] [ref=e778]
+              - link "Our Mission and Vision" [ref=e782] [cursor=pointer]:
+                - /url: https://oriendainternationalhospital.com.kh/vision-and-mission/
+              - link "News" [ref=e786] [cursor=pointer]:
+                - /url: https://oriendainternationalhospital.com.kh/news/
+              - link "Job Opportunity" [ref=e790] [cursor=pointer]:
+                - /url: https://oriendainternationalhospital.com.kh/job-opportunities/
+            - generic [ref=e792]:
+              - heading "Packages and Promotions" [level=6] [ref=e795]
+              - link "Hot Promotion" [ref=e799] [cursor=pointer]:
+                - /url: https://oriendainternationalhospital.com.kh/hot-promotion/
+              - link "Packages" [ref=e803] [cursor=pointer]:
+                - /url: https://oriendainternationalhospital.com.kh/packages-2/
+            - generic [ref=e805]:
+              - heading "Action" [level=6] [ref=e808]
+              - link "Book Appointment" [ref=e812] [cursor=pointer]:
+                - /url: https://oriendainternationalhospital.com.kh/make-appointment/
+              - link "Send Inquiry" [ref=e816] [cursor=pointer]:
+                - /url: https://oriendainternationalhospital.com.kh/send-an-inquiry-2/
+              - link "Our Doctors" [ref=e820] [cursor=pointer]:
+                - /url: https://oriendainternationalhospital.com.kh/our-doctors/
+              - link "View Our Clinics and Centers" [ref=e824] [cursor=pointer]:
+                - /url: https://oriendainternationalhospital.com.kh/clinics-centers/
+            - generic [ref=e826]:
+              - iframe [ref=e830]:
+                - link "Maps (opens in new tab)" [ref=f15e4] [cursor=pointer]:
+                  - /url: about:invalid#zClosurez
+                  - text: Maps
+                  - img [ref=f15e6]
+              - generic [ref=e832]:
+                - link "Contact Us" [ref=e838] [cursor=pointer]:
+                  - /url: https://oriendainternationalhospital.com.kh/contact-us-2/
+                - link "Customer Feedback" [ref=e844] [cursor=pointer]:
+                  - /url: https://oriendainternationalhospital.com.kh/customer-feedback/
+                - link "Emergency" [ref=e850] [cursor=pointer]:
+                  - /url: https://oriendainternationalhospital.com.kh/emergency-3/
+                - link "Refer Patient" [ref=e856] [cursor=pointer]:
+                  - /url: "#"
+        - text:       
+        - heading "Privacy Policy|Terms of Services|Cookies Policy © 2022 Orienda Internation Hospital Steung Mean Chey, Khan Mean Chey, Phnom Penh All rights reserved." [level=2] [ref=e865]:
+          - paragraph [ref=e866]: Privacy Policy|Terms of Services|Cookies Policy
+          - paragraph [ref=e867]: © 2022 Orienda Internation Hospital
+          - paragraph [ref=e868]: Steung Mean Chey, Khan Mean Chey, Phnom Penh
+          - paragraph [ref=e869]: All rights reserved.
+      - text: 
+    - generic [ref=e872]: desktop
+  - text:               
+  - img [ref=e873]
+  - link "Facebook_Messenger" [ref=e875] [cursor=pointer]:
+    - /url: https://m.me/oriendainternationalhospital
+    - img [ref=e878]
+    - generic [ref=e881]: Contact us

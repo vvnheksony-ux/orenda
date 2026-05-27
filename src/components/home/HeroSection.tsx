@@ -16,7 +16,7 @@ export default function HeroSection() {
   const [response, setResponse] = useState('')
 
   return (
-    <section className="relative w-full bg-[#dac4a8] z-[10]" style={{ height: 800 }}>
+    <section className="relative w-full bg-[#dac4a8] z-[10] h-[90vh] min-h-[750px] max-h-[1000px]">
 
       {/* Hero video background */}
       <video
@@ -31,7 +31,7 @@ export default function HeroSection() {
       {/* Welcome text */}
       <div
         className="absolute flex flex-col gap-[20px] not-italic text-gold-900"
-        style={{ left: 40, top: 150, width: 595 }}
+        style={{ left: 40, top: 'clamp(120px, 20vh, 250px)', width: 595 }}
       >
         <p className="text-[48px] leading-normal" style={{ fontFamily: 'var(--script-font)' }}>
           Welcome To
@@ -46,7 +46,7 @@ export default function HeroSection() {
         className="absolute rounded-[12px] px-[40px] py-[24px] flex flex-col gap-[12px]"
         style={{
           left: 40,
-          top: 600,
+          bottom: 'clamp(80px, 15vh, 150px)',
           width: 302,
           background: 'rgba(255,255,255,0.82)',
           boxShadow: '0px 4px 20px 0px rgba(89,69,34,0.30)',
@@ -83,8 +83,8 @@ export default function HeroSection() {
         className="absolute flex items-center justify-between rounded-[200px] z-[30]"
         style={{
           left: '50%',
-          transform: 'translateX(-50%)',
-          top: 720,
+          transform: 'translate(-50%, 50%)',
+          bottom: 0,
           width: 'clamp(300px, 49vw, 747px)',
           height: 'clamp(80px, 10.4vw, 160px)',
           background: 'rgba(251,247,238,1)',
@@ -118,7 +118,7 @@ export default function HeroSection() {
           style={{
             left: '50%',
             transform: 'translateX(-50%)',
-            top: 870,
+            bottom: -120,
             width: 600,
             background: 'rgba(249,249,249,0.92)',
             borderRadius: 12,
@@ -132,7 +132,7 @@ export default function HeroSection() {
       {/* Union + 360° — right-anchored */}
       <div
         className="absolute pointer-events-none"
-        style={{ right: 80, top: 670, width: 120, height: 90 }}
+        style={{ right: 80, bottom: 'clamp(40px, 10vh, 100px)', width: 120, height: 90 }}
       >
         <div className="absolute" style={{ inset: '0 -3.33% -8.89% -3.33%' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}

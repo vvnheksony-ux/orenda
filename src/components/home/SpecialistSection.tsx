@@ -1,8 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { animate, motion, useMotionValue } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const DOCTORS = [
   { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-1.jpg' },
@@ -10,40 +11,91 @@ const DOCTORS = [
   { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-3.jpg' },
   { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-4.jpg' },
   { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-2.jpg' },
+  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-3.jpg' },
+  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-1.jpg' },
+  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-4.jpg' },
+  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-2.jpg' },
 ]
 
-// Figma: 5-card fan — center active (337.5×450), ±1 (300×400 20% overlay), ±2 (262.5×350 50% overlay)
-function sizeByDiff(diff: number) {
-  const abs = Math.abs(diff)
-  if (abs === 0) return { w: 337.5, h: 450, photo: 164, photoTop: 34.5, overlay: 0,   name: 27, spec: 18, btnH: 36, btnW: 163, btnFs: 13.5, radius: 16 }
-  if (abs === 1) return { w: 300,   h: 400, photo: 146, photoTop: 34.5, overlay: 0.2, name: 24, spec: 16, btnH: 32, btnW: 145, btnFs: 12,   radius: 16 }
-  return               { w: 262.5, h: 350, photo: 128, photoTop: 30,   overlay: 0.5, name: 21, spec: 14, btnH: 28, btnW: 127, btnFs: 9.5,  radius: 14 }
+const n = DOCTORS.length
+
+function wrapIdx(i: number) { return ((i % n) + n) % n }
+
+// Shortest circular distance from activeIdx to docIndex
+function wrappedDiff(rawDiff: number) {
+  let d = rawDiff % n
+  if (d > n / 2)  d -= n
+  if (d < -n / 2) d += n
+  return d
 }
 
-function DocCard({ doc, index, activeIdx, setIdx }: {
-  doc: typeof DOCTORS[0]
-  index: number
+function sizeByDiff(diff: number) {
+  const abs = Math.abs(diff)
+  if (abs === 0) return { w: 405, h: 540, photo: 197, photoTop: 41, overlay: 0,   name: 32, spec: 22, btnH: 43, btnW: 196, btnFs: 16, radius: 19 }
+  if (abs === 1) return { w: 360, h: 480, photo: 175, photoTop: 41, overlay: 0.2, name: 29, spec: 19, btnH: 38, btnW: 174, btnFs: 14, radius: 19 }
+  if (abs === 2) return { w: 315, h: 420, photo: 154, photoTop: 36, overlay: 0.5, name: 25, spec: 17, btnH: 34, btnW: 152, btnFs: 11, radius: 17 }
+  return               { w: 270, h: 360, photo: 131, photoTop: 31, overlay: 0.7, name: 21, spec: 15, btnH: 29, btnW: 130, btnFs: 9,  radius: 15 }
+}
+
+function getTargetX(diff: number, gap: number = 32) {
+  const d = Math.abs(diff)
+  const sign = Math.sign(diff)
+  if (d === 0) return 0
+  
+  const w0 = 405
+  const w1 = 360
+  const w2 = 315
+  const w3 = 270
+  
+  if (d === 1) return sign * ((w0 / 2) + gap + (w1 / 2))
+  if (d === 2) return sign * ((w0 / 2) + gap + w1 + gap + (w2 / 2))
+  if (d === 3) return sign * ((w0 / 2) + gap + w1 + gap + w2 + gap + (w3 / 2))
+  
+  return sign * 2000 // far off-screen
+}
+
+function DocCard({ docIndex, activeIdx, setIdx }: {
+  docIndex: number
   activeIdx: number
   setIdx: (i: number) => void
 }) {
-  const diff = index - activeIdx
+  const doc = DOCTORS[docIndex]
+  const diff = wrappedDiff(docIndex - activeIdx)
   const s = sizeByDiff(diff)
 
-  const x     = useMotionValue(diff * 380)
-  const w     = useMotionValue(s.w)
-  const h     = useMotionValue(s.h)
+  const x = useMotionValue(getTargetX(diff))
+  const w = useMotionValue(s.w)
+  const h = useMotionValue(s.h)
+
+  const prevDiff = useRef(diff)
 
   useEffect(() => {
-    animate(x, diff * 380,  { type: 'spring', stiffness: 300, damping: 30 })
-    animate(w, s.w,          { type: 'spring', stiffness: 300, damping: 30 })
-    animate(h, s.h,          { type: 'spring', stiffness: 300, damping: 30 })
+    const targetX = getTargetX(diff)
+    // A wrap happens when the shortest circular distance jumps across the boundary (e.g. 4 to -4)
+    // In our n=9 array, this is a jump of magnitude >= 5.
+    const isWrap = Math.abs(diff - prevDiff.current) > 4
+
+    if (isWrap) {
+      x.stop()
+      w.stop()
+      h.stop()
+      x.set(targetX)
+      w.set(s.w)
+      h.set(s.h)
+    } else {
+      animate(x, targetX, { type: 'spring', stiffness: 300, damping: 30 })
+      animate(w, s.w, { type: 'spring', stiffness: 300, damping: 30 })
+      animate(h, s.h, { type: 'spring', stiffness: 300, damping: 30 })
+    }
+    
+    prevDiff.current = diff
   }, [activeIdx, diff, s.w, s.h, x, w, h])
 
   return (
     <motion.div
       style={{ x, width: w, height: h, zIndex: 5 - Math.abs(diff), borderRadius: s.radius }}
       className="absolute bg-white overflow-hidden cursor-pointer shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]"
-      onClick={() => setIdx(index)}
+      onClick={() => setIdx(docIndex)}
     >
       {/* Gold gradient header */}
       <div
@@ -97,23 +149,46 @@ function DocCard({ doc, index, activeIdx, setIdx }: {
 export default function SpecialistSection() {
   const [activeIdx, setActiveIdx] = useState(2)
 
-  return (
-    <section className="w-full bg-gold-50 py-[80px] overflow-hidden px-[40px] xl:px-[46px]">
-      <div className="max-w-[1352px] mx-auto flex flex-col gap-[40px] items-center">
+  const prev = () => setActiveIdx(i => wrapIdx(i - 1))
+  const next = () => setActiveIdx(i => wrapIdx(i + 1))
 
-        <div className="flex flex-col gap-[12px] items-start w-full text-center">
-          <h2 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none w-full">
+  return (
+    <section className="w-full bg-gold-50 py-[120px] lg:py-[160px] overflow-hidden px-[40px] xl:px-[80px]">
+      <div className="max-w-[1800px] mx-auto flex flex-col gap-[60px] items-center">
+
+        <div className="flex flex-col gap-[20px] items-start w-full text-center">
+          <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none w-full">
             Meet Our Specialist
           </h2>
-          <p className="font-dm-sans text-[20px] text-gold-800 leading-none w-full">
+          <p className="font-dm-sans text-[20px] lg:text-[24px] xl:text-[26px] text-gold-800 leading-none w-full">
             A selected team of experts committed to your health
           </p>
         </div>
 
-        <div className="relative w-full flex items-center justify-center h-[500px]">
-          {DOCTORS.map((doc, i) => (
-            <DocCard key={i} doc={doc} index={i} activeIdx={activeIdx} setIdx={setActiveIdx} />
+        <div className="relative w-full flex items-center justify-center h-[600px]">
+
+          {/* Prev arrow */}
+          <button
+            onClick={prev}
+            className="absolute left-[10px] xl:left-[30px] z-30 w-[56px] h-[56px] rounded-full bg-white flex items-center justify-center hover:bg-gold-50 hover:scale-105 transition-all shadow-[0_8px_30px_rgba(184,145,72,0.3)] shrink-0 group"
+            aria-label="Previous specialist"
+          >
+            <ChevronLeft className="text-gold-700 group-hover:text-gold-900 transition-colors mr-[2px]" size={28} strokeWidth={2} />
+          </button>
+
+          {DOCTORS.map((_, i) => (
+            <DocCard key={i} docIndex={i} activeIdx={activeIdx} setIdx={setActiveIdx} />
           ))}
+
+          {/* Next arrow */}
+          <button
+            onClick={next}
+            className="absolute right-[10px] xl:right-[30px] z-30 w-[56px] h-[56px] rounded-full bg-white flex items-center justify-center hover:bg-gold-50 hover:scale-105 transition-all shadow-[0_8px_30px_rgba(184,145,72,0.3)] shrink-0 group"
+            aria-label="Next specialist"
+          >
+            <ChevronRight className="text-gold-700 group-hover:text-gold-900 transition-colors ml-[2px]" size={28} strokeWidth={2} />
+          </button>
+
         </div>
 
         <button className="px-[40px] py-[14px] rounded-full border border-gold-500 text-gold-900 font-dm-sans text-[18px] hover:bg-gold-200/30 transition-colors cursor-pointer">
