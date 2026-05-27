@@ -4,10 +4,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { createClient } from '@/utils/supabase/client'
+import { supabase } from '@/lib/supabase'
 
 export default function RegisterPage() {
-  const supabase = createClient()
   const router = useRouter()
   const [authMode, setAuthMode] = useState<'email' | 'phone'>('email')
   const [otpSent, setOtpSent] = useState(false)

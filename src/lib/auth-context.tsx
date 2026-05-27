@@ -2,9 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { createClient } from '@/utils/supabase/client'
-
-const supabase = createClient()
+import { supabase } from './supabase'
 
 type AuthCtx = {
   user: User | null
