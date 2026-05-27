@@ -4,9 +4,10 @@ import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/utils/supabase/client'
 
 function LoginForm() {
+  const supabase = createClient()
   const router = useRouter()
   const params = useSearchParams()
   const registered = params.get('registered') === '1'
