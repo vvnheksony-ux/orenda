@@ -12,6 +12,7 @@
     "@next/third-parties": "^16.2.6",
     "@photo-sphere-viewer/core": "^5.14.1",
     "@react-google-maps/api": "^2.20.8",
+    "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.39.0",

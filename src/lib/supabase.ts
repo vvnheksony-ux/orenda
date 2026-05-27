@@ -1,11 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/utils/supabase/client'
+import { createServiceClient as serverServiceClient } from '@/utils/supabase/server'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+export const supabase = createClient()
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// Server-side only (never expose in client bundle)
-export function createServiceClient() {
-  return createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+export async function createServiceClient() {
+  return await serverServiceClient()
 }
