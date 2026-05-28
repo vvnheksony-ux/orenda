@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 
 export default function BookAppointmentSection() {
   return (
@@ -14,13 +15,13 @@ export default function BookAppointmentSection() {
           </p>
         </div>
 
-        <a
-          href="/appointment"
+        <Link
+          href="/appointments"
           className="flex items-center gap-[12px] bg-gold-500 text-white px-[40px] py-[18px] rounded-full font-dm-sans font-bold text-[16px] uppercase tracking-widest hover:bg-gold-600 transition-colors shadow-lg"
         >
           Book Now
           <ArrowRight size={20} />
-        </a>
+        </Link>
 
       </div>
     </section>

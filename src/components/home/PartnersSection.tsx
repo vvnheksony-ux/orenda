@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
 /* Figma: Partners — 1512×218px, cream bg, single row of 98×98px logo cards gap-[16px] */
 const PARTNERS = [
@@ -18,16 +19,18 @@ const PARTNERS = [
 ]
 
 export default function PartnersSection() {
+  const t = useTranslations('PartnersSection')
+
   return (
     <section className="w-full overflow-hidden bg-[#fbf7ee] py-[120px] lg:py-[160px]">
 
       {/* Header */}
       <div className="flex flex-col gap-[20px] items-center text-center pb-[40px] xl:pb-[60px]">
         <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none">
-          Partners
+          {t('title')}
         </h2>
         <p className="font-dm-sans text-[20px] lg:text-[24px] xl:text-[26px] text-gold-800">
-          Orienda&apos;s International Hospital Partners
+          {t('subtitle')}
         </p>
       </div>
 

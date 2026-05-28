@@ -3,15 +3,12 @@
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { animate, motion, useMotionValue } from 'framer-motion'
+import { useTranslations } from 'next-intl'
+import { useRouter } from '@/i18n/routing'
+import { X } from 'lucide-react'
+import ThreeSixtyViewer from '../shared/ThreeSixtyViewer'
 
-const ROOMS = [
-  { name: 'Resting Room',      image: '/images/room-card.jpg' },
-  { name: 'Treatment Room',    image: '/images/room-card.jpg' },
-  { name: 'Operating Room',    image: '/images/room-card.jpg' },
-  { name: 'Recovery Room',     image: '/images/room-card.jpg' },
-  { name: 'Consultation Room', image: '/images/room-card.jpg' },
-]
-const NR = ROOMS.length
+  // We will define ROOMS and FACILITY_CARDS inside the component
 
 // Figma exact dims
 const RC = { w: 504.858, h: 300,  rounded: 14.575, border: 0.607, blur: 4.858, textSize: 29.15 }
@@ -25,12 +22,13 @@ function rxCenter(offset: number) {
   return s * (RC.w / 2 + RGAP + RS.w + RGAP + RS.w / 2)
 }
 
-function RoomCard({ room, offset, dir, onPrev, onNext }: {
-  room: typeof ROOMS[0]
+function RoomCard({ room, offset, dir, onPrev, onNext, onOpenViewer }: {
+  room: { name: string, image: string, viewerSrc?: string }
   offset: number
   dir: number
   onPrev: () => void
   onNext: () => void
+  onOpenViewer: (src: string) => void
 }) {
   const abs   = Math.abs(offset)
   const cfg   = abs === 0 ? RC : RS
@@ -55,12 +53,16 @@ function RoomCard({ room, offset, dir, onPrev, onNext }: {
         position: 'absolute', left: '50%', top: '50%',
         width: w, height: h, x, y,
         zIndex: 3 - abs,
-        cursor: offset !== 0 ? 'pointer' : 'default',
+        cursor: offset !== 0 ? 'pointer' : (room.viewerSrc ? 'pointer' : 'default'),
       }}
-      onClick={() => { if (offset < 0) onPrev(); if (offset > 0) onNext() }}
+      onClick={() => { 
+        if (offset < 0) onPrev()
+        if (offset > 0) onNext()
+        if (offset === 0 && room.viewerSrc) onOpenViewer(room.viewerSrc)
+      }}
     >
       <div
-        className="relative w-full h-full overflow-hidden bg-[rgba(245,236,212,0.2)]"
+        className="relative w-full h-full overflow-hidden bg-[rgba(245,236,212,0.2)] group"
         style={{
           borderRadius: rounded,
           border: `${border}px solid #fbf7ee`,
@@ -68,45 +70,64 @@ function RoomCard({ room, offset, dir, onPrev, onNext }: {
         }}
       >
         {/* Background image */}
-        <Image src={room.image} alt={room.name} fill className="object-cover object-center" sizes="520px" />
+        <Image src={room.image} alt={room.name} fill className="object-cover object-center group-hover:scale-105 transition-transform duration-700" sizes="520px" />
 
         {/* Dark blurred overlay */}
         <div
-          className="absolute inset-0 flex items-center justify-center"
+          className="absolute inset-0 flex flex-col items-center justify-center transition-colors duration-300"
           style={{
             backdropFilter: `blur(${blur}px)`,
             WebkitBackdropFilter: `blur(${blur}px)`,
-            background: 'rgba(0,0,0,0.80)',
+            background: offset === 0 ? 'rgba(0,0,0,0.30)' : 'rgba(0,0,0,0.60)',
           }}
         >
           <p
-            className="font-dm-sans font-semibold text-[#fbf7ee] text-center whitespace-nowrap"
+            className="font-dm-sans font-semibold text-[#fbf7ee] text-center whitespace-nowrap drop-shadow-md"
             style={{ fontSize: textSize }}
           >
             {room.name}
           </p>
+          {offset === 0 && room.viewerSrc && (
+            <div className="mt-4 px-6 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/40 text-white font-dm-sans text-sm shadow-lg hover:bg-white/30 transition-all opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0">
+              Click to view 360°
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
   )
 }
 
-const FACILITY_CARDS = [
-  {
-    image: '/images/facility-left.png',
-    title: 'Visit',
-    description: 'Orienda International Hospital is committed to transparent and compassionate healthcare. Our focus on patient satisfaction and well-being, drives our continuous improvement in providing exceptional medical care.',
-  },
-  {
-    image: '/images/facility-right.png',
-    title: 'Our Medical Facilities',
-    description: 'Explore our modern and fully-equipped medical facilities, designed to meet the diverse needs of our patients with comfort and advanced care.',
-  },
-]
+// Removed hardcoded FACILITY_CARDS
 
 export default function TourSection() {
+  const t = useTranslations('TourSection')
+
+  const ROOMS = [
+    { name: t('roomResting'),      image: '/images/room-card.jpg', viewerSrc: '/images/360/StandardRoom.JPG' },
+    { name: t('roomTreatment'),    image: '/images/room-card.jpg', viewerSrc: '/images/360/OPD-1stFloor.JPG' },
+    { name: t('roomOperating'),    image: '/images/room-card.jpg', viewerSrc: '/images/360/OPD-2ndFloor.JPG' },
+    { name: t('roomRecovery'),     image: '/images/room-card.jpg', viewerSrc: '/images/360/OPD-3rdFloor.JPG' },
+    { name: t('roomConsultation'), image: '/images/room-card.jpg', viewerSrc: "/images/360/King's Room/KingRoom-Patient.JPG" },
+  ]
+  const NR = ROOMS.length
+
+  const FACILITY_CARDS = [
+    {
+      image: '/images/facility-left.png',
+      title: t('facility1Title'),
+      description: t('facility1Desc'),
+    },
+    {
+      image: '/images/facility-right.png',
+      title: t('facility2Title'),
+      description: t('facility2Desc'),
+    },
+  ]
+
   const [activeRoom, setActiveRoom] = useState(0)
   const [roomDir,    setRoomDir]    = useState(1)
+  const router = useRouter()
   const prevRoom = () => { setRoomDir(-1); setActiveRoom(i => (i - 1 + NR) % NR) }
   const nextRoom = () => { setRoomDir(1);  setActiveRoom(i => (i + 1) % NR) }
   const roomCards = ROOMS.map((room, ri) => {
@@ -125,10 +146,10 @@ export default function TourSection() {
           {/* Header */}
           <div className="flex flex-col gap-[20px] items-center w-full">
             <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none text-center">
-              Discovers Our facilities
+              {t('title')}
             </h2>
             <p className="font-dm-sans text-[20px] lg:text-[24px] xl:text-[26px] text-gold-800 text-center max-w-3xl">
-              Choose an option below to quickly find the service you need
+              {t('subtitle')}
             </p>
           </div>
 
@@ -163,7 +184,7 @@ export default function TourSection() {
                   className="inline-flex items-center justify-center px-[32px] py-[14px] rounded-full font-dm-sans text-[16px] text-white transition-opacity hover:opacity-90"
                   style={{ background: '#b89148' }}
                 >
-                  Discover More
+                  {t('discoverMore')}
                 </a>
               </div>
             ))}
@@ -244,13 +265,13 @@ export default function TourSection() {
             className="font-cormorant font-bold text-[#fbf7ee] text-center whitespace-nowrap"
             style={{ fontSize: '40px' }}
           >
-            Orienda Chamkarmon Hospital
+            {t('hospitalName')}
           </p>
         </div>
 
         {/* Start Discovering button — top 384px from Figma */}
-        <a
-          href="#"
+        <button
+          onClick={() => router.push('/360-tour')}
           className="absolute left-1/2 -translate-x-1/2 z-10 flex items-center justify-center font-dm-sans text-[24px] text-white rounded-[12px] transition-opacity hover:opacity-90"
           style={{
             top: '384px',
@@ -261,8 +282,8 @@ export default function TourSection() {
             whiteSpace: 'nowrap',
           }}
         >
-          Start Discovering
-        </a>
+          {t('startDiscovering')}
+        </button>
 
         {/* Room cards carousel */}
         <div
@@ -289,6 +310,7 @@ export default function TourSection() {
               dir={roomDir}
               onPrev={prevRoom}
               onNext={nextRoom}
+              onOpenViewer={() => router.push('/360-tour')}
             />
           ))}
         </div>

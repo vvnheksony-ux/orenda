@@ -1,5 +1,152 @@
 {
   "Index": {
     "title": "Welcome to Orienda Hospital"
+  },
+  "Navbar": {
+    "about": "About Orienda",
+    "doctors": "Doctors",
+    "departments": "Departments",
+    "news": "News",
+    "contact": "Contact",
+    "emergency": "Emergency",
+    "ch": "CH",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "bookAppointment": "Book Appointment"
+  },
+  "Footer": {
+    "aboutUs": "About US",
+    "ourMission": "Our Mission and Vision",
+    "news": "News",
+    "jobOpportunity": "Job Opportunity",
+    "packagesPromotions": "Packages & Promotions",
+    "hotPromotion": "Hot Promotion",
+    "packages": "Packages",
+    "actions": "Actions",
+    "bookAppointment": "Book Appointment",
+    "sendInquiry": "Send Inquiry",
+    "ourDoctors": "Our Doctors",
+    "viewClinics": "View Our Clinics and Centers",
+    "contactUs": "Contact Us",
+    "emergency": "Emergency",
+    "address": "Address",
+    "open": "Open",
+    "hours24": "24 Hours",
+    "socialMedia": "Social Media"
+  },
+  "HeroSection": {
+    "welcome": "Welcome To",
+    "hospital": "Orienda International Hospital",
+    "askAi": "Ask AI",
+    "aiResponse": "You asked: \"{query}\" — I'll connect you with the right information.",
+    "testimonialName": "Dr. Marcus Lee",
+    "testimonialRole": "Pediatric Specialist",
+    "testimonialQuote": "Timmy Demonstrates Impressive Ada..."
+  },
+  "ClinicSection": {
+    "title": "Clinic & Centered",
+    "subtitle": "Choose an option below to quickly find the service you need",
+    "seeMore": "See More",
+    "obstetric": "Obstetric",
+    "gynecology": "Gynecology",
+    "imaging": "Imaging Center",
+    "neuro": "Neuro Surgery",
+    "pediatric": "Pediatric",
+    "cardiology": "Cardiology",
+    "orthopedics": "Orthopedics"
+  },
+  "CentersSection": {
+    "title": "Centered Of Excellences",
+    "subtitle": "Choose an option below to quickly find the service you need",
+    "success": "Success",
+    "surgeries": "Surgeries",
+    "satisfactions": "Satisfactions",
+    "obstetric": "Obstetric",
+    "gynecology": "Gynecology",
+    "neuro": "Neuro Surgery",
+    "imaging": "Imaging Center",
+    "pediatric": "Pediatric"
+  },
+  "WhySection": {
+    "subtitle": "Why Choose Us",
+    "title": "Why Orienda Is Your Best Choice?",
+    "description": "Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with compassionate, patient-centered care.",
+    "discoverMore": "Discover More",
+    "statSatisfactionLabel": "Patient satisfaction",
+    "statSatisfactionBody": "Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction."
+  },
+  "TourSection": {
+    "title": "Discovers Our facilities",
+    "subtitle": "Choose an option below to quickly find the service you need",
+    "facility1Title": "Visit",
+    "facility1Desc": "Orienda International Hospital is committed to transparent and compassionate healthcare. Our focus on patient satisfaction and well-being, drives our continuous improvement in providing exceptional medical care.",
+    "facility2Title": "Our Medical Facilities",
+    "facility2Desc": "Explore our modern and fully-equipped medical facilities, designed to meet the diverse needs of our patients with comfort and advanced care.",
+    "discoverMore": "Discover More",
+    "hospitalName": "Orienda Chamkarmon Hospital",
+    "startDiscovering": "Start Discovering",
+    "roomResting": "Resting Room",
+    "roomTreatment": "Treatment Room",
+    "roomOperating": "Operating Room",
+    "roomRecovery": "Recovery Room",
+    "roomRecovery": "Recovery Room",
+    "roomConsultation": "Consultation Room"
+  },
+  "SpecialistSection": {
+    "title": "Meet Our Specialist",
+    "subtitle": "A selected team of experts committed to your health",
+    "viewProfile": "View Profile",
+    "seeMore": "See More",
+    "orthopedicSpecialist": "Orthopedic and Trauma Specialist"
+  },
+  "FaqSection": {
+    "title": "FAQ",
+    "subtitle": "Learn more about us, Ask us what you want to know",
+    "qAppointment": "How to make an appointment?",
+    "aAppointment": "Orienda International Hospital is committed to transparent and compassionate healthcare. Our focus on patient satisfaction and well-being, drives our continuous improvement in providing exceptional medical care."
+  },
+  "NewsSection": {
+    "title": "News",
+    "subtitle": "A selected team of experts committed to your health",
+    "featuredTitle": "Cambodian Oknha Association , Orienda International Hospital Signing MoU",
+    "readMore": "Read More",
+    "side1": "ACLEDA Bank Teams Up with GreenTech Solutions to Launch Sustainable Financing Programs for Small Businesses",
+    "side2": "ACLEDA Bank Collaborates with Orienda International Hospital on Providing the International Quality Standards for Health Services",
+    "side3": "ACLEDA Bank Introduces New Mobile Banking Features to Enhance Customer Convenience and Security"
+  },
+  "PartnersSection": {
+    "title": "Partners",
+    "subtitle": "Orienda's International Hospital Partners"
+  },
+  "MapSection": {
+    "hospitalName": "Orienda International Hospital",
+    "branch": "(Chamkarmon Branch)",
+    "address": "66, Street 31cc, 3, Phnom Penh 120605",
+    "hours": "Open 24 hours",
+    "viewMap": "View Map"
+  },
+  "CookieConsent": {
+    "welcome": "Welcome!",
+    "description1": "We use cookies and technological tools to analyse the traffic of this website, enhance your experience and offer you ads tailored to your interests.",
+    "description2": "Maintain control over your data by setting cookies, you can change or withdraw your consent at any time. If you refuse cookies, it does not affect the way our site operates, however you will not be able to take full advantage of all our features. For more information, consult our",
+    "privacyPolicy": "privacy policy",
+    "accept": "I ACCEPT COOKIES",
+    "decline": "I REFUSE COOKIES",
+    "table": {
+      "tracker": "Tracker",
+      "description": "Description",
+      "partner": "Partner",
+      "expiration": "Expiration",
+      "ga": "Google Analytics",
+      "gaDesc": "Google Analytics is a web analytics service offered by Google that tracks and reports website traffic.",
+      "website": "Orienda Website",
+      "websiteDesc": "Required for the website to function and to check the status of cookie consent.",
+      "session": "Hospital Session",
+      "sessionDesc": "Required for the website to function and to help the client maintain a connection to the same instance over a cookie's lifetime.",
+      "no": "No",
+      "own": "Own",
+      "year": "A Year",
+      "week": "A week"
+    }
   }
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import SiteLayout from '@/components/layout/SiteLayout'
 
 const SUBJECTS = ['General Inquiry', 'Medical Services', 'Appointments', 'Billing', 'Feedback', 'Other']
@@ -30,7 +31,7 @@ export default function ContactPage() {
           </div>
           <h1 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none">Message Sent</h1>
           <p className="font-dm-sans text-[18px] text-gold-800 max-w-md">Thank you for reaching out. We&apos;ll get back to you as soon as possible.</p>
-          <a href="/" className="mt-4 inline-flex items-center justify-center px-10 py-4 rounded-full font-dm-sans text-[16px] text-white" style={{ background: '#b89148' }}>Back to Home</a>
+          <Link href="/" className="mt-4 inline-flex items-center justify-center px-10 py-4 rounded-full font-dm-sans text-[16px] text-white" style={{ background: '#b89148' }}>Back to Home</Link>
         </div>
       </div>
     </SiteLayout>

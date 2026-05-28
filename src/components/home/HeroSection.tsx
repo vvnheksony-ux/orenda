@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Search, Star } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 const UNION_IMG = '/images/union-decor.svg'
 
@@ -12,6 +13,7 @@ const TESTIMONIAL = {
 }
 
 export default function HeroSection() {
+  const t = useTranslations('HeroSection')
   const [query, setQuery] = useState('')
   const [response, setResponse] = useState('')
 
@@ -34,41 +36,39 @@ export default function HeroSection() {
         style={{ left: 40, top: 'clamp(120px, 20vh, 250px)', width: 595 }}
       >
         <p className="text-[48px] leading-normal" style={{ fontFamily: 'var(--script-font)' }}>
-          Welcome To
+          {t('welcome')}
         </p>
         <p className="font-cormorant font-bold text-[36px] leading-none">
-          Orienda International Hospital
+          {t('hospital')}
         </p>
       </div>
 
       {/* Rating card */}
       <div
-        className="absolute rounded-[12px] px-[40px] py-[24px] flex flex-col gap-[12px]"
+        className="absolute rounded-[20px] px-[32px] py-[24px] flex flex-col gap-[12px] bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(107,90,69,0.12)] z-10"
         style={{
           left: 40,
-          bottom: 'clamp(80px, 15vh, 150px)',
-          width: 302,
-          background: 'rgba(255,255,255,0.82)',
-          boxShadow: '0px 4px 20px 0px rgba(89,69,34,0.30)',
+          bottom: 40,
+          width: 300,
         }}
       >
-        <div className="flex flex-col gap-[4px]">
-          <div className="flex flex-col gap-[4px]">
-            <p className="font-dm-sans text-[16px] text-gold-900 capitalize leading-normal">
-              {TESTIMONIAL.name}
+        <div className="flex flex-col gap-[6px]">
+          <div className="flex flex-col gap-[2px]">
+            <p className="font-dm-sans text-[16px] font-medium text-[#2c241b] capitalize leading-normal">
+              {t('testimonialName')}
             </p>
-            <p className="font-dm-sans text-[14px] text-gold-900 opacity-80 capitalize leading-normal">
-              {TESTIMONIAL.role}
+            <p className="font-dm-sans text-[14px] text-[#6b5a45] capitalize leading-normal">
+              {t('testimonialRole')}
             </p>
           </div>
           <div className="flex items-center gap-[2px]">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-[20px] h-[20px]" style={{ fill: '#FFCC00', color: '#FFCC00' }} />
+              <Star key={i} className="w-[18px] h-[18px]" style={{ fill: '#FFCC00', color: '#FFCC00', strokeWidth: 0 }} />
             ))}
           </div>
         </div>
-        <p className="font-dm-sans text-[12px] text-gold-700 opacity-80 capitalize leading-normal overflow-hidden text-ellipsis whitespace-nowrap">
-          {TESTIMONIAL.quote}
+        <p className="font-dm-sans text-[12px] text-[#8c7454] capitalize leading-normal overflow-hidden text-ellipsis whitespace-nowrap pt-1">
+          {t('testimonialQuote')}
         </p>
       </div>
 
@@ -77,7 +77,7 @@ export default function HeroSection() {
         onSubmit={(e) => {
           e.preventDefault()
           if (query.trim()) {
-            setResponse(`You asked: "${query}" — I'll connect you with the right information.`)
+            setResponse(t('aiResponse', { query }))
           }
         }}
         className="absolute flex items-center justify-between rounded-[200px] z-[30]"
@@ -97,7 +97,7 @@ export default function HeroSection() {
       >
         <input
           type="text"
-          placeholder="Ask AI"
+          placeholder={t('askAi')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="flex-1 bg-transparent border-none outline-none font-dm-sans text-gold-900 placeholder-gold-800 placeholder:opacity-50 leading-none"
@@ -131,15 +131,22 @@ export default function HeroSection() {
 
       {/* Union + 360° — right-anchored */}
       <div
-        className="absolute pointer-events-none"
-        style={{ right: 80, bottom: 'clamp(40px, 10vh, 100px)', width: 120, height: 90 }}
+        className="absolute pointer-events-none z-20"
+        style={{ right: 40, bottom: 20, width: 120, height: 90 }}
       >
         <div className="absolute" style={{ inset: '0 -3.33% -8.89% -3.33%' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={UNION_IMG} alt="" className="block w-full h-full" />
+          <div 
+            className="w-full h-full bg-[#d3b482]/40 backdrop-blur-[12px]"
+            style={{
+              WebkitMaskImage: `url(${UNION_IMG})`,
+              WebkitMaskSize: '100% 100%',
+              maskImage: `url(${UNION_IMG})`,
+              maskSize: '100% 100%',
+            }}
+          />
         </div>
         <div
-          className="absolute -translate-y-1/2 flex flex-col text-white whitespace-nowrap pointer-events-none"
+          className="absolute -translate-y-1/2 flex flex-col text-white whitespace-nowrap pointer-events-none drop-shadow-md"
           style={{ left: 37, top: 55 }}
         >
           <p className="font-cormorant font-bold leading-none">

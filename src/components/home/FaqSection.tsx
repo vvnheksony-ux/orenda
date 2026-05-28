@@ -5,19 +5,21 @@ import { useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
-const ANS = 'Orienda International Hospital is committed to transparent and compassionate healthcare. Our focus on patient satisfaction and well-being, drives our continuous improvement in providing exceptional medical care.'
-
-const FAQ_ITEMS = [
-  { q: 'How to make an appointment?', a: ANS },
-  { q: 'How to make an appointment?', a: ANS },
-  { q: 'How to make an appointment?', a: ANS },
-  { q: 'How to make an appointment?', a: ANS },
-  { q: 'How to make an appointment?', a: ANS },
-]
+// FAQ_ITEMS moved to component
 
 export default function FaqSection() {
+  const t = useTranslations('FaqSection')
   const [openIdx, setOpenIdx] = useState<number | null>(null)
+
+  const FAQ_ITEMS = [
+    { q: t('qAppointment'), a: t('aAppointment') },
+    { q: t('qAppointment'), a: t('aAppointment') },
+    { q: t('qAppointment'), a: t('aAppointment') },
+    { q: t('qAppointment'), a: t('aAppointment') },
+    { q: t('qAppointment'), a: t('aAppointment') },
+  ]
 
   return (
     <section className="w-full py-[80px] px-[40px] xl:px-[46px] bg-[#fbf7ee] overflow-hidden">
@@ -41,10 +43,10 @@ export default function FaqSection() {
           {/* Text — fixed position, never moves regardless of accordion height */}
           <div className="absolute left-0 top-[260px] z-20 flex flex-col gap-[12px] px-[24px]">
             <h2 className="font-cormorant font-bold text-[56px] text-gold-900 leading-none">
-              FAQ
+              {t('title')}
             </h2>
             <p className="font-dm-sans text-[20px] text-gold-800 leading-none">
-              Learn more about us, Ask us what you want to know
+              {t('subtitle')}
             </p>
           </div>
 

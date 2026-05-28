@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
@@ -53,9 +54,9 @@ export default function FAQPage() {
           <div className="mt-12 bg-white rounded-[20px] p-8 text-center shadow-[0px_4px_16px_rgba(122,95,44,0.08)]">
             <h2 className="font-cormorant font-bold text-[32px] text-gold-900 mb-2">Still have questions?</h2>
             <p className="font-dm-sans text-[16px] text-gold-800 mb-6">Our support team is here to help you.</p>
-            <a href="/contact" className="inline-block px-8 py-3 rounded-full font-dm-sans text-[16px] text-white transition-opacity hover:opacity-90" style={{ background: '#b89148' }}>
+            <Link href="/contact" className="inline-block px-8 py-3 rounded-full font-dm-sans text-[16px] text-white transition-opacity hover:opacity-90" style={{ background: '#b89148' }}>
               Contact Us
-            </a>
+            </Link>
           </div>
         </div>
       </div>
