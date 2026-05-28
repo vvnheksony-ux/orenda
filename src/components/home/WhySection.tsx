@@ -1,48 +1,25 @@
 import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
-const STATS = [
-  {
-    pct: '99%',
-    label: 'Patient satisfaction',
-    body: 'Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.',
-  },
-  {
-    pct: '99%',
-    label: 'Patient satisfaction',
-    body: 'Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.',
-  },
-  {
-    pct: '99%',
-    label: 'Patient satisfaction',
-    body: 'Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.',
-  },
-  {
-    pct: '99%',
-    label: 'Patient satisfaction',
-    body: 'Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.',
-  },
-]
+  // We will move STATS inside the component to use t()
 
 function StatCard({ pct, label, body }: { pct: string; label: string; body: string }) {
   return (
     <div
-      className="bg-white/20 backdrop-blur-md border border-white/40 rounded-[16px] shadow-[0_8px_32px_rgba(0,0,0,0.08)] overflow-hidden"
-      style={{ padding: '28px 32px', width: 330 }}
+      className="bg-[#f7f5f2]/30 backdrop-blur-2xl border border-white/60 rounded-[16px] shadow-[0_8px_32px_rgba(107,90,69,0.12)] overflow-hidden"
+      style={{ padding: '24px 28px', width: 280 }}
     >
-      <div
-        className="flex flex-col gap-1 items-center text-center"
-        style={{ paddingTop: 10, paddingBottom: 10, width: '100%' }}
-      >
-        <div className="flex items-center justify-center gap-4 w-full">
-          <span className="font-cormorant font-bold text-[40px] text-gold-900 leading-none whitespace-nowrap">
+      <div className="flex flex-col items-center text-center w-full">
+        <div className="flex items-baseline justify-center gap-[8px] w-full mb-3">
+          <span className="font-cormorant font-bold text-[36px] text-[#A2834E] leading-none whitespace-nowrap drop-shadow-sm">
             {pct}
           </span>
-          <span className="font-cormorant font-bold text-[22px] text-gold-900 leading-none whitespace-nowrap">
+          <span className="font-cormorant font-medium text-[20px] text-[#2c241b] leading-none whitespace-nowrap">
             {label}
           </span>
         </div>
-        <p className="font-dm-sans text-[15px] text-gold-900/90 leading-[1.4] w-full mt-4">
+        <p className="font-dm-sans text-[12px] text-[#6b5a45] leading-[1.6] w-full">
           {body}
         </p>
       </div>
@@ -51,6 +28,14 @@ function StatCard({ pct, label, body }: { pct: string; label: string; body: stri
 }
 
 export default function WhySection() {
+  const t = useTranslations('WhySection')
+
+  const STATS = Array(4).fill({
+    pct: '99%',
+    label: t('statSatisfactionLabel'),
+    body: t('statSatisfactionBody'),
+  })
+
   return (
     <section className="relative w-full overflow-hidden bg-gold-50 py-[80px] lg:py-[160px]">
       {/* Background Image */}
@@ -66,48 +51,37 @@ export default function WhySection() {
         <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]"></div>
       </div>
 
-      {/* ── Desktop stagger layout (lg+) ─────────────────── */}
-      <div className="relative z-10 hidden lg:block max-w-[1800px] mx-auto" style={{ height: 800 }}>
+      {/* ── Desktop layout (lg+) ─────────────────── */}
+      <div className="relative z-10 hidden lg:flex items-center justify-between max-w-[1400px] mx-auto px-10 xl:px-20" style={{ minHeight: 700 }}>
 
         {/* Left text column */}
-        <div
-          className="absolute flex flex-col justify-between"
-          style={{ left: 80, top: 120, width: 650, height: 400 }}
-        >
-          <div className="flex flex-col gap-8">
-            <div className="flex flex-col gap-4">
-              <p className="font-dm-sans font-medium text-[16px] xl:text-[18px] text-gold-700 uppercase tracking-[0.18em]">
-                Why Choose Us
-              </p>
-              <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-[1.1]">
-                Why Orienda Is Your Best Choice?
-              </h2>
-            </div>
-            <p className="font-dm-sans font-light text-[20px] lg:text-[24px] xl:text-[26px] text-gold-900/80 leading-[1.5]">
-              Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with compassionate, patient-centered care.
+        <div className="flex flex-col gap-8 max-w-[450px] xl:max-w-[500px]">
+          <div className="flex flex-col gap-4">
+            <h2 className="font-cormorant font-semibold text-[36px] xl:text-[44px] text-[#2c241b] leading-[1.2]">
+              Why Orienda Is Your Best Choice?
+            </h2>
+            <p className="font-dm-sans font-normal text-[15px] xl:text-[16px] text-[#6b5a45] leading-[1.6]">
+              {t('description')}
             </p>
           </div>
-          <button className="flex items-center gap-2 bg-[#A2834E] text-white px-8 py-5 rounded-[8px] font-dm-sans text-xl font-medium w-fit hover:bg-gold-800 transition-colors mt-auto">
-            Discover More
-            <ArrowRight size={24} />
+          <button className="flex items-center gap-2 bg-[#d3b482] text-white px-6 py-3 rounded-full font-dm-sans text-[14px] font-medium w-fit hover:bg-[#b09366] transition-colors mt-2 shadow-sm">
+            {t('discoverMore')}
+            <ArrowRight size={18} />
           </button>
         </div>
 
-        {/* Card 1 — top-right */}
-        <div className="absolute" style={{ top: 80, left: 'calc(50% + 220px)' }}>
-          <StatCard {...STATS[0]} />
-        </div>
-        {/* Card 2 — middle */}
-        <div className="absolute" style={{ top: 320, left: 'calc(50% - 100px)' }}>
-          <StatCard {...STATS[1]} />
-        </div>
-        {/* Card 3 — bottom-left */}
-        <div className="absolute" style={{ top: 560, left: 'calc(50% - 420px)' }}>
-          <StatCard {...STATS[2]} />
-        </div>
-        {/* Card 4 — bottom-right */}
-        <div className="absolute" style={{ top: 560, left: 'calc(50% + 220px)' }}>
-          <StatCard {...STATS[3]} />
+        {/* Right cards column (Staggered Grid) */}
+        <div className="flex gap-[20px] xl:gap-[24px] items-start shrink-0">
+          {/* Left Column (shifted down) */}
+          <div className="flex flex-col gap-[20px] xl:gap-[24px] mt-[120px]">
+            <StatCard {...STATS[1]} />
+            <StatCard {...STATS[2]} />
+          </div>
+          {/* Right Column (starts at top) */}
+          <div className="flex flex-col gap-[20px] xl:gap-[24px]">
+            <StatCard {...STATS[0]} />
+            <StatCard {...STATS[3]} />
+          </div>
         </div>
       </div>
 
@@ -115,16 +89,16 @@ export default function WhySection() {
       <div className="relative z-10 lg:hidden px-6 py-16 flex flex-col gap-10">
         <div className="flex flex-col gap-6 relative">
           <p className="font-dm-sans font-medium text-[13px] text-gold-700 uppercase tracking-[0.18em]">
-            Why Choose Us
+            {t('subtitle')}
           </p>
           <h2 className="font-cormorant font-bold text-[40px] text-gold-900 leading-[1.1]">
-            Why Orienda Is Your Best Choice?
+            {t('title')}
           </h2>
           <p className="font-dm-sans font-light text-[18px] text-gold-900/80 leading-[1.5]">
-            Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with compassionate, patient-centered care.
+            {t('description')}
           </p>
           <button className="flex items-center gap-2 bg-[#A2834E] text-white px-6 py-3.5 rounded-[8px] font-dm-sans text-base w-fit hover:bg-gold-800 transition-colors">
-            Discover More
+            {t('discoverMore')}
             <ArrowRight size={20} />
           </button>
         </div>
@@ -132,7 +106,7 @@ export default function WhySection() {
           {STATS.map((stat, i) => (
             <div
               key={i}
-              className="bg-white/20 backdrop-blur-md border border-white/40 rounded-[16px] shadow-[0_4px_24px_rgba(0,0,0,0.05)] p-6"
+              className="bg-[#f7f5f2]/30 backdrop-blur-2xl border border-white/50 rounded-[16px] shadow-[0_4px_24px_rgba(0,0,0,0.05)] p-6"
             >
               <div className="flex items-center gap-3 mb-3">
                 <span className="font-cormorant font-bold text-[32px] text-gold-900 leading-none">

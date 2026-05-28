@@ -1,14 +1,19 @@
 import Image from 'next/image'
 import { ChevronRight, ArrowRight } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
-const SIDE_NEWS = [
-  { title: 'ACLEDA Bank Teams Up with GreenTech Solutions to Launch Sustainable Financing Programs for Small Businesses', image: '/images/news-thumb-1.jpg' },
-  { title: 'ACLEDA Bank Collaborates with Orienda International Hospital on Providing the International Quality Standards for Health Services', image: '/images/news-thumb-1.jpg' },
-  { title: 'ACLEDA Bank Introduces New Mobile Banking Features to Enhance Customer Convenience and Security', image: '/images/news-thumb-1.jpg' },
-  { title: 'ACLEDA Bank Introduces New Mobile Banking Features to Enhance Customer Convenience and Security', image: '/images/news-thumb-1.jpg' },
-]
+// SIDE_NEWS moved to component
 
 export default function NewsSection() {
+  const t = useTranslations('NewsSection')
+
+  const SIDE_NEWS = [
+    { title: t('side1'), image: '/images/news-thumb-1.jpg' },
+    { title: t('side2'), image: '/images/news-thumb-1.jpg' },
+    { title: t('side3'), image: '/images/news-thumb-1.jpg' },
+    { title: t('side3'), image: '/images/news-thumb-1.jpg' },
+  ]
+
   return (
     <section className="w-full py-[120px] lg:py-[160px] px-[40px] xl:px-[80px]">
       <div className="max-w-[1800px] mx-auto flex flex-col gap-[60px]">
@@ -16,10 +21,10 @@ export default function NewsSection() {
         {/* Heading */}
         <div className="flex flex-col gap-[20px] text-center w-full">
           <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none w-full">
-            News
+            {t('title')}
           </h2>
           <p className="font-dm-sans text-[20px] lg:text-[24px] xl:text-[26px] text-gold-800 leading-none w-full">
-            A selected team of experts committed to your health
+            {t('subtitle')}
           </p>
         </div>
 
@@ -40,10 +45,10 @@ export default function NewsSection() {
             {/* Frosted caption */}
             <div className="absolute bottom-0 left-0 w-full backdrop-blur-[6.45px] bg-[rgba(255,255,255,0.9)] p-[24px] flex flex-col gap-[12px] items-end">
               <p className="font-dm-sans font-medium text-[16px] text-black leading-[1.5] w-full">
-                Cambodian Oknha Association , Orienda International Hospital Signing MoU
+                {t('featuredTitle')}
               </p>
               <button className="flex items-center gap-[8px] border border-gold-500 rounded-[12px] h-[32px] px-[12px] py-[8px] shrink-0 hover:bg-gold-50 transition-colors">
-                <span className="font-dm-sans text-[12px] text-gold-800">Read More</span>
+                <span className="font-dm-sans text-[12px] text-gold-800">{t('readMore')}</span>
                 <ArrowRight size={16} className="text-gold-800" />
               </button>
             </div>

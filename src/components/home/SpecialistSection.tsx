@@ -4,20 +4,9 @@ import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
 import { animate, motion, useMotionValue } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
-const DOCTORS = [
-  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-1.jpg' },
-  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-2.jpg' },
-  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-3.jpg' },
-  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-4.jpg' },
-  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-2.jpg' },
-  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-3.jpg' },
-  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-1.jpg' },
-  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-4.jpg' },
-  { name: 'DR. Eudaldo Gonzalez Martines', specialty: 'Orthopedic and Trauma Specialist', image: '/images/doctor-2.jpg' },
-]
-
-const n = DOCTORS.length
+const n = 9
 
 function wrapIdx(i: number) { return ((i % n) + n) % n }
 
@@ -54,12 +43,13 @@ function getTargetX(diff: number, gap: number = 32) {
   return sign * 2000 // far off-screen
 }
 
-function DocCard({ docIndex, activeIdx, setIdx }: {
+function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt }: {
+  doc: { name: string, specialty: string, image: string }
   docIndex: number
   activeIdx: number
   setIdx: (i: number) => void
+  viewProfileTxt: string
 }) {
-  const doc = DOCTORS[docIndex]
   const diff = wrappedDiff(docIndex - activeIdx)
   const s = sizeByDiff(diff)
 
@@ -133,7 +123,7 @@ function DocCard({ docIndex, activeIdx, setIdx }: {
           style={{ width: s.btnW, height: s.btnH, borderRadius: 12 }}
         >
           <p className="font-dm-sans text-gold-50 text-center" style={{ fontSize: s.btnFs }}>
-            View Profile
+            {viewProfileTxt}
           </p>
         </div>
       </div>
@@ -147,7 +137,20 @@ function DocCard({ docIndex, activeIdx, setIdx }: {
 }
 
 export default function SpecialistSection() {
+  const t = useTranslations('SpecialistSection')
   const [activeIdx, setActiveIdx] = useState(2)
+
+  const DOCTORS = [
+    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-1.jpg' },
+    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-2.jpg' },
+    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-3.jpg' },
+    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-4.jpg' },
+    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-2.jpg' },
+    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-3.jpg' },
+    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-1.jpg' },
+    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-4.jpg' },
+    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-2.jpg' },
+  ]
 
   const prev = () => setActiveIdx(i => wrapIdx(i - 1))
   const next = () => setActiveIdx(i => wrapIdx(i + 1))
@@ -158,10 +161,10 @@ export default function SpecialistSection() {
 
         <div className="flex flex-col gap-[20px] items-start w-full text-center">
           <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none w-full">
-            Meet Our Specialist
+            {t('title')}
           </h2>
           <p className="font-dm-sans text-[20px] lg:text-[24px] xl:text-[26px] text-gold-800 leading-none w-full">
-            A selected team of experts committed to your health
+            {t('subtitle')}
           </p>
         </div>
 
@@ -176,8 +179,8 @@ export default function SpecialistSection() {
             <ChevronLeft className="text-gold-700 group-hover:text-gold-900 transition-colors mr-[2px]" size={28} strokeWidth={2} />
           </button>
 
-          {DOCTORS.map((_, i) => (
-            <DocCard key={i} docIndex={i} activeIdx={activeIdx} setIdx={setActiveIdx} />
+          {DOCTORS.map((doc, i) => (
+            <DocCard key={i} doc={doc} docIndex={i} activeIdx={activeIdx} setIdx={setActiveIdx} viewProfileTxt={t('viewProfile')} />
           ))}
 
           {/* Next arrow */}
@@ -192,7 +195,7 @@ export default function SpecialistSection() {
         </div>
 
         <button className="px-[40px] py-[14px] rounded-full border border-gold-500 text-gold-900 font-dm-sans text-[18px] hover:bg-gold-200/30 transition-colors cursor-pointer">
-          See More
+          {t('seeMore')}
         </button>
 
       </div>

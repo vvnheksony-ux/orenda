@@ -1,4 +1,5 @@
 import SiteLayout from '@/components/layout/SiteLayout'
+import Link from 'next/link'
 import { ClipboardCheck, Stethoscope, BedDouble, FileText } from 'lucide-react'
 
 const STEPS = [
@@ -41,9 +42,9 @@ export default function ExpectPage() {
           </div>
 
           <div className="mt-16 text-center">
-             <a href="/appointments" className="inline-block px-10 py-4 rounded-full font-dm-sans text-[18px] font-medium text-white transition-opacity hover:opacity-90" style={{ background: '#b89148' }}>
+             <Link href="/appointments" className="inline-block px-10 py-4 rounded-full font-dm-sans text-[18px] font-medium text-white transition-opacity hover:opacity-90" style={{ background: '#b89148' }}>
               Book an Appointment
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,34 +1,36 @@
 import Image from 'next/image'
 import { ChevronRight } from 'lucide-react'
-
-const CLINICS = [
-  { name: 'Obstetric',      image: '/images/specialty-obstetric.png',  circle: true  },
-  { name: 'Gynecology',     image: '/images/specialty-gynecology.png', circle: true  },
-  { name: 'Imaging Center', image: '/images/specialty-imaging.png',    circle: false },
-  { name: 'Neuro Surgery',  image: '/images/specialty-neuro.png',      circle: false },
-  { name: 'Pediatric',      image: '/images/specialty-pediatric.png',  circle: false },
-  { name: 'Cardiology',     image: '/images/specialty-neuro.png',      circle: false },
-  { name: 'Orthopedics',    image: '/images/specialty-neuro.png',      circle: false },
-]
+import { useTranslations } from 'next-intl'
 
 export default function ClinicSection() {
+  const t = useTranslations('ClinicSection')
+
+  const CLINICS = [
+    { key: 'obstetric',   name: t('obstetric'),   image: '/images/specialty-obstetric.png',  circle: true  },
+    { key: 'gynecology',  name: t('gynecology'),  image: '/images/specialty-gynecology.png', circle: true  },
+    { key: 'imaging',     name: t('imaging'),     image: '/images/specialty-imaging.png',    circle: false },
+    { key: 'neuro',       name: t('neuro'),       image: '/images/specialty-neuro.png',      circle: false },
+    { key: 'pediatric',   name: t('pediatric'),   image: '/images/specialty-pediatric.png',  circle: false },
+    { key: 'cardiology',  name: t('cardiology'),  image: '/images/specialty-neuro.png',      circle: false },
+    { key: 'orthopedics', name: t('orthopedics'), image: '/images/specialty-neuro.png',      circle: false },
+  ]
   return (
     <section className="w-full px-[40px] xl:px-[46px] pt-[120px] pb-[80px]">
       <div className="flex flex-col gap-[40px] items-center">
 
         <div className="flex flex-col gap-[24px] items-center">
           <h2 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none text-center whitespace-nowrap">
-            Clinic &amp; Centered
+            {t('title')}
           </h2>
           <p className="font-dm-sans text-[20px] text-gold-800 text-center">
-            Choose an option below to quickly find the service you need
+            {t('subtitle')}
           </p>
         </div>
 
         <div className="grid grid-cols-4 gap-[20px] max-w-[1100px] mx-auto w-full">
           {CLINICS.map((clinic) => (
             <button
-              key={clinic.name}
+              key={clinic.key}
               className="aspect-square flex flex-col gap-[20px] items-center justify-center rounded-[12px] overflow-hidden cursor-pointer hover:opacity-90 transition-opacity w-full"
               style={{
                 background: 'rgba(245,236,212,0.20)',
@@ -67,7 +69,7 @@ export default function ClinicSection() {
             }}
           >
             <p className="font-cormorant font-bold text-[24px] text-gold-50 leading-none whitespace-nowrap">
-              See More
+              {t('seeMore')}
             </p>
             <ChevronRight className="w-[24px] h-[24px] text-gold-50" strokeWidth={1.5} />
           </button>

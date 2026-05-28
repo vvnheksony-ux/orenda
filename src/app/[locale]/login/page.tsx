@@ -6,8 +6,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 
+const supabase = createClient()
+
 function LoginForm() {
-  const supabase = createClient()
   const router = useRouter()
   const params = useSearchParams()
   const registered = params.get('registered') === '1'

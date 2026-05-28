@@ -2,29 +2,42 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { usePathname, useRouter } from '@/i18n/routing'
+import { useState, useEffect, useRef } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, Building2, Menu, X, Phone, User, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
 
 const NAV_ITEMS = [
-  { label: 'About Orienda', href: '/about' },
-  { label: 'Doctors', href: '/doctors' },
-  { label: 'Departments', href: '/departments' },
-  { label: 'News', href: '/news' },
-  { label: 'Contact', href: '/contact' },
-  { label: 'Emergency', href: '/emergency' },
+  { key: 'about', href: '/about' },
+  { key: 'doctors', href: '/doctors' },
+  { key: 'departments', href: '/departments' },
+  { key: 'news', href: '/news' },
+  { key: 'contact', href: '/contact' },
+  { key: 'emergency', href: '/emergency' },
 ]
 
 export default function Navbar() {
+  const t = useTranslations('Navbar')
+  const locale = useLocale()
   const pathname = usePathname()
   const router = useRouter()
   const { user, signOut } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [flagError, setFlagError] = useState(false)
+  const [langOpen, setLangOpen] = useState(false)
+  const [phoneOpen, setPhoneOpen] = useState(false)
+  const langRef = useRef<HTMLDivElement>(null)
+  const phoneRef = useRef<HTMLDivElement>(null)
+
+  const LANGUAGES = [
+    { code: 'en', label: 'English', flag: '/images/en-flag.svg', short: 'EN' },
+    { code: 'km', label: 'ខ្មែរ', flag: '/images/kh-flag.svg', short: 'KH' },
+    { code: 'zh', label: '中文', flag: '/images/zh-flag.svg', short: 'ZH' },
+  ]
+  const currentLang = LANGUAGES.find(l => l.code === locale) || LANGUAGES[0]
 
   const handleSignOut = async () => {
     await signOut()
@@ -34,7 +47,21 @@ export default function Navbar() {
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(event.target as Node)) {
+        setLangOpen(false)
+      }
+      if (phoneRef.current && !phoneRef.current.contains(event.target as Node)) {
+        setPhoneOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
   }, [])
 
   return (
@@ -47,109 +74,159 @@ export default function Navbar() {
       )}
     >
       {/* ── Desktop ── */}
-      <div className="hidden xl:block pointer-events-auto transition-all duration-500 py-5 xl:py-8 2xl:py-10">
-        <div className="grid grid-cols-[auto_1fr_auto] items-center px-6 xl:px-8 2xl:px-[46px]">
+      <div className="hidden xl:block pointer-events-auto transition-all duration-500">
+        <div className="flex items-start justify-between w-full pl-6 xl:pl-8 2xl:pl-[46px]">
 
-          {/* Logo */}
+          {/* 1. Logo */}
           <Link
             href="/"
-            className="relative shrink-0 rounded-full overflow-hidden transition-all duration-500 w-[78px] h-[78px] xl:w-[100px] xl:h-[100px] 2xl:w-[112px] 2xl:h-[112px]"
+            className="relative shrink-0 rounded-full overflow-hidden transition-all duration-500 w-[64px] h-[64px] xl:w-[80px] xl:h-[80px] 2xl:w-[96px] 2xl:h-[96px] mt-5 xl:mt-8 2xl:mt-10 mb-5 xl:mb-8 2xl:mb-10"
           >
             <Image
               src="/images/logo-emblem.png"
               alt="Orienda International Hospital"
               fill
-              sizes="(max-width: 1535px) 86px, 100px"
+              sizes="(max-width: 1535px) 80px, 96px"
               className="object-cover"
               priority
             />
           </Link>
+            
+          {/* 2. Center Nav Group */}
+          <div className="flex items-center gap-[12px] xl:gap-[16px] 2xl:gap-[20px] mt-5 xl:mt-8 2xl:mt-10 mb-5 xl:mb-8 2xl:mb-10 ml-[20px] xl:ml-[40px] 2xl:ml-[60px]">
 
-          {/* Nav — centered */}
-          <div className="flex justify-center min-w-0 px-2 xl:px-4 2xl:px-10">
-            <nav
+            {/* Main Nav Pill */}
+            <div
               className={cn(
-                'inline-flex items-center p-[4px] xl:p-[6px] rounded-[18px] xl:rounded-[22px] 2xl:rounded-[24px]',
-                'bg-white/60 backdrop-blur-2xl shadow-[0_8px_32px_rgba(89,69,34,0.12)] border border-white/40',
-                'transition-all duration-300',
-                scrolled ? 'bg-white/70' : 'bg-white/50'
+                'inline-flex items-center px-[28px] xl:px-[40px] py-[24px] xl:py-[32px] rounded-[24px] xl:rounded-[32px]',
+                'bg-[#f7f5f2]/80 backdrop-blur-xl shadow-sm border border-white/60',
+                'transition-all duration-300'
               )}
             >
-              {NAV_ITEMS.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center justify-center rounded-[100px] leading-none whitespace-nowrap transition-all duration-200',
-                      'gap-[8px] px-[14px] py-[15px]',
-                      'xl:gap-[12px] xl:px-[22px] xl:py-[22px]',
-                      '2xl:gap-[14px] 2xl:px-[26px] 2xl:py-[28px]',
-                      'text-[13px] xl:text-[15px] 2xl:text-[17px] font-inter tracking-[0.01em]',
-                      isActive
-                        ? 'bg-white/70 text-gold-900 font-medium shadow-sm'
-                        : 'text-neutral-700 hover:text-gold-900 hover:bg-white/40'
-                    )}
+              <nav className="flex items-center gap-[24px] xl:gap-[32px] 2xl:gap-[48px]">
+                {NAV_ITEMS.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      className={cn(
+                        'flex items-center justify-center leading-none whitespace-nowrap transition-all duration-200',
+                        'gap-[8px]',
+                        'text-[14px] xl:text-[16px] 2xl:text-[18px] font-dm-sans font-medium',
+                        isActive
+                          ? 'text-[#6b5a45] opacity-100 drop-shadow-sm'
+                          : 'text-[#6b5a45] opacity-80 hover:opacity-100 hover:drop-shadow-sm'
+                      )}
+                    >
+                      {t(item.key)}
+                      <ChevronDown className="w-[14px] h-[14px] xl:w-[16px] xl:h-[16px] 2xl:w-[18px] 2xl:h-[18px] shrink-0 text-[#6b5a45]" strokeWidth={2} />
+                    </Link>
+                  )
+                })}
+              </nav>
+            </div>
+
+            {/* CH Dropdown */}
+            <div className="relative z-50">
+              <button className="flex items-center gap-[6px] xl:gap-[8px] px-[16px] xl:px-[20px] 2xl:px-[24px] py-[12px] xl:py-[16px] 2xl:py-[20px] rounded-[20px] xl:rounded-[24px] bg-[#f7f5f2]/80 backdrop-blur-xl hover:bg-[#f7f5f2]/90 transition-all duration-200 border border-white/60 shadow-sm shrink-0 text-[#6b5a45]">
+                <Building2 className="w-[18px] h-[18px] xl:w-[20px] xl:h-[20px] 2xl:w-[22px] 2xl:h-[22px]" strokeWidth={1.5} />
+                <span className="font-dm-sans text-[14px] xl:text-[15px] 2xl:text-[16px] font-medium leading-none">{t('ch')}</span>
+                <ChevronDown className="w-[14px] h-[14px] xl:w-[16px] xl:h-[16px] 2xl:w-[18px] 2xl:h-[18px] shrink-0 text-[#6b5a45]" strokeWidth={2} />
+              </button>
+            </div>
+              
+            {/* Language Selector */}
+            <div className="relative shrink-0 ml-[4px] xl:ml-[8px]" ref={langRef}>
+              <button 
+                onClick={() => setLangOpen(!langOpen)}
+                className="overflow-hidden hover:opacity-90 transition-all duration-200 shrink-0 rounded-full w-[40px] h-[40px] xl:w-[44px] xl:h-[44px] 2xl:w-[48px] 2xl:h-[48px] border-[2px] xl:border-[3px] border-white shadow-sm" aria-label="Switch language">
+                <div className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-white">
+                  <Image src={currentLang.flag} alt={currentLang.label} fill sizes="40px" className="object-cover" />
+                </div>
+              </button>
+
+              <AnimatePresence>
+                {langOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-2xl shadow-[0_8px_32px_rgba(122,95,44,0.15)] border border-gold-100 overflow-hidden min-w-[140px] flex flex-col py-2 z-50"
                   >
-                    {item.label}
-                    <ChevronDown className="w-[12px] h-[12px] xl:w-[14px] xl:h-[14px] 2xl:w-[16px] 2xl:h-[16px] shrink-0 text-gold-400" strokeWidth={2} />
-                  </Link>
-                )
-              })}
-            </nav>
+                    {LANGUAGES.map(l => (
+                      <button
+                        key={l.code}
+                        onClick={() => {
+                          setLangOpen(false)
+                          router.replace(pathname, { locale: l.code })
+                        }}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2 hover:bg-gold-50 transition-colors w-full text-left",
+                          locale === l.code ? "bg-gold-50/50" : ""
+                        )}
+                      >
+                        <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0 shadow-sm border border-black/5">
+                          <Image src={l.flag} alt={l.label} fill className="object-cover" />
+                        </div>
+                        <span className={cn(
+                          "font-dm-sans text-[14px] 2xl:text-[15px]",
+                          locale === l.code ? "font-semibold text-gold-900" : "font-medium text-gold-700"
+                        )}>
+                          {l.label}
+                        </span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
-          {/* Right group */}
-          <div className="flex items-center gap-[10px] xl:gap-[14px] 2xl:gap-[20px] shrink-0">
+          {/* 3. Right Actions */}
+          <div className="flex items-start shrink-0 ml-auto">
 
-            <button className="flex items-center gap-[6px] xl:gap-[10px] 2xl:gap-[14px] px-[12px] xl:px-[16px] 2xl:px-[20px] py-[8px] xl:py-[10px] 2xl:py-[14px] rounded-[12px] xl:rounded-[16px] 2xl:rounded-[20px] hover:opacity-100 transition-all duration-200 bg-white/50 backdrop-blur-sm border border-white/30 shadow-sm">
-              <Building2 className="w-[16px] h-[16px] xl:w-[20px] xl:h-[20px] 2xl:w-[24px] 2xl:h-[24px] text-gold-700" strokeWidth={1.5} />
-              <span className="font-dm-sans text-[13px] xl:text-[15px] 2xl:text-[17px] font-medium text-gold-800 leading-none">CH</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="w-[16px] h-[16px] xl:w-[18px] xl:h-[18px] 2xl:w-[22px] 2xl:h-[22px] text-[#9EA2AE]"><path d="M8 10l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </button>
-
-            <button className="overflow-hidden hover:opacity-100 transition-all duration-200 shrink-0 shadow-[0_0_24px_rgba(122,95,44,0.15)] rounded-full ring-2 ring-white/50 w-[36px] h-[36px] xl:w-[46px] xl:h-[46px] 2xl:w-[56px] 2xl:h-[56px]" aria-label="Switch language">
-              <div className="relative w-full h-full bg-gold-500 rounded-full overflow-hidden flex items-center justify-center">
-                {flagError ? <span className="text-[10px] xl:text-[12px] 2xl:text-[14px] font-bold text-white">KH</span> : (
-                  <Image src="/images/kh-flag.svg" alt="ភាសាខ្មែរ" fill sizes="(max-width: 1535px) 46px, 56px" className="object-cover" onError={() => setFlagError(true)} />
-                )}
-              </div>
-            </button>
-
-            {/* Auth: show user menu if logged in, else login + book */}
-            {user ? (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-[6px] xl:gap-[10px] px-[12px] xl:px-[16px] 2xl:px-[20px] py-[8px] xl:py-[10px] 2xl:py-[14px] rounded-[12px] xl:rounded-[16px] 2xl:rounded-[20px] bg-white/50 backdrop-blur-sm border border-white/30 shadow-sm">
-                  <User className="w-[16px] h-[16px] xl:w-[20px] xl:h-[20px] 2xl:w-[24px] 2xl:h-[24px] text-gold-700" strokeWidth={1.5} />
-                  <span className="font-dm-sans text-[13px] xl:text-[15px] 2xl:text-[17px] font-medium text-gold-800 leading-none max-w-[1200px] truncate">
-                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                  </span>
+            {/* Right Pill: Book Appointment & Phone */}
+            <div className="relative shrink-0" ref={phoneRef}>
+              <div className={cn(
+                "flex items-center gap-[8px] xl:gap-[12px]",
+                "pt-[28px] xl:pt-[44px] 2xl:pt-[52px]",
+                "pr-[32px] xl:pr-[44px] 2xl:pr-[58px]",
+                "pb-[16px] xl:pb-[24px] 2xl:pb-[32px]",
+                "pl-[24px] xl:pl-[32px] 2xl:pl-[40px]",
+                "bg-[#f7f5f2] rounded-bl-[48px] shadow-sm border-b-[1.5px] border-l-[1.5px] border-white"
+              )}>
+                  <Link href="/appointments"
+                    className="flex items-center justify-center px-[20px] xl:px-[28px] 2xl:px-[36px] rounded-[24px] xl:rounded-[28px] 2xl:rounded-[32px] hover:opacity-90 transition-all duration-200 h-[48px] xl:h-[56px] 2xl:h-[64px] bg-[#CEB17D]">
+                    <span className="font-dm-sans text-[13px] xl:text-[15px] 2xl:text-[16px] font-medium text-white leading-none whitespace-nowrap">{t('bookAppointment')}</span>
+                  </Link>
+                  <button
+                    onClick={() => setPhoneOpen(!phoneOpen)}
+                    className="flex items-center justify-center w-[48px] h-[48px] xl:w-[56px] xl:h-[56px] 2xl:w-[64px] 2xl:h-[64px] rounded-[24px] xl:rounded-[28px] 2xl:rounded-[32px] bg-[#CEB17D] hover:opacity-90 transition-all duration-200">
+                    <Phone className="w-[18px] h-[18px] xl:w-[20px] xl:h-[20px] 2xl:w-[24px] 2xl:h-[24px] text-white" strokeWidth={2} />
+                  </button>
                 </div>
-                <button onClick={handleSignOut}
-                  className="flex items-center gap-[6px] xl:gap-[10px] px-[12px] xl:px-[16px] 2xl:px-[20px] py-[8px] xl:py-[10px] 2xl:py-[14px] rounded-[12px] xl:rounded-[16px] 2xl:rounded-[20px] bg-white/50 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/70 transition-colors">
-                  <LogOut className="w-[16px] h-[16px] xl:w-[20px] xl:h-[20px] 2xl:w-[24px] 2xl:h-[24px] text-gold-700" strokeWidth={1.5} />
-                  <span className="font-dm-sans text-[13px] xl:text-[15px] 2xl:text-[17px] font-medium text-gold-800 leading-none">Sign Out</span>
-                </button>
-              </div>
-            ) : (
-              <Link href="/login"
-                className="flex items-center gap-[6px] xl:gap-[10px] 2xl:gap-[14px] px-[12px] xl:px-[16px] 2xl:px-[20px] py-[8px] xl:py-[10px] 2xl:py-[14px] rounded-[12px] xl:rounded-[16px] 2xl:rounded-[20px] bg-white/50 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/70 transition-colors">
-                <User className="w-[16px] h-[16px] xl:w-[20px] xl:h-[20px] 2xl:w-[24px] 2xl:h-[24px] text-gold-700" strokeWidth={1.5} />
-                <span className="font-dm-sans text-[13px] xl:text-[15px] 2xl:text-[17px] font-medium text-gold-800 leading-none">Sign In</span>
-              </Link>
-            )}
 
-            {/* Book Appointment */}
-            <Link href="/appointments"
-              className="flex items-center gap-[8px] xl:gap-[12px] 2xl:gap-[16px] px-[16px] xl:px-[28px] 2xl:px-[34px] rounded-[14px] xl:rounded-[18px] 2xl:rounded-[20px] hover:opacity-90 transition-all duration-200 shrink-0 h-[40px] xl:h-[50px] 2xl:h-[62px]"
-              style={{ background: 'linear-gradient(135deg, rgba(184,145,72,0.85), rgba(160,126,60,0.90))', boxShadow: '0 4px 24px rgba(184,145,72,0.30), inset 0 1px 0 rgba(255,255,255,0.15)' }}>
-              <span className="font-dm-sans text-[13px] xl:text-[15px] 2xl:text-[18px] font-medium text-white leading-none whitespace-nowrap">Book Appointment</span>
-              <Phone className="w-[16px] h-[16px] xl:w-[20px] xl:h-[20px] 2xl:w-[24px] 2xl:h-[24px] text-white" strokeWidth={2} />
-            </Link>
+                <AnimatePresence>
+                  {phoneOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-[calc(100%+12px)] xl:top-[calc(100%+16px)] left-[32px] xl:left-[44px] 2xl:left-[56px] right-[-6px] xl:right-[-8px] 2xl:right-[-46px] bg-[#e4dfd6] rounded-[24px] shadow-[0_12px_40px_rgba(122,95,44,0.2)] border-[2px] border-white overflow-hidden flex flex-col z-50"
+                    >
+                      <a href="tel:098888999" className="bg-[#C5A566] text-white text-center py-[16px] xl:py-[20px] font-dm-sans font-medium text-[14px] xl:text-[16px] hover:bg-[#b89a64] transition-colors">(Telegram) 098 888 999</a>
+                      <a href="tel:088999666" className="border-b border-white text-[#5a4b39] text-center py-[16px] xl:py-[20px] font-dm-sans font-medium text-[14px] xl:text-[16px] hover:bg-white/50 transition-colors">(Telegram) 088 999 666</a>
+                      <a href="tel:077888555" className="text-[#5a4b39] text-center py-[16px] xl:py-[20px] font-dm-sans font-medium text-[14px] xl:text-[16px] hover:bg-white/50 transition-colors">(Telegram) 077 888 555</a>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* ── Mobile ── */}
       <div className="xl:hidden flex items-center justify-between px-4 py-4 bg-white/80 backdrop-blur-lg pointer-events-auto">
@@ -172,34 +249,23 @@ export default function Navbar() {
             <nav className="flex flex-col gap-4">
               {NAV_ITEMS.map((item) => (
                 <Link
-                  key={item.label}
+                  key={item.key}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
                   className="text-lg font-dm-sans text-gold-900 border-b border-gold-50 pb-2"
                 >
-                  {item.label}
+                  {t(item.key)}
                 </Link>
               ))}
             </nav>
             <div className="mt-8 flex flex-col gap-4">
               <Link
                 href="/appointments"
-                className="flex items-center justify-center gap-2 bg-gold-500 text-white py-4 rounded-xl font-bold"
+                className="flex items-center justify-center gap-2 bg-[#d3b482] text-white py-4 rounded-xl font-bold"
               >
                 <Phone size={20} />
-                Book Appointment
+                {t('bookAppointment')}
               </Link>
-              {user ? (
-                 <button onClick={handleSignOut} className="flex items-center justify-center gap-2 border border-gold-500 text-gold-500 py-4 rounded-xl font-bold">
-                   <LogOut className="w-4 h-4 text-gold-700" strokeWidth={1.5} />
-                   Sign Out
-                 </button>
-              ) : (
-                <Link href="/login" className="flex items-center justify-center gap-2 border border-gold-500 text-gold-500 py-4 rounded-xl font-bold">
-                   <User className="w-4 h-4 text-gold-700" strokeWidth={1.5} />
-                  Sign In
-                </Link>
-              )}
             </div>
           </motion.div>
         )}

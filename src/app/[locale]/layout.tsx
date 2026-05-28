@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import { cormorantGaramond, dmSans, inter, greatVibes } from '@/lib/fonts'
+import { cormorantGaramond, dmSans, inter, greatVibes, khmerSerif, khmerSans, chineseSerif, chineseSans } from '@/lib/fonts'
 import { AuthProvider } from '@/lib/auth-context'
 import '../globals.css'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
+import CookieConsent from '@/components/shared/CookieConsent'
 
 export const metadata: Metadata = {
   title: 'Orienda International Hospital',
@@ -23,11 +24,14 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${cormorantGaramond.variable} ${dmSans.variable} ${inter.variable} ${greatVibes.variable} h-full antialiased`}
+      className={`${cormorantGaramond.variable} ${dmSans.variable} ${inter.variable} ${greatVibes.variable} ${khmerSerif.variable} ${khmerSans.variable} ${chineseSerif.variable} ${chineseSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            {children}
+            <CookieConsent />
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

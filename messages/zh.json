@@ -1,5 +1,152 @@
 {
   "Index": {
     "title": "欢迎来到欧瑞达医院"
+  },
+  "Navbar": {
+    "about": "关于欧瑞达",
+    "doctors": "医生",
+    "departments": "科室",
+    "news": "新闻",
+    "contact": "联系我们",
+    "emergency": "急诊",
+    "ch": "CH",
+    "signIn": "登录",
+    "signOut": "登出",
+    "bookAppointment": "预约挂号"
+  },
+  "Footer": {
+    "aboutUs": "关于我们",
+    "ourMission": "我们的使命和愿景",
+    "news": "新闻",
+    "jobOpportunity": "工作机会",
+    "packagesPromotions": "套餐及促销",
+    "hotPromotion": "热门促销",
+    "packages": "套餐",
+    "actions": "行动",
+    "bookAppointment": "预约挂号",
+    "sendInquiry": "发送咨询",
+    "ourDoctors": "我们的医生",
+    "viewClinics": "查看我们的诊所和中心",
+    "contactUs": "联系我们",
+    "emergency": "急诊",
+    "address": "地址",
+    "open": "开放时间",
+    "hours24": "24小时",
+    "socialMedia": "社交媒体"
+  },
+  "HeroSection": {
+    "welcome": "欢迎来到",
+    "hospital": "欧瑞达国际医院",
+    "askAi": "询问AI",
+    "aiResponse": "您问了：“{query}” — 我将为您连接正确的信息。",
+    "testimonialName": "Dr. Marcus Lee",
+    "testimonialRole": "儿科专家",
+    "testimonialQuote": "Timmy 表现出令人印象深刻的适应能力..."
+  },
+  "ClinicSection": {
+    "title": "诊所与中心",
+    "subtitle": "选择下方选项以快速找到您需要的服务",
+    "seeMore": "查看更多",
+    "obstetric": "产科",
+    "gynecology": "妇科",
+    "imaging": "影像中心",
+    "neuro": "神经外科",
+    "pediatric": "儿科",
+    "cardiology": "心脏科",
+    "orthopedics": "骨科"
+  },
+  "CentersSection": {
+    "title": "卓越中心",
+    "subtitle": "选择下方选项以快速找到您需要的服务",
+    "success": "成功率",
+    "surgeries": "手术次数",
+    "satisfactions": "满意度",
+    "obstetric": "产科",
+    "gynecology": "妇科",
+    "neuro": "神经外科",
+    "imaging": "影像中心",
+    "pediatric": "儿科"
+  },
+  "WhySection": {
+    "subtitle": "为什么选择我们",
+    "title": "为什么欧瑞达是您的最佳选择？",
+    "description": "欧瑞达国际医院是柬埔寨医疗保健的首选，将屡获殊荣的国际标准与富有同情心的以患者为中心的护理相结合。",
+    "discoverMore": "了解更多",
+    "statSatisfactionLabel": "患者满意度",
+    "statSatisfactionBody": "基于跨科室的2004份患者反馈调查。患者强调沟通清晰、员工友好和现代化设施是满意的关键原因。"
+  },
+  "TourSection": {
+    "title": "探索我们的设施",
+    "subtitle": "选择下方选项以快速找到您需要的服务",
+    "facility1Title": "参观",
+    "facility1Desc": "欧瑞达国际医院致力于提供透明和富有同情心的医疗保健。",
+    "facility2Title": "我们的医疗设施",
+    "facility2Desc": "探索我们现代化且设备齐全的医疗设施，旨在满足患者的多样化需求。",
+    "discoverMore": "了解更多",
+    "hospitalName": "欧瑞达医院 (Chamkarmon)",
+    "startDiscovering": "开始探索",
+    "roomResting": "休息室",
+    "roomTreatment": "治疗室",
+    "roomOperating": "手术室",
+    "roomRecovery": "恢复室",
+    "roomRecovery": "恢复室",
+    "roomConsultation": "咨询室"
+  },
+  "SpecialistSection": {
+    "title": "认识我们的专家",
+    "subtitle": "致力于您健康的精选专家团队",
+    "viewProfile": "查看资料",
+    "seeMore": "查看更多",
+    "orthopedicSpecialist": "骨科和创伤专家"
+  },
+  "FaqSection": {
+    "title": "常见问题",
+    "subtitle": "了解更多关于我们的信息，问你想知道的",
+    "qAppointment": "如何预约？",
+    "aAppointment": "欧瑞达国际医院致力于提供透明和富有同情心的医疗保健。我们专注于患者的满意度和福祉，推动我们不断改进提供卓越医疗护理。"
+  },
+  "NewsSection": {
+    "title": "新闻",
+    "subtitle": "致力于您健康的精选专家团队",
+    "featuredTitle": "柬埔寨勋爵协会与欧瑞达国际医院签署谅解备忘录",
+    "readMore": "阅读更多",
+    "side1": "ACLEDA 银行与 GreenTech Solutions 合作推出针对小企业的可持续融资项目",
+    "side2": "ACLEDA 银行与欧瑞达国际医院合作，提供符合国际质量标准的健康服务",
+    "side3": "ACLEDA 银行推出新移动银行功能，增强客户便利和安全性"
+  },
+  "PartnersSection": {
+    "title": "合作伙伴",
+    "subtitle": "欧瑞达国际医院的合作伙伴"
+  },
+  "MapSection": {
+    "hospitalName": "欧瑞达国际医院",
+    "branch": "(Chamkarmon 分院)",
+    "address": "66, Street 31cc, 3, Phnom Penh 120605",
+    "hours": "24 小时营业",
+    "viewMap": "查看地图"
+  },
+  "CookieConsent": {
+    "welcome": "欢迎！",
+    "description1": "我们使用 Cookie 和技术工具来分析本网站的流量，增强您的体验并为您提供量身定制的广告。",
+    "description2": "通过设置 Cookie 保持对数据的控制，您可以随时更改或撤回您的同意。如果您拒绝 Cookie，这不会影响我们网站的运行方式，但您将无法充分利用我们的所有功能。有关更多信息，请咨询我们的",
+    "privacyPolicy": "隐私政策",
+    "accept": "我接受 COOKIE",
+    "decline": "我拒绝 COOKIE",
+    "table": {
+      "tracker": "追踪器",
+      "description": "描述",
+      "partner": "合作伙伴",
+      "expiration": "有效期",
+      "ga": "Google Analytics",
+      "gaDesc": "Google Analytics 是 Google 提供的一项网络分析服务，用于跟踪和报告网站流量。",
+      "website": "欧瑞达网站",
+      "websiteDesc": "网站运行和检查 Cookie 同意状态所必需。",
+      "session": "医院会话",
+      "sessionDesc": "网站运行以及帮助客户端在 Cookie 生命周期内保持与同一实例的连接所必需。",
+      "no": "否",
+      "own": "自有",
+      "year": "一年",
+      "week": "一周"
+    }
   }
 }

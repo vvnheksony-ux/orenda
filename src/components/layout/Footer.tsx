@@ -1,52 +1,56 @@
-const LEFT_COLS = [
-  {
-    heading: 'About US',
-    links: ['Our Mission and Vision', 'News', 'Job Opportunity'],
-  },
-  {
-    heading: 'Packages & Promotions',
-    links: ['Hot Promotion', 'Packages'],
-  },
-  {
-    heading: 'Actions',
-    links: ['Book Appointment', 'Send Inquiry', 'Our Doctors', 'View Our Clinics and Centers'],
-  },
-]
-
-const RIGHT_COLS = [
-  {
-    heading: 'Contact Us',
-    links: ['(+855) 016 593 789', '(+855) 012 593 789', 'Orienda@gmail.com'],
-    underline: true,
-    gap: 12,
-  },
-  {
-    heading: 'Emergency',
-    links: ['(+855) 023 232 789', '(+855) 078 233 789', '(+855) 096 6233 789'],
-    underline: true,
-    gap: 12,
-  },
-  {
-    heading: 'Address',
-    links: ['66, Street 31cc, 3, Phnom Penh 120605', '66, Street 31cc, 3, Phnom Penh 120605'],
-    underline: true,
-    gap: 12,
-  },
-  {
-    heading: 'Open',
-    links: ['24 Hours'],
-    underline: true,
-    gap: 0,
-  },
-  {
-    heading: 'Social Media',
-    links: ['Facebook', 'Facebook', 'Facebook', 'Facebook', 'Facebook', 'Facebook'],
-    underline: false,
-    gap: 4,
-  },
-]
+import { useTranslations } from 'next-intl'
 
 export default function Footer() {
+  const t = useTranslations('Footer')
+
+  const LEFT_COLS = [
+    {
+      heading: t('aboutUs'),
+      links: [t('ourMission'), t('news'), t('jobOpportunity')],
+    },
+    {
+      heading: t('packagesPromotions'),
+      links: [t('hotPromotion'), t('packages')],
+    },
+    {
+      heading: t('actions'),
+      links: [t('bookAppointment'), t('sendInquiry'), t('ourDoctors'), t('viewClinics')],
+    },
+  ]
+
+  const RIGHT_COLS = [
+    {
+      heading: t('contactUs'),
+      links: ['(+855) 016 593 789', '(+855) 012 593 789', 'Orienda@gmail.com'],
+      underline: true,
+      gap: 12,
+    },
+    {
+      heading: t('emergency'),
+      links: ['(+855) 023 232 789', '(+855) 078 233 789', '(+855) 096 6233 789'],
+      underline: true,
+      gap: 12,
+    },
+    {
+      heading: t('address'),
+      links: ['66, Street 31cc, 3, Phnom Penh 120605', '66, Street 31cc, 3, Phnom Penh 120605'],
+      underline: true,
+      gap: 12,
+    },
+    {
+      heading: t('open'),
+      links: [t('hours24')],
+      underline: true,
+      gap: 0,
+    },
+    {
+      heading: t('socialMedia'),
+      links: ['Facebook', 'Facebook', 'Facebook', 'Facebook', 'Facebook', 'Facebook'],
+      underline: false,
+      gap: 4,
+    },
+  ]
+
   return (
     <footer className="w-full bg-gold-900 p-[80px]">
       <div className="flex flex-col xl:flex-row gap-[80px] items-start xl:items-end w-full">
