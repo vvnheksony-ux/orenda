@@ -16,20 +16,18 @@ export function hasCookieConsent(): boolean {
  * It will instantly show children when the user clicks "Accept" in the modal.
  */
 export function ConsentWrapper({ children }: { children: ReactNode }) {
-  const [consent, setConsent] = useState(false)
+  const [consent, setConsent] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('cookie-consent') === 'accepted'
+  })
 
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    // Initial check
-    setConsent(localStorage.getItem('cookie-consent') === 'accepted')
-
-    // Listen for changes (e.g., when user clicks a button in the modal)
     const handleStorageChange = () => {
       setConsent(localStorage.getItem('cookie-consent') === 'accepted')
     }
 
-    // Custom event to handle instant updates on the same page
     window.addEventListener('cookie-consent-updated', handleStorageChange)
     window.addEventListener('storage', handleStorageChange)
 
