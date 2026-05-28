@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import SiteLayout from '@/components/layout/SiteLayout'
 
 export default function EmergencyPage() {
@@ -26,9 +27,7 @@ export default function EmergencyPage() {
           </div>
           <h1 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none">Alert Sent</h1>
           <p className="font-dm-sans text-[18px] text-gold-800 max-w-md">Our emergency team has been notified. Call <strong>(+855) 081 811 789</strong> for immediate assistance.</p>
-          <a href="tel:+85581811789" className="mt-2 inline-flex items-center justify-center px-10 py-4 rounded-full font-dm-sans text-[18px] text-white bg-red-600 hover:opacity-90 transition-opacity">
-            Call Now: (+855) 081 811 789
-          </a>
+          <Link href="/" className="mt-4 inline-flex items-center justify-center px-10 py-4 rounded-full font-dm-sans text-[16px] text-white" style={{ background: '#b89148' }}>Back to Home</Link>
         </div>
       </div>
     </SiteLayout>
