@@ -1,18 +1,28 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase'
 
 export async function GET() {
-  const supabase = await createServiceClient()
-  const { data, error } = await supabase
-    .schema('payload')
-    .from('doctors')
-    .select('id, name, specialty, department')
-    .order('department')
-    .order('name')
+  const payloadUrl = process.env.PAYLOAD_API_URL || 'http://localhost:3000'
   
-  if (error) {
-    console.error('Error fetching doctors from payload schema:', error)
+  try {
+    const res = await fetch(`${payloadUrl}/api/doctors?limit=100`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      next: { revalidate: 3600 } // Cache for 1 hour
+    })
+
+    if (!res.ok) {
+      console.error('Payload CMS API returned an error:', res.status)
+      return NextResponse.json([], { status: 200 })
+    }
+
+    const data = await res.json()
+    // Payload returns items in a 'docs' array
+    const doctors = data.docs || []
+    
+    return NextResponse.json(doctors)
+  } catch (err) {
+    console.error('Failed to fetch doctors from CMS:', err)
     return NextResponse.json([], { status: 200 })
   }
-  return NextResponse.json(data)
 }

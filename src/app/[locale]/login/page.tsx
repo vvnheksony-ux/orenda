@@ -56,7 +56,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-5 pt-[100px] pb-20" style={{ background: '#fbf7ee' }}>
+    <div className="min-h-screen flex items-center justify-center px-5 pt-[160px] xl:pt-[200px] pb-20" style={{ background: '#fbf7ee' }}>
       <div className="w-full max-w-md">
 
         <div className="flex flex-col items-center mb-8">
