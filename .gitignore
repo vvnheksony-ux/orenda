@@ -45,3 +45,9 @@ next-env.d.ts
 *.sql
 *.log
 .claude/
+
+#graphify 
+.graphify/
+graphify-out/
+.graphify_*.json
+.graphify_python
