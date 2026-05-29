@@ -40,10 +40,15 @@ export const Departments: CollectionConfig = {
       relationTo: 'media',
     },
     {
-      name: 'doctors',
+      name: 'branch',
       type: 'relationship',
-      relationTo: 'doctors',
-      hasMany: true,
+      relationTo: 'branches',
+      required: true,
+    },
+    {
+      name: 'order',
+      type: 'number',
+      defaultValue: 0,
     },
     ...statusFields(),
   ],

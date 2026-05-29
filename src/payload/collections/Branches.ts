@@ -3,10 +3,11 @@ import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
-const webhookHooks = createWebhookHooks('doctors')
 
-export const Doctors: CollectionConfig = {
-  slug: 'doctors',
+const webhookHooks = createWebhookHooks('branches')
+
+export const Branches: CollectionConfig = {
+  slug: 'branches',
   admin: {
     group: 'Content',
     useAsTitle: 'name',
@@ -28,30 +29,16 @@ export const Doctors: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField('doctors'),
+    ...slugField('branches'),
     {
-      name: 'photo',
-      type: 'upload',
-      relationTo: 'media',
-    },
-    {
-      name: 'bio',
+      name: 'description',
       type: 'richText',
       localized: true,
     },
     {
-      name: 'specialty',
+      name: 'address',
       type: 'text',
       localized: true,
-    },
-    {
-      name: 'department',
-      type: 'relationship',
-      relationTo: 'departments',
-      admin: {
-        description: 'DEPRECATED: Use doctor-schedules to assign doctors to departments with recurring weekly shifts.',
-        position: 'sidebar',
-      },
     },
     {
       name: 'phone',
@@ -60,6 +47,22 @@ export const Doctors: CollectionConfig = {
     {
       name: 'email',
       type: 'email',
+    },
+    {
+      name: 'mapUrl',
+      type: 'text',
+      label: 'Google Maps URL',
+    },
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+    },
+    {
+      name: 'hours',
+      type: 'text',
+      localized: true,
+      description: 'e.g. "Open 24 hours" or "8:00 AM - 5:00 PM"',
     },
     {
       name: 'order',

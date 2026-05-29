@@ -11,6 +11,8 @@ import { Media } from './src/payload/collections/Media'
 import { Pages } from './src/payload/collections/Pages'
 import { Doctors } from './src/payload/collections/Doctors'
 import { Departments } from './src/payload/collections/Departments'
+import { Branches } from './src/payload/collections/Branches'
+import { DoctorSchedules } from './src/payload/collections/DoctorSchedules'
 import { Services } from './src/payload/collections/Services'
 import { News } from './src/payload/collections/News'
 import { Promotions } from './src/payload/collections/Promotions'
@@ -55,6 +57,8 @@ export default buildConfig({
     Pages,
     Doctors,
     Departments,
+    Branches,
+    DoctorSchedules,
     Services,
     News,
     Promotions,
