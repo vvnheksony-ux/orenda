@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, Building2, Menu, X, Phone, User, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
+import { useAnalytics } from '@/lib/use-analytics'
+import { LocaleCode } from '@/payload/constants'
 
 const NAV_ITEMS = [
   { key: 'about', href: '/about' },
@@ -25,6 +27,7 @@ export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, signOut } = useAuth()
+  const { trackLanguageSwitch, trackCallClick } = useAnalytics()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
@@ -162,6 +165,7 @@ export default function Navbar() {
                         key={l.code}
                         onClick={() => {
                           setLangOpen(false)
+                          trackLanguageSwitch(l.code as LocaleCode)
                           router.replace(pathname, { locale: l.code })
                         }}
                         className={cn(
@@ -200,6 +204,7 @@ export default function Navbar() {
                 "bg-[#f7f5f2] rounded-bl-[24px] 2xl:rounded-bl-[48px] shadow-sm border-b-[1.5px] border-l-[1.5px] border-white"
               )}>
                   <Link href="/appointments"
+                    onClick={() => trackCallClick('navbar')}
                     className="hidden xl:flex items-center justify-center px-[10px] xl:px-[12px] 2xl:px-[36px] rounded-[100px] 2xl:rounded-[32px] hover:opacity-90 transition-all duration-200 h-[32px] xl:h-[36px] 2xl:h-[64px] bg-[#CEB17D]">
                     <span className="font-dm-sans text-[10px] xl:text-[11px] 2xl:text-[16px] font-medium text-white leading-none whitespace-nowrap">{t('bookAppointment')}</span>
                   </Link>
@@ -280,6 +285,7 @@ export default function Navbar() {
               )}
               <Link
                 href="/appointments"
+                onClick={() => { setMobileOpen(false); trackCallClick('navbar-mobile'); }}
                 className="flex items-center justify-center gap-2 bg-[#d3b482] text-white py-4 rounded-xl font-bold"
               >
                 <Phone size={20} />

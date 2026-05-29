@@ -3,7 +3,9 @@ import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
+import { createAuditHooks } from '../hooks/auditTrail'
 const webhookHooks = createWebhookHooks('pages')
+const auditHooks = createAuditHooks('pages')
 
 const HeroBlock: Block = {
   slug: 'hero',
@@ -120,7 +122,7 @@ export const Pages: CollectionConfig = {
     ...statusFields(),
   ],
   hooks: {
-    afterChange: [webhookHooks.onChange],
-    afterDelete: [webhookHooks.onDelete],
+    afterChange: [webhookHooks.onChange, auditHooks.onChange],
+    afterDelete: [webhookHooks.onDelete, auditHooks.onDelete],
   },
 }

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { animate, motion, useMotionValue } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/routing'
+import { useAnalytics } from '@/lib/use-analytics'
 
   // We will define ROOMS and FACILITY_CARDS inside the component
 
@@ -100,6 +101,7 @@ function RoomCard({ room, offset, dir, onPrev, onNext, onOpenViewer }: {
 
 export default function TourSection() {
   const t = useTranslations('TourSection')
+  const { trackTourView } = useAnalytics()
 
   const ROOMS = [
     { name: t('roomResting'),      image: '/images/room-card.jpg', viewerSrc: '/images/360/StandardRoom.JPG' },
@@ -269,7 +271,10 @@ export default function TourSection() {
 
         {/* Start Discovering button — top 384px from Figma */}
         <button
-          onClick={() => router.push('/360-tour')}
+          onClick={() => {
+            trackTourView(1, 'General Entrance')
+            router.push('/360-tour')
+          }}
           className="absolute left-1/2 -translate-x-1/2 z-10 flex items-center justify-center font-dm-sans text-[24px] text-white rounded-[12px] transition-opacity hover:opacity-90"
           style={{
             top: '384px',
@@ -308,7 +313,10 @@ export default function TourSection() {
               dir={roomDir}
               onPrev={prevRoom}
               onNext={nextRoom}
-              onOpenViewer={() => router.push('/360-tour')}
+              onOpenViewer={(src) => {
+                trackTourView(ri + 1, room.name)
+                router.push('/360-tour')
+              }}
             />
           ))}
         </div>

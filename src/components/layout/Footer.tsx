@@ -1,7 +1,17 @@
+'use client'
+
 import { useTranslations } from 'next-intl'
+import { useAnalytics } from '@/lib/use-analytics'
 
 export default function Footer() {
   const t = useTranslations('Footer')
+  const { trackCallClick } = useAnalytics()
+
+  const handleContactClick = (link: string) => {
+    if (link.includes('@') || link.match(/[\d\s()]{10,}/)) {
+      trackCallClick('footer')
+    }
+  }
 
   const LEFT_COLS = [
     {
@@ -97,6 +107,7 @@ export default function Footer() {
                   <a
                     key={i}
                     href="#"
+                    onClick={() => handleContactClick(link)}
                     className="font-dm-sans font-normal text-[16px] text-gold-200 leading-none hover:text-gold-50 transition-colors"
                     style={{ textDecoration: col.underline ? 'underline' : 'none' }}
                   >

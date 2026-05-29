@@ -6,9 +6,11 @@ import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 
 import SiteLayout from '@/components/layout/SiteLayout'
+import { useAnalytics } from '@/lib/use-analytics'
 
 export default function ThreeSixtyTourPage() {
   const t = useTranslations('TourSection')
+  const { trackTourView } = useAnalytics()
 
   const ROOMS = [
     { id: 'standard', name: t('roomResting'), thumb: '/images/room-card.jpg', src: '/images/360/StandardRoom.JPG' },
@@ -49,7 +51,10 @@ export default function ThreeSixtyTourPage() {
                   return (
                     <button
                       key={room.id}
-                      onClick={() => setActiveRoomId(room.id)}
+                      onClick={() => {
+                        setActiveRoomId(room.id)
+                        trackTourView(ROOMS.indexOf(room) + 1, room.name)
+                      }}
                       className={`relative overflow-hidden transition-all duration-300 rounded-[16px] ${
                         isActive 
                           ? 'w-[160px] h-[100px] ring-2 ring-[#b89148] shadow-md scale-100' 

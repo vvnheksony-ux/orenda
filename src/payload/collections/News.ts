@@ -3,7 +3,9 @@ import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
+import { createAuditHooks } from '../hooks/auditTrail'
 const webhookHooks = createWebhookHooks('news')
+const auditHooks = createAuditHooks('news')
 
 export const News: CollectionConfig = {
   slug: 'news',
@@ -51,7 +53,7 @@ export const News: CollectionConfig = {
     ...statusFields(),
   ],
   hooks: {
-    afterChange: [webhookHooks.onChange],
-    afterDelete: [webhookHooks.onDelete],
+    afterChange: [webhookHooks.onChange, auditHooks.onChange],
+    afterDelete: [webhookHooks.onDelete, auditHooks.onDelete],
   },
 }

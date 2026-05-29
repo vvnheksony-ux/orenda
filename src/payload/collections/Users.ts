@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../access'
+import { createAuditHooks } from '../hooks/auditTrail'
+const auditHooks = createAuditHooks('users')
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -54,5 +56,9 @@ export const Users: CollectionConfig = {
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,
+  },
+  hooks: {
+    afterChange: [auditHooks.onChange],
+    afterDelete: [auditHooks.onDelete],
   },
 }

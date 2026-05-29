@@ -5,6 +5,7 @@ import '../globals.css'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import CookieConsent from '@/components/shared/CookieConsent'
+import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker'
 
 export const metadata: Metadata = {
   title: 'Orienda International Hospital',
@@ -29,6 +30,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
+            <AnalyticsTracker />
             {children}
             <CookieConsent />
           </AuthProvider>

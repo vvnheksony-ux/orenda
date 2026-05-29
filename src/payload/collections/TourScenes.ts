@@ -2,7 +2,9 @@ import type { CollectionConfig } from 'payload'
 import { statusFields } from '../fields/status'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
+import { createAuditHooks } from '../hooks/auditTrail'
 const webhookHooks = createWebhookHooks('tourScenes')
+const auditHooks = createAuditHooks('tourScenes')
 
 export const TourScenes: CollectionConfig = {
   slug: 'tourScenes',
@@ -73,7 +75,7 @@ export const TourScenes: CollectionConfig = {
     ...statusFields(),
   ],
   hooks: {
-    afterChange: [webhookHooks.onChange],
-    afterDelete: [webhookHooks.onDelete],
+    afterChange: [webhookHooks.onChange, auditHooks.onChange],
+    afterDelete: [webhookHooks.onDelete, auditHooks.onDelete],
   },
 }

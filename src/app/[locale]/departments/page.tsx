@@ -1,6 +1,9 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import SiteLayout from '@/components/layout/SiteLayout'
+import { useAnalytics } from '@/lib/use-analytics'
 
 const DEPARTMENTS = [
   { name: 'Neuro Surgery', desc: 'Advanced brain and spinal surgery with 99% success rate and 20,000+ procedures completed.', image: '/images/specialty-neuro.png', stats: ['99% Success', '20k+ Surgeries'] },
@@ -14,6 +17,8 @@ const DEPARTMENTS = [
 ]
 
 export default function DepartmentsPage() {
+  const { trackDepartmentView, trackCallClick } = useAnalytics()
+
   return (
     <SiteLayout>
       <div className="min-h-screen pt-[160px] xl:pt-[200px] pb-20" style={{ background: '#fbf7ee' }}>
@@ -39,7 +44,13 @@ export default function DepartmentsPage() {
                     <span key={s} className="px-2 py-1 rounded-full font-dm-sans text-[11px] text-gold-700 border border-gold-200 bg-gold-50/30">{s}</span>
                   ))}
                 </div>
-                <Link href="/appointments" className="mt-1 w-full text-center py-2.5 rounded-full font-dm-sans text-[13px] text-white transition-opacity hover:opacity-90" style={{ background: '#b89148' }}>
+                <Link 
+                  href="/appointments" 
+                  onClick={() => {
+                    trackDepartmentView(dept.name)
+                    trackCallClick('dept-list')
+                  }}
+                  className="mt-1 w-full text-center py-2.5 rounded-full font-dm-sans text-[13px] text-white transition-opacity hover:opacity-90" style={{ background: '#b89148' }}>
                   Book Now
                 </Link>
               </div>

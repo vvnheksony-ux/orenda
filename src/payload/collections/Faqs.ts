@@ -2,7 +2,9 @@ import type { CollectionConfig } from 'payload'
 import { statusFields } from '../fields/status'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
+import { createAuditHooks } from '../hooks/auditTrail'
 const webhookHooks = createWebhookHooks('faqs')
+const auditHooks = createAuditHooks('faqs')
 
 export const Faqs: CollectionConfig = {
   slug: 'faqs',
@@ -52,7 +54,7 @@ export const Faqs: CollectionConfig = {
     ...statusFields(),
   ],
   hooks: {
-    afterChange: [webhookHooks.onChange],
-    afterDelete: [webhookHooks.onDelete],
+    afterChange: [webhookHooks.onChange, auditHooks.onChange],
+    afterDelete: [webhookHooks.onDelete, auditHooks.onDelete],
   },
 }

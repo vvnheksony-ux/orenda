@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import SiteLayout from '@/components/layout/SiteLayout'
+import { useAnalytics } from '@/lib/use-analytics'
 
 interface Doctor {
   id: string
@@ -18,6 +19,7 @@ export default function DoctorsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [activeDept, setActiveDept] = useState('All')
   const [search, setSearch] = useState('')
+  const { trackDoctorView, trackCallClick } = useAnalytics()
 
   useEffect(() => {
     async function fetchDoctors() {
@@ -106,6 +108,10 @@ export default function DoctorsPage() {
                 <span className="mt-auto pt-2 inline-block font-dm-sans text-[11px] text-gold-600 border-t border-gold-100">{doc.department}</span>
               </div>
               <Link href="/appointments"
+                onClick={() => {
+                  trackDoctorView(doc.id || doc.name)
+                  trackCallClick('doctor-list')
+                }}
                 className="mx-4 mb-4 py-2 rounded-full text-center font-dm-sans text-[12px] text-white transition-opacity hover:opacity-90"
                 style={{ background: '#b89148' }}>
                 Book
