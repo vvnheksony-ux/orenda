@@ -21,7 +21,7 @@ export const cleanupData = async (payload: Payload) => {
   auditCutoff.setMonth(now.getMonth() - 24)
   
   payload.logger.info(`Cleaning up auditLogs older than ${auditCutoff.toISOString()}...`)
-  const deletedAudit = await payload.delete({
+  await payload.delete({
     collection: 'auditLogs',
     where: {
       timestamp: { less_than: auditCutoff.toISOString() },

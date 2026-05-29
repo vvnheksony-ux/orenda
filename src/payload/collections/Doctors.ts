@@ -28,7 +28,7 @@ export const Doctors: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField('doctors'),
+    ...slugField(),
     {
       name: 'photo',
       type: 'upload',

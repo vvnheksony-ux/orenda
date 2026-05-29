@@ -6,12 +6,6 @@ import { useTranslations } from 'next-intl'
 
 const UNION_IMG = '/images/union-decor.svg'
 
-const TESTIMONIAL = {
-  name: 'Dr. Marcus Lee',
-  role: 'Pediatric Specialist',
-  quote: "Timmy Demonstrates Impressive Ada...",
-}
-
 export default function HeroSection() {
   const t = useTranslations('HeroSection')
   const [query, setQuery] = useState('')

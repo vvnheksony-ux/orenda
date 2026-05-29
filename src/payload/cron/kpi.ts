@@ -3,8 +3,8 @@ import { ANALYTICS_EVENTS, KPI_METRICS, LOCALES } from '../constants'
 
 export const aggregateKpis = async (payload: Payload, granularity: 'day' | 'week' | 'month') => {
   const now = new Date()
-  let startDate = new Date()
-  let endDate = new Date()
+  const startDate = new Date()
+  const endDate = new Date()
 
   if (granularity === 'day') {
     // Yesterday
@@ -44,7 +44,7 @@ export const aggregateKpis = async (payload: Payload, granularity: 'day' | 'week
       },
       limit: 10000,
     })
-    return result.docs
+    return result.docs as Array<{ sessionId?: string; slug?: string }>
   }
 
   // 1. Call Clicks
@@ -66,7 +66,7 @@ export const aggregateKpis = async (payload: Payload, granularity: 'day' | 'week
 
   // 3. Tour Sessions & Views
   const tourViews = await fetchEvents(ANALYTICS_EVENTS.TOUR_SCENE_VIEW)
-  const tourSessions = new Set(tourViews.map((d: any) => d.sessionId)).size
+  const tourSessions = new Set(tourViews.map((d) => d.sessionId)).size
   await createSnapshot(payload, startDate, KPI_METRICS.TOUR_SESSIONS, tourSessions, granularity)
   await createSnapshot(payload, startDate, KPI_METRICS.TOUR_SCENE_VIEWS, tourViews.length, granularity)
 
@@ -77,7 +77,7 @@ export const aggregateKpis = async (payload: Payload, granularity: 'day' | 'week
   // 5. Doctor Views (Breakdown by slug)
   const doctorViews = await fetchEvents(ANALYTICS_EVENTS.DOCTOR_VIEW)
   const doctorBreakdown: Record<string, number> = {}
-  doctorViews.forEach((d: any) => {
+  doctorViews.forEach((d) => {
     if (d.slug) doctorBreakdown[d.slug] = (doctorBreakdown[d.slug] || 0) + 1
   })
   await createSnapshot(payload, startDate, KPI_METRICS.DOCTOR_VIEWS, doctorViews.length, granularity, undefined, doctorBreakdown)
@@ -85,7 +85,7 @@ export const aggregateKpis = async (payload: Payload, granularity: 'day' | 'week
   // 6. Department Views (Breakdown by slug)
   const deptViews = await fetchEvents(ANALYTICS_EVENTS.DEPARTMENT_VIEW)
   const deptBreakdown: Record<string, number> = {}
-  deptViews.forEach((d: any) => {
+  deptViews.forEach((d) => {
     if (d.slug) deptBreakdown[d.slug] = (deptBreakdown[d.slug] || 0) + 1
   })
   await createSnapshot(payload, startDate, KPI_METRICS.DEPARTMENT_VIEWS, deptViews.length, granularity, undefined, deptBreakdown)
@@ -114,7 +114,7 @@ async function createSnapshot(
   value: number,
   granularity: string,
   locale?: string,
-  breakdown?: any
+  breakdown?: Record<string, number>
 ) {
   await payload.create({
     collection: 'kpiSnapshots',

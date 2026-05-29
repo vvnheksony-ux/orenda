@@ -5,8 +5,6 @@ import { useEffect, useRef, useState } from 'react'
 import { animate, motion, useMotionValue } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/routing'
-import { X } from 'lucide-react'
-import ThreeSixtyViewer from '../shared/ThreeSixtyViewer'
 
   // We will define ROOMS and FACILITY_CARDS inside the component
 
@@ -45,7 +43,7 @@ function RoomCard({ room, offset, dir, onPrev, onNext, onOpenViewer }: {
     const cx = animate(x, rxCenter(offset) - w / 2, { type: 'spring', stiffness: 320, damping: 32 })
     const cy = animate(y, -h / 2,                   { type: 'spring', stiffness: 320, damping: 32 })
     return () => { cx.stop(); cy.stop() }
-  }, [offset])
+  }, [offset, dir, h, w, x, y])
 
   return (
     <motion.div

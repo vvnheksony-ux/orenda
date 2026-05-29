@@ -4,8 +4,6 @@ import { useState } from 'react'
 import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
-import { ChevronLeft } from 'lucide-react'
-import Link from 'next/link'
 
 import SiteLayout from '@/components/layout/SiteLayout'
 

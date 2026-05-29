@@ -28,7 +28,7 @@ export const Promotions: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField('promotions'),
+    ...slugField(),
     {
       name: 'description',
       type: 'richText',

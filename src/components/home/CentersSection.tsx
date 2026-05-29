@@ -123,7 +123,7 @@ export default function CentersSection() {
 
             <div className="flex flex-col gap-[32px] items-center justify-center h-[420px] relative w-[110px]">
               <AnimatePresence mode="popLayout" custom={direction}>
-                {SPECIALTIES[displayIdx].stats.map((s, idx) => (
+                {SPECIALTIES[displayIdx].stats.map((s) => (
                   <motion.div
                     key={`${displayIdx}-${s.label}`}
                     custom={direction}

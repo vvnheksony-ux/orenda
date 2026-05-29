@@ -28,7 +28,7 @@ export const Services: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField('services'),
+    ...slugField(),
     {
       name: 'description',
       type: 'richText',

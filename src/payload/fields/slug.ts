@@ -1,6 +1,6 @@
 import type { Field, TextField } from 'payload'
 
-export const slugField = (_collection?: string): Field[] => [
+export const slugField = (): Field[] => [
   {
     name: 'slug',
     type: 'text',

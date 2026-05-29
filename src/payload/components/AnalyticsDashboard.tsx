@@ -9,18 +9,26 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
 } from 'recharts'
-import { KPI_METRIC_OPTIONS } from '../constants'
+import { KPI_METRIC_OPTIONS, KpiMetricValue } from '../constants'
 
 const COLORS = ['#C7A779', '#4A3B2C', '#A07A44', '#EAE2D3', '#8B7E74']
 
+interface KpiDoc {
+  metric: KpiMetricValue
+  value: number
+  date: string
+}
+
+interface DashboardData {
+  docs: KpiDoc[]
+}
+
 export const AnalyticsDashboard: React.FC = () => {
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -59,7 +67,7 @@ export const AnalyticsDashboard: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {data.docs?.slice(0, 4).map((kpi: any, i: number) => (
+        {data.docs?.slice(0, 4).map((kpi, i: number) => (
           <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gold-100">
             <h3 className="text-sm font-bold text-gold-600 uppercase tracking-wider mb-2">
               {KPI_METRIC_OPTIONS.find(o => o.value === kpi.metric)?.label || kpi.metric}

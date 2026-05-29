@@ -28,7 +28,7 @@ export const Departments: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField('departments'),
+    ...slugField(),
     {
       name: 'description',
       type: 'richText',

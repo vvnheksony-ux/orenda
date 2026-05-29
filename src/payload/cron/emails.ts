@@ -3,12 +3,12 @@ import type { Payload } from 'payload'
 export const sendWeeklyReport = async (payload: Payload) => {
   payload.logger.info('Generating weekly KPI report email...')
   
-  // Fetch site settings for recipients
-  const siteSettings = await payload.findGlobal({
-    slug: 'siteSettings',
+  // Fetch operational settings for recipients
+  const settings = await payload.findGlobal({
+    slug: 'operationalSettings',
   })
 
-  const recipients = siteSettings.analyticsReportRecipients
+  const recipients = (settings.analyticsReportRecipients as Array<{ email: string }>)?.map(r => r.email)
   if (!recipients || recipients.length === 0) {
     payload.logger.warn('No analytics report recipients configured. Skipping email.')
     return
@@ -42,7 +42,7 @@ export const sendWeeklyReport = async (payload: Payload) => {
           </tr>
         </thead>
         <tbody>
-          ${snapshots.docs.map((s: any) => `
+          ${(snapshots.docs as any[]).map((s) => `
             <tr style="border-bottom: 1px solid #f0f0f0;">
               <td style="padding: 12px; color: #4A3B2C;">${s.metric}</td>
               <td style="padding: 12px; text-align: right; font-weight: bold; color: #4A3B2C;">${s.value}</td>

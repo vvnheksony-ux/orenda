@@ -25,15 +25,16 @@ export const checkOrphanMedia = async (payload: Payload) => {
 
   for (const col of collectionsToCheck) {
     const docs = await payload.find({
-      collection: col.slug as any,
+      collection: col.slug as 'doctors' | 'departments' | 'services' | 'news' | 'promotions' | 'tourScenes',
       limit: 10000,
       depth: 0,
     })
     
-    docs.docs.forEach((doc: any) => {
+    docs.docs.forEach((doc: Record<string, unknown>) => {
       col.fields.forEach(field => {
-        if (doc[field]) {
-          usedMediaIds.add(doc[field])
+        const val = doc[field]
+        if (val && (typeof val === 'string' || typeof val === 'number')) {
+          usedMediaIds.add(val)
         }
       })
     })

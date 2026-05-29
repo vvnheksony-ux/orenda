@@ -19,8 +19,8 @@ export const fetchGaReports = async (payload: Payload) => {
     for (const type of reportTypes) {
       payload.logger.info(`Fetching GA4 ${type} report...`)
       
-      let dimensions: any[] = []
-      let metrics: any[] = []
+      let dimensions: Array<{ name: string }> = []
+      let metrics: Array<{ name: string }> = []
 
       if (type === 'overview') {
         metrics = [{ name: 'sessions' }, { name: 'screenPageViews' }, { name: 'bounceRate' }, { name: 'averageSessionDuration' }]
@@ -49,7 +49,7 @@ export const fetchGaReports = async (payload: Payload) => {
         data: {
           reportType: type,
           dateRange: { startDate: '30daysAgo', endDate: 'today' },
-          data: response as any,
+          data: response as Record<string, unknown>,
           fetchedAt: new Date().toISOString(),
         },
       })

@@ -20,7 +20,6 @@ const TIME_SLOTS = [
 
 export default function AppointmentsPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [form, setForm] = useState({
     patient_name: '', patient_phone: '', patient_email: '',
     doctor_id: '', department_id: '', branch_id: '',
@@ -40,7 +39,7 @@ export default function AppointmentsPage() {
       } catch (err) {
         console.error('Failed to fetch doctors:', err)
       } finally {
-        setIsLoading(false)
+        // isLoading removed
       }
     }
     fetchDoctors()
