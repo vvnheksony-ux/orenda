@@ -50,6 +50,10 @@ export default buildConfig({
       description: 'Orienda Hospital Content Management System',
     },
     components: {
+      graphics: {
+        Logo: '/src/payload/components/Branding#Logo',
+        Icon: '/src/payload/components/Branding#Icon',
+      },
       views: {
         Analytics: {
           Component: '/src/payload/components/AnalyticsDashboard#AnalyticsDashboard',
