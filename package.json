@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "payload:generate:types": "payload generate:types",
+    "payload:generate:importmap": "payload generate:importmap",
+    "payload:migrate:create": "payload migrate:create",
+    "payload:migrate": "payload migrate"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.6",

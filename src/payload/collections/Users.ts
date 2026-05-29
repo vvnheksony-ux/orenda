@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isAdmin } from '../access'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -15,11 +16,32 @@ export const Users: CollectionConfig = {
       name: 'role',
       type: 'select',
       required: true,
-      defaultValue: 'admin',
+      defaultValue: 'contributor',
       options: [
         { label: 'Admin', value: 'admin' },
         { label: 'Editor', value: 'editor' },
+        { label: 'Contributor', value: 'contributor' },
       ],
+      access: {
+        update: ({ req }) => {
+          const user = req.user as Record<string, unknown> | null
+          if (!user) return false
+          return user.role === 'admin'
+        },
+      },
+    },
+    {
+      name: 'avatar',
+      type: 'upload',
+      relationTo: 'media',
+    },
+    {
+      name: 'lastLoginAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
     },
   ],
   access: {
@@ -28,5 +50,9 @@ export const Users: CollectionConfig = {
       const user = req.user as Record<string, unknown>
       return user.role === 'admin'
     },
+    read: isAdmin,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
   },
 }

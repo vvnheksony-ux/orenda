@@ -1,5 +1,13 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+
+    Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+    If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+    After modifying code files in this session, run graphify update . to keep the graph current (AST-only, no API cost)
+
 # Next.js 16
 
 Next is pinned to `16.2.6` with React `19.2.4`; verify App Router APIs against the installed package/docs before changing routing, metadata, middleware, or route handlers. Do not assume older Next signatures, e.g. route `params` are awaited in `src/app/[locale]/layout.tsx`.
