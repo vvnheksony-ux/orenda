@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme inline {
+@theme {
   /* Orienda Color Tokens */
   --color-gold-900: #3b2d17;
   --color-gold-800: #594522;

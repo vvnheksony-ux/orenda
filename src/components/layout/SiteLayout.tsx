@@ -1,5 +1,6 @@
 import Navbar from './Navbar'
 import Footer from './Footer'
+import FloatingChat from '../chat/FloatingChat'
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -7,6 +8,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <Navbar />
       <main className="flex flex-col overflow-x-hidden">{children}</main>
       <Footer />
+      <FloatingChat />
     </>
   )
 }
