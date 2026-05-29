@@ -3,6 +3,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
 import { buildConfig } from 'payload'
+import { openapi, swaggerUI } from 'payload-oapi'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
@@ -39,6 +40,8 @@ import {
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const enableApiDocs =
+  process.env.NODE_ENV !== 'production' && process.env.ENABLE_API_DOCS === 'true'
 
 export default buildConfig({
   admin: {
@@ -100,6 +103,20 @@ export default buildConfig({
     fallback: true,
   },
   plugins: [
+    ...(enableApiDocs
+      ? [
+          openapi({
+            openapiVersion: '3.0',
+            metadata: {
+              title: 'Orienda Payload API',
+              version: '0.1.0',
+            },
+          }),
+          swaggerUI({
+            specEndpoint: '/../payload-api/openapi.json',
+          }),
+        ]
+      : []),
     s3Storage({
       collections: {
         media: {
