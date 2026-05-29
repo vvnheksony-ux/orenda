@@ -38,5 +38,5 @@ export function ConsentWrapper({ children }: { children: ReactNode }) {
   }, [])
 
   if (!consent) return null
-  return children as any
+  return <>{children}</>
 }

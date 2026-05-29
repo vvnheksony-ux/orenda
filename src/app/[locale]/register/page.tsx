@@ -52,9 +52,10 @@ export default function RegisterPage() {
         console.error('Google login error:', error)
         alert(`Login failed: ${error.message}`)
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Unexpected error:', err)
-      alert(`Unexpected error: ${err?.message || 'Check console'}`)
+      const message = err instanceof Error ? err.message : 'Check console'
+      alert(`Unexpected error: ${message}`)
     }
   }
   return (

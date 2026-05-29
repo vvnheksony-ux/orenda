@@ -57,7 +57,9 @@ export default function FloatingChat() {
   useEffect(() => {
     const consent = localStorage.getItem('cookie-consent')
     if (consent !== 'accepted') {
-      setShowLoginBanner(true)
+      setTimeout(() => {
+        setShowLoginBanner(true)
+      }, 0)
     }
   }, [])
 
