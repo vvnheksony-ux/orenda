@@ -75,31 +75,33 @@ export default function Navbar() {
     >
       {/* ── Desktop ── */}
       <div className="hidden xl:block pointer-events-auto transition-all duration-500">
-        <div className="flex items-start justify-between w-full pl-6 xl:pl-8 2xl:pl-[46px]">
+        <div className="flex items-start justify-between w-full gap-[8px] xl:gap-[16px] pl-6 xl:pl-8 2xl:pl-[46px]">
 
           {/* 1. Logo */}
-          <Link
-            href="/"
-            className="relative shrink-0 rounded-full overflow-hidden transition-all duration-500 w-[64px] h-[64px] xl:w-[80px] xl:h-[80px] 2xl:w-[96px] 2xl:h-[96px] mt-5 xl:mt-8 2xl:mt-10 mb-5 xl:mb-8 2xl:mb-10"
-          >
-            <Image
-              src="/images/logo-emblem.png"
-              alt="Orienda International Hospital"
-              fill
-              sizes="(max-width: 1535px) 80px, 96px"
-              className="object-cover"
-              priority
-            />
-          </Link>
+          <div className="flex items-start">
+            <Link
+              href="/"
+              className="relative shrink-0 rounded-full overflow-hidden transition-all duration-500 w-[56px] h-[56px] xl:w-[60px] xl:h-[60px] 2xl:w-[96px] 2xl:h-[96px] mt-4 xl:mt-6 2xl:mt-10 mb-4 xl:mb-6 2xl:mb-10"
+            >
+              <Image
+                src="/images/logo-emblem.png"
+                alt="Orienda International Hospital"
+                fill
+                sizes="(max-width: 1535px) 80px, 96px"
+                className="object-cover"
+                priority
+              />
+            </Link>
+          </div>
             
           {/* 2. Center Nav Group */}
-          <div className="flex items-center gap-[12px] xl:gap-[16px] 2xl:gap-[20px] mt-5 xl:mt-8 2xl:mt-10 mb-5 xl:mb-8 2xl:mb-10 ml-[20px] xl:ml-[40px] 2xl:ml-[60px]">
+          <div className="flex items-center justify-center gap-[4px] xl:gap-[8px] 2xl:gap-[20px] mt-4 xl:mt-6 2xl:mt-10 mb-4 xl:mb-6 2xl:mb-10">
 
             {/* Main Nav Pill */}
             <div
               className={cn(
-                'inline-flex items-center px-[28px] xl:px-[40px] py-[24px] xl:py-[32px] rounded-[24px] xl:rounded-[32px]',
-                'bg-[#f7f5f2]/80 backdrop-blur-xl shadow-sm border border-white/60',
+                'inline-flex items-center px-[10px] xl:px-[12px] 2xl:px-[40px] py-[8px] xl:py-[10px] 2xl:py-[32px] rounded-[100px] 2xl:rounded-[32px]',
+                'bg-white/30 backdrop-blur-lg shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-white/40',
                 'transition-all duration-300'
               )}
             >
@@ -112,8 +114,8 @@ export default function Navbar() {
                       href={item.href}
                       className={cn(
                         'flex items-center justify-center leading-none whitespace-nowrap transition-all duration-200',
-                        'gap-[8px]',
-                        'text-[14px] xl:text-[16px] 2xl:text-[18px] font-dm-sans font-medium',
+                        'gap-[2px] 2xl:gap-[8px]',
+                        'text-[10px] xl:text-[11px] 2xl:text-[18px] font-dm-sans font-medium',
                         isActive
                           ? 'text-[#6b5a45] opacity-100 drop-shadow-sm'
                           : 'text-[#6b5a45] opacity-80 hover:opacity-100 hover:drop-shadow-sm'
@@ -129,9 +131,9 @@ export default function Navbar() {
 
             {/* CH Dropdown */}
             <div className="relative z-50">
-              <button className="flex items-center gap-[6px] xl:gap-[8px] px-[16px] xl:px-[20px] 2xl:px-[24px] py-[12px] xl:py-[16px] 2xl:py-[20px] rounded-[20px] xl:rounded-[24px] bg-[#f7f5f2]/80 backdrop-blur-xl hover:bg-[#f7f5f2]/90 transition-all duration-200 border border-white/60 shadow-sm shrink-0 text-[#6b5a45]">
-                <Building2 className="w-[18px] h-[18px] xl:w-[20px] xl:h-[20px] 2xl:w-[22px] 2xl:h-[22px]" strokeWidth={1.5} />
-                <span className="font-dm-sans text-[14px] xl:text-[15px] 2xl:text-[16px] font-medium leading-none">{t('ch')}</span>
+              <button className="flex items-center gap-[4px] 2xl:gap-[8px] px-[8px] xl:px-[10px] 2xl:px-[24px] py-[6px] xl:py-[8px] 2xl:py-[20px] rounded-[100px] 2xl:rounded-[24px] bg-white/30 backdrop-blur-lg hover:bg-white/40 transition-all duration-200 border border-white/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] shrink-0 text-[#6b5a45]">
+                <Building2 className="w-[12px] h-[12px] xl:w-[14px] xl:h-[14px] 2xl:w-[22px] 2xl:h-[22px]" strokeWidth={1.5} />
+                <span className="font-dm-sans text-[10px] xl:text-[11px] 2xl:text-[16px] font-medium leading-none">{t('ch')}</span>
                 <ChevronDown className="w-[14px] h-[14px] xl:w-[16px] xl:h-[16px] 2xl:w-[18px] 2xl:h-[18px] shrink-0 text-[#6b5a45]" strokeWidth={2} />
               </button>
             </div>
@@ -140,7 +142,7 @@ export default function Navbar() {
             <div className="relative shrink-0 ml-[4px] xl:ml-[8px]" ref={langRef}>
               <button 
                 onClick={() => setLangOpen(!langOpen)}
-                className="overflow-hidden hover:opacity-90 transition-all duration-200 shrink-0 rounded-full w-[40px] h-[40px] xl:w-[44px] xl:h-[44px] 2xl:w-[48px] 2xl:h-[48px] border-[2px] xl:border-[3px] border-white shadow-sm" aria-label="Switch language">
+                className="overflow-hidden hover:opacity-90 transition-all duration-200 shrink-0 rounded-full w-[32px] h-[32px] xl:w-[36px] xl:h-[36px] 2xl:w-[48px] 2xl:h-[48px] border-[2px] xl:border-[2px] border-white shadow-sm" aria-label="Switch language">
                 <div className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-white">
                   <Image src={currentLang.flag} alt={currentLang.label} fill sizes="40px" className="object-cover" />
                 </div>
@@ -185,26 +187,26 @@ export default function Navbar() {
           </div>
 
           {/* 3. Right Actions */}
-          <div className="flex items-start shrink-0 ml-auto">
+          <div className="flex items-start shrink-0">
 
             {/* Right Pill: Book Appointment & Phone */}
             <div className="relative shrink-0" ref={phoneRef}>
               <div className={cn(
-                "flex items-center gap-[8px] xl:gap-[12px]",
-                "pt-[28px] xl:pt-[44px] 2xl:pt-[52px]",
-                "pr-[32px] xl:pr-[44px] 2xl:pr-[58px]",
-                "pb-[16px] xl:pb-[24px] 2xl:pb-[32px]",
-                "pl-[24px] xl:pl-[32px] 2xl:pl-[40px]",
-                "bg-[#f7f5f2] rounded-bl-[48px] shadow-sm border-b-[1.5px] border-l-[1.5px] border-white"
+                "flex items-center gap-[4px] xl:gap-[6px] 2xl:gap-[12px]",
+                "pt-[12px] xl:pt-[16px] 2xl:pt-[52px]",
+                "pr-[12px] xl:pr-[16px] 2xl:pr-[58px]",
+                "pb-[12px] xl:pb-[16px] 2xl:pb-[32px]",
+                "pl-[12px] xl:pl-[16px] 2xl:pl-[40px]",
+                "bg-[#f7f5f2] rounded-bl-[24px] 2xl:rounded-bl-[48px] shadow-sm border-b-[1.5px] border-l-[1.5px] border-white"
               )}>
                   <Link href="/appointments"
-                    className="flex items-center justify-center px-[20px] xl:px-[28px] 2xl:px-[36px] rounded-[24px] xl:rounded-[28px] 2xl:rounded-[32px] hover:opacity-90 transition-all duration-200 h-[48px] xl:h-[56px] 2xl:h-[64px] bg-[#CEB17D]">
-                    <span className="font-dm-sans text-[13px] xl:text-[15px] 2xl:text-[16px] font-medium text-white leading-none whitespace-nowrap">{t('bookAppointment')}</span>
+                    className="hidden xl:flex items-center justify-center px-[10px] xl:px-[12px] 2xl:px-[36px] rounded-[100px] 2xl:rounded-[32px] hover:opacity-90 transition-all duration-200 h-[32px] xl:h-[36px] 2xl:h-[64px] bg-[#CEB17D]">
+                    <span className="font-dm-sans text-[10px] xl:text-[11px] 2xl:text-[16px] font-medium text-white leading-none whitespace-nowrap">{t('bookAppointment')}</span>
                   </Link>
                   <button
                     onClick={() => setPhoneOpen(!phoneOpen)}
-                    className="flex items-center justify-center w-[48px] h-[48px] xl:w-[56px] xl:h-[56px] 2xl:w-[64px] 2xl:h-[64px] rounded-[24px] xl:rounded-[28px] 2xl:rounded-[32px] bg-[#CEB17D] hover:opacity-90 transition-all duration-200">
-                    <Phone className="w-[18px] h-[18px] xl:w-[20px] xl:h-[20px] 2xl:w-[24px] 2xl:h-[24px] text-white" strokeWidth={2} />
+                    className="flex items-center justify-center w-[36px] h-[36px] xl:w-[40px] xl:h-[40px] 2xl:w-[64px] 2xl:h-[64px] rounded-full 2xl:rounded-[32px] bg-[#CEB17D] hover:opacity-90 transition-all duration-200">
+                    <Phone className="w-[14px] h-[14px] xl:w-[16px] xl:h-[16px] 2xl:w-[24px] 2xl:h-[24px] text-white" strokeWidth={2} />
                   </button>
                 </div>
 
@@ -259,6 +261,23 @@ export default function Navbar() {
               ))}
             </nav>
             <div className="mt-8 flex flex-col gap-4">
+              {user ? (
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center justify-center gap-2 bg-red-50 text-red-600 py-4 rounded-xl font-bold border border-red-100"
+                >
+                  <LogOut size={20} />
+                  Sign Out
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex items-center justify-center gap-2 bg-gold-50 text-gold-900 py-4 rounded-xl font-bold border border-gold-100"
+                >
+                  <User size={20} />
+                  Log In
+                </Link>
+              )}
               <Link
                 href="/appointments"
                 className="flex items-center justify-center gap-2 bg-[#d3b482] text-white py-4 rounded-xl font-bold"

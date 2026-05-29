@@ -19,7 +19,7 @@ export default function NewsPage() {
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-32 pb-20" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[160px] xl:pt-[200px] pb-20" style={{ background: '#fbf7ee' }}>
 
         <div className="text-center px-5 mb-12">
           <h1 className="font-cormorant font-bold text-[64px] text-gold-900 leading-none mb-4">News & Updates</h1>

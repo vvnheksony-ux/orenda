@@ -4,70 +4,23 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import SiteLayout from '@/components/layout/SiteLayout'
 
-const DOCTORS_FALLBACK = [
-  { id: 'kuon-linka', name: 'Dr. Kuon Linka', specialty: 'Gynecologist Obstetrician', department: 'Obstetrics & Gynecology' },
-  { id: 'kim-lumpiny', name: 'Dr. Kim Lumpiny', specialty: 'Gynecologist Obstetrician', department: 'Obstetrics & Gynecology' },
-  { id: 'chhit-maryan', name: 'Dr. Chhit Maryan', specialty: 'Gynecologist Obstetrician', department: 'Obstetrics & Gynecology' },
-  { id: 'chhorvichet', name: 'Dr. Chhor Vichet', specialty: 'Gynecologist, Obstetrician', department: 'Obstetrics & Gynecology' },
-  { id: 'sin-rachana', name: 'Dr. Sin Rachana', specialty: 'Gynecologist, Obstetrician', department: 'Obstetrics & Gynecology' },
-  { id: 'siv-kimleng', name: 'Dr. Siv Kimleng', specialty: 'Obstetrician and Gynecologist', department: 'Obstetrics & Gynecology' },
-  { id: 'engmuyteang', name: 'Dr. Eang Muyteang', specialty: 'Gynecologist, Obstetrician', department: 'Obstetrics & Gynecology' },
-  { id: 'heng-fa', name: 'Dr. Heng Fa', specialty: 'Gynecologist and Sonography', department: 'Obstetrics & Gynecology' },
-  { id: 'sreng-kimsrean', name: 'Dr. Sreng Kimsrean', specialty: 'Obstetrician and Gynecologist', department: 'Obstetrics & Gynecology' },
-  { id: 'nuth-sodara', name: 'Dr. Nuth Sodara', specialty: 'Gynecologist Obstetrician', department: 'Obstetrics & Gynecology' },
-  { id: 'dr-sor-sreipich', name: 'Dr. Sor Sreipich', specialty: 'Obstetrician, Gynecologist', department: 'Obstetrics & Gynecology' },
-  { id: 'dr-chak-chanlida', name: 'Dr. Chak Chanlida', specialty: 'Obstetrician, Gynecologist', department: 'Obstetrics & Gynecology' },
-  { id: 'dr-soeu-chanvisal', name: 'Dr. Soeu Chanvisal', specialty: 'Obstetrician, Gynecologist', department: 'Obstetrics & Gynecology' },
-  { id: 'dr-pel-monyratha', name: 'Dr. Pel Monyratha', specialty: 'Obstetrician, Gynecologist', department: 'Obstetrics & Gynecology' },
-  { id: 'um-hemsophirum', name: 'Dr. Um Hemsophirum', specialty: 'Pediatrician, Neonatal and NICU', department: 'Pediatrics' },
-  { id: 'saveang-lichea', name: 'Dr. Saveang Lichea', specialty: 'Pediatrician', department: 'Pediatrics' },
-  { id: 'meyputhi', name: 'Dr. Mey Puthi', specialty: 'Pediatrician', department: 'Pediatrics' },
-  { id: 'than-soklang', name: 'Than Soklang', specialty: 'Pediatrician', department: 'Pediatrics' },
-  { id: 'lim-bolyly', name: 'Dr. Lim Bolyly', specialty: 'Pediatrician', department: 'Pediatrics' },
-  { id: 'habsokchamnap', name: 'Dr. Hab Sokchamnap', specialty: 'Pediatrician', department: 'Pediatrics' },
-  { id: 'dr-hen-seang', name: 'Dr. Hen Seang', specialty: 'Pediatrician, Neonatal', department: 'Pediatrics' },
-  { id: 'dr-norng-sedaseny', name: 'Dr. Norng Sedaseny', specialty: 'Pediatrician, Neonatal', department: 'Pediatrics' },
-  { id: 'dr-keo-santepheap', name: 'Dr. Keo Santepheap', specialty: 'Pediatrician, Neonatal', department: 'Pediatrics' },
-  { id: 'dr-mao-sineath', name: 'Dr. Mao Sineath', specialty: 'Pediatrician, Neonatal', department: 'Pediatrics' },
-  { id: 'dr-an-eangnay', name: 'Dr. An Eangnay', specialty: 'Pediatrician, Neonatal', department: 'Pediatrics' },
-  { id: 'phoeun-sarath', name: 'Dr. Phoeun Sarath', specialty: 'Emergency, ICU', department: 'Emergency & ICU' },
-  { id: 'ngeth-pathy', name: 'Dr. NGETH Pathy', specialty: 'Anesthesia, Emergency, ICU', department: 'Emergency & ICU' },
-  { id: 'phok-sovann', name: 'Dr. Phok Sovann', specialty: 'ICU', department: 'Emergency & ICU' },
-  { id: 'mak-heangsovann', name: 'Dr. MAK Heangsovann', specialty: 'Anesthesia, Emergency, ICU', department: 'Emergency & ICU' },
-  { id: 'em-ekvitou', name: 'Dr. Em Ekvitou', specialty: 'Anesthesia, Emergency, ICU', department: 'Emergency & ICU' },
-  { id: 'dr-eng-borey', name: 'Dr. Eng Borey', specialty: 'Emergency, Anesthesia, ICU', department: 'Emergency & ICU' },
-  { id: 'dr-born-sophea', name: 'Dr. Born Sophea', specialty: 'Emergency, ICU, Anesthesiologist', department: 'Emergency & ICU' },
-  { id: 'elsokry', name: 'Dr. El Sokry', specialty: 'General Medicines', department: 'General Medicine' },
-  { id: 'sornbophaphal', name: 'Dr. Sorn Bophaphal', specialty: 'General Medicines', department: 'General Medicine' },
-  { id: 'nou-chantrea', name: 'Dr. Nou Chantrea', specialty: 'General Medicines', department: 'General Medicine' },
-  { id: 'eang-kimchhuong', name: 'Dr. Eang Kimchhuong', specialty: 'General Medicines', department: 'General Medicine' },
-  { id: 'tha-sokchan', name: 'Dr. THA Sokchan', specialty: 'General Medicines', department: 'General Medicine' },
-  { id: 'sok-khanpisey', name: 'Dr. Sok Khanpisey', specialty: 'General Medicines', department: 'General Medicine' },
-  { id: 'heang-enghorng', name: 'Dr. Heang Enghorng', specialty: 'General Medicines', department: 'General Medicine' },
-  { id: 'dr-sros-piseth', name: 'Dr. Sros Piseth', specialty: 'General Medicines', department: 'General Medicine' },
-  { id: 'vutha', name: 'Dr. Than Vutha', specialty: 'Diabetologist', department: 'General Medicine' },
-  { id: 'lim-lihaung', name: 'Dr. LIM Lihaung', specialty: 'Radiologist', department: 'Imaging Center' },
-  { id: 'dr-chea-piseth', name: 'Dr. Chea Piseth', specialty: 'Sonographer', department: 'Imaging Center' },
-  { id: 'enghongseng', name: 'Dr. Eng Hongseng', specialty: 'Neurosurgery', department: 'Neuro Surgery' },
-  { id: 'eudaldo', name: 'Dr. Eudaldo Gonzalez Martinez', specialty: 'Orthopedic and Trauma Specialist', department: 'Orthopedics' },
-  { id: 'antony', name: 'Dr. Anthony Alvarez Morales', specialty: 'General Surgery Specialist', department: 'General Surgery' },
-  { id: 'vengsothea', name: 'Dr. Veng Sothea', specialty: 'Dermatology', department: 'Dermatology' },
-  { id: 'srengpor', name: 'Dr. Sreng Por', specialty: 'Dermatology', department: 'Dermatology' },
-  { id: 'dr-nguon-darath', name: 'Dr. Nguon Darath', specialty: 'Dermatologist', department: 'Dermatology' },
-]
-
-const TIME_SLOTS = [
-  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
-  '11:00', '11:30', '13:00', '13:30', '14:00', '14:30',
-  '15:00', '15:30', '16:00', '16:30',
-]
-
-const BRANCHES = ['Chamkarmon Branch', 'Branch']
-
 type Doctor = { id: string; name: string; specialty: string; department: string }
 
+const BRANCHES = ['Phnom Penh']
+const TIME_SLOTS = [
+  '08:00 AM - 09:00 AM',
+  '09:00 AM - 10:00 AM',
+  '10:00 AM - 11:00 AM',
+  '11:00 AM - 12:00 PM',
+  '01:00 PM - 02:00 PM',
+  '02:00 PM - 03:00 PM',
+  '03:00 PM - 04:00 PM',
+  '04:00 PM - 05:00 PM'
+]
+
 export default function AppointmentsPage() {
-  const [doctors, setDoctors] = useState<Doctor[]>(DOCTORS_FALLBACK)
+  const [doctors, setDoctors] = useState<Doctor[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [form, setForm] = useState({
     patient_name: '', patient_phone: '', patient_email: '',
     doctor_id: '', department_id: '', branch_id: '',
@@ -77,10 +30,20 @@ export default function AppointmentsPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch('/api/doctors')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && Array.isArray(d) && d.length > 0) setDoctors(d) })
-      .catch(() => {})
+    async function fetchDoctors() {
+      try {
+        const res = await fetch('/api/doctors')
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data)) setDoctors(data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch doctors:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchDoctors()
   }, [])
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))

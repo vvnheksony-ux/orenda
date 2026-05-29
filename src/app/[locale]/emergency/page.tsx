@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import SiteLayout from '@/components/layout/SiteLayout'
 
 export default function EmergencyPage() {
@@ -19,16 +20,14 @@ export default function EmergencyPage() {
 
   if (status === 'success') return (
     <SiteLayout>
-      <div className="min-h-screen flex items-center justify-center pt-32" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen flex items-center justify-center pt-[160px] xl:pt-[200px]" style={{ background: '#fbf7ee' }}>
         <div className="text-center flex flex-col items-center gap-6 px-6">
           <div className="w-20 h-20 rounded-full flex items-center justify-center bg-red-600">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </div>
           <h1 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none">Alert Sent</h1>
           <p className="font-dm-sans text-[18px] text-gold-800 max-w-md">Our emergency team has been notified. Call <strong>(+855) 081 811 789</strong> for immediate assistance.</p>
-          <a href="tel:+85581811789" className="mt-2 inline-flex items-center justify-center px-10 py-4 rounded-full font-dm-sans text-[18px] text-white bg-red-600 hover:opacity-90 transition-opacity">
-            Call Now: (+855) 081 811 789
-          </a>
+          <Link href="/" className="mt-4 inline-flex items-center justify-center px-10 py-4 rounded-full font-dm-sans text-[16px] text-white" style={{ background: '#b89148' }}>Back to Home</Link>
         </div>
       </div>
     </SiteLayout>
@@ -36,7 +35,7 @@ export default function EmergencyPage() {
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-32 pb-20 px-5" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[160px] xl:pt-[200px] pb-20 px-5" style={{ background: '#fbf7ee' }}>
         <div className="max-w-xl mx-auto">
 
           {/* Emergency banner */}
