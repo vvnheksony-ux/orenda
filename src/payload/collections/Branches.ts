@@ -62,7 +62,9 @@ export const Branches: CollectionConfig = {
       name: 'hours',
       type: 'text',
       localized: true,
-      description: 'e.g. "Open 24 hours" or "8:00 AM - 5:00 PM"',
+      admin: {
+        description: 'e.g. "Open 24 hours" or "8:00 AM - 5:00 PM"',
+      },
     },
     {
       name: 'order',

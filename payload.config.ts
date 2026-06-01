@@ -3,7 +3,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
 import { buildConfig } from 'payload'
-import { openapi, swaggerUI } from 'payload-oapi'
+import { payloadApiDocs } from './src/payload/plugins/payloadApiDocs'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
@@ -15,6 +15,7 @@ import { Departments } from './src/payload/collections/Departments'
 import { Branches } from './src/payload/collections/Branches'
 import { DoctorSchedules } from './src/payload/collections/DoctorSchedules'
 import { Services } from './src/payload/collections/Services'
+import { ServicePackages } from './src/payload/collections/ServicePackages'
 import { News } from './src/payload/collections/News'
 import { Promotions } from './src/payload/collections/Promotions'
 import { Faqs } from './src/payload/collections/Faqs'
@@ -63,6 +64,7 @@ export default buildConfig({
     Branches,
     DoctorSchedules,
     Services,
+    ServicePackages,
     News,
     Promotions,
     Faqs,
@@ -105,15 +107,12 @@ export default buildConfig({
   plugins: [
     ...(enableApiDocs
       ? [
-          openapi({
+          payloadApiDocs({
             openapiVersion: '3.0',
             metadata: {
               title: 'Orienda Payload API',
               version: '0.1.0',
             },
-          }),
-          swaggerUI({
-            specEndpoint: '/../payload-api/openapi.json',
           }),
         ]
       : []),

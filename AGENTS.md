@@ -30,8 +30,10 @@ Next is pinned to `16.2.6` with React `19.2.4`; verify App Router APIs against t
 
 ## Supabase
 
+- **Supabase Postgres is the only database.** Payload CMS uses Supabase through `DATABASE_URL`; do not assume a separate local Postgres DB.
 - Browser Supabase client: `src/utils/supabase/client.ts`; server clients: `src/utils/supabase/server.ts`.
 - Required env vars are `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` for service-role API routes.
+- Payload schema changes must be generated and applied through Payload migrations against Supabase unless explicitly directed otherwise.
 - `src/middleware.ts` combines `next-intl` routing with Supabase session refresh; preserve both when editing matcher or auth flow.
 - API routes use service role through `@/lib/supabase`; `/api/doctors` reads from the `payload.doctors` schema.
 
