@@ -3,10 +3,11 @@ import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
-const webhookHooks = createWebhookHooks('departments')
 
-export const Departments: CollectionConfig = {
-  slug: 'departments',
+const webhookHooks = createWebhookHooks('branches')
+
+export const Branches: CollectionConfig = {
+  slug: 'branches',
   admin: {
     group: 'Content',
     useAsTitle: 'name',
@@ -28,22 +29,42 @@ export const Departments: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField('departments'),
+    ...slugField('branches'),
     {
       name: 'description',
       type: 'richText',
       localized: true,
     },
     {
-      name: 'icon',
+      name: 'address',
+      type: 'text',
+      localized: true,
+    },
+    {
+      name: 'phone',
+      type: 'text',
+    },
+    {
+      name: 'email',
+      type: 'email',
+    },
+    {
+      name: 'mapUrl',
+      type: 'text',
+      label: 'Google Maps URL',
+    },
+    {
+      name: 'image',
       type: 'upload',
       relationTo: 'media',
     },
     {
-      name: 'branch',
-      type: 'relationship',
-      relationTo: 'branches',
-      required: true,
+      name: 'hours',
+      type: 'text',
+      localized: true,
+      admin: {
+        description: 'e.g. "Open 24 hours" or "8:00 AM - 5:00 PM"',
+      },
     },
     {
       name: 'order',

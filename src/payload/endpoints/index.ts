@@ -134,7 +134,7 @@ export const analyticsExportEndpoint: Endpoint = {
         where: buildKpiWhere(query),
       })
 
-      const csv = serializeKpiCsv(result.docs as Array<Record<string, unknown>>)
+      const csv = serializeKpiCsv(result.docs as unknown as Array<Record<string, unknown>>)
 
       return new Response(csv, {
         headers: {
