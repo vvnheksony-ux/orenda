@@ -3,6 +3,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
 import { buildConfig } from 'payload'
+import { payloadApiDocs } from './src/payload/plugins/payloadApiDocs'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
@@ -11,7 +12,10 @@ import { Media } from './src/payload/collections/Media'
 import { Pages } from './src/payload/collections/Pages'
 import { Doctors } from './src/payload/collections/Doctors'
 import { Departments } from './src/payload/collections/Departments'
+import { Branches } from './src/payload/collections/Branches'
+import { DoctorSchedules } from './src/payload/collections/DoctorSchedules'
 import { Services } from './src/payload/collections/Services'
+import { ServicePackages } from './src/payload/collections/ServicePackages'
 import { News } from './src/payload/collections/News'
 import { Promotions } from './src/payload/collections/Promotions'
 import { Faqs } from './src/payload/collections/Faqs'
@@ -38,6 +42,8 @@ import { initCronJobs } from './src/payload/cron'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const enableApiDocs =
+  process.env.NODE_ENV !== 'production' && process.env.ENABLE_API_DOCS === 'true'
 
 export default buildConfig({
   admin: {
@@ -71,7 +77,10 @@ export default buildConfig({
     Pages,
     Doctors,
     Departments,
+    Branches,
+    DoctorSchedules,
     Services,
+    ServicePackages,
     News,
     Promotions,
     Faqs,
@@ -112,6 +121,17 @@ export default buildConfig({
     fallback: true,
   },
   plugins: [
+    ...(enableApiDocs
+      ? [
+          payloadApiDocs({
+            openapiVersion: '3.0',
+            metadata: {
+              title: 'Orienda Payload API',
+              version: '0.1.0',
+            },
+          }),
+        ]
+      : []),
     s3Storage({
       collections: {
         media: {

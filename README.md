@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Payload API Docs
+
+Classic Swagger UI for the Payload API is available only when `ENABLE_API_DOCS=true` and `NODE_ENV` is not `production`.
+open [http://localhost:3000/payload-api/docs]
+In production, the docs are disabled completely.
+
 ## Getting Started
 
 First, run the development server:

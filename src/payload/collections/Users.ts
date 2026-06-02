@@ -26,7 +26,7 @@ export const Users: CollectionConfig = {
       ],
       access: {
         update: ({ req }) => {
-          const user = req.user as Record<string, unknown> | null
+          const user = req.user as unknown as Record<string, unknown> | null
           if (!user) return false
           return user.role === 'admin'
         },
@@ -49,7 +49,7 @@ export const Users: CollectionConfig = {
   access: {
     admin: ({ req }) => {
       if (!req.user) return false
-      const user = req.user as Record<string, unknown>
+      const user = req.user as unknown as Record<string, unknown>
       return user.role === 'admin'
     },
     read: isAdmin,
