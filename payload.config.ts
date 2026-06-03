@@ -43,7 +43,7 @@ import { initCronJobs } from './src/payload/cron'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const enableApiDocs =
-  process.env.NODE_ENV !== 'production' && process.env.ENABLE_API_DOCS === 'true'
+  process.env.ENABLE_API_DOCS
 
 export default buildConfig({
   admin: {
