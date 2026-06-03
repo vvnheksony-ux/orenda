@@ -29,8 +29,10 @@ export const LOCALE_OPTIONS = [
 export const ANALYTICS_EVENTS = {
   PAGE_VIEW: 'page_view',
   TOUR_VIEW: 'tour_view',
+  TOUR_SCENE_VIEW: 'tour_scene_view',
   DOCTOR_CLICK: 'doctor_click',
   INQUIRY_SUBMIT: 'inquiry_submit',
+  LANGUAGE_SWITCH: 'language_switch',
   CALL_CLICK: 'call_click',
   MAP_INTERACTION: 'map_interaction',
 } as const
@@ -40,8 +42,10 @@ export type AnalyticsEventValue = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTI
 export const ANALYTICS_EVENT_OPTIONS = [
   { label: 'Page View', value: ANALYTICS_EVENTS.PAGE_VIEW },
   { label: 'Tour View', value: ANALYTICS_EVENTS.TOUR_VIEW },
+  { label: 'Tour Scene View', value: ANALYTICS_EVENTS.TOUR_SCENE_VIEW },
   { label: 'Doctor Click', value: ANALYTICS_EVENTS.DOCTOR_CLICK },
   { label: 'Inquiry Submit', value: ANALYTICS_EVENTS.INQUIRY_SUBMIT },
+  { label: 'Language Switch', value: ANALYTICS_EVENTS.LANGUAGE_SWITCH },
   { label: 'Call Click', value: ANALYTICS_EVENTS.CALL_CLICK },
   { label: 'Map Interaction', value: ANALYTICS_EVENTS.MAP_INTERACTION },
 ] as const
