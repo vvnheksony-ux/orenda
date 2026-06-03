@@ -676,7 +676,14 @@ export interface Inquiry {
  */
 export interface AnalyticsEvent {
   id: number;
-  event: 'page_view' | 'tour_view' | 'doctor_click' | 'inquiry_submit' | 'call_click' | 'map_interaction';
+  event:
+    | 'page_view'
+    | 'call_click'
+    | 'inquiry_submit'
+    | 'language_switch'
+    | 'tour_scene_view'
+    | 'doctor_view'
+    | 'department_view';
   slug?: string | null;
   locale?: string | null;
   scene?: number | null;
@@ -695,7 +702,15 @@ export interface AnalyticsEvent {
 export interface KpiSnapshot {
   id: number;
   date: string;
-  metric: 'calls' | 'inquiries' | 'tour_views' | 'doctor_clicks' | 'map_interactions';
+  metric:
+    | 'calls'
+    | 'inquiries'
+    | 'tour_sessions'
+    | 'tour_scene_views'
+    | 'doctor_views'
+    | 'department_views'
+    | 'page_views'
+    | 'language_split';
   value: number;
   locale?: string | null;
   granularity: 'day' | 'week' | 'month';

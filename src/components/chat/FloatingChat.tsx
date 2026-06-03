@@ -10,6 +10,15 @@ type Message = {
   timestamp: string
 }
 
+const SUGGESTIONS = [
+  { icon: '📅', text: 'How do I book an appointment?' },
+  { icon: '🏥', text: 'What departments do you have?' },
+  { icon: '🕐', text: 'What are your visiting hours?' },
+  { icon: '👨‍⚕️', text: 'How do I find a specialist?' },
+  { icon: '🚨', text: 'What emergency services do you offer?' },
+  { icon: '📋', text: 'How do I access my medical records?' },
+]
+
 export default function FloatingChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -22,7 +31,17 @@ export default function FloatingChat() {
     { id: '4', role: 'user', content: "I need access to my medical records", timestamp: '03:01 AM' }
   ])
   const [isTyping, setIsTyping] = useState(false)
+  const [lastSentAt, setLastSentAt] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const COOLDOWN_MS = 3000
+  const MAX_USER_MESSAGES = 20
+  const userMessageCount = messages.filter(m => m.role === 'user').length
+  const canSend =
+    !isTyping &&
+    !!inputValue.trim() &&
+    Date.now() - lastSentAt >= COOLDOWN_MS &&
+    userMessageCount < MAX_USER_MESSAGES
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -32,26 +51,61 @@ export default function FloatingChat() {
     if (isOpen) scrollToBottom()
   }, [messages, isOpen])
 
-  const handleSend = () => {
-    if (!inputValue.trim()) return
-    
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) return
+    if (isTyping) return
+    if (Date.now() - lastSentAt < COOLDOWN_MS) return
+    if (userMessageCount >= MAX_USER_MESSAGES) return
+    setLastSentAt(Date.now())
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: inputValue.trim(), timestamp: time }
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text.trim(), timestamp: time }
     setMessages(prev => [...prev, userMsg])
-    setInputValue('')
     setIsTyping(true)
-
-    // Simulate AI response delay for realism
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text.trim() }),
+      })
+      const raw = await res.json()
+      const data = Array.isArray(raw) ? raw[0] : raw
+      const reply = data?.output ?? data?.message ?? data?.response ?? data?.text ?? JSON.stringify(data)
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'ai',
-        content: "I've received your message. Since I'm not fully connected to the API yet, this is an automated placeholder response!",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        content: reply,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
       setMessages(prev => [...prev, aiMsg])
+    } catch {
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        content: 'Sorry, I could not reach the server. Please try again.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }
+      setMessages(prev => [...prev, aiMsg])
+    } finally {
       setIsTyping(false)
-    }, 1500)
+    }
+  }
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const message = (e as CustomEvent<{ message: string }>).detail.message
+      if (!message) return
+      setIsOpen(true)
+      void sendMessage(message)
+    }
+    window.addEventListener('orienda:ask-ai', handler)
+    return () => window.removeEventListener('orienda:ask-ai', handler)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleSend = () => {
+    if (!canSend) return
+    sendMessage(inputValue.trim())
+    setInputValue('')
   }
 
   useEffect(() => {
@@ -191,6 +245,26 @@ export default function FloatingChat() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Suggestion chips */}
+            <div className="px-4 pt-2 pb-1 flex gap-2 overflow-x-auto shrink-0" style={{ scrollbarWidth: 'none' }}>
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s.text}
+                  onClick={() => sendMessage(s.text)}
+                  className="shrink-0 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl font-dm-sans text-[12px] font-medium border transition-all hover:shadow-md active:scale-95"
+                  style={{
+                    background: 'linear-gradient(135deg, #FFFFFF 0%, #FBF7EE 100%)',
+                    borderColor: 'rgba(199,167,121,0.3)',
+                    color: '#4A3B2C',
+                    boxShadow: '0 1px 4px rgba(89,69,34,0.08)',
+                  }}
+                >
+                  <span className="text-[14px] leading-none">{s.icon}</span>
+                  <span className="whitespace-nowrap leading-tight">{s.text}</span>
+                </button>
+              ))}
+            </div>
+
             {/* Login / Save Data Banner */}
             {showLoginBanner && (
               <div className="mx-6 mb-2 p-3 rounded-2xl flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-bottom-2 bg-white/80 backdrop-blur">
@@ -211,15 +285,22 @@ export default function FloatingChat() {
 
             {/* Input Footer */}
             <div className="px-6 pb-6 pt-2">
-              <div 
+              {userMessageCount >= MAX_USER_MESSAGES && (
+                <p className="font-dm-sans text-[12px] text-center mb-2" style={{ color: '#A07A44' }}>
+                  Message limit reached. Please refresh to start a new session.
+                </p>
+              )}
+              <div
                 className="w-full flex items-center rounded-[32px] p-2 pl-6 bg-white shadow-lg"
+                style={{ opacity: userMessageCount >= MAX_USER_MESSAGES ? 0.5 : 1 }}
               >
-                <textarea 
+                <textarea
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Type your question here..." 
+                  placeholder={isTyping ? 'Waiting for response...' : 'Type your question here...'}
                   rows={1}
-                  className="flex-1 bg-transparent border-none outline-none font-dm-sans text-[15px] resize-none py-3 max-h-[100px] scrollbar-hide"
+                  disabled={isTyping || userMessageCount >= MAX_USER_MESSAGES}
+                  className="flex-1 bg-transparent border-none outline-none font-dm-sans text-[15px] resize-none py-3 max-h-[100px] scrollbar-hide disabled:cursor-not-allowed"
                   style={{ color: '#4A3B2C' }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
@@ -228,10 +309,10 @@ export default function FloatingChat() {
                     }
                   }}
                 />
-                <button 
+                <button
                   onClick={handleSend}
-                  disabled={!inputValue.trim()}
-                  className="w-12 h-12 rounded-full flex shrink-0 items-center justify-center hover:opacity-90 transition-opacity ml-2 disabled:opacity-50"
+                  disabled={!canSend}
+                  className="w-12 h-12 rounded-full flex shrink-0 items-center justify-center hover:opacity-90 transition-opacity ml-2 disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ background: '#C7A779' }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -2,16 +2,13 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
-import { ChevronRight } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
-
-// FAQ_ITEMS moved to component
+import { ChevronUp } from 'lucide-react'
 
 export default function FaqSection() {
   const t = useTranslations('FaqSection')
-  const [openIdx, setOpenIdx] = useState<number | null>(null)
+  const [openIdx, setOpenIdx] = useState<number | null>(1)
 
   const FAQ_ITEMS = [
     { q: t('qAppointment'), a: t('aAppointment') },
@@ -22,75 +19,81 @@ export default function FaqSection() {
   ]
 
   return (
-    <section className="w-full py-[80px] px-[40px] xl:px-[46px] bg-[#fbf7ee] overflow-hidden">
-      <div className="max-w-[1352px] mx-auto">
-        <div className="relative">
+    <section className="w-full py-[120px] flex justify-center bg-[#fbf7ee]">
+      <div className="flex gap-[40px] items-center relative w-[1352px]">
 
-          {/* Anatomical figure — absolute */}
-          <div className="absolute left-[2px] top-0 w-[499px] h-[628px] opacity-70 pointer-events-none select-none z-0">
-            <Image
-              src="/images/faq-decor.png"
-              alt=""
-              fill
-              className="object-contain"
-              sizes="499px"
-            />
-          </div>
+        {/* Decorative anatomy illustration */}
+        <div
+          className="absolute pointer-events-none"
+          style={{ left: 2, top: 68, width: 499, height: 628, opacity: 0.7, zIndex: 0 }}
+        >
+          <Image
+            src="/images/faq-decor.png"
+            alt=""
+            fill
+            className="object-contain object-top"
+            sizes="499px"
+          />
+        </div>
 
-          {/* Left panel background — stretches with accordion */}
-          <div className="absolute left-0 top-0 h-full w-[521px] z-10 bg-[rgba(255,255,255,0.2)] rounded-[24px]" />
-
-          {/* Text — fixed position, never moves regardless of accordion height */}
-          <div className="absolute left-0 top-[260px] z-20 flex flex-col gap-[12px] px-[24px]">
-            <h2 className="font-cormorant font-bold text-[56px] text-gold-900 leading-none">
+        {/* Left glass panel — self-stretch to match accordion height */}
+        <div
+          className="relative self-stretch shrink-0 rounded-[24px] p-[24px] flex flex-col items-center justify-center"
+          style={{ width: 521, background: 'rgba(255,255,255,0.2)', zIndex: 1 }}
+        >
+          <div className="flex flex-col gap-[12px] text-center">
+            <h2 className="font-cormorant font-bold text-[56px] text-[#3b2d17] leading-none w-full">
               {t('title')}
             </h2>
-            <p className="font-dm-sans text-[20px] text-gold-800 leading-none">
+            <p className="font-dm-sans text-[20px] text-[#594522] leading-none w-full">
               {t('subtitle')}
             </p>
           </div>
+        </div>
 
-          {/* Right — accordion, margin-left clears the left panel */}
-          <div className="ml-[561px] flex flex-col gap-[24px]">
-            {FAQ_ITEMS.map((item, i) => (
-              <div
+        {/* Right accordion */}
+        <div className="flex flex-col gap-[24px] flex-1 min-w-0" style={{ zIndex: 1 }}>
+          {FAQ_ITEMS.map((item, i) => {
+            const isOpen = openIdx === i
+            return (
+              <button
                 key={i}
-                className="bg-white rounded-[16px] overflow-hidden shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] cursor-pointer"
-                onClick={() => setOpenIdx(openIdx === i ? null : i)}
+                onClick={() => setOpenIdx(isOpen ? null : i)}
+                className="bg-white w-full overflow-hidden rounded-[16px] p-[40px] flex flex-col items-end justify-center text-left"
+                style={{ minHeight: 104, boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}
               >
-                <div className="flex items-center justify-between px-[40px] py-[32px]">
-                  <span className="font-cormorant font-bold text-[24px] text-black leading-none">
+                <div className="flex items-center justify-between w-full">
+                  <p className="font-cormorant font-bold text-[24px] text-black leading-none">
                     {item.q}
-                  </span>
-                  <ChevronRight
-                    className={cn(
-                      'w-[24px] h-[24px] text-gold-700 transition-transform duration-300 shrink-0 ml-4',
-                      openIdx === i && 'rotate-90'
-                    )}
-                    strokeWidth={1.5}
-                  />
+                  </p>
+                  <div
+                    className="shrink-0 transition-transform duration-200 text-[#3b2d17]"
+                    style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(90deg)' }}
+                  >
+                    <ChevronUp size={24} />
+                  </div>
                 </div>
 
-                <AnimatePresence>
-                  {openIdx === i && (
+                <AnimatePresence initial={false}>
+                  {isOpen && (
                     <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: 'auto' }}
-                      exit={{ height: 0 }}
-                      transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      className="overflow-hidden"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: 'easeInOut' }}
+                      className="overflow-hidden w-full"
                     >
-                      <p className="px-[40px] pb-[40px] font-dm-sans text-[16px] text-black leading-[1.5]">
+                      <p className="font-dm-sans font-normal text-[16px] text-black leading-[1.5] pt-[24px] w-full">
                         {item.a}
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
-            ))}
-          </div>
-
+              </button>
+            )
+          })}
         </div>
+
       </div>
     </section>
   )

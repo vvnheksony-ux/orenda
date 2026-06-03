@@ -12,7 +12,12 @@
     "ch": "CH",
     "signIn": "登录",
     "signOut": "登出",
-    "bookAppointment": "预约挂号"
+    "bookAppointment": "预约挂号",
+    "clinics": "诊所与中心",
+    "healthTip": "健康贴士",
+    "promotions": "促销与套餐",
+    "career": "职业",
+    "testimonials": "推荐"
   },
   "Footer": {
     "aboutUs": "关于我们",
@@ -111,7 +116,8 @@
     "readMore": "阅读更多",
     "side1": "ACLEDA 银行与 GreenTech Solutions 合作推出针对小企业的可持续融资项目",
     "side2": "ACLEDA 银行与欧瑞达国际医院合作，提供符合国际质量标准的健康服务",
-    "side3": "ACLEDA 银行推出新移动银行功能，增强客户便利和安全性"
+    "side3": "ACLEDA 银行推出新移动银行功能，增强客户便利和安全性",
+    "side4": "ACLEDA 银行推出新移动银行功能，增强客户便利和安全性"
   },
   "PartnersSection": {
     "title": "合作伙伴",

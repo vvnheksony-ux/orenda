@@ -7,12 +7,17 @@
     "doctors": "Doctors",
     "departments": "Departments",
     "news": "News",
-    "contact": "Contact",
+    "contact": "Contact Us",
     "emergency": "Emergency",
     "ch": "CH",
     "signIn": "Sign In",
     "signOut": "Sign Out",
-    "bookAppointment": "Book Appointment"
+    "bookAppointment": "Book Appointment",
+    "clinics": "Clinics & Centers",
+    "healthTip": "Health Tip",
+    "promotions": "Promotion & Package",
+    "career": "Career",
+    "testimonials": "Testimonials"
   },
   "Footer": {
     "aboutUs": "About US",
@@ -111,7 +116,8 @@
     "readMore": "Read More",
     "side1": "ACLEDA Bank Teams Up with GreenTech Solutions to Launch Sustainable Financing Programs for Small Businesses",
     "side2": "ACLEDA Bank Collaborates with Orienda International Hospital on Providing the International Quality Standards for Health Services",
-    "side3": "ACLEDA Bank Introduces New Mobile Banking Features to Enhance Customer Convenience and Security"
+    "side3": "ACLEDA Bank Introduces New Mobile Banking Features to Enhance Customer Convenience and Security",
+    "side4": "ACLEDA Bank Introduces New Mobile Banking Features to Enhance Customer Convenience and Security"
   },
   "PartnersSection": {
     "title": "Partners",

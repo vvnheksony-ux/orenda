@@ -6,10 +6,19 @@ import { useTranslations } from 'next-intl'
 
 const UNION_IMG = '/images/union-decor.svg'
 
+function dispatchAskAI(message: string) {
+  window.dispatchEvent(new CustomEvent('orienda:ask-ai', { detail: { message } }))
+}
+
 export default function HeroSection() {
   const t = useTranslations('HeroSection')
   const [query, setQuery] = useState('')
-  const [response, setResponse] = useState('')
+
+  const handleSubmit = (message: string) => {
+    if (!message.trim()) return
+    dispatchAskAI(message.trim())
+    setQuery('')
+  }
 
   return (
     <section className="relative w-full bg-[#dac4a8] z-[10] h-[90vh] min-h-[750px] max-h-[1000px]">
@@ -70,9 +79,7 @@ export default function HeroSection() {
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          if (query.trim()) {
-            setResponse(t('aiResponse', { query }))
-          }
+          handleSubmit(query)
         }}
         className="absolute flex items-center justify-between rounded-[200px] z-[30]"
         style={{
@@ -105,23 +112,6 @@ export default function HeroSection() {
           <Search className="w-[24px] h-[24px] text-gold-700" strokeWidth={1.5} />
         </button>
       </form>
-
-      {response && (
-        <div
-          className="absolute z-[20] font-dm-sans text-[15px] text-gold-900 text-center"
-          style={{
-            left: '50%',
-            transform: 'translateX(-50%)',
-            bottom: -120,
-            width: 600,
-            background: 'rgba(249,249,249,0.92)',
-            borderRadius: 12,
-            padding: '12px 20px',
-          }}
-        >
-          {response}
-        </div>
-      )}
 
       {/* Union + 360° — right-anchored */}
       <div

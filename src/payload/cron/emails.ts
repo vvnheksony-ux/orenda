@@ -42,7 +42,7 @@ export const sendWeeklyReport = async (payload: Payload) => {
           </tr>
         </thead>
         <tbody>
-          ${(snapshots.docs as any[]).map((s) => `
+          ${(snapshots.docs as unknown as Array<{ metric: string; value: string | number }>).map((s) => `
             <tr style="border-bottom: 1px solid #f0f0f0;">
               <td style="padding: 12px; color: #4A3B2C;">${s.metric}</td>
               <td style="padding: 12px; text-align: right; font-weight: bold; color: #4A3B2C;">${s.value}</td>

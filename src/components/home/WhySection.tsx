@@ -1,25 +1,42 @@
-import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
+import { ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-  // We will move STATS inside the component to use t()
+const STATS = [
+  {
+    value: '99%',
+    label: 'Patient satisfaction',
+    body: 'Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.',
+  },
+  {
+    value: 'Over 100,000',
+    label: 'Patient Visit since 2024',
+    body: 'Including both Cambodian and International patients from over 20 countries a sign of growing trust in local healthcare quality.',
+  },
+  {
+    value: '0%',
+    label: 'Readmission Rate',
+    body: "Orienda's readmission rate stands at 0%, reflecting consistent follow-up and preventive care success.",
+  },
+  {
+    value: '0.5%',
+    label: 'Surgical Infection Rate',
+    body: 'A 0.5% surgical infection rate shows our commitment to safe surgeries and careful post-operative care for every patient',
+  },
+]
 
-function StatCard({ pct, label, body }: { pct: string; label: string; body: string }) {
+function StatCard({ value, label, body }: { value: string; label: string; body: string }) {
   return (
     <div
-      className="bg-[#f7f5f2]/30 backdrop-blur-2xl border border-white/60 rounded-[16px] shadow-[0_8px_32px_rgba(107,90,69,0.12)] overflow-hidden"
-      style={{ padding: '24px 28px', width: 280 }}
+      className="flex flex-col items-center overflow-hidden rounded-[12px] border border-[#fbf7ee] bg-[#fbf7ee] shadow-[0px_4px_12px_3px_rgba(89,69,34,0.2)]"
+      style={{ width: '322px', padding: '24px 40px' }}
     >
-      <div className="flex flex-col items-center text-center w-full">
-        <div className="flex items-baseline justify-center gap-[8px] w-full mb-3">
-          <span className="font-cormorant font-bold text-[36px] text-[#A2834E] leading-none whitespace-nowrap drop-shadow-sm">
-            {pct}
-          </span>
-          <span className="font-cormorant font-medium text-[20px] text-[#2c241b] leading-none whitespace-nowrap">
-            {label}
-          </span>
+      <div className="flex flex-col items-center gap-[12px] text-center pt-[10px] pb-[20px] w-[212px]">
+        <div className="flex flex-col items-center gap-[16px] font-cormorant font-bold leading-none whitespace-nowrap">
+          <span className="text-[36px] text-[#7a5f2c]">{value}</span>
+          <span className="text-[24px] text-[#3b2d17]">{label}</span>
         </div>
-        <p className="font-dm-sans text-[12px] text-[#6b5a45] leading-[1.6] w-full">
+        <p className="font-dm-sans font-normal text-[15px] text-[#3b2d17] leading-[1.3] w-[212px]">
           {body}
         </p>
       </div>
@@ -30,98 +47,64 @@ function StatCard({ pct, label, body }: { pct: string; label: string; body: stri
 export default function WhySection() {
   const t = useTranslations('WhySection')
 
-  const STATS = Array(4).fill({
-    pct: '99%',
-    label: t('statSatisfactionLabel'),
-    body: t('statSatisfactionBody'),
-  })
-
   return (
-    <section className="relative w-full overflow-hidden bg-gold-50 py-[80px] lg:py-[160px]">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
+    <section className="relative w-full overflow-hidden" style={{ height: '872px', background: 'rgba(245,236,212,0.45)' }}>
+
+      {/* Background image */}
+      <div className="absolute inset-0">
         <Image
-          src="/images/why-bg.jpg"
-          alt="Why Choose Orienda Background"
+          src="/images/figma-facility-1.jpg"
+          alt="Why Orienda"
           fill
           className="object-cover"
-          quality={90}
+          sizes="100vw"
+          priority
         />
-        {/* Overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]"></div>
       </div>
 
-      {/* ── Desktop layout (lg+) ─────────────────── */}
-      <div className="relative z-10 hidden lg:flex items-center justify-between max-w-[1400px] mx-auto px-10 xl:px-20" style={{ minHeight: 700 }}>
+      {/* Blur overlay */}
+      <div className="absolute inset-0 bg-[rgba(0,0,0,0.1)]" style={{ backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }} />
 
-        {/* Left text column */}
-        <div className="flex flex-col gap-8 max-w-[450px] xl:max-w-[500px]">
-          <div className="flex flex-col gap-4">
-            <h2 className="font-cormorant font-semibold text-[36px] xl:text-[44px] text-[#2c241b] leading-[1.2]">
+      {/* Content */}
+      <div className="absolute flex flex-col items-start" style={{ left: 81, top: 78, gap: 82 }}>
+
+        {/* Text block */}
+        <div className="flex flex-col gap-[20px] items-start" style={{ width: 695 }}>
+          <div className="flex flex-col gap-[16px] text-[#3b2d17]">
+            <h2 className="font-cormorant font-bold text-[48px] leading-none">
               Why Orienda Is Your Best Choice?
             </h2>
-            <p className="font-dm-sans font-normal text-[15px] xl:text-[16px] text-[#6b5a45] leading-[1.6]">
-              {t('description')}
+            <p className="font-dm-sans font-light text-[24px] leading-[1.4] overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+              Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with a proven track record of life-saving success. As an ISO-certified institution, we provide 24/7 comprehensive medical services—ranging from specialized fertility and maternity care to emergency air ambulance transport—all powered by a dedicated team of over 800 professionals.
             </p>
           </div>
-          <button className="flex items-center gap-2 bg-[#d3b482] text-white px-6 py-3 rounded-full font-dm-sans text-[14px] font-medium w-fit hover:bg-[#b09366] transition-colors mt-2 shadow-sm">
+          <button className="flex items-center gap-[8px] bg-[#b89148] text-white rounded-[12px] font-dm-sans text-[16px] px-[20px]" style={{ height: 48 }}>
             {t('discoverMore')}
             <ArrowRight size={18} />
           </button>
         </div>
 
-        {/* Right cards column (Staggered Grid) */}
-        <div className="flex gap-[20px] xl:gap-[24px] items-start shrink-0">
-          {/* Left Column (shifted down) */}
-          <div className="flex flex-col gap-[20px] xl:gap-[24px] mt-[120px]">
+        {/* Staggered 4 stat cards — exact Figma positions */}
+        <div className="relative" style={{ width: 1351, height: 340 }}>
+          {/* Card 1: top-0 left-0 */}
+          <div className="absolute" style={{ top: 0, left: 0 }}>
+            <StatCard {...STATS[0]} />
+          </div>
+          {/* Card 2: top-0 left-685.64 */}
+          <div className="absolute" style={{ top: 0, left: 686 }}>
             <StatCard {...STATS[1]} />
+          </div>
+          {/* Card 3: top-86 left-342.82 */}
+          <div className="absolute" style={{ top: 86, left: 343 }}>
             <StatCard {...STATS[2]} />
           </div>
-          {/* Right Column (starts at top) */}
-          <div className="flex flex-col gap-[20px] xl:gap-[24px]">
-            <StatCard {...STATS[0]} />
+          {/* Card 4: top-86 left-1028.46 */}
+          <div className="absolute" style={{ top: 86, left: 1028 }}>
             <StatCard {...STATS[3]} />
           </div>
         </div>
-      </div>
 
-      {/* ── Mobile stacked layout (< lg) ─────────────────── */}
-      <div className="relative z-10 lg:hidden px-6 py-16 flex flex-col gap-10">
-        <div className="flex flex-col gap-6 relative">
-          <p className="font-dm-sans font-medium text-[13px] text-gold-700 uppercase tracking-[0.18em]">
-            {t('subtitle')}
-          </p>
-          <h2 className="font-cormorant font-bold text-[40px] text-gold-900 leading-[1.1]">
-            {t('title')}
-          </h2>
-          <p className="font-dm-sans font-light text-[18px] text-gold-900/80 leading-[1.5]">
-            {t('description')}
-          </p>
-          <button className="flex items-center gap-2 bg-[#A2834E] text-white px-6 py-3.5 rounded-[8px] font-dm-sans text-base w-fit hover:bg-gold-800 transition-colors">
-            {t('discoverMore')}
-            <ArrowRight size={20} />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {STATS.map((stat, i) => (
-            <div
-              key={i}
-              className="bg-[#f7f5f2]/30 backdrop-blur-2xl border border-white/50 rounded-[16px] shadow-[0_4px_24px_rgba(0,0,0,0.05)] p-6"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="font-cormorant font-bold text-[32px] text-gold-900 leading-none">
-                  {stat.pct}
-                </span>
-                <span className="font-cormorant font-bold text-[20px] text-gold-900 leading-none">
-                  {stat.label}
-                </span>
-              </div>
-              <p className="font-dm-sans text-[14px] text-gold-900/80 leading-[1.4]">{stat.body}</p>
-            </div>
-          ))}
-        </div>
       </div>
-
     </section>
   )
 }

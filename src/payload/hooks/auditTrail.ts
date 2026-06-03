@@ -9,8 +9,8 @@ export function createAuditHooks(collectionSlug: string) {
 
       let action: 'created' | 'updated' | 'published' | 'archived' = operation === 'create' ? 'created' : 'updated'
       
-      const docRecord = doc as Record<string, any>
-      const prevDoc = previousDoc as Record<string, any> | undefined
+      const docRecord = doc as Record<string, unknown>
+      const prevDoc = previousDoc as Record<string, unknown> | undefined
 
       if (operation === 'update' && prevDoc) {
         if (prevDoc.status !== CONTENT_STATUS.PUBLISHED && docRecord.status === CONTENT_STATUS.PUBLISHED) {
@@ -20,7 +20,7 @@ export function createAuditHooks(collectionSlug: string) {
         }
       }
 
-      const documentTitle = docRecord.title || docRecord.name || docRecord.question || docRecord.email || docRecord.id
+      const documentTitle = (docRecord.title || docRecord.name || docRecord.question || docRecord.email || docRecord.id) as string
 
       await req.payload.create({
         collection: 'auditLogs',
@@ -31,7 +31,7 @@ export function createAuditHooks(collectionSlug: string) {
           documentTitle: String(documentTitle),
           userId: user.id,
           userName: user.email,
-          userRole: (user.role as any) || undefined,
+          userRole: (user.role as string) || undefined,
           timestamp: new Date().toISOString(),
         },
       })
@@ -45,8 +45,8 @@ export function createAuditHooks(collectionSlug: string) {
       const user = req.user as { id: string; email: string; role?: string } | null
       if (!user) return
 
-      const docRecord = doc as Record<string, any>
-      const documentTitle = docRecord.title || docRecord.name || docRecord.question || docRecord.email || docRecord.id
+      const docRecord = doc as Record<string, unknown>
+      const documentTitle = (docRecord.title || docRecord.name || docRecord.question || docRecord.email || docRecord.id) as string
 
       await req.payload.create({
         collection: 'auditLogs',
@@ -57,7 +57,7 @@ export function createAuditHooks(collectionSlug: string) {
           documentTitle: String(documentTitle),
           userId: user.id,
           userName: user.email,
-          userRole: (user.role as any) || undefined,
+          userRole: (user.role as string) || undefined,
           timestamp: new Date().toISOString(),
         },
       })

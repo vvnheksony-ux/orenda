@@ -13,12 +13,12 @@ import { useAnalytics } from '@/lib/use-analytics'
 import { LocaleCode } from '@/payload/constants'
 
 const NAV_ITEMS = [
-  { key: 'about', href: '/about' },
-  { key: 'doctors', href: '/doctors' },
-  { key: 'departments', href: '/departments' },
-  { key: 'news', href: '/news' },
-  { key: 'contact', href: '/contact' },
-  { key: 'emergency', href: '/emergency' },
+  { key: 'about',      href: '/about'       },
+  { key: 'doctors',    href: '/doctors'     },
+  { key: 'promotions', href: '/promotions'  },
+  { key: 'news',       href: '/news'        },
+  { key: 'career',     href: '/career'      },
+  { key: 'testimonials', href: '/testimonials' },
 ]
 
 export default function Navbar() {
