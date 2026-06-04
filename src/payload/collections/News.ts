@@ -3,14 +3,14 @@ import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
-import { createAuditHooks } from '../hooks/auditTrail'
+
 const webhookHooks = createWebhookHooks('news')
-const auditHooks = createAuditHooks('news')
 
 export const News: CollectionConfig = {
   slug: 'news',
   admin: {
-    group: 'Content',
+    group: 'Legacy',
+    hidden: true,
     useAsTitle: 'title',
   },
   versions: {
@@ -30,7 +30,7 @@ export const News: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField(),
+    ...slugField('news'),
     {
       name: 'body',
       type: 'richText',
@@ -53,7 +53,7 @@ export const News: CollectionConfig = {
     ...statusFields(),
   ],
   hooks: {
-    afterChange: [webhookHooks.onChange, auditHooks.onChange],
-    afterDelete: [webhookHooks.onDelete, auditHooks.onDelete],
+    afterChange: [webhookHooks.onChange],
+    afterDelete: [webhookHooks.onDelete],
   },
 }

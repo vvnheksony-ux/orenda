@@ -1,4 +1,4 @@
-import type { Endpoint, PayloadRequest } from 'payload'
+import type { Endpoint, PayloadRequest, Where } from 'payload'
 import { isAdmin } from '../access'
 import {
   buildKpiWhere,
@@ -82,6 +82,51 @@ export const eventEndpoint: Endpoint = {
         },
       })
       return Response.json({ ok: true, id: doc.id }, { status: 201 })
+    } catch (err: unknown) {
+      return validationResponse(err)
+    }
+  },
+}
+
+export const contentSearchEndpoint: Endpoint = {
+  path: '/content/search',
+  method: 'get',
+  handler: async (req: PayloadRequest) => {
+    try {
+      const { searchParams } = tryGetURL(req)
+      const q = searchParams.get('q')?.trim()
+      const locale = searchParams.get('locale')?.trim()
+      const contentType = searchParams.get('contentType')?.trim()
+      const limit = Number(searchParams.get('limit') || 20)
+      const where: Record<string, unknown> = {
+        status: { equals: 'published' },
+      }
+
+      if (locale) where.locale = { equals: locale }
+      if (contentType) where.contentType = { equals: contentType }
+
+      if (q) {
+        where.and = [
+          {
+            or: [
+              { title: { like: q } },
+              { excerpt: { like: q } },
+              { bodyText: { like: q } },
+            ],
+          },
+        ]
+      }
+
+      const result = await req.payload.find({
+        collection: 'content-search-index',
+        depth: 1,
+        limit: Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 100) : 20,
+        overrideAccess: true,
+        sort: '-publishedAt',
+        where: where as Where,
+      })
+
+      return Response.json(result)
     } catch (err: unknown) {
       return validationResponse(err)
     }
