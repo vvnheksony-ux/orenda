@@ -17,6 +17,12 @@ import { DoctorSchedules } from './src/payload/collections/DoctorSchedules'
 import { Services } from './src/payload/collections/Services'
 import { ServicePackages } from './src/payload/collections/ServicePackages'
 import { News } from './src/payload/collections/News'
+import { Announcements } from './src/payload/collections/Announcements'
+import { HealthTips } from './src/payload/collections/HealthTips'
+import { Careers } from './src/payload/collections/Careers'
+import { DoctorTalks } from './src/payload/collections/DoctorTalks'
+import { InsuranceUpdates } from './src/payload/collections/InsuranceUpdates'
+import { ContentSearchIndex } from './src/payload/collections/ContentSearchIndex'
 import { Promotions } from './src/payload/collections/Promotions'
 import { Faqs } from './src/payload/collections/Faqs'
 import { TourScenes } from './src/payload/collections/TourScenes'
@@ -37,6 +43,7 @@ import {
   eventEndpoint,
   kpiEndpoint,
   analyticsExportEndpoint,
+  contentSearchEndpoint,
 } from './src/payload/endpoints'
 
 const filename = fileURLToPath(import.meta.url)
@@ -66,6 +73,12 @@ export default buildConfig({
     Services,
     ServicePackages,
     News,
+    Announcements,
+    HealthTips,
+    Careers,
+    DoctorTalks,
+    InsuranceUpdates,
+    ContentSearchIndex,
     Promotions,
     Faqs,
     TourScenes,
@@ -89,9 +102,13 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
+      // Prevent connection pool exhaustion in development
+      max: process.env.NODE_ENV === 'production' ? 20 : 5,
+      idleTimeoutMillis: 30000, // 30 seconds
+      connectionTimeoutMillis: 5000, // 5 seconds
     },
     migrationDir: path.resolve(dirname, 'src/migrations'),
-    push: process.env.NODE_ENV !== 'production',
+    push: false,
     schemaName: 'payload',
   }),
   sharp,
@@ -142,6 +159,7 @@ export default buildConfig({
     healthEndpoint,
     inquiryEndpoint,
     eventEndpoint,
+    contentSearchEndpoint,
     kpiEndpoint,
     analyticsExportEndpoint,
   ],
