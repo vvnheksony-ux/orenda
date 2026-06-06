@@ -1,0 +1,120 @@
+'use client'
+
+import type { Column, ListViewClientProps } from 'payload'
+
+import { DefaultListView, useListQuery, useTableColumns } from '@payloadcms/ui'
+import { Eye, Pencil, Trash2 } from 'lucide-react'
+import Link from 'next/link'
+
+type PayloadListDoc = {
+  id: number | string
+}
+
+type OriendaListTableProps = {
+  collectionSlug: string
+  hasDeletePermission?: boolean
+}
+
+function OriendaListView(props: ListViewClientProps) {
+  return (
+    <DefaultListView
+      {...props}
+      enableRowSelections={false}
+      Table={
+        <OriendaListTable
+          collectionSlug={props.collectionSlug}
+          hasDeletePermission={props.hasDeletePermission}
+        />
+      }
+    />
+  )
+}
+
+function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTableProps) {
+  const { data, query, refineListData } = useListQuery()
+  const { columns } = useTableColumns()
+  const docs = (data?.docs || []) as PayloadListDoc[]
+  const activeColumns = getVisibleColumns(columns || [])
+
+  async function deleteDoc(doc: PayloadListDoc) {
+    if (!hasDeletePermission) return
+    if (!window.confirm('Delete this record?')) return
+
+    const response = await fetch(`/payload-api/${collectionSlug}/${doc.id}`, {
+      credentials: 'include',
+      method: 'DELETE',
+    })
+
+    if (response.ok) {
+      await refineListData(query)
+    }
+  }
+
+  if (!docs.length) {
+    return <div className="orienda-list-empty">No records found.</div>
+  }
+
+  return (
+    <div className="orienda-list-table-wrap">
+      <table className="orienda-list-table">
+        <thead>
+          <tr>
+            {activeColumns.map((column) => (
+              <th key={column.accessor}>{column.Heading}</th>
+            ))}
+            <th className="orienda-list-table__actions-heading">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {docs.map((doc, rowIndex) => {
+            const docURL = `/admin/collections/${collectionSlug}/${doc.id}`
+
+            return (
+              <tr data-id={doc.id} key={doc.id}>
+                {activeColumns.map((column) => (
+                  <td className={`cell-${column.accessor.replace(/\./g, '__')}`} key={column.accessor}>
+                    <div className="orienda-list-table__cell-content">
+                      {column.renderedCells[rowIndex]}
+                    </div>
+                  </td>
+                ))}
+                <td className="orienda-list-table__actions-cell">
+                  <div className="orienda-list-table__actions">
+                    <Link aria-label="View record" className="orienda-table-action orienda-table-action--view" href={docURL}>
+                      <Eye aria-hidden size={15} />
+                      {/* <span>View</span> */}
+                    </Link>
+                    <Link aria-label="Edit record" className="orienda-table-action orienda-table-action--edit" href={docURL}>
+                      <Pencil aria-hidden size={15} />
+                      {/* <span>Edit</span> */}
+                    </Link>
+                    <button
+                      aria-label="Delete record"
+                      className="orienda-table-action orienda-table-action--delete"
+                      disabled={!hasDeletePermission}
+                      onClick={() => void deleteDoc(doc)}
+                      type="button"
+                    >
+                      <Trash2 aria-hidden size={15} />
+                      {/* <span>Delete</span> */}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function getVisibleColumns(columns: Column[]) {
+  return columns.filter((column) => {
+    if (!column.active) return false
+    if (column.accessor === 'select' || column.accessor === '_select') return false
+    return true
+  })
+}
+
+export default OriendaListView

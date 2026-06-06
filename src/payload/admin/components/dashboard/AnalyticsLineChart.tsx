@@ -23,8 +23,8 @@ export default function AnalyticsLineChart({ rows, series }: { rows: AnalyticsRo
   })
 
   return (
-    <div className="pt-2">
-      <div className="h-[300px] w-full">
+    <div className="orienda-dashboard-line-chart pt-2">
+      <div className="orienda-dashboard-line-chart__canvas h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 24, right: 12, bottom: 8, left: 0 }}>
             <CartesianGrid stroke="#f1eee8" vertical={false} />
@@ -49,7 +49,7 @@ export default function AnalyticsLineChart({ rows, series }: { rows: AnalyticsRo
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex flex-wrap justify-center gap-5 text-xs text-[#8f8577]">
+      <div className="orienda-dashboard__legend flex flex-wrap justify-center gap-5 text-xs text-[#8f8577]">
         {series.map((item) => (
           <span key={item.label} className="inline-flex items-center gap-2">
             <i className="h-0.5 w-7" style={{ backgroundColor: item.color }} />

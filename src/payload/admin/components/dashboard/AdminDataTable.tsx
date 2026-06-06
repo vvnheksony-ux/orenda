@@ -6,7 +6,7 @@ export type AdminStatus = 'pending' | 'confirmed' | 'completed' | 'published' | 
 export type AdminTableColumn<T> = {
   key: keyof T | string
   label: string
-  kind?: 'text' | 'status' | 'actions'
+  kind?: 'text' | 'status' | 'actions' | 'richText'
   className?: string
   headerClassName?: string
   render?: (row: T, index: number) => ReactNode
@@ -61,22 +61,22 @@ export default function AdminDataTable<T extends Record<string, string>>({
   rowKey?: keyof T | ((row: T, index: number) => string)
 }) {
   return (
-    <article>
+    <article className="orienda-dashboard-table">
       {(title || subtitle) && (
-        <div className="mb-3">
+        <div className="orienda-dashboard-table__header mb-3">
           {title && <h2 className="text-base font-bold text-[#2d2b28]">{title}</h2>}
-          {subtitle && <p className="mt-1 text-sm text-[#918b82]">{subtitle}</p>}
+          {subtitle && <p className="orienda-dashboard-table__subtitle mt-1 text-sm text-[#918b82]">{subtitle}</p>}
         </div>
       )}
       {(searchPlaceholder || primaryActionLabel) && (
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="orienda-dashboard-table__toolbar mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {searchPlaceholder ? (
             <label className="relative block w-full sm:max-w-116">
               <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#8c8982]" />
               <input
                 type="search"
                 placeholder={searchPlaceholder}
-                className="h-11 w-full rounded-xl border border-[#dedbd4] bg-white pl-11 pr-4 text-sm text-[#393733] shadow-sm outline-none transition placeholder:text-[#aaa6a0] focus:border-[#c29a4a] focus:ring-3 focus:ring-[#c29a4a]/15"
+                className="h-11 w-full rounded-xl bg-white pl-11 pr-4 text-sm text-[#393733] shadow-sm outline-none transition placeholder:text-[#aaa6a0] focus:border-[#c29a4a] focus:ring-3 focus:ring-[#c29a4a]/15"
               />
             </label>
           ) : (
@@ -90,10 +90,10 @@ export default function AdminDataTable<T extends Record<string, string>>({
           )}
         </div>
       )}
-      <div className="overflow-hidden rounded-2xl bg-white shadow-[0_12px_30px_rgba(53,42,22,0.08)] ring-1 ring-[#f0ece4]">
-        <div className="overflow-x-auto">
+      <div className="orienda-dashboard-table__wrap overflow-hidden rounded-2xl bg-white shadow-[0_12px_30px_rgba(53,42,22,0.08)] ring-1 ring-[#f0ece4]">
+        <div className="orienda-dashboard-table__scroll overflow-x-auto">
           <table className="w-full min-w-155 border-collapse text-left text-sm">
-            <thead className="bg-[#ebe8e1] text-xs font-bold text-[#817b72]">
+            <thead className="orienda-dashboard-table__head bg-[#ebe8e1] text-xs font-bold text-[#817b72]">
               <tr>
                 {columns.map((column) => (
                   <th key={String(column.key)} className={`px-5 py-4 ${column.headerClassName ?? ''}`}>
@@ -115,19 +115,32 @@ export default function AdminDataTable<T extends Record<string, string>>({
             </tbody>
           </table>
         </div>
-        {footer && <button className="px-7 py-5 text-sm font-semibold text-[#b38531]">{footer} -&gt;</button>}
+        {footer && <button className="px-7 py-5 text-sm font-semibold text-[#b38531] bg-white border-none">{footer}</button>}
       </div>
     </article>
   )
 }
 
 function StatusBadge({ status }: { status: AdminStatus }) {
-  return <span className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyles[status] ?? 'bg-[#efeeeb] text-[#6f6b64]'}`}>{status}</span>
+  return <span className={`orienda-status orienda-status--${status} rounded-full px-3 py-1 text-xs font-bold ${statusStyles[status] ?? 'bg-[#efeeeb] text-[#6f6b64]'}`}>{status}</span>
 }
 
 function renderCell<T extends Record<string, string>>(row: T, index: number, column: AdminTableColumn<T>, actions?: AdminTableAction<T>[]) {
   if (column.render) return column.render(row, index)
   if (column.kind === 'actions') return <ActionButtons row={row} index={index} actions={actions} />
+  
+  if (column.kind === 'richText') {
+    const rawHtml = String(row[column.key] || '')
+    const plainText = rawHtml.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim()
+    const words = plainText.split(' ').filter(Boolean)
+    const truncated = words.length > 15 ? words.slice(0, 15).join(' ') + '...' : plainText
+
+    return (
+      <div className="line-clamp-1 text-xs text-inherit" title={plainText}>
+        {truncated}
+      </div>
+    )
+  }
 
   const value = row[column.key]
   if (column.kind === 'status' || column.key === 'status' || column.key === 'action') {
@@ -141,17 +154,17 @@ function ActionButtons<T extends Record<string, string>>({ row, index, actions }
   if (!actions?.length) return null
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="orienda-dashboard-table__actions flex items-center gap-2">
       {actions.map((action) => {
         if (action.render) return <span key={action.label}>{action.render(row, index)}</span>
 
         const Icon = getActionIcon(action.icon)
         return Icon ? (
-          <button key={action.label} aria-label={action.label} className={`grid size-8 place-items-center rounded-lg transition ${actionToneStyles[action.tone ?? 'muted']}`}>
+          <button key={action.label} aria-label={action.label} className={`bg-white border-none grid size-8 place-items-center rounded-lg transition ${actionToneStyles[action.tone ?? 'muted']}`}>
             <Icon className="size-4" />
           </button>
         ) : (
-          <button key={action.label} className={`rounded-lg px-2 py-1 text-xs font-semibold transition ${actionToneStyles[action.tone ?? 'gold']}`}>
+          <button key={action.label} className={`bg-white border-none rounded-lg px-2 py-1 text-xs font-semibold transition ${actionToneStyles[action.tone ?? 'gold']}`}>
             {action.label}
           </button>
         )

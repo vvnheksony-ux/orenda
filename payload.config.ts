@@ -2,7 +2,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
-import { buildConfig } from 'payload'
+import { buildConfig, type CollectionConfig } from 'payload'
 import { payloadApiDocs } from './src/payload/plugins/payloadApiDocs'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
@@ -44,11 +44,45 @@ const dirname = path.dirname(filename)
 const enableApiDocs =
   process.env.NODE_ENV !== 'production' && process.env.ENABLE_API_DOCS === 'true'
 
+const oriendaListView = '@/payload/admin/components/list/OriendaListView'
+
+function withOriendaListView(collection: CollectionConfig): CollectionConfig {
+  return {
+    ...collection,
+    admin: {
+      ...collection.admin,
+      components: {
+        ...collection.admin?.components,
+        views: {
+          ...collection.admin?.components?.views,
+          list: {
+            ...collection.admin?.components?.views?.list,
+            Component: oriendaListView,
+          },
+        },
+      },
+    },
+  }
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    components: {
+      graphics: {
+        Icon: '@/payload/admin/components/NavIcon',
+        Logo: '@/payload/admin/components/NavIcon',
+      },
+      Nav: '@/payload/admin/components/navigation/OriendaPayloadNav',
+      // header: ['@/payload/admin/components/header/OriendaAdminHeader'],
+      views: {
+        dashboard: {
+          Component: '@/payload/admin/components/dashboard/OriendaDashboardView',
+        },
+      },
     },
     meta: {
       title: 'Orienda CMS',
@@ -74,7 +108,8 @@ export default buildConfig({
     KpiSnapshots,
     GaReports,
     AuditLogs,
-  ],
+    // ],
+  ].map(withOriendaListView),
   globals: [
     SiteSettings,
     OperationalSettings,
