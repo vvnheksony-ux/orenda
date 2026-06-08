@@ -77,6 +77,12 @@ export interface Config {
     services: Service;
     'service-packages': ServicePackage;
     news: News;
+    announcements: Announcement;
+    'health-tips': HealthTip;
+    careers: Career;
+    'doctor-talks': DoctorTalk;
+    'insurance-updates': InsuranceUpdate;
+    'content-search-index': ContentSearchIndex;
     promotions: Promotion;
     faqs: Faq;
     tourScenes: TourScene;
@@ -102,6 +108,12 @@ export interface Config {
     services: ServicesSelect<false> | ServicesSelect<true>;
     'service-packages': ServicePackagesSelect<false> | ServicePackagesSelect<true>;
     news: NewsSelect<false> | NewsSelect<true>;
+    announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
+    'health-tips': HealthTipsSelect<false> | HealthTipsSelect<true>;
+    careers: CareersSelect<false> | CareersSelect<true>;
+    'doctor-talks': DoctorTalksSelect<false> | DoctorTalksSelect<true>;
+    'insurance-updates': InsuranceUpdatesSelect<false> | InsuranceUpdatesSelect<true>;
+    'content-search-index': ContentSearchIndexSelect<false> | ContentSearchIndexSelect<true>;
     promotions: PromotionsSelect<false> | PromotionsSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     tourScenes: TourScenesSelect<false> | TourScenesSelect<true>;
@@ -601,6 +613,314 @@ export interface News {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements".
+ */
+export interface Announcement {
+  id: number;
+  title: string;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  thumbnail?: (number | null) | Media;
+  excerpt?: string | null;
+  author?: string | null;
+  legacyNewsId?: number | null;
+  legacySlug?: string | null;
+  slug: string;
+  priority?: ('low' | 'medium' | 'high' | 'urgent') | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  isBanner?: boolean | null;
+  /**
+   * Hex color code (e.g. #FF5733)
+   */
+  bannerBackgroundColor?: string | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "health-tips".
+ */
+export interface HealthTip {
+  id: number;
+  title: string;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  thumbnail?: (number | null) | Media;
+  excerpt?: string | null;
+  author?: string | null;
+  legacyNewsId?: number | null;
+  legacySlug?: string | null;
+  slug: string;
+  healthTipCategory?: ('nutrition' | 'exercise' | 'mentalHealth' | 'preventiveCare' | 'chronicDisease') | null;
+  /**
+   * Estimated reading time in minutes
+   */
+  readingTime?: number | null;
+  healthTipTags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "careers".
+ */
+export interface Career {
+  id: number;
+  title: string;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  thumbnail?: (number | null) | Media;
+  excerpt?: string | null;
+  author?: string | null;
+  legacyNewsId?: number | null;
+  legacySlug?: string | null;
+  slug: string;
+  position: string;
+  careerDepartment?: (number | null) | Department;
+  careerLocation?: (number | null) | Branch;
+  careerEmploymentType?: ('full_time' | 'part_time' | 'contract' | 'visiting') | null;
+  experienceLevel?: ('entry' | 'mid' | 'senior') | null;
+  salaryRange?: string | null;
+  applicationDeadline?: string | null;
+  careerRequirements?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  responsibilities?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "doctor-talks".
+ */
+export interface DoctorTalk {
+  id: number;
+  title: string;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  thumbnail?: (number | null) | Media;
+  excerpt?: string | null;
+  author?: string | null;
+  legacyNewsId?: number | null;
+  legacySlug?: string | null;
+  slug: string;
+  featuredDoctor: number | Doctor;
+  talkTopic: string;
+  eventDate: string;
+  /**
+   * Time of the talk (e.g. 14:00 - 16:00)
+   */
+  eventTime?: string | null;
+  /**
+   * Duration in minutes
+   */
+  duration?: number | null;
+  isVirtual?: boolean | null;
+  meetingLink?: string | null;
+  maxAttendees?: number | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "insurance-updates".
+ */
+export interface InsuranceUpdate {
+  id: number;
+  title: string;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  thumbnail?: (number | null) | Media;
+  excerpt?: string | null;
+  author?: string | null;
+  legacyNewsId?: number | null;
+  legacySlug?: string | null;
+  slug: string;
+  /**
+   * Optional for legacy migrated records; fill when available.
+   */
+  insuranceProvider?: string | null;
+  insurancePlanTypes?:
+    | {
+        planType: string;
+        id?: string | null;
+      }[]
+    | null;
+  coverageDetails?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  insuranceContactPerson?: string | null;
+  insuranceContactPhone?: string | null;
+  insuranceContactEmail?: string | null;
+  effectiveDate?: string | null;
+  expirationDate?: string | null;
+  requiredDocuments?:
+    | {
+        document: string;
+        id?: string | null;
+      }[]
+    | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "content-search-index".
+ */
+export interface ContentSearchIndex {
+  id: number;
+  sourceCollection: string;
+  sourceId: string;
+  contentType: string;
+  locale: string;
+  title: string;
+  slug: string;
+  canonicalPath: string;
+  excerpt?: string | null;
+  bodyText?: string | null;
+  thumbnail?: (number | null) | Media;
+  status?: string | null;
+  publishedAt?: string | null;
+  legacyNewsId?: number | null;
+  legacySlug?: string | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faqs".
  */
 export interface Faq {
@@ -676,7 +996,15 @@ export interface Inquiry {
  */
 export interface AnalyticsEvent {
   id: number;
-  event: 'page_view' | 'tour_view' | 'doctor_click' | 'inquiry_submit' | 'call_click' | 'map_interaction';
+  event:
+    | 'page_view'
+    | 'tour_view'
+    | 'tour_scene_view'
+    | 'doctor_click'
+    | 'inquiry_submit'
+    | 'language_switch'
+    | 'call_click'
+    | 'map_interaction';
   slug?: string | null;
   locale?: string | null;
   scene?: number | null;
@@ -824,6 +1152,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'news';
         value: number | News;
+      } | null)
+    | ({
+        relationTo: 'announcements';
+        value: number | Announcement;
+      } | null)
+    | ({
+        relationTo: 'health-tips';
+        value: number | HealthTip;
+      } | null)
+    | ({
+        relationTo: 'careers';
+        value: number | Career;
+      } | null)
+    | ({
+        relationTo: 'doctor-talks';
+        value: number | DoctorTalk;
+      } | null)
+    | ({
+        relationTo: 'insurance-updates';
+        value: number | InsuranceUpdate;
+      } | null)
+    | ({
+        relationTo: 'content-search-index';
+        value: number | ContentSearchIndex;
       } | null)
     | ({
         relationTo: 'promotions';
@@ -1191,6 +1543,173 @@ export interface NewsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "announcements_select".
+ */
+export interface AnnouncementsSelect<T extends boolean = true> {
+  title?: T;
+  body?: T;
+  thumbnail?: T;
+  excerpt?: T;
+  author?: T;
+  legacyNewsId?: T;
+  legacySlug?: T;
+  slug?: T;
+  priority?: T;
+  startDate?: T;
+  endDate?: T;
+  isBanner?: T;
+  bannerBackgroundColor?: T;
+  status?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "health-tips_select".
+ */
+export interface HealthTipsSelect<T extends boolean = true> {
+  title?: T;
+  body?: T;
+  thumbnail?: T;
+  excerpt?: T;
+  author?: T;
+  legacyNewsId?: T;
+  legacySlug?: T;
+  slug?: T;
+  healthTipCategory?: T;
+  readingTime?: T;
+  healthTipTags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  status?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "careers_select".
+ */
+export interface CareersSelect<T extends boolean = true> {
+  title?: T;
+  body?: T;
+  thumbnail?: T;
+  excerpt?: T;
+  author?: T;
+  legacyNewsId?: T;
+  legacySlug?: T;
+  slug?: T;
+  position?: T;
+  careerDepartment?: T;
+  careerLocation?: T;
+  careerEmploymentType?: T;
+  experienceLevel?: T;
+  salaryRange?: T;
+  applicationDeadline?: T;
+  careerRequirements?: T;
+  responsibilities?: T;
+  status?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "doctor-talks_select".
+ */
+export interface DoctorTalksSelect<T extends boolean = true> {
+  title?: T;
+  body?: T;
+  thumbnail?: T;
+  excerpt?: T;
+  author?: T;
+  legacyNewsId?: T;
+  legacySlug?: T;
+  slug?: T;
+  featuredDoctor?: T;
+  talkTopic?: T;
+  eventDate?: T;
+  eventTime?: T;
+  duration?: T;
+  isVirtual?: T;
+  meetingLink?: T;
+  maxAttendees?: T;
+  status?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "insurance-updates_select".
+ */
+export interface InsuranceUpdatesSelect<T extends boolean = true> {
+  title?: T;
+  body?: T;
+  thumbnail?: T;
+  excerpt?: T;
+  author?: T;
+  legacyNewsId?: T;
+  legacySlug?: T;
+  slug?: T;
+  insuranceProvider?: T;
+  insurancePlanTypes?:
+    | T
+    | {
+        planType?: T;
+        id?: T;
+      };
+  coverageDetails?: T;
+  insuranceContactPerson?: T;
+  insuranceContactPhone?: T;
+  insuranceContactEmail?: T;
+  effectiveDate?: T;
+  expirationDate?: T;
+  requiredDocuments?:
+    | T
+    | {
+        document?: T;
+        id?: T;
+      };
+  status?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "content-search-index_select".
+ */
+export interface ContentSearchIndexSelect<T extends boolean = true> {
+  sourceCollection?: T;
+  sourceId?: T;
+  contentType?: T;
+  locale?: T;
+  title?: T;
+  slug?: T;
+  canonicalPath?: T;
+  excerpt?: T;
+  bodyText?: T;
+  thumbnail?: T;
+  status?: T;
+  publishedAt?: T;
+  legacyNewsId?: T;
+  legacySlug?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

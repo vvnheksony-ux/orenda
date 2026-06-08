@@ -4,12 +4,14 @@ import { statusFields } from '../fields/status'
 import { quillRichTextAdmin } from '../fields/quillRichText'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
+
 const webhookHooks = createWebhookHooks('news')
 
 export const News: CollectionConfig = {
   slug: 'news',
   admin: {
-    group: 'Content',
+    group: 'Legacy',
+    hidden: true,
     useAsTitle: 'title',
   },
   versions: {
