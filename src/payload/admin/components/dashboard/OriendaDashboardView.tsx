@@ -77,7 +77,7 @@ const languageRows: AnalyticsRow[] = [
 
 export default function AdminDashboard() {
   return (
-    <div className="orienda-dashboard px-4 ">
+    <div className="orienda-dashboard px-20 py-6">
       <AdminHeader title="Analytics Dashboard" breadcrumb="Dashboard > Analytics & Reporting" />
 
       <section className="orienda-dashboard__toolbar mt-6 flex flex-wrap gap-3">

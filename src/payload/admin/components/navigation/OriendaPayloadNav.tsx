@@ -38,20 +38,22 @@ export default async function OriendaPayloadNav(props: OriendaPayloadNavProps) {
   const { i18n, payload, permissions, user, visibleEntities } = props
 
   if (!payload?.config) return null
-  if (!permissions || !visibleEntities) return null
 
   const collections = payload.config.collections.filter(({ slug }) =>
-    visibleEntities.collections.includes(slug)
+    visibleEntities?.collections?.includes(slug)
   )
 
-  const groups: NavGroupType[] = groupNavItems(
-    collections.map((collection) => ({
-      type: EntityType.collection,
-      entity: collection,
-    })),
-    permissions,
-    i18n
-  )
+  const groups: NavGroupType[] =
+    permissions && visibleEntities
+      ? groupNavItems(
+          collections.map((collection) => ({
+            type: EntityType.collection,
+            entity: collection,
+          })),
+          permissions,
+          i18n
+        )
+      : []
 
   const navPreferences = await getNavPrefs(props.req)
 

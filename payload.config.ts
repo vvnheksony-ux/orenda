@@ -89,6 +89,18 @@ export default buildConfig({
         dashboard: {
           Component: '@/payload/admin/components/dashboard/OriendaDashboardView',
         },
+        publicAppointments: {
+          Component: '@/payload/admin/components/operations/OperationsAdminView',
+          path: '/operations/appointments/:mode?/:id?',
+        },
+        publicInquiries: {
+          Component: '@/payload/admin/components/operations/OperationsAdminView',
+          path: '/operations/inquiries/:mode?/:id?',
+        },
+        publicPurchases: {
+          Component: '@/payload/admin/components/operations/OperationsAdminView',
+          path: '/operations/purchases/:mode?/:id?',
+        },
       },
     },
     meta: {

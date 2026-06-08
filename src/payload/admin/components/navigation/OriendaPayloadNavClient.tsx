@@ -21,6 +21,12 @@ type OriendaPayloadNavClientProps = {
   user?: { email?: unknown; name?: unknown } | null
 }
 
+const publicOperationLinks = [
+  { label: 'Appointments', path: '/operations/appointments' },
+  { label: 'Inquiries', path: '/operations/inquiries' },
+  { label: 'Promotion Purchases', path: '/operations/purchases' },
+] as const
+
 const baseClass = 'nav'
 const navLinkClass =
   'flex min-h-10 items-center rounded-xl px-3.5 py-3 text-md text-[#c2b49d] no-underline transition-colors hover:bg-white/[0.08] hover:text-white'
@@ -39,8 +45,14 @@ export default function OriendaPayloadNavClient({
   const { config } = useConfig()
   const { i18n } = useTranslation()
   const { hydrated, navOpen, navRef, setNavOpen, shouldAnimate } = useNav()
+
+  const allGroups = [...groups]
+  if (!allGroups.some((group) => group.label === 'Operations')) {
+    allGroups.push({ entities: [], label: 'Operations' })
+  }
+
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(groups.map(({ label }) => [label, navPreferences?.groups?.[label]?.open ?? true]))
+    Object.fromEntries(allGroups.map(({ label }) => [label, navPreferences?.groups?.[label]?.open ?? true]))
   )
 
   const adminRoute = config.routes.admin
@@ -87,7 +99,7 @@ export default function OriendaPayloadNavClient({
             Dashboard
           </Link>
 
-          {groups.map(({ entities, label }) => {
+          {allGroups.map(({ entities, label }) => {
             const isOpen = openGroups[label] ?? true
 
             return (
@@ -106,6 +118,24 @@ export default function OriendaPayloadNavClient({
 
                 {isOpen ? (
                   <div className="flex flex-col pt-1">
+                    {label === 'Operations'
+                      ? publicOperationLinks.map((link) => {
+                          const href = formatAdminURL({ adminRoute, path: link.path })
+                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
+
+                          return (
+                            <Link
+                              className={isActive ? activeNavLinkClass : navLinkClass}
+                              href={href}
+                              id={`nav-public-${link.path.replace(/\//g, '-')}`}
+                              key={link.path}
+                              prefetch={false}
+                            >
+                              {link.label}
+                            </Link>
+                          )
+                        })
+                      : null}
                     {entities.map(({ label: entityLabel, slug, type }) => {
                       const href = formatAdminURL({
                         adminRoute,

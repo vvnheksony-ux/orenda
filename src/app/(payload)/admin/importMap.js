@@ -27,6 +27,7 @@ import { default as default_d11c455656be5af330525b1244f818b0 } from '@/payload/a
 import { default as default_ef1eabf80ecf74444fefc706293acda9 } from '@/payload/admin/components/NavIcon'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { default as default_4a2750247bf594f2123294852220a321 } from '@/payload/admin/components/dashboard/OriendaDashboardView'
+import { default as default_86107400645bff82c4a47bb652e919d0 } from '@/payload/admin/components/operations/OperationsAdminView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -60,5 +61,6 @@ export const importMap = {
   "@/payload/admin/components/NavIcon#default": default_ef1eabf80ecf74444fefc706293acda9,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@/payload/admin/components/dashboard/OriendaDashboardView#default": default_4a2750247bf594f2123294852220a321,
+  "@/payload/admin/components/operations/OperationsAdminView#default": default_86107400645bff82c4a47bb652e919d0,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
