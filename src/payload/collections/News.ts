@@ -10,7 +10,6 @@ export const News: CollectionConfig = {
   slug: 'news',
   admin: {
     group: 'Legacy',
-    hidden: true,
     useAsTitle: 'title',
   },
   versions: {
@@ -40,6 +39,12 @@ export const News: CollectionConfig = {
       name: 'thumbnail',
       type: 'upload',
       relationTo: 'media',
+    },
+    {
+      name: 'images',
+      type: 'upload',
+      relationTo: 'media',
+      hasMany: true,
     },
     {
       name: 'excerpt',
