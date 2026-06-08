@@ -603,6 +603,7 @@ export interface News {
     [k: string]: unknown;
   } | null;
   thumbnail?: (number | null) | Media;
+  images?: (number | Media)[] | null;
   excerpt?: string | null;
   author?: string | null;
   status?: ('draft' | 'published' | 'archived') | null;
@@ -1536,6 +1537,7 @@ export interface NewsSelect<T extends boolean = true> {
   slug?: T;
   body?: T;
   thumbnail?: T;
+  images?: T;
   excerpt?: T;
   author?: T;
   status?: T;

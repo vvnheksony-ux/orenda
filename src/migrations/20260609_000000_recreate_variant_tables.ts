@@ -2,6 +2,8 @@ import { MigrateDownArgs, MigrateUpArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
+    DROP TABLE IF EXISTS "payload"."news_rels" CASCADE;
+
     CREATE TABLE IF NOT EXISTS "payload"."announcements" (
       "id" serial PRIMARY KEY NOT NULL,
       "slug" varchar,
@@ -390,6 +392,14 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
     );
 
+    CREATE TABLE "payload"."news_rels" (
+      "order" integer NOT NULL,
+      "parent_id" integer NOT NULL,
+      "id" serial PRIMARY KEY NOT NULL,
+      "path" varchar NOT NULL,
+      "media_id" integer
+    );
+
     ALTER TABLE "payload"."announcements" ADD CONSTRAINT "announcements_thumbnail_id_media_id_fk" FOREIGN KEY ("thumbnail_id") REFERENCES "payload"."media"("id") ON DELETE set null ON UPDATE no action;
     ALTER TABLE "payload"."announcements_locales" ADD CONSTRAINT "announcements_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "payload"."announcements"("id") ON DELETE cascade ON UPDATE no action;
     ALTER TABLE "payload"."_announcements_v" ADD CONSTRAINT "_announcements_v_parent_id_announcements_id_fk" FOREIGN KEY ("parent_id") REFERENCES "payload"."announcements"("id") ON DELETE set null ON UPDATE no action;
@@ -434,16 +444,51 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
     ALTER TABLE "payload"."content_search_index" ADD CONSTRAINT "content_search_index_thumbnail_id_media_id_fk" FOREIGN KEY ("thumbnail_id") REFERENCES "payload"."media"("id") ON DELETE set null ON UPDATE no action;
 
+    ALTER TABLE "payload"."news_rels"
+      ADD CONSTRAINT "news_rels_parent_id_fk"
+      FOREIGN KEY ("parent_id") REFERENCES "payload"."news"("id")
+      ON DELETE cascade ON UPDATE no action;
+
+    ALTER TABLE "payload"."news_rels"
+      ADD CONSTRAINT "news_rels_media_id_fk"
+      FOREIGN KEY ("media_id") REFERENCES "payload"."media"("id")
+      ON DELETE set null ON UPDATE no action;
+
     CREATE UNIQUE INDEX IF NOT EXISTS "announcements_slug_idx" ON "payload"."announcements" USING btree ("slug");
     CREATE UNIQUE INDEX IF NOT EXISTS "announcements_locales_locale_parent_id_unique" ON "payload"."announcements_locales" USING btree ("_locale","_parent_id");
     CREATE INDEX IF NOT EXISTS "announcements_thumbnail_idx" ON "payload"."announcements" USING btree ("thumbnail_id");
     CREATE INDEX IF NOT EXISTS "announcements__status_idx" ON "payload"."announcements" USING btree ("_status");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_parent_idx" ON "payload"."_announcements_v" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_version_version_slug_idx" ON "payload"."_announcements_v" USING btree ("version_slug");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_version_version_thumbnail_idx" ON "payload"."_announcements_v" USING btree ("version_thumbnail_id");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_version_version_updated_at_idx" ON "payload"."_announcements_v" USING btree ("version_updated_at");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_version_version_created_at_idx" ON "payload"."_announcements_v" USING btree ("version_created_at");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_version_version__status_idx" ON "payload"."_announcements_v" USING btree ("version__status");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_created_at_idx" ON "payload"."_announcements_v" USING btree ("created_at");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_updated_at_idx" ON "payload"."_announcements_v" USING btree ("updated_at");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_snapshot_idx" ON "payload"."_announcements_v" USING btree ("snapshot");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_published_locale_idx" ON "payload"."_announcements_v" USING btree ("published_locale");
+    CREATE INDEX IF NOT EXISTS "_announcements_v_latest_idx" ON "payload"."_announcements_v" USING btree ("latest");
+    CREATE UNIQUE INDEX IF NOT EXISTS "_announcements_v_locales_locale_parent_id_unique" ON "payload"."_announcements_v_locales" USING btree ("_locale","_parent_id");
 
     CREATE UNIQUE INDEX IF NOT EXISTS "health_tips_slug_idx" ON "payload"."health_tips" USING btree ("slug");
     CREATE UNIQUE INDEX IF NOT EXISTS "health_tips_locales_locale_parent_id_unique" ON "payload"."health_tips_locales" USING btree ("_locale","_parent_id");
     CREATE INDEX IF NOT EXISTS "health_tips_thumbnail_idx" ON "payload"."health_tips" USING btree ("thumbnail_id");
     CREATE INDEX IF NOT EXISTS "health_tips__status_idx" ON "payload"."health_tips" USING btree ("_status");
     CREATE INDEX IF NOT EXISTS "health_tips_tags_parent_idx" ON "payload"."health_tips_tags" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_parent_idx" ON "payload"."_health_tips_v" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_version_version_slug_idx" ON "payload"."_health_tips_v" USING btree ("version_slug");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_version_version_thumbnail_idx" ON "payload"."_health_tips_v" USING btree ("version_thumbnail_id");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_version_version_updated_at_idx" ON "payload"."_health_tips_v" USING btree ("version_updated_at");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_version_version_created_at_idx" ON "payload"."_health_tips_v" USING btree ("version_created_at");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_version_version__status_idx" ON "payload"."_health_tips_v" USING btree ("version__status");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_created_at_idx" ON "payload"."_health_tips_v" USING btree ("created_at");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_updated_at_idx" ON "payload"."_health_tips_v" USING btree ("updated_at");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_snapshot_idx" ON "payload"."_health_tips_v" USING btree ("snapshot");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_published_locale_idx" ON "payload"."_health_tips_v" USING btree ("published_locale");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_latest_idx" ON "payload"."_health_tips_v" USING btree ("latest");
+    CREATE UNIQUE INDEX IF NOT EXISTS "_health_tips_v_locales_locale_parent_id_unique" ON "payload"."_health_tips_v_locales" USING btree ("_locale","_parent_id");
+    CREATE INDEX IF NOT EXISTS "_health_tips_v_version_health_tip_tags_parent_id_idx" ON "payload"."_health_tips_v_version_health_tip_tags" USING btree ("_parent_id");
 
     CREATE UNIQUE INDEX IF NOT EXISTS "careers_slug_idx" ON "payload"."careers" USING btree ("slug");
     CREATE UNIQUE INDEX IF NOT EXISTS "careers_locales_locale_parent_id_unique" ON "payload"."careers_locales" USING btree ("_locale","_parent_id");
@@ -451,12 +496,39 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE INDEX IF NOT EXISTS "careers_department_idx" ON "payload"."careers" USING btree ("career_department_id");
     CREATE INDEX IF NOT EXISTS "careers_location_idx" ON "payload"."careers" USING btree ("career_location_id");
     CREATE INDEX IF NOT EXISTS "careers__status_idx" ON "payload"."careers" USING btree ("_status");
+    CREATE INDEX IF NOT EXISTS "_careers_v_parent_idx" ON "payload"."_careers_v" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "_careers_v_version_version_slug_idx" ON "payload"."_careers_v" USING btree ("version_slug");
+    CREATE INDEX IF NOT EXISTS "_careers_v_version_version_thumbnail_idx" ON "payload"."_careers_v" USING btree ("version_thumbnail_id");
+    CREATE INDEX IF NOT EXISTS "_careers_v_version_version_department_idx" ON "payload"."_careers_v" USING btree ("version_career_department_id");
+    CREATE INDEX IF NOT EXISTS "_careers_v_version_version_location_idx" ON "payload"."_careers_v" USING btree ("version_career_location_id");
+    CREATE INDEX IF NOT EXISTS "_careers_v_version_version_updated_at_idx" ON "payload"."_careers_v" USING btree ("version_updated_at");
+    CREATE INDEX IF NOT EXISTS "_careers_v_version_version_created_at_idx" ON "payload"."_careers_v" USING btree ("version_created_at");
+    CREATE INDEX IF NOT EXISTS "_careers_v_version_version__status_idx" ON "payload"."_careers_v" USING btree ("version__status");
+    CREATE INDEX IF NOT EXISTS "_careers_v_created_at_idx" ON "payload"."_careers_v" USING btree ("created_at");
+    CREATE INDEX IF NOT EXISTS "_careers_v_updated_at_idx" ON "payload"."_careers_v" USING btree ("updated_at");
+    CREATE INDEX IF NOT EXISTS "_careers_v_snapshot_idx" ON "payload"."_careers_v" USING btree ("snapshot");
+    CREATE INDEX IF NOT EXISTS "_careers_v_published_locale_idx" ON "payload"."_careers_v" USING btree ("published_locale");
+    CREATE INDEX IF NOT EXISTS "_careers_v_latest_idx" ON "payload"."_careers_v" USING btree ("latest");
+    CREATE UNIQUE INDEX IF NOT EXISTS "_careers_v_locales_locale_parent_id_unique" ON "payload"."_careers_v_locales" USING btree ("_locale","_parent_id");
 
     CREATE UNIQUE INDEX IF NOT EXISTS "doctor_talks_slug_idx" ON "payload"."doctor_talks" USING btree ("slug");
     CREATE UNIQUE INDEX IF NOT EXISTS "doctor_talks_locales_locale_parent_id_unique" ON "payload"."doctor_talks_locales" USING btree ("_locale","_parent_id");
     CREATE INDEX IF NOT EXISTS "doctor_talks_thumbnail_idx" ON "payload"."doctor_talks" USING btree ("thumbnail_id");
     CREATE INDEX IF NOT EXISTS "doctor_talks_featured_doctor_idx" ON "payload"."doctor_talks" USING btree ("featured_doctor_id");
     CREATE INDEX IF NOT EXISTS "doctor_talks__status_idx" ON "payload"."doctor_talks" USING btree ("_status");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_parent_idx" ON "payload"."_doctor_talks_v" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_version_version_slug_idx" ON "payload"."_doctor_talks_v" USING btree ("version_slug");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_version_version_thumbnail_idx" ON "payload"."_doctor_talks_v" USING btree ("version_thumbnail_id");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_version_version_featured_doctor_idx" ON "payload"."_doctor_talks_v" USING btree ("version_featured_doctor_id");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_version_version_updated_at_idx" ON "payload"."_doctor_talks_v" USING btree ("version_updated_at");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_version_version_created_at_idx" ON "payload"."_doctor_talks_v" USING btree ("version_created_at");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_version_version__status_idx" ON "payload"."_doctor_talks_v" USING btree ("version__status");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_created_at_idx" ON "payload"."_doctor_talks_v" USING btree ("created_at");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_updated_at_idx" ON "payload"."_doctor_talks_v" USING btree ("updated_at");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_snapshot_idx" ON "payload"."_doctor_talks_v" USING btree ("snapshot");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_published_locale_idx" ON "payload"."_doctor_talks_v" USING btree ("published_locale");
+    CREATE INDEX IF NOT EXISTS "_doctor_talks_v_latest_idx" ON "payload"."_doctor_talks_v" USING btree ("latest");
+    CREATE UNIQUE INDEX IF NOT EXISTS "_doctor_talks_v_locales_locale_parent_id_unique" ON "payload"."_doctor_talks_v_locales" USING btree ("_locale","_parent_id");
 
     CREATE UNIQUE INDEX IF NOT EXISTS "insurance_updates_slug_idx" ON "payload"."insurance_updates" USING btree ("slug");
     CREATE UNIQUE INDEX IF NOT EXISTS "insurance_updates_locales_locale_parent_id_unique" ON "payload"."insurance_updates_locales" USING btree ("_locale","_parent_id");
@@ -464,280 +536,125 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE INDEX IF NOT EXISTS "insurance_updates__status_idx" ON "payload"."insurance_updates" USING btree ("_status");
     CREATE INDEX IF NOT EXISTS "insurance_updates_plan_types_parent_idx" ON "payload"."insurance_updates_plan_types" USING btree ("_parent_id");
     CREATE INDEX IF NOT EXISTS "insurance_updates_required_documents_parent_idx" ON "payload"."insurance_updates_required_documents" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_parent_idx" ON "payload"."_insurance_updates_v" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_version_version_slug_idx" ON "payload"."_insurance_updates_v" USING btree ("version_slug");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_version_version_thumbnail_idx" ON "payload"."_insurance_updates_v" USING btree ("version_thumbnail_id");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_version_version_updated_at_idx" ON "payload"."_insurance_updates_v" USING btree ("version_updated_at");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_version_version_created_at_idx" ON "payload"."_insurance_updates_v" USING btree ("version_created_at");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_version_version__status_idx" ON "payload"."_insurance_updates_v" USING btree ("version__status");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_created_at_idx" ON "payload"."_insurance_updates_v" USING btree ("created_at");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_updated_at_idx" ON "payload"."_insurance_updates_v" USING btree ("updated_at");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_snapshot_idx" ON "payload"."_insurance_updates_v" USING btree ("snapshot");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_published_locale_idx" ON "payload"."_insurance_updates_v" USING btree ("published_locale");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_latest_idx" ON "payload"."_insurance_updates_v" USING btree ("latest");
+    CREATE UNIQUE INDEX IF NOT EXISTS "_insurance_updates_v_locales_locale_parent_id_unique" ON "payload"."_insurance_updates_v_locales" USING btree ("_locale","_parent_id");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_version_insurance_plan_types_parent_id_idx" ON "payload"."_insurance_updates_v_version_insurance_plan_types" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "_insurance_updates_v_version_required_documents_parent_id_idx" ON "payload"."_insurance_updates_v_version_required_documents" USING btree ("_parent_id");
 
     CREATE INDEX IF NOT EXISTS "content_search_index_source_idx" ON "payload"."content_search_index" USING btree ("source_collection", "source_id");
     CREATE INDEX IF NOT EXISTS "content_search_index_type_idx" ON "payload"."content_search_index" USING btree ("content_type");
     CREATE INDEX IF NOT EXISTS "content_search_index_locale_idx" ON "payload"."content_search_index" USING btree ("locale");
     CREATE INDEX IF NOT EXISTS "content_search_index_slug_idx" ON "payload"."content_search_index" USING btree ("slug");
     CREATE INDEX IF NOT EXISTS "content_search_index_published_at_idx" ON "payload"."content_search_index" USING btree ("published_at");
-  `)
 
-  await db.execute(sql`
+    CREATE INDEX "news_rels_parent_id_idx" ON "payload"."news_rels" USING btree ("parent_id");
+    CREATE INDEX "news_rels_path_idx" ON "payload"."news_rels" USING btree ("path");
+    CREATE INDEX "news_rels_media_id_idx" ON "payload"."news_rels" USING btree ("media_id");
+
+    ALTER TABLE "payload"."payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "announcements_id" integer;
+    ALTER TABLE "payload"."payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "health_tips_id" integer;
+    ALTER TABLE "payload"."payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "careers_id" integer;
+    ALTER TABLE "payload"."payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "doctor_talks_id" integer;
+    ALTER TABLE "payload"."payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "insurance_updates_id" integer;
+    ALTER TABLE "payload"."payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "content_search_index_id" integer;
+
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = 'payload' AND table_name = 'news' AND column_name = 'content_type'
+        SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_announcements_fk'
       ) THEN
-        RAISE EXCEPTION 'split_news_variants requires payload.news.content_type before running';
+        ALTER TABLE "payload"."payload_locked_documents_rels"
+          ADD CONSTRAINT "payload_locked_documents_rels_announcements_fk"
+          FOREIGN KEY ("announcements_id") REFERENCES "payload"."announcements"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
 
-      INSERT INTO "payload"."announcements" ("slug", "thumbnail_id", "author", "legacy_news_id", "legacy_slug", "priority", "start_date", "end_date", "is_banner", "banner_background_color", "status", "published_at", "updated_at", "created_at", "_status")
-      SELECT n."slug", n."thumbnail_id", n."author", n."id", n."slug", 'medium', n."start_date", n."end_date", COALESCE(n."is_banner", false), n."banner_background_color", n."status", n."published_at", n."updated_at", n."created_at", n."_status"
-      FROM "payload"."news" n
-      WHERE COALESCE(n."content_type", 'announcement') = 'announcement'
-        AND NOT EXISTS (SELECT 1 FROM "payload"."announcements" a WHERE a."legacy_news_id" = n."id");
-
-      INSERT INTO "payload"."health_tips" ("slug", "thumbnail_id", "author", "legacy_news_id", "legacy_slug", "health_tip_category", "reading_time", "status", "published_at", "updated_at", "created_at", "_status")
-      SELECT n."slug", n."thumbnail_id", n."author", n."id", n."slug", NULL, n."reading_time", n."status", n."published_at", n."updated_at", n."created_at", n."_status"
-      FROM "payload"."news" n
-      LEFT JOIN "payload"."news_locales" l ON l."_parent_id" = n."id" AND l."_locale" = 'en'::"payload"."_locales"
-      WHERE n."content_type" = 'healthtip'
-        AND NOT EXISTS (SELECT 1 FROM "payload"."health_tips" h WHERE h."legacy_news_id" = n."id");
-
-      INSERT INTO "payload"."careers" ("slug", "thumbnail_id", "author", "legacy_news_id", "legacy_slug", "career_department_id", "career_location_id", "career_employment_type", "experience_level", "application_deadline", "status", "published_at", "updated_at", "created_at", "_status")
-      SELECT n."slug", n."thumbnail_id", n."author", n."id", n."slug", n."career_department_id", n."career_location_id", n."career_employment_type", n."experience_level", n."application_deadline", n."status", n."published_at", n."updated_at", n."created_at", n."_status"
-      FROM "payload"."news" n
-      WHERE n."content_type" = 'career'
-        AND NOT EXISTS (SELECT 1 FROM "payload"."careers" c WHERE c."legacy_news_id" = n."id");
-
-      INSERT INTO "payload"."doctor_talks" ("slug", "thumbnail_id", "author", "legacy_news_id", "legacy_slug", "featured_doctor_id", "event_date", "event_time", "duration", "is_virtual", "meeting_link", "max_attendees", "status", "published_at", "updated_at", "created_at", "_status")
-      SELECT n."slug", n."thumbnail_id", n."author", n."id", n."slug", n."featured_doctor_id", n."event_date", n."event_time", n."duration", COALESCE(n."is_virtual", false), n."meeting_link", n."max_attendees", n."status", n."published_at", n."updated_at", n."created_at", n."_status"
-      FROM "payload"."news" n
-      WHERE n."content_type" = 'doctorsTalk'
-        AND NOT EXISTS (SELECT 1 FROM "payload"."doctor_talks" d WHERE d."legacy_news_id" = n."id");
-
-      INSERT INTO "payload"."insurance_updates" ("slug", "thumbnail_id", "author", "legacy_news_id", "legacy_slug", "insurance_provider", "insurance_contact_person", "insurance_contact_phone", "insurance_contact_email", "effective_date", "expiration_date", "status", "published_at", "updated_at", "created_at", "_status")
-      SELECT n."slug", n."thumbnail_id", n."author", n."id", n."slug", n."insurance_provider", n."insurance_contact_person", n."insurance_contact_phone", n."insurance_contact_email", n."effective_date", n."expiration_date", n."status", n."published_at", n."updated_at", n."created_at", n."_status"
-      FROM "payload"."news" n
-      LEFT JOIN "payload"."news_locales" l ON l."_parent_id" = n."id" AND l."_locale" = 'en'::"payload"."_locales"
-      WHERE n."content_type" = 'insurance'
-        AND NOT EXISTS (SELECT 1 FROM "payload"."insurance_updates" i WHERE i."legacy_news_id" = n."id");
-
-      INSERT INTO "payload"."announcements_locales" ("title", "body", "excerpt", "_locale", "_parent_id")
-      SELECT l."title", l."body", l."excerpt", l."_locale", a."id"
-      FROM "payload"."news_locales" l
-      INNER JOIN "payload"."announcements" a ON a."legacy_news_id" = l."_parent_id"
-      WHERE NOT EXISTS (
-        SELECT 1 FROM "payload"."announcements_locales" al
-        WHERE al."_parent_id" = a."id" AND al."_locale" = l."_locale"
-      );
-
-      INSERT INTO "payload"."health_tips_locales" ("title", "body", "excerpt", "_locale", "_parent_id")
-        SELECT l."title", l."body", l."excerpt", l."_locale", h."id"
-        FROM "payload"."news_locales" l
-        INNER JOIN "payload"."health_tips" h ON h."legacy_news_id" = l."_parent_id"
-        WHERE NOT EXISTS (
-          SELECT 1 FROM "payload"."health_tips_locales" hl
-          WHERE hl."_parent_id" = h."id" AND hl."_locale" = l."_locale"
-        );
-
-      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'payload' AND table_name = 'news_health_tip_tags') THEN
-        INSERT INTO "payload"."health_tips_tags" ("_order", "_parent_id", "id", "tag")
-        SELECT t."_order", h."id", t."id", t."tag"
-        FROM "payload"."news_health_tip_tags" t
-        INNER JOIN "payload"."health_tips" h ON h."legacy_news_id" = t."_parent_id"
-        WHERE NOT EXISTS (
-          SELECT 1 FROM "payload"."health_tips_tags" ht WHERE ht."id" = t."id"
-        );
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_health_tips_fk'
+      ) THEN
+        ALTER TABLE "payload"."payload_locked_documents_rels"
+          ADD CONSTRAINT "payload_locked_documents_rels_health_tips_fk"
+          FOREIGN KEY ("health_tips_id") REFERENCES "payload"."health_tips"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
 
-      IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'payload' AND table_name = 'news_locales' AND column_name = 'position') THEN
-        INSERT INTO "payload"."careers_locales" ("title", "body", "excerpt", "position", "salary_range", "career_requirements", "responsibilities", "_locale", "_parent_id")
-        SELECT l."title", l."body", l."excerpt", l."position", l."salary_range", NULL, NULL, l."_locale", c."id"
-        FROM "payload"."news_locales" l
-        INNER JOIN "payload"."careers" c ON c."legacy_news_id" = l."_parent_id"
-        WHERE NOT EXISTS (
-          SELECT 1 FROM "payload"."careers_locales" cl
-          WHERE cl."_parent_id" = c."id" AND cl."_locale" = l."_locale"
-        );
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_careers_fk'
+      ) THEN
+        ALTER TABLE "payload"."payload_locked_documents_rels"
+          ADD CONSTRAINT "payload_locked_documents_rels_careers_fk"
+          FOREIGN KEY ("careers_id") REFERENCES "payload"."careers"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
 
-      IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'payload' AND table_name = 'news_locales' AND column_name = 'talk_topic') THEN
-        INSERT INTO "payload"."doctor_talks_locales" ("title", "body", "excerpt", "talk_topic", "_locale", "_parent_id")
-        SELECT l."title", l."body", l."excerpt", l."talk_topic", l."_locale", d."id"
-        FROM "payload"."news_locales" l
-        INNER JOIN "payload"."doctor_talks" d ON d."legacy_news_id" = l."_parent_id"
-        WHERE NOT EXISTS (
-          SELECT 1 FROM "payload"."doctor_talks_locales" dl
-          WHERE dl."_parent_id" = d."id" AND dl."_locale" = l."_locale"
-        );
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_doctor_talks_fk'
+      ) THEN
+        ALTER TABLE "payload"."payload_locked_documents_rels"
+          ADD CONSTRAINT "payload_locked_documents_rels_doctor_talks_fk"
+          FOREIGN KEY ("doctor_talks_id") REFERENCES "payload"."doctor_talks"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
 
-      IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'payload' AND table_name = 'news_locales' AND column_name = 'coverage_details') THEN
-        INSERT INTO "payload"."insurance_updates_locales" ("title", "body", "excerpt", "coverage_details", "_locale", "_parent_id")
-        SELECT l."title", l."body", l."excerpt", l."coverage_details", l."_locale", i."id"
-        FROM "payload"."news_locales" l
-        INNER JOIN "payload"."insurance_updates" i ON i."legacy_news_id" = l."_parent_id"
-        WHERE NOT EXISTS (
-          SELECT 1 FROM "payload"."insurance_updates_locales" il
-          WHERE il."_parent_id" = i."id" AND il."_locale" = l."_locale"
-        );
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_insurance_updates_fk'
+      ) THEN
+        ALTER TABLE "payload"."payload_locked_documents_rels"
+          ADD CONSTRAINT "payload_locked_documents_rels_insurance_updates_fk"
+          FOREIGN KEY ("insurance_updates_id") REFERENCES "payload"."insurance_updates"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
 
-      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'payload' AND table_name = 'news_insurance_plan_types') THEN
-        INSERT INTO "payload"."insurance_updates_plan_types" ("_order", "_parent_id", "id", "plan_type")
-        SELECT t."_order", i."id", t."id", t."plan_type"
-        FROM "payload"."news_insurance_plan_types" t
-        INNER JOIN "payload"."insurance_updates" i ON i."legacy_news_id" = t."_parent_id"
-        WHERE NOT EXISTS (
-          SELECT 1 FROM "payload"."insurance_updates_plan_types" ip WHERE ip."id" = t."id"
-        );
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_content_search_index_fk'
+      ) THEN
+        ALTER TABLE "payload"."payload_locked_documents_rels"
+          ADD CONSTRAINT "payload_locked_documents_rels_content_search_index_fk"
+          FOREIGN KEY ("content_search_index_id") REFERENCES "payload"."content_search_index"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
-
-      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'payload' AND table_name = 'news_required_documents') THEN
-        INSERT INTO "payload"."insurance_updates_required_documents" ("_order", "_parent_id", "id", "document")
-        SELECT t."_order", i."id", t."id", t."document"
-        FROM "payload"."news_required_documents" t
-        INNER JOIN "payload"."insurance_updates" i ON i."legacy_news_id" = t."_parent_id"
-        WHERE NOT EXISTS (
-          SELECT 1 FROM "payload"."insurance_updates_required_documents" ir WHERE ir."id" = t."id"
-        );
-      END IF;
-
-      INSERT INTO "payload"."content_search_index" ("source_collection", "source_id", "content_type", "locale", "title", "slug", "canonical_path", "excerpt", "body_text", "thumbnail_id", "status", "published_at", "legacy_news_id", "legacy_slug", "metadata")
-      SELECT 'announcements', a."id"::varchar, 'announcement', l."_locale", l."title", a."slug", '/announcements/' || a."slug", l."excerpt", l."body"::text, a."thumbnail_id", a."status", a."published_at", a."legacy_news_id", a."legacy_slug", jsonb_build_object('priority', a."priority", 'isBanner', a."is_banner")
-      FROM "payload"."announcements" a
-      INNER JOIN "payload"."announcements_locales" l ON l."_parent_id" = a."id"
-      WHERE NOT EXISTS (
-        SELECT 1 FROM "payload"."content_search_index" c
-        WHERE c."source_collection" = 'announcements' AND c."source_id" = a."id"::varchar AND c."locale" = l."_locale"::varchar
-      );
-
-      INSERT INTO "payload"."content_search_index" ("source_collection", "source_id", "content_type", "locale", "title", "slug", "canonical_path", "excerpt", "body_text", "thumbnail_id", "status", "published_at", "legacy_news_id", "legacy_slug", "metadata")
-      SELECT 'health-tips', h."id"::varchar, 'health-tip', l."_locale", l."title", h."slug", '/health-tips/' || h."slug", l."excerpt", l."body"::text, h."thumbnail_id", h."status", h."published_at", h."legacy_news_id", h."legacy_slug", jsonb_build_object('healthTipCategory', h."health_tip_category", 'readingTime', h."reading_time")
-      FROM "payload"."health_tips" h
-      INNER JOIN "payload"."health_tips_locales" l ON l."_parent_id" = h."id"
-      WHERE NOT EXISTS (
-        SELECT 1 FROM "payload"."content_search_index" c
-        WHERE c."source_collection" = 'health-tips' AND c."source_id" = h."id"::varchar AND c."locale" = l."_locale"::varchar
-      );
-
-      INSERT INTO "payload"."content_search_index" ("source_collection", "source_id", "content_type", "locale", "title", "slug", "canonical_path", "excerpt", "body_text", "thumbnail_id", "status", "published_at", "legacy_news_id", "legacy_slug", "metadata")
-      SELECT 'careers', c."id"::varchar, 'career', l."_locale", l."title", c."slug", '/careers/' || c."slug", l."excerpt", l."body"::text, c."thumbnail_id", c."status", c."published_at", c."legacy_news_id", c."legacy_slug", jsonb_build_object('position', l."position", 'experienceLevel', c."experience_level")
-      FROM "payload"."careers" c
-      INNER JOIN "payload"."careers_locales" l ON l."_parent_id" = c."id"
-      WHERE NOT EXISTS (
-        SELECT 1 FROM "payload"."content_search_index" s
-        WHERE s."source_collection" = 'careers' AND s."source_id" = c."id"::varchar AND s."locale" = l."_locale"::varchar
-      );
-
-      INSERT INTO "payload"."content_search_index" ("source_collection", "source_id", "content_type", "locale", "title", "slug", "canonical_path", "excerpt", "body_text", "thumbnail_id", "status", "published_at", "legacy_news_id", "legacy_slug", "metadata")
-      SELECT 'doctor-talks', d."id"::varchar, 'doctor-talk', l."_locale", l."title", d."slug", '/doctor-talks/' || d."slug", l."excerpt", l."body"::text, d."thumbnail_id", d."status", d."published_at", d."legacy_news_id", d."legacy_slug", jsonb_build_object('talkTopic', l."talk_topic", 'eventDate', d."event_date")
-      FROM "payload"."doctor_talks" d
-      INNER JOIN "payload"."doctor_talks_locales" l ON l."_parent_id" = d."id"
-      WHERE NOT EXISTS (
-        SELECT 1 FROM "payload"."content_search_index" s
-        WHERE s."source_collection" = 'doctor-talks' AND s."source_id" = d."id"::varchar AND s."locale" = l."_locale"::varchar
-      );
-
-      INSERT INTO "payload"."content_search_index" ("source_collection", "source_id", "content_type", "locale", "title", "slug", "canonical_path", "excerpt", "body_text", "thumbnail_id", "status", "published_at", "legacy_news_id", "legacy_slug", "metadata")
-      SELECT 'insurance-updates', i."id"::varchar, 'insurance-update', l."_locale", l."title", i."slug", '/insurance-updates/' || i."slug", l."excerpt", l."body"::text, i."thumbnail_id", i."status", i."published_at", i."legacy_news_id", i."legacy_slug", jsonb_build_object('insuranceProvider', i."insurance_provider")
-      FROM "payload"."insurance_updates" i
-      INNER JOIN "payload"."insurance_updates_locales" l ON l."_parent_id" = i."id"
-      WHERE NOT EXISTS (
-        SELECT 1 FROM "payload"."content_search_index" s
-        WHERE s."source_collection" = 'insurance-updates' AND s."source_id" = i."id"::varchar AND s."locale" = l."_locale"::varchar
-      );
     END $$;
-  `)
 
-  await db.execute(sql`
-    ALTER TABLE "payload"."news" DROP CONSTRAINT IF EXISTS "news_featured_doctor_id_doctors_id_fk";
-    ALTER TABLE "payload"."news" DROP CONSTRAINT IF EXISTS "news_career_department_id_departments_id_fk";
-    ALTER TABLE "payload"."news" DROP CONSTRAINT IF EXISTS "news_career_location_id_branches_id_fk";
-
-    DROP INDEX IF EXISTS "payload"."news_content_type_idx";
-    DROP INDEX IF EXISTS "payload"."news_featured_doctor_idx";
-    DROP INDEX IF EXISTS "payload"."news_career_department_idx";
-    DROP INDEX IF EXISTS "payload"."news_career_location_idx";
-    DROP TABLE IF EXISTS "payload"."news_health_tip_tags" CASCADE;
-    DROP TABLE IF EXISTS "payload"."news_insurance_plan_types" CASCADE;
-    DROP TABLE IF EXISTS "payload"."news_required_documents" CASCADE;
-    DROP TABLE IF EXISTS "payload"."_news_v_version_health_tip_tags" CASCADE;
-    DROP TABLE IF EXISTS "payload"."_news_v_version_insurance_plan_types" CASCADE;
-    DROP TABLE IF EXISTS "payload"."_news_v_version_required_documents" CASCADE;
-
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "content_type";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "reading_time";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "priority";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "start_date";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "end_date";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "is_banner";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "banner_background_color";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "featured_doctor_id";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "event_date";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "event_time";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "duration";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "is_virtual";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "meeting_link";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "max_attendees";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "career_department_id";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "career_location_id";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "career_employment_type";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "experience_level";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "application_deadline";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "insurance_contact_person";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "insurance_contact_phone";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "insurance_contact_email";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "effective_date";
-    ALTER TABLE "payload"."news" DROP COLUMN IF EXISTS "expiration_date";
-
-    ALTER TABLE "payload"."news_locales" DROP COLUMN IF EXISTS "position";
-    ALTER TABLE "payload"."news_locales" DROP COLUMN IF EXISTS "health_tip_category";
-    ALTER TABLE "payload"."news_locales" DROP COLUMN IF EXISTS "salary_range";
-    ALTER TABLE "payload"."news_locales" DROP COLUMN IF EXISTS "talk_topic";
-    ALTER TABLE "payload"."news_locales" DROP COLUMN IF EXISTS "coverage_details";
-    ALTER TABLE "payload"."news_locales" DROP COLUMN IF EXISTS "insurance_provider";
-
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_content_type";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_reading_time";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_priority";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_start_date";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_end_date";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_is_banner";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_banner_background_color";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_featured_doctor_id";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_event_date";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_event_time";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_duration";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_is_virtual";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_meeting_link";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_max_attendees";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_career_department_id";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_career_location_id";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_career_employment_type";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_experience_level";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_application_deadline";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_insurance_contact_person";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_insurance_contact_phone";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_insurance_contact_email";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_effective_date";
-    ALTER TABLE "payload"."_news_v" DROP COLUMN IF EXISTS "version_expiration_date";
-
-    ALTER TABLE "payload"."_news_v_locales" DROP COLUMN IF EXISTS "version_position";
-    ALTER TABLE "payload"."_news_v_locales" DROP COLUMN IF EXISTS "version_health_tip_category";
-    ALTER TABLE "payload"."_news_v_locales" DROP COLUMN IF EXISTS "version_salary_range";
-    ALTER TABLE "payload"."_news_v_locales" DROP COLUMN IF EXISTS "version_talk_topic";
-    ALTER TABLE "payload"."_news_v_locales" DROP COLUMN IF EXISTS "version_coverage_details";
-    ALTER TABLE "payload"."_news_v_locales" DROP COLUMN IF EXISTS "version_insurance_provider";
-
-    DROP TYPE IF EXISTS "payload"."enum_news_content_type";
-    DROP TYPE IF EXISTS "payload"."enum_news_priority";
-    DROP TYPE IF EXISTS "payload"."enum_news_career_employment_type";
-    DROP TYPE IF EXISTS "payload"."enum_news_experience_level";
-    DROP TYPE IF EXISTS "payload"."enum_news_health_tip_category";
-    DROP TYPE IF EXISTS "payload"."enum__news_v_version_content_type";
-    DROP TYPE IF EXISTS "payload"."enum__news_v_version_priority";
-    DROP TYPE IF EXISTS "payload"."enum__news_v_version_career_employment_type";
-    DROP TYPE IF EXISTS "payload"."enum__news_v_version_experience_level";
-    DROP TYPE IF EXISTS "payload"."enum__news_v_version_health_tip_category";
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_announcements_id_idx" ON "payload"."payload_locked_documents_rels" USING btree ("announcements_id");
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_health_tips_id_idx" ON "payload"."payload_locked_documents_rels" USING btree ("health_tips_id");
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_careers_id_idx" ON "payload"."payload_locked_documents_rels" USING btree ("careers_id");
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_doctor_talks_id_idx" ON "payload"."payload_locked_documents_rels" USING btree ("doctor_talks_id");
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_insurance_updates_id_idx" ON "payload"."payload_locked_documents_rels" USING btree ("insurance_updates_id");
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_content_search_index_id_idx" ON "payload"."payload_locked_documents_rels" USING btree ("content_search_index_id");
   `)
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_announcements_fk";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_health_tips_fk";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_careers_fk";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_doctor_talks_fk";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_insurance_updates_fk";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_content_search_index_fk";
+
+    DROP INDEX IF EXISTS "payload"."payload_locked_documents_rels_announcements_id_idx";
+    DROP INDEX IF EXISTS "payload"."payload_locked_documents_rels_health_tips_id_idx";
+    DROP INDEX IF EXISTS "payload"."payload_locked_documents_rels_careers_id_idx";
+    DROP INDEX IF EXISTS "payload"."payload_locked_documents_rels_doctor_talks_id_idx";
+    DROP INDEX IF EXISTS "payload"."payload_locked_documents_rels_insurance_updates_id_idx";
+    DROP INDEX IF EXISTS "payload"."payload_locked_documents_rels_content_search_index_id_idx";
+    DROP INDEX IF EXISTS "payload"."news_rels_media_id_idx";
+    DROP INDEX IF EXISTS "payload"."news_rels_path_idx";
+    DROP INDEX IF EXISTS "payload"."news_rels_parent_id_idx";
+
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP COLUMN IF EXISTS "announcements_id";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP COLUMN IF EXISTS "health_tips_id";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP COLUMN IF EXISTS "careers_id";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP COLUMN IF EXISTS "doctor_talks_id";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP COLUMN IF EXISTS "insurance_updates_id";
+    ALTER TABLE "payload"."payload_locked_documents_rels" DROP COLUMN IF EXISTS "content_search_index_id";
+
+    DROP TABLE IF EXISTS "payload"."news_rels" CASCADE;
     DROP TABLE IF EXISTS "payload"."content_search_index" CASCADE;
     DROP TABLE IF EXISTS "payload"."_insurance_updates_v_version_required_documents" CASCADE;
     DROP TABLE IF EXISTS "payload"."_insurance_updates_v_version_insurance_plan_types" CASCADE;
