@@ -1,6 +1,7 @@
 import type { CollectionConfig, Block } from 'payload'
 import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
+import { quillRichTextAdmin } from '../fields/quillRichText'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 const webhookHooks = createWebhookHooks('pages')
@@ -47,6 +48,7 @@ const SectionBlock: Block = {
     {
       name: 'content',
       type: 'richText',
+      admin: quillRichTextAdmin,
       localized: true,
     },
     {
