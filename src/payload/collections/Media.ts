@@ -5,6 +5,7 @@ export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
     group: 'Content',
+    hidden: true,
   },
   access: {
     read: publicRead,

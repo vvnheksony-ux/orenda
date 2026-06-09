@@ -6,6 +6,7 @@ export const KpiSnapshots: CollectionConfig = {
   slug: 'kpiSnapshots',
   admin: {
     group: 'Analytics',
+    hidden: true,
     defaultColumns: ['date', 'metric', 'value', 'locale', 'granularity'],
   },
   access: {

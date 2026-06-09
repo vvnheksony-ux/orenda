@@ -5,6 +5,7 @@ export const GaReports: CollectionConfig = {
   slug: 'gaReports',
   admin: {
     group: 'Analytics',
+    hidden: true,
     defaultColumns: ['reportType', 'dateRange', 'fetchedAt'],
   },
   access: {

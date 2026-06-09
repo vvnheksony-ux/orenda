@@ -6,6 +6,13 @@ export const Users: CollectionConfig = {
   auth: true,
   admin: {
     useAsTitle: 'email',
+    components: {
+      views: {
+        list: {
+          Component: '@/payload/admin/components/users/UsersListView',
+        },
+      },
+    },
   },
   fields: [
     {

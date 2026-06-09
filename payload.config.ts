@@ -64,7 +64,7 @@ function withOriendaListView(collection: CollectionConfig): CollectionConfig {
           ...collection.admin?.components?.views,
           list: {
             ...collection.admin?.components?.views?.list,
-            Component: oriendaListView,
+            Component: collection.admin?.components?.views?.list?.Component || oriendaListView,
           },
         },
       },

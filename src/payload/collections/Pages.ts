@@ -73,6 +73,7 @@ export const Pages: CollectionConfig = {
   admin: {
     group: 'Content',
     useAsTitle: 'title',
+    hidden: true,
   },
   versions: {
     maxPerDoc: 20,

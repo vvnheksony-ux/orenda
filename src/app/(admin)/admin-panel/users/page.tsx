@@ -1,36 +1,54 @@
-import { AdminTablePage } from '@/components/admin/AdminManagementPage'
+import AdminDataTable from '@/payload/admin/components/dashboard/AdminDataTable'
+import { AdminPageFrame } from '@/components/admin/AdminManagementPage'
+import { getCombinedUsers } from '@/lib/admin/users'
+import config from '@payload-config'
+import Link from 'next/link'
+import { getPayload } from 'payload'
 
-const users = [
-  { name: 'Admin User', email: 'admin@orienda.com', role: 'admin', lastLogin: '2 hours ago', status: 'active' },
-  { name: 'Dr. Pheakdey Lim', email: 'p.lim@orienda.com', role: 'contributor', lastLogin: '1 day ago', status: 'active' },
-  { name: 'Editor User', email: 'editor@orienda.com', role: 'editor', lastLogin: '5 hours ago', status: 'active' },
-  { name: 'Reception Staff', email: 'reception@orienda.com', role: 'contributor', lastLogin: '30 min ago', status: 'active' },
-  { name: 'Dr. Chanthou Kim', email: 'c.kim@orienda.com', role: 'admin', lastLogin: '3 days ago', status: 'inactive' },
-]
+export const dynamic = 'force-dynamic'
 
-export default function UsersPage() {
+export default async function UsersPage() {
+  const payload = await getPayload({ config })
+  const { users, error } = await getCombinedUsers(payload)
+
   return (
-    <AdminTablePage
+    <AdminPageFrame
       title="Users"
-      breadcrumb="Identity > Users"
+      breadcrumb="Access Control > Users"
       searchPlaceholder="Search users..."
       primaryActionLabel="Add User"
-      table={{
-        rows: users,
-        rowKey: 'email',
-        columns: [
+    >
+      {error && (
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {error}
+        </div>
+      )}
+      <AdminDataTable
+        rows={users}
+        rowKey={(user) => `${user.source}-${user.id}`}
+        columns={[
           { key: 'name', label: 'Name' },
-          { key: 'email', label: 'Email' },
-          { key: 'role', label: 'Role', kind: 'status' },
-          { key: 'lastLogin', label: 'Last Login' },
+          { key: 'contact', label: 'Email / Phone' },
+          { key: 'role', label: 'Role' },
           { key: 'status', label: 'Status', kind: 'status' },
-          { key: 'actions', label: 'Actions', kind: 'actions' },
-        ],
-        actions: [
-          { label: 'Edit user', icon: 'edit', tone: 'muted' },
-          { label: 'Delete user', icon: 'delete', tone: 'danger' },
-        ],
-      }}
-    />
+          { key: 'source', label: 'Source' },
+          { key: 'lastLogin', label: 'Last Login' },
+          { key: 'dateOfBirth', label: 'Date of Birth' },
+          { key: 'created', label: 'Created' },
+          {
+            key: 'actions',
+            label: 'Actions',
+            render: (user) => user.href ? (
+              <Link className="text-sm font-semibold text-[#b38531] transition hover:text-[#8a6321]" href={user.href}>
+                Edit
+              </Link>
+            ) : (
+              <span className="text-sm text-[#8a8172]">Read only</span>
+            ),
+          },
+        ]}
+      />
+      {!users.length && <div className="mt-5 rounded-xl border border-[#eee8dd] bg-white px-4 py-6 text-sm text-[#716b60]">No users found.</div>}
+    </AdminPageFrame>
   )
 }

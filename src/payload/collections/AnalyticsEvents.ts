@@ -6,6 +6,7 @@ export const AnalyticsEvents: CollectionConfig = {
   slug: 'analyticsEvents',
   admin: {
     group: 'Analytics',
+    hidden: true,
     defaultColumns: ['event', 'slug', 'locale', 'timestamp'],
   },
   access: {

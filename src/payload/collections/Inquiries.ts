@@ -5,7 +5,7 @@ export const Inquiries: CollectionConfig = {
   slug: 'inquiries',
   admin: {
     group: 'Operations',
-    // hidden: true,
+    hidden: true,
     useAsTitle: 'name',
     defaultColumns: ['name', 'email', 'status', 'createdAt'],
   },
