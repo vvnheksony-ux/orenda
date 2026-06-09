@@ -5,6 +5,7 @@ export const Users: CollectionConfig = {
   slug: 'users',
   auth: true,
   admin: {
+    group: 'Access Control',
     useAsTitle: 'email',
     components: {
       views: {

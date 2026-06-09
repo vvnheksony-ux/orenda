@@ -4,11 +4,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { createServiceClient } from '@/utils/supabase/server'
 
-const allowedTables = ['appointments', 'inquiries', 'purchases'] as const
+const allowedTables = ['appointments', 'inquiries', 'purchases', 'profiles'] as const
 const allowedStatusByTable: Record<(typeof allowedTables)[number], string[]> = {
   appointments: ['pending', 'confirmed', 'completed', 'cancelled'],
   inquiries: ['unread', 'in-progress', 'resolved', 'closed'],
   purchases: ['pending', 'contacted', 'completed', 'cancelled'],
+  profiles: ['active', 'inactive', 'suspended'],
 }
 const editableFieldsByTable: Record<(typeof allowedTables)[number], string[]> = {
   appointments: [
@@ -41,6 +42,17 @@ const editableFieldsByTable: Record<(typeof allowedTables)[number], string[]> = 
     'language',
     'status',
     'source',
+  ],
+  profiles: [
+    'name',
+    'full_name',
+    'display_name',
+    'email',
+    'phone',
+    'role',
+    'user_type',
+    'status',
+    'date_of_birth',
   ],
 }
 

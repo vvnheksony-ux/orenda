@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useState, useTransition } from 'react'
 
-import type { OperationConfig, OperationRecord } from './operationsConfig'
+import { getOperationHref, type OperationConfig, type OperationRecord } from './operationsConfig'
 
 type OperationsDetailProps = {
   config: OperationConfig
@@ -45,13 +45,14 @@ export default function OperationsDetail({ config, error, mode, record }: Operat
         return
       }
 
-      router.push(`/admin/operations/${config.slug}/view/${currentRecord.id}`)
+      router.push(getOperationHref(config.slug, 'view', currentRecord.id))
       router.refresh()
     })
   }
 
   function markCompleted() {
-    updateStatus(config.slug === 'inquiries' ? 'resolved' : 'completed')
+    const status = config.slug === 'inquiries' ? 'resolved' : config.slug === 'profiles' ? 'active' : 'completed'
+    updateStatus(status)
   }
 
   function updateStatus(status: string) {
@@ -75,7 +76,7 @@ export default function OperationsDetail({ config, error, mode, record }: Operat
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-8 py-8">
+    <main className="mx-auto flex w-full flex-col gap-6 px-20 py-8">
       <header className="border-b border-[#e7dfd5] bg-white px-1 pb-5">
         <h1 className="m-0 text-2xl font-bold text-[#2b2823]">{config.singularTitle} Details</h1>
         <p className="m-0 mt-1 text-sm text-[#716b60]">Operations & Sales &gt; {config.title} &gt; {mode === 'edit' ? 'Edit' : 'View'}</p>
@@ -104,7 +105,7 @@ function ViewDetails({ config, isPending, markCompleted, record }: { config: Ope
             </div>
             <p className="mb-0 mt-4 text-lg text-[#716b60]">Created on {formatDate(record.created_at)}</p>
           </div>
-          <Link className="inline-flex items-center gap-2 rounded-xl bg-[#b89148] px-5 py-3 font-bold text-white no-underline" href={`/admin/operations/${config.slug}/edit/${record.id}`}>
+          <Link className="inline-flex items-center gap-2 rounded-xl bg-[#b89148] px-5 py-3 font-bold text-white no-underline" href={getOperationHref(config.slug, 'edit', record.id)}>
             <Edit size={18} /> Edit {config.singularTitle}
           </Link>
         </div>
@@ -126,19 +127,19 @@ function ViewDetails({ config, isPending, markCompleted, record }: { config: Ope
         </div>
       </section>
 
-      <ContentCard title={config.slug === 'appointments' ? 'Reason for Visit' : config.slug === 'purchases' ? 'Note' : 'Inquiry Message'}>
-        {String(record.message || 'No message provided.')}
+      <ContentCard title={config.slug === 'appointments' ? 'Reason for Visit' : config.slug === 'purchases' ? 'Note' : config.slug === 'profiles' ? 'Additional Info' : 'Inquiry Message'}>
+        {String(record.message || record.bio || record.address || 'No additional information.')}
       </ContentCard>
 
       <ContentCard title="Record Metadata">
-        ID: {record.id}\nLanguage: {record.language || '-'}\nSource: {record.source || '-'}
+        {`ID: ${record.id}\nLanguage: ${record.language || '-'}\nSource: ${record.source || '-'}`}
       </ContentCard>
 
       <div className="flex flex-wrap gap-3">
-        <button className="rounded-xl bg-[#22a95a] px-8 py-4 font-bold text-white" disabled={isPending} onClick={markCompleted} type="button">
-          Mark as {config.slug === 'inquiries' ? 'Resolved' : 'Completed'}
+        <button className="rounded-xl bg-[#22a95a] border-none px-8 py-4 font-bold text-white" disabled={isPending} onClick={markCompleted} type="button">
+          Mark as {config.slug === 'inquiries' ? 'Resolved' : config.slug === 'profiles' ? 'Active' : 'Completed'}
         </button>
-        <Link className="rounded-xl bg-[#ebe7e1] px-8 py-4 font-bold text-[#2b2823] no-underline" href={`/admin/operations/${config.slug}/edit/${record.id}`}>
+        <Link className="rounded-xl bg-[#ebe7e1] px-8 py-4 font-bold text-[#2b2823] no-underline" href={getOperationHref(config.slug, 'edit', record.id)}>
           Update Content
         </Link>
       </div>
@@ -154,7 +155,7 @@ function EditForm({ config, disabled, form, onChange, onSave, record }: { config
           <h2 className="m-0 text-3xl font-bold text-[#2b2823]">Edit {config.singularTitle} #{shortId(record.id)}</h2>
           <p className="mb-0 mt-2 text-sm text-[#716b60]">Update public.{config.slug}; no schema changes are made.</p>
         </div>
-        <Link className="rounded-xl bg-[#ebe7e1] px-5 py-3 font-bold text-[#2b2823] no-underline" href={`/admin/operations/${config.slug}/view/${record.id}`}>
+        <Link className="rounded-xl bg-[#ebe7e1] px-5 py-3 font-bold text-[#2b2823] no-underline" href={getOperationHref(config.slug, 'view', record.id)}>
           Cancel
         </Link>
       </div>
@@ -182,7 +183,7 @@ function EditForm({ config, disabled, form, onChange, onSave, record }: { config
         <button className="rounded-xl bg-[#b89148] px-8 py-4 font-bold text-white" disabled={disabled} onClick={onSave} type="button">
           Save Changes
         </button>
-        <Link className="rounded-xl bg-[#ebe7e1] px-8 py-4 font-bold text-[#2b2823] no-underline" href={`/admin/operations/${config.slug}/view/${record.id}`}>
+        <Link className="rounded-xl bg-[#ebe7e1] px-8 py-4 font-bold text-[#2b2823] no-underline" href={getOperationHref(config.slug, 'view', record.id)}>
           Back to Detail
         </Link>
       </div>
@@ -218,19 +219,33 @@ function getDetailItems(config: OperationConfig, record: OperationRecord) {
   if (config.slug === 'appointments') {
     return [
       { icon: CalendarDays, label: 'Date & Time', value: record.preferred_date || formatDate(record.slot_start), subValue: record.preferred_time || formatTimeRange(record.slot_start, record.slot_end) },
-      { icon: Package, label: 'Services & Branch', value: valueWithFallback(record.department_payload_id, 'Department not assigned'), subValue: valueWithFallback(record.branch_payload_id, 'Branch not assigned') },
-      { icon: ClipboardList, label: 'Doctor', value: valueWithFallback(record.doctor_payload_id, 'Doctor not assigned'), subValue: record.source || undefined },
+      // { icon: Package, label: 'Services & Branch', value: valueWithFallback(record.department_payload_id, 'Department not assigned'), subValue: valueWithFallback(record.branch_payload_id, 'Branch not assigned') },
+      // { icon: ClipboardList, label: 'Doctor', value: valueWithFallback(record.doctor_payload_id, 'Doctor not assigned'), subValue: record.source || undefined },
+      // { icon: Package, label: 'Services & Branch', value: valueWithFallback(record.department_payload_id, 'Department not assigned'), subValue: valueWithFallback(record.branch_payload_id, 'Branch not assigned') },
+      // { icon: ClipboardList, label: 'Doctor', value: valueWithFallback(record.doctor_payload_id, 'Doctor not assigned'), subValue: record.source || undefined },
+      { icon: Package, label: 'Services & Branch', value: resolvedValue(record, 'department_payload_id'), subValue: resolvedValue(record, 'branch_payload_id') },
+      { icon: ClipboardList, label: 'Doctor & Source', value: resolvedValue(record, 'doctor_payload_id'), subValue: record.source || undefined },
       { icon: UserRound, label: 'Patient', value: record.patient_name, subValue: record.patient_email || undefined },
       { icon: Phone, label: 'Contact Phone', value: record.patient_phone },
     ]
   }
 
   if (config.slug === 'purchases') {
+    const branchName = resolvedValue(record, 'branch_payload_id') || record.branch_id || 'Branch not assigned'
     return [
-      { icon: Package, label: 'Promotions Package', value: record.promotion_title || record.promotion_id, subValue: valueWithFallback(record.branch_payload_id || record.branch_id, 'Branch not assigned') },
+      { icon: Package, label: 'Promotions Package', value: record.promotion_title || resolvedValue(record, 'promotion_payload_id'), subValue: branchName },
       { icon: UserRound, label: 'Patient', value: record.patient_name, subValue: record.patient_email || undefined },
       { icon: Phone, label: 'Contact Phone', value: record.patient_phone },
-      { icon: ClipboardList, label: 'Promotion Reference', value: valueWithFallback(record.promotion_payload_id || record.promotion_id, '-') },
+    ]
+  }
+
+  if (config.slug === 'profiles') {
+    return [
+      { icon: UserRound, label: 'Name', value: record.name || record.full_name || record.display_name, subValue: record.email || record.phone || undefined },
+      { icon: Mail, label: 'Email', value: record.email },
+      { icon: Phone, label: 'Phone', value: record.phone },
+      { icon: ClipboardList, label: 'Role', value: record.role || record.user_type || 'Customer' },
+      { icon: CalendarDays, label: 'Date of Birth', value: record.date_of_birth && typeof record.date_of_birth === 'string' ? formatDate(record.date_of_birth) : '-' },
     ]
   }
 
@@ -270,4 +285,12 @@ function formatLabel(value: string) {
 
 function valueWithFallback(value: OperationRecord[string], fallback: string) {
   return value == null || value === '' ? fallback : String(value)
+}
+
+function resolvedValue(record: OperationRecord, fieldKey: string): string {
+  const resolvedKey = `${fieldKey}_resolved`
+  const resolved = record[resolvedKey]
+  if (resolved && typeof resolved === 'string') return resolved
+  const raw = record[fieldKey]
+  return raw != null ? String(raw) : '-'
 }

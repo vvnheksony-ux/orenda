@@ -4,7 +4,7 @@ import { isAdmin } from '../access'
 export const GaReports: CollectionConfig = {
   slug: 'gaReports',
   admin: {
-    group: 'Analytics',
+    group: 'Systems',
     hidden: true,
     defaultColumns: ['reportType', 'dateRange', 'fetchedAt'],
   },

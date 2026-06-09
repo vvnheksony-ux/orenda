@@ -7,7 +7,7 @@ const webhookHooks = createWebhookHooks('tourScenes')
 export const TourScenes: CollectionConfig = {
   slug: 'tourScenes',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
   },
   access: {

@@ -60,9 +60,9 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
         <thead>
           <tr>
             {activeColumns.map((column) => (
-              <th key={column.accessor}>{column.Heading}</th>
+              <th key={column.accessor} style={{ padding: 0 }}>{column.Heading}</th>
             ))}
-            <th className="orienda-list-table__actions-heading">Actions</th>
+            <th className="orienda-list-table__actions-heading" style={{ padding: 0 }}>Actions</th>
           </tr>
         </thead>
         <tbody>

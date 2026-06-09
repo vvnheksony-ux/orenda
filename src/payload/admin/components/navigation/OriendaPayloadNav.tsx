@@ -1,6 +1,6 @@
 import type { PayloadRequest, ServerProps } from 'payload'
 import { PREFERENCE_KEYS } from 'payload/shared'
-import { EntityType, groupNavItems, type NavGroupType } from '@payloadcms/ui/shared'
+import { EntityType, groupNavItems, type EntityToGroup, type NavGroupType } from '@payloadcms/ui/shared'
 import { cache } from 'react'
 
 import OriendaPayloadNavClient from './OriendaPayloadNavClient'
@@ -39,21 +39,39 @@ export default async function OriendaPayloadNav(props: OriendaPayloadNavProps) {
 
   if (!payload?.config) return null
 
-  const collections = payload.config.collections.filter(({ slug }) =>
-    visibleEntities?.collections?.includes(slug)
-  )
+  // When visibleEntities is available (e.g. on dashboard/collection routes), filter by it.
+  // When not available (e.g. custom admin views like /operations/*), show all non-hidden entities.
+  // groupNavItems handles permission-based filtering internally.
+  const collections =
+    visibleEntities?.collections?.length
+      ? payload.config.collections.filter(({ slug }) => visibleEntities.collections.includes(slug))
+      : payload.config.collections.filter(({ admin }) => !admin?.hidden)
 
-  const groups: NavGroupType[] =
-    permissions && visibleEntities
-      ? groupNavItems(
-          collections.map((collection) => ({
-            type: EntityType.collection,
-            entity: collection,
-          })),
-          permissions,
-          i18n
-        )
-      : []
+  const globals =
+    visibleEntities?.globals?.length
+      ? payload.config.globals.filter(({ slug }) => visibleEntities.globals.includes(slug))
+      : payload.config.globals.filter(({ admin }) => !admin?.hidden)
+
+  const groups: NavGroupType[] = permissions
+    ? groupNavItems(
+        [
+          ...collections.map(
+            (collection): EntityToGroup => ({
+              type: EntityType.collection,
+              entity: collection,
+            }),
+          ),
+          ...globals.map(
+            (global): EntityToGroup => ({
+              type: EntityType.global,
+              entity: global,
+            }),
+          ),
+        ],
+        permissions,
+        i18n,
+      )
+    : []
 
   const navPreferences = await getNavPrefs(props.req)
 

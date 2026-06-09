@@ -9,7 +9,7 @@ const webhookHooks = createWebhookHooks('departments')
 export const Departments: CollectionConfig = {
   slug: 'departments',
   admin: {
-    group: 'Content',
+    group: 'Hospital',
     useAsTitle: 'name',
   },
   versions: {

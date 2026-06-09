@@ -166,7 +166,8 @@
     height: 3rem !important;
     padding: 0.75rem 1.25rem !important;
     border: none !important;
-    text-transform: none !important;
+    // text-transform: none !important;
+    text-align: left !important;
 
     /* Set cell maximum constraints */
     min-width: 120px !important; /* Ensure a minimum width for headers */
@@ -259,7 +260,15 @@
     width: max-content !important;
   }
 
-  .orienda-list-table th,
+  .orienda-list-table th {
+    max-width: 12.5rem !important;
+    min-width: 12.5rem !important;
+    height: 4rem !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    width: 12.5rem !important;
+  }
   .orienda-list-table td {
     max-width: 12.5rem !important;
     min-width: 12.5rem !important;
@@ -302,7 +311,7 @@
     align-items: center !important;
     display: flex !important;
     gap: 0.45rem !important;
-    justify-content: flex-end !important;
+    justify-content: flex-start !important;
   }
 
   .orienda-table-action {
@@ -426,6 +435,7 @@
 
 @import "./payload-form-controls.scss";
 @import "./payload-collection-pages.scss";
+@import "./payload-pagination.scss";
 
 //* ==========================================================================
     //  4. FILTER & COLUMN CHIPS LAYER (Fixed Active State Conditionals)

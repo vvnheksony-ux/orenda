@@ -5,7 +5,7 @@ import { ANALYTICS_EVENT_OPTIONS } from '../constants'
 export const AnalyticsEvents: CollectionConfig = {
   slug: 'analyticsEvents',
   admin: {
-    group: 'Analytics',
+    group: 'Systems',
     hidden: true,
     defaultColumns: ['event', 'slug', 'locale', 'timestamp'],
   },

@@ -101,6 +101,10 @@ export default buildConfig({
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/purchases/:mode?/:id?',
         },
+        publicProfiles: {
+          Component: '@/payload/admin/components/operations/OperationsAdminView',
+          path: '/operations/profiles/:mode?/:id?',
+        },
       },
     },
     meta: {

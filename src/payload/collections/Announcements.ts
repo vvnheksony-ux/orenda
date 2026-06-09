@@ -19,7 +19,7 @@ const indexHooks = createSearchIndexHooks({
 export const Announcements: CollectionConfig = {
   slug: 'announcements',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
     defaultColumns: ['title', 'priority', 'status', 'publishedAt'],
   },

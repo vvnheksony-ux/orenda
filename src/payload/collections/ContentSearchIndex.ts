@@ -4,7 +4,7 @@ import { isAdminOrEditor } from '../access'
 export const ContentSearchIndex: CollectionConfig = {
   slug: 'content-search-index',
   admin: {
-    group: 'System',
+    group: 'Systems',
     useAsTitle: 'title',
     hidden: true,
     defaultColumns: ['title', 'contentType', 'locale', 'sourceCollection'],

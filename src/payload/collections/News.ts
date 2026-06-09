@@ -10,7 +10,7 @@ const webhookHooks = createWebhookHooks('news')
 export const News: CollectionConfig = {
   slug: 'news',
   admin: {
-    group: 'Legacy',
+    group: 'Website Content',
     hidden: true,
     useAsTitle: 'title',
   },

@@ -52,12 +52,12 @@ type QuillRichTextFieldProps = {
 }
 
 const toolbarOptions = [
-  [{ header: [1, 2, 3, false] }],
-  ['bold', 'italic', 'underline', 'strike'],
+  // [{ header: [1, 2, 3, false] }],
+  ['bold'],
   [{ list: 'ordered' }, { list: 'bullet' }],
-  [{ align: [] }],
-  ['link', 'blockquote'],
-  ['clean'],
+  // [{ align: [] }],
+  // ['link', 'blockquote'],
+  // ['clean'],
 ]
 
 export default function QuillRichTextField({ field, path, readOnly, validate }: QuillRichTextFieldProps) {

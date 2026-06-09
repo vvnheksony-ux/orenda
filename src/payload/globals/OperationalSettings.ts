@@ -4,7 +4,8 @@ import { isAdmin } from '../access'
 export const OperationalSettings: GlobalConfig = {
   slug: 'operationalSettings',
   admin: {
-    group: 'Settings',
+    hidden: true,
+    group: 'Systems',
   },
   access: {
     read: isAdmin,
