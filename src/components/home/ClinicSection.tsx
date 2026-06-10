@@ -5,6 +5,7 @@ import { ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useState, useEffect } from 'react'
+import { useBranch } from '@/lib/branch-context'
 
 interface Clinic {
   key: string
@@ -32,11 +33,15 @@ export default function ClinicSection() {
   const t = useTranslations('ClinicSection')
   const locale = useLocale()
 
+  const { selectedBranch } = useBranch()
   const [clinics, setClinics] = useState<Clinic[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/departments?locale=${locale}`)
+    if (!selectedBranch) return
+    setLoading(true)
+    const url = `/api/departments?locale=${locale}&branch=${selectedBranch.id}`
+    fetch(url)
       .then(r => r.json())
       .then(d => {
         const withIcons = (d?.docs || []).filter((dept: any) => dept.icon?.trim())
@@ -49,7 +54,7 @@ export default function ClinicSection() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [locale])
+  }, [locale, selectedBranch])
 
   const row1 = clinics.slice(0, 4)
   const row2 = clinics.slice(4, 7)
