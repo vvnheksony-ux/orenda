@@ -6,23 +6,24 @@ import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useState, useTransition } from 'react'
 
-import { getOperationHref, type OperationConfig, type OperationRecord } from './operationsConfig'
+import { getOperationHref, statusColor, type OperationConfig, type OperationRecord, type ReferenceOptionMap } from './operationsConfig'
 
 type OperationsDetailProps = {
   config: OperationConfig
   error?: string
-  mode: 'edit' | 'view'
-  record: OperationRecord | null
+  mode: 'create' | 'edit' | 'view'
+  record?: OperationRecord | null
+  referenceOptions?: ReferenceOptionMap
 }
 
-export default function OperationsDetail({ config, error, mode, record }: OperationsDetailProps) {
+export default function OperationsDetail({ config, error, mode, record, referenceOptions }: OperationsDetailProps) {
   const router = useRouter()
-  const [form, setForm] = useState<Record<string, string>>(() => getInitialForm(config, record))
+  const [form, setForm] = useState<Record<string, string>>(() => getInitialForm(config, mode === 'create' ? null : record))
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  if (error) return <OperationsShell title={config.title} error={error} />
-  if (!record) return <OperationsShell title={config.title} error="Record not found." />
+  if (error && mode !== 'create') return <OperationsShell title={config.title} error={error} />
+  if (!record && mode !== 'create') return <OperationsShell title={config.title} error="Record not found." />
   const currentRecord = record
 
   function updateField(key: string, value: string) {
@@ -32,7 +33,26 @@ export default function OperationsDetail({ config, error, mode, record }: Operat
   function save() {
     setMessage(null)
     startTransition(async () => {
-      const response = await fetch(`/api/admin/operations/${config.slug}/${currentRecord.id}`, {
+      if (mode === 'create') {
+        const response = await fetch(`/api/admin/operations/${config.slug}`, {
+          body: JSON.stringify({ data: form }),
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        })
+
+        if (!response.ok) {
+          const data = (await response.json().catch(() => null)) as { error?: string } | null
+          setMessage(data?.error || 'Failed to create record.')
+          return
+        }
+
+        router.push(getOperationHref(config.slug))
+        router.refresh()
+        return
+      }
+
+      const response = await fetch(`/api/admin/operations/${config.slug}/${currentRecord!.id}`, {
         body: JSON.stringify({ data: form }),
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -45,7 +65,7 @@ export default function OperationsDetail({ config, error, mode, record }: Operat
         return
       }
 
-      router.push(getOperationHref(config.slug, 'view', currentRecord.id))
+      router.push(getOperationHref(config.slug, 'view', currentRecord!.id))
       router.refresh()
     })
   }
@@ -58,7 +78,7 @@ export default function OperationsDetail({ config, error, mode, record }: Operat
   function updateStatus(status: string) {
     setMessage(null)
     startTransition(async () => {
-      const response = await fetch(`/api/admin/operations/${config.slug}/${currentRecord.id}`, {
+      const response = await fetch(`/api/admin/operations/${config.slug}/${currentRecord!.id}`, {
         body: JSON.stringify({ status }),
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -75,20 +95,22 @@ export default function OperationsDetail({ config, error, mode, record }: Operat
     })
   }
 
+  const breadcrumb = mode === 'create' ? 'Create' : mode === 'edit' ? 'Edit' : 'View'
+
   return (
     <main className="mx-auto flex w-full flex-col gap-6 px-20 py-8">
       <header className="border-b border-[#e7dfd5] bg-white px-1 pb-5">
-        <h1 className="m-0 text-2xl font-bold text-[#2b2823]">{config.singularTitle} Details</h1>
-        <p className="m-0 mt-1 text-sm text-[#716b60]">Operations & Sales &gt; {config.title} &gt; {mode === 'edit' ? 'Edit' : 'View'}</p>
+        <h1 className="m-0 text-2xl font-bold text-[#2b2823]">{mode === 'create' ? `New ${config.singularTitle}` : `${config.singularTitle} Details`}</h1>
+        <p className="m-0 mt-1 text-sm text-[#716b60]">Operations & Sales &gt; {config.title} &gt; {breadcrumb}</p>
       </header>
 
       {message ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{message}</div> : null}
 
-      {mode === 'edit' ? (
-        <EditForm config={config} disabled={isPending} form={form} onChange={updateField} onSave={save} record={record} />
-      ) : (
+      {mode === 'create' || mode === 'edit' ? (
+        <EditForm config={config} disabled={isPending} form={form} isNew={mode === 'create'} onChange={updateField} onSave={save} record={record} referenceOptions={referenceOptions} />
+      ) : record ? (
         <ViewDetails config={config} isPending={isPending} markCompleted={markCompleted} record={record} />
-      )}
+      ) : null}
     </main>
   )
 }
@@ -101,7 +123,7 @@ function ViewDetails({ config, isPending, markCompleted, record }: { config: Ope
           <div>
             <div className="flex flex-wrap items-center gap-4">
               <h2 className="m-0 text-3xl font-bold text-[#2b2823]">{config.singularTitle} #{shortId(record.id)}</h2>
-              <span className="rounded-full bg-[#ebe7e1] px-4 py-2 text-sm capitalize text-[#716b60]">{record.status || 'unknown'}</span>
+              <span className={`rounded-full px-4 py-2 text-sm capitalize ${statusColor(record.status || 'unknown')}`}>{record.status || 'unknown'}</span>
             </div>
             <p className="mb-0 mt-4 text-lg text-[#716b60]">Created on {formatDate(record.created_at)}</p>
           </div>
@@ -147,15 +169,15 @@ function ViewDetails({ config, isPending, markCompleted, record }: { config: Ope
   )
 }
 
-function EditForm({ config, disabled, form, onChange, onSave, record }: { config: OperationConfig; disabled: boolean; form: Record<string, string>; onChange: (key: string, value: string) => void; onSave: () => void; record: OperationRecord }) {
+function EditForm({ config, disabled, form, isNew, onChange, onSave, record, referenceOptions }: { config: OperationConfig; disabled: boolean; form: Record<string, string>; isNew: boolean; onChange: (key: string, value: string) => void; onSave: () => void; record?: OperationRecord | null; referenceOptions?: ReferenceOptionMap }) {
   return (
     <section className="rounded-2xl border border-[#e7dfd5] bg-white p-6 shadow-[0_10px_24px_rgb(50_39_24_/_6%)]">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="m-0 text-3xl font-bold text-[#2b2823]">Edit {config.singularTitle} #{shortId(record.id)}</h2>
-          <p className="mb-0 mt-2 text-sm text-[#716b60]">Update public.{config.slug}; no schema changes are made.</p>
+          <h2 className="m-0 text-3xl font-bold text-[#2b2823]">{isNew ? `New ${config.singularTitle}` : `Edit ${config.singularTitle} #${record ? shortId(record.id) : ''}`}</h2>
+          <p className="mb-0 mt-2 text-sm text-[#716b60]">{isNew ? `Create a new record in public.${config.slug}.` : `Update public.${config.slug}; no schema changes are made.`}</p>
         </div>
-        <Link className="rounded-xl bg-[#ebe7e1] px-5 py-3 font-bold text-[#2b2823] no-underline" href={getOperationHref(config.slug, 'view', record.id)}>
+        <Link className="rounded-xl bg-[#ebe7e1] px-5 py-3 font-bold text-[#2b2823] no-underline" href={getOperationHref(config.slug)}>
           Cancel
         </Link>
       </div>
@@ -166,8 +188,16 @@ function EditForm({ config, disabled, form, onChange, onSave, record }: { config
             <span className="text-sm font-bold text-[#716b60]">{field.label}</span>
             {field.key === 'status' ? (
               <select className="rounded-xl border border-[#e7dfd5] px-4 py-3 text-base" disabled={disabled} onChange={(event) => onChange(field.key, event.target.value)} value={form[field.key] || ''}>
+                <option value="">Select status</option>
                 {config.statusOptions.map((option) => (
                   <option key={option} value={option}>{formatLabel(option)}</option>
+                ))}
+              </select>
+            ) : referenceOptions && referenceOptions[field.key] ? (
+              <select className="rounded-xl border border-[#e7dfd5] px-4 py-3 text-base" disabled={disabled} onChange={(event) => onChange(field.key, event.target.value)} value={form[field.key] || ''}>
+                <option value="">Select {field.label}</option>
+                {referenceOptions[field.key].map((opt) => (
+                  <option key={opt.id} value={opt.id}>{opt.name}</option>
                 ))}
               </select>
             ) : field.type === 'textarea' ? (
@@ -180,11 +210,11 @@ function EditForm({ config, disabled, form, onChange, onSave, record }: { config
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        <button className="rounded-xl bg-[#b89148] px-8 py-4 font-bold text-white" disabled={disabled} onClick={onSave} type="button">
-          Save Changes
+        <button className="rounded-xl bg-[#b89148] border-none px-8 py-4 font-bold text-white" disabled={disabled} onClick={onSave} type="button">
+          {isNew ? 'Create Record' : 'Save Changes'}
         </button>
-        <Link className="rounded-xl bg-[#ebe7e1] px-8 py-4 font-bold text-[#2b2823] no-underline" href={getOperationHref(config.slug, 'view', record.id)}>
-          Back to Detail
+        <Link className="rounded-xl bg-[#ebe7e1] px-8 py-4 font-bold text-[#2b2823] no-underline" href={getOperationHref(config.slug)}>
+          {isNew ? 'Back to List' : 'Back to Detail'}
         </Link>
       </div>
     </section>
@@ -209,7 +239,7 @@ function ContentCard({ children, title }: { children: ReactNode; title: string }
   )
 }
 
-function getInitialForm(config: OperationConfig, record: OperationRecord | null) {
+function getInitialForm(config: OperationConfig, record: OperationRecord | null | undefined) {
   return Object.fromEntries(
     config.editableFields.map((field) => [field.key, formatInputValue(record?.[field.key], field.type)])
   )

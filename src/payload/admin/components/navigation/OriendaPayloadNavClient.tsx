@@ -1,15 +1,14 @@
 'use client'
 
 import { getTranslation } from '@payloadcms/translations'
-import { Hamburger, Link, useConfig, useNav, useTranslation } from '@payloadcms/ui'
+import { Hamburger, Link, useConfig, useNav, usePreferences, useTranslation } from '@payloadcms/ui'
 import type { NavGroupType } from '@payloadcms/ui/shared'
 import { EntityType } from '@payloadcms/ui/shared'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { formatAdminURL } from 'payload/shared'
+import { formatAdminURL, PREFERENCE_KEYS } from 'payload/shared'
 import { useState } from 'react'
-import { LogOut } from 'lucide-react' 
 
 type NavPreferences = {
   groups?: Record<string, { open?: boolean }>
@@ -51,6 +50,8 @@ export default function OriendaPayloadNavClient({
     allGroups.push({ entities: [], label: 'Operations' })
   }
 
+  const { setPreference } = usePreferences()
+
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(allGroups.map(({ label }) => [label, navPreferences?.groups?.[label]?.open ?? true]))
   )
@@ -72,7 +73,11 @@ export default function OriendaPayloadNavClient({
   const dashboardHref = formatAdminURL({ adminRoute, path: '/' })
   const dashboardActive = pathname === dashboardHref || pathname === `${dashboardHref}/`
   const toggleGroup = (label: string) => {
-    setOpenGroups((current) => ({ ...current, [label]: !current[label] }))
+    setOpenGroups((current) => {
+      const next = !current[label]
+      setPreference(PREFERENCE_KEYS.NAV, { groups: { [label]: { open: next } } }, true)
+      return { ...current, [label]: next }
+    })
   }
 
   return (

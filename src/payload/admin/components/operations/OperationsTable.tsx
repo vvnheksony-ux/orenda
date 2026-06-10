@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useMemo, useState, useTransition } from 'react'
 
 import Pagination, { PAGE_SIZE } from '../shared/Pagination'
-import { getOperationHref, type OperationConfig, type OperationRecord } from './operationsConfig'
+import { getOperationHref, statusColor, type OperationConfig, type OperationRecord } from './operationsConfig'
 
 type OperationsTableProps = {
   config: OperationConfig
@@ -173,7 +173,9 @@ function renderCell(
   const value = record[key]
 
   if (key === 'status') {
-    return <span className="rounded-full bg-[#ebe7e1] px-3 py-1 text-sm capitalize text-[#716b60]">{typeof value === 'string' ? formatLabel(value) : '-'}</span>
+    const label = typeof value === 'string' ? formatLabel(value) : '-'
+    const colorClass = typeof value === 'string' ? statusColor(value) : 'bg-[#ebe7e1] text-[#716b60]'
+    return <span className={`rounded-full px-3 py-1 text-sm capitalize ${colorClass}`}>{label}</span>
   }
 
   if (key === 'created_at' || key.endsWith('_date')) {

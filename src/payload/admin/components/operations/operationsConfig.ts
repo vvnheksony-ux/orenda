@@ -24,7 +24,9 @@ export type OperationConfig = {
   referenceResolvers?: ReferenceResolver[]
 }
 
-export type OperationViewMode = 'edit' | 'list' | 'view'
+export type ReferenceOptionMap = Record<string, Array<{ id: string; name: string }>>
+
+export type OperationViewMode = 'create' | 'edit' | 'list' | 'view'
 
 export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
   profiles: {
@@ -79,9 +81,9 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
       { key: 'language', label: 'Language' },
       { key: 'status', label: 'Status' },
       { key: 'source', label: 'Source' },
-      { key: 'doctor_payload_id', label: 'Doctor ID' },
-      { key: 'branch_payload_id', label: 'Branch ID' },
-      { key: 'department_payload_id', label: 'Department ID' },
+      { key: 'doctor_payload_id', label: 'Doctor' },
+      { key: 'branch_payload_id', label: 'Branch' },
+      { key: 'department_payload_id', label: 'Department' },
     ],
     statusOptions: ['pending', 'confirmed', 'completed', 'cancelled'],
     referenceResolvers: [
@@ -160,8 +162,15 @@ export function getOperationConfig(slug: string | undefined) {
 }
 
 export function getOperationHref(slug: OperationTableSlug, mode?: Exclude<OperationViewMode, 'list'>, id?: string) {
-  const suffix = mode && id ? `/${mode}/${id}` : ''
+  const suffix = mode && id ? `/${mode}/${id}` : mode === 'create' ? '/create' : ''
   return `/admin/operations/${slug}${suffix}`
+}
+
+export function statusColor(value: string): string {
+  const v = value.toLowerCase()
+  if (v === 'pending' || v === 'unread' || v === 'in-progress') return 'bg-[#fef3c7] text-[#92400e]'
+  if (v === 'confirmed' || v === 'completed' || v === 'resolved' || v === 'active') return 'bg-[#d1fae5] text-[#065f46]'
+  return 'bg-[#ebe7e1] text-[#716b60]'
 }
 
 export function parseOperationSegments(segments: string[]) {
@@ -172,7 +181,7 @@ export function parseOperationSegments(segments: string[]) {
 
   return {
     id,
-    mode: mode === 'view' || mode === 'edit' ? mode : 'list',
+    mode: mode === 'create' || mode === 'view' || mode === 'edit' ? mode : 'list',
     table,
   } satisfies { id: string | undefined; mode: OperationViewMode; table: string | undefined }
 }

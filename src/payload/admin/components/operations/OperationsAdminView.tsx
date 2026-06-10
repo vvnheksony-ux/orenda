@@ -5,7 +5,7 @@ import { createServiceClient } from '@/utils/supabase/server'
 
 import OperationsDetail from './OperationsDetail'
 import OperationsTable from './OperationsTable'
-import { getOperationConfig, parseOperationSegments, type OperationConfig, type OperationRecord } from './operationsConfig'
+import { getOperationConfig, getOperationHref, parseOperationSegments, type OperationConfig, type OperationRecord, type ReferenceOptionMap } from './operationsConfig'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +26,15 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
 
   const payload = props.payload ?? (req as { payload?: Payload } | undefined)?.payload
 
+  if (viewMode === 'create') {
+    const referenceOptions = await fetchReferenceOptions(payload, config, locale || 'en')
+    return (
+      <DefaultTemplate {...templateProps} className="operations-template">
+        <OperationsDetail config={config} mode="create" referenceOptions={referenceOptions} />
+      </DefaultTemplate>
+    )
+  }
+
   if (viewMode !== 'list' && id) {
     const { data, error } = await supabase
       .schema('public')
@@ -36,10 +45,11 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
 
     const record = (data || null) as OperationRecord | null
     const enriched = record ? await enrichRecord(payload, config, record, locale || 'en') : null
+    const referenceOptions = await fetchReferenceOptions(payload, config, locale || 'en')
 
     return (
       <DefaultTemplate {...templateProps} className="operations-template">
-        <OperationsDetail config={config} error={error?.message} mode={viewMode} record={enriched} />
+        <OperationsDetail config={config} error={error?.message} mode={viewMode} record={enriched} referenceOptions={referenceOptions} />
       </DefaultTemplate>
     )
   }
@@ -56,10 +66,16 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
   return (
     <DefaultTemplate {...templateProps} className="operations-template">
       <main className="mx-auto flex w-full flex-col gap-6 px-19">
-        <header className="rounded-2xl">
-          {/* <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#8a7556]">Operations</p> */}
+        <header className="flex items-center justify-between rounded-2xl">
           <h1 className="m-0 text-[20px] font-bold text-[#2b2823]">{config.title}</h1>
-          {/* <p className="mb-0 mt-2 text-sm text-[#716b60]">{config.description}</p> */}
+          {config.slug === 'appointments' || config.slug === 'purchases' ? (
+            <a
+              className="inline-flex items-center gap-2 rounded-xl bg-[#b89148] px-5 py-2 text-sm font-bold text-white no-underline transition-colors hover:bg-[#a37d3e]"
+              href={getOperationHref(config.slug, 'create')}
+            >
+              Create New
+            </a>
+          ) : null}
         </header>
 
         {error ? (
@@ -161,6 +177,34 @@ async function resolveReferences(
   }
 
   return result
+}
+
+async function fetchReferenceOptions(
+  payload: Payload | undefined,
+  config: OperationConfig,
+  locale: string,
+): Promise<ReferenceOptionMap> {
+  if (!payload || !config.referenceResolvers?.length) return {}
+
+  const options: ReferenceOptionMap = {}
+
+  for (const resolver of config.referenceResolvers) {
+    try {
+      const { docs } = await payload.find({
+        collection: resolver.collection,
+        depth: 0,
+        limit: 1000,
+        locale,
+      })
+      options[resolver.recordField] = docs
+        .map((doc) => ({ id: String(doc.id), name: doc[resolver.titleField] ?? String(doc.id) }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    } catch {
+      options[resolver.recordField] = []
+    }
+  }
+
+  return options
 }
 
 function isHidden(hidden: boolean | ((args: { user: unknown }) => boolean) | undefined, user: unknown): boolean {
