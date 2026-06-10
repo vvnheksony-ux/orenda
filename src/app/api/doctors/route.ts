@@ -49,32 +49,22 @@ export async function GET(req: Request) {
       })
     }
 
-    // branch filter: get depts for branch → filter doctors by department_id
-    let deptIds: number[] | null = null
-    if (branchId) {
-      const depts = await payload.find({
-        collection: 'departments',
-        overrideAccess: true,
-        depth: 0,
-        limit: 200,
-        where: { branch: { equals: Number(branchId) } },
-      } as any)
-      deptIds = (depts.docs || []).map((d: any) => Number(d.id))
-    }
-
-    const where: any = deptIds !== null
-      ? deptIds.length > 0 ? { department: { in: deptIds } } : { id: { equals: -1 } }
+    // Single query: join doctors → departments filtered by branch
+    const where: any = branchId
+      ? { 'department.branch': { equals: Number(branchId) } }
       : {}
 
-    const data = await payload.find({
-      collection: 'doctors',
-      locale, fallbackLocale: 'en',
-      overrideAccess: true,
-      depth: 1,
-      sort: 'order',
-      limit: 100,
-      where,
-    } as any)
+    const [data] = await Promise.all([
+      payload.find({
+        collection: 'doctors',
+        locale, fallbackLocale: 'en',
+        overrideAccess: true,
+        depth: 1,
+        sort: 'order',
+        limit: 100,
+        where,
+      } as any),
+    ])
 
     const doctors = data.docs.map((doc: any) => {
       const dept = typeof doc.department === 'object' && doc.department ? doc.department : null
@@ -89,7 +79,7 @@ export async function GET(req: Request) {
     })
 
     return NextResponse.json(doctors, {
-      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
     })
   } catch (err: any) {
     console.error('Failed to fetch doctors:', err.message)

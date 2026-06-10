@@ -57,7 +57,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(
       { docs, totalDocs: data.totalDocs ?? docs.length },
-      { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } }
+      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
     )
   } catch (err: any) {
     console.error('news:', err.message)

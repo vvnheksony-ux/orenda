@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
+import { useBranch } from '@/lib/branch-context'
 import { animate, motion, useMotionValue } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -161,15 +162,18 @@ function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt, n }: {
 export default function SpecialistSection() {
   const t = useTranslations('SpecialistSection')
   const locale = useLocale()
+  const { selectedBranch } = useBranch()
   const [activeIdx, setActiveIdx] = useState(2)
   const [doctors, setDoctors] = useState<{ name: string; specialty: string; image: string }[]>([])
 
   useEffect(() => {
-    fetch(`/api/doctors?locale=${locale}`)
+    if (!selectedBranch) return
+    setActiveIdx(2)
+    fetch(`/api/doctors?locale=${locale}&branch=${selectedBranch.id}`)
       .then(r => r.json())
       .then((data: any[]) => {
         if (data?.length) {
-          setDoctors(data.map((d, i) => ({
+          setDoctors(data.map((d) => ({
             name:      d.name,
             specialty: d.specialty,
             image:     d.image_url || '/images/doctor-1.jpg',
@@ -177,19 +181,9 @@ export default function SpecialistSection() {
         }
       })
       .catch(() => {})
-  }, [locale])
+  }, [locale, selectedBranch])
 
-  const DOCTORS = doctors.length >= 3 ? doctors : [
-    { name: 'Dr. Sophea Chanthara', specialty: 'OB Specialist',      image: '/images/doctor-1.jpg' },
-    { name: 'Dr. Ratana Kim',       specialty: 'Pediatrics',         image: '/images/doctor-2.jpg' },
-    { name: 'Dr. Buntha Lim',       specialty: 'Orthopedic',         image: '/images/doctor-3.jpg' },
-    { name: 'Dr. Maly Sovann',      specialty: 'General Medicine',   image: '/images/doctor-4.jpg' },
-    { name: 'Dr. Kheang Dara',      specialty: 'Dermatology',        image: '/images/doctor-1.jpg' },
-    { name: 'Dr. Virak Pheang',     specialty: 'Radiology',          image: '/images/doctor-2.jpg' },
-    { name: 'Dr. Eng Borey',        specialty: 'Anesthesia',         image: '/images/doctor-3.jpg' },
-    { name: 'Sin Haseka',           specialty: 'Cardiology',         image: '/images/doctor-4.jpg' },
-    { name: 'Nop Sovannaret',       specialty: 'Medical Director',   image: '/images/doctor-1.jpg' },
-  ]
+  const DOCTORS = doctors
 
   const n = DOCTORS.length
 
