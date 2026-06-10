@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import { useBranch } from '@/lib/branch-context'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -11,11 +12,14 @@ import { Link } from '@/i18n/routing'
 export default function CentersSection() {
   const t = useTranslations('CentersSection')
   const locale = useLocale()
+  const { selectedBranch } = useBranch()
   const [idx, setIdx] = useState(0)
   const [SPECIALTIES, setSpecialties] = useState<{key:string;name:string;thumb:string;display:string}[]>([])
 
   useEffect(() => {
-    fetch(`/api/departments?locale=${locale}`)
+    if (!selectedBranch) return
+    setIdx(0)
+    fetch(`/api/departments?locale=${locale}&branch=${selectedBranch.id}`)
       .then(r => r.json())
       .then(d => {
         // Display images for Centers section — cycle through real facility photos
@@ -41,7 +45,7 @@ export default function CentersSection() {
         }
       })
       .catch(() => {})
-  }, [locale])
+  }, [locale, selectedBranch])
 
   const prev = () => setIdx(i => (i - 1 + SPECIALTIES.length) % SPECIALTIES.length)
   const next = () => setIdx(i => (i + 1) % SPECIALTIES.length)
