@@ -1,204 +1,137 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { useRouter } from '@/i18n/routing'
+import { CalendarDays, Clock, Building2 } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
+import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
+import { useAuth } from '@/lib/auth-context'
 
-type Doctor = { id: string; name: string; specialty: string; department: string }
+interface Appointment {
+  id: string
+  patient_name: string
+  patient_phone: string
+  patient_email?: string
+  preferred_date?: string
+  preferred_time?: string
+  department_id?: string
+  message?: string
+  source?: string
+  created_at: string
+}
 
-const BRANCHES = ['Phnom Penh']
-const TIME_SLOTS = [
-  '08:00 AM - 09:00 AM',
-  '09:00 AM - 10:00 AM',
-  '10:00 AM - 11:00 AM',
-  '11:00 AM - 12:00 PM',
-  '01:00 PM - 02:00 PM',
-  '02:00 PM - 03:00 PM',
-  '03:00 PM - 04:00 PM',
-  '04:00 PM - 05:00 PM'
-]
+function StatusBadge({ date }: { date?: string }) {
+  if (!date) return <span className="px-3 py-1 rounded-full bg-[#f0ebe0] text-[#594522] text-[12px] font-dm-sans">Pending</span>
+  const d = new Date(date)
+  const now = new Date()
+  const upcoming = d >= now
+  return (
+    <span className={`px-3 py-1 rounded-full text-[12px] font-dm-sans ${upcoming ? 'bg-[#e8f5e9] text-[#2e7d32]' : 'bg-[#f0ebe0] text-[#594522]'}`}>
+      {upcoming ? 'Upcoming' : 'Completed'}
+    </span>
+  )
+}
 
 export default function AppointmentsPage() {
-  const [doctors, setDoctors] = useState<Doctor[]>([])
-  const [form, setForm] = useState({
-    patient_name: '', patient_phone: '', patient_email: '',
-    doctor_id: '', department_id: '', branch_id: '',
-    preferred_date: '', preferred_time: '', message: '', language: 'en',
-  })
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
-  const [error, setError] = useState('')
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchDoctors() {
-      try {
-        const res = await fetch('/api/doctors')
-        if (res.ok) {
-          const data = await res.json()
-          if (Array.isArray(data)) setDoctors(data)
-        }
-      } catch (err) {
-        console.error('Failed to fetch doctors:', err)
-      } finally {
-        // isLoading removed
-      }
-    }
-    fetchDoctors()
-  }, [])
+    if (authLoading) return
+    if (!user) { router.push('/login?next=/appointments'); return }
+    fetch('/api/appointments')
+      .then(r => r.json())
+      .then(d => setAppointments(d.docs ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [user, authLoading, router])
 
-  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
-
-  // Auto-fill department when doctor selected
-  const selectDoctor = (doctorId: string) => {
-    const doc = doctors.find(d => d.id === doctorId)
-    setForm(f => ({ ...f, doctor_id: doctorId, department_id: doc?.department ?? f.department_id }))
-  }
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!form.patient_name || !form.patient_phone || !form.preferred_date || !form.preferred_time) {
-      setError('Please fill in all required fields.')
-      return
-    }
-    setStatus('loading')
-    setError('')
-    const res = await fetch('/api/appointments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, status: 'pending' }),
-    })
-    if (!res.ok) { const d = await res.json(); setStatus('error'); setError(d.error || 'Something went wrong.'); return }
-    setStatus('success')
-  }
-
-  // Group doctors by department for the select
-  const byDept = doctors.reduce<Record<string, Doctor[]>>((acc, d) => {
-    acc[d.department] = acc[d.department] ?? []
-    acc[d.department].push(d)
-    return acc
-  }, {})
-
-  if (status === 'success') return (
-    <SiteLayout>
-      <div className="min-h-screen flex items-center justify-center pt-[160px] xl:pt-[200px] pb-20" style={{ background: '#fbf7ee' }}>
-        <div className="text-center flex flex-col items-center gap-6 px-6">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: '#b89148' }}>
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </div>
-          <h1 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none">Appointment Booked</h1>
-          <p className="font-dm-sans text-[18px] text-gold-800 max-w-md">We received your request. Our team will contact you shortly to confirm your appointment.</p>
-          <Link href="/" className="mt-4 inline-flex items-center justify-center px-10 py-4 rounded-full font-dm-sans text-[16px] text-white" style={{ background: '#b89148' }}>Back to Home</Link>
+  if (authLoading || loading) {
+    return (
+      <SiteLayout>
+        <div className="min-h-screen bg-[#fbf7ee] flex items-center justify-center pt-[120px]">
+          <div className="w-10 h-10 border-4 border-[#b89148] border-t-transparent rounded-full animate-spin" />
         </div>
-      </div>
-    </SiteLayout>
-  )
+      </SiteLayout>
+    )
+  }
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[160px] xl:pt-[200px] pb-20 px-5" style={{ background: '#fbf7ee' }}>
-        <div className="max-w-2xl mx-auto">
+      <div className="bg-[#fbf7ee] min-h-screen">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 lg:px-[80px] pt-[140px] pb-[120px]">
 
-          <div className="text-center mb-12">
-            <h1 className="font-cormorant font-bold text-[56px] text-gold-900 leading-none mb-3">Book Appointment</h1>
-            <p className="font-dm-sans text-[18px] text-gold-800">Fill in your details and we&apos;ll confirm your booking</p>
+          {/* Header */}
+          <div className="flex items-start justify-between mb-[48px] flex-wrap gap-4">
+            <div className="flex flex-col gap-[8px]">
+              <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">My Appointments</h1>
+              <p className="font-dm-sans text-[18px] text-[#594522]">{appointments.length} appointment{appointments.length !== 1 ? 's' : ''} found</p>
+            </div>
+            <BookAppointmentButton
+              label="Book New Appointment"
+              className="flex items-center gap-[8px] bg-[#b89148] hover:bg-[#9a7630] transition-colors text-white font-dm-sans text-[16px] px-[24px] py-[14px] rounded-[12px]"
+            />
           </div>
 
-          <form onSubmit={submit} className="bg-white rounded-[24px] shadow-[0px_4px_32px_rgba(122,95,44,0.10)] p-8 md:p-12 flex flex-col gap-6">
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Full Name *" value={form.patient_name} onChange={v => set('patient_name', v)} placeholder="Your full name" />
-              <Field label="Phone Number *" value={form.patient_phone} onChange={v => set('patient_phone', v)} placeholder="+855 ..." type="tel" />
-            </div>
-
-            <Field label="Email Address" value={form.patient_email} onChange={v => set('patient_email', v)} placeholder="your@email.com" type="email" />
-
-            {/* Doctor selector — grouped by department */}
-            <div className="flex flex-col gap-2">
-              <label className="font-dm-sans text-[14px] font-medium text-gold-900">Select Doctor</label>
-              <select
-                value={form.doctor_id}
-                onChange={e => selectDoctor(e.target.value)}
-                className="w-full px-4 py-3 rounded-[12px] border border-gold-200 font-dm-sans text-[15px] text-gold-900 outline-none focus:border-gold-500 transition-colors appearance-none"
-                style={{ background: '#fdfaf5' }}
-              >
-                <option value="">Any available doctor</option>
-                {Object.entries(byDept).map(([dept, docs]) => (
-                  <optgroup key={dept} label={dept}>
-                    {docs.map(d => (
-                      <option key={d.id} value={d.id}>{d.name} — {d.specialty}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField label="Branch" value={form.branch_id} onChange={v => set('branch_id', v)} options={BRANCHES} />
-              <Field label="Department" value={form.department_id} onChange={v => set('department_id', v)} placeholder="Auto-filled from doctor" />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Preferred Date *" value={form.preferred_date} onChange={v => set('preferred_date', v)} type="date" />
-              <SelectField label="Preferred Time *" value={form.preferred_time} onChange={v => set('preferred_time', v)} options={TIME_SLOTS} />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-dm-sans text-[14px] font-medium text-gold-900">Message / Symptoms</label>
-              <textarea
-                value={form.message}
-                onChange={e => set('message', e.target.value)}
-                placeholder="Describe your symptoms or any notes for the doctor..."
-                rows={4}
-                className="w-full px-4 py-3 rounded-[12px] border border-gold-200 font-dm-sans text-[15px] text-gold-900 outline-none resize-none focus:border-gold-500 transition-colors"
-                style={{ background: '#fdfaf5' }}
+          {/* Empty state */}
+          {appointments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-[80px] gap-[20px] text-center">
+              <CalendarDays size={64} className="text-[#b89148] opacity-40" />
+              <p className="font-cormorant font-bold text-[32px] text-[#3b2d17]">No appointments yet</p>
+              <p className="font-dm-sans text-[18px] text-[#594522]">Book your first appointment with our specialists.</p>
+              <BookAppointmentButton
+                label="Book Appointment"
+                className="flex items-center justify-center bg-[#b89148] hover:bg-[#9a7630] transition-colors text-white font-dm-sans text-[16px] px-[32px] py-[14px] rounded-[12px]"
               />
             </div>
-
-            {error && <p className="font-dm-sans text-[14px] text-red-600">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="w-full py-4 rounded-full font-dm-sans text-[18px] text-white transition-opacity hover:opacity-90 disabled:opacity-60 mt-2"
-              style={{ background: '#b89148' }}
-            >
-              {status === 'loading' ? 'Booking...' : 'Book Appointment'}
-            </button>
-          </form>
+          ) : (
+            <div className="flex flex-col gap-[16px]">
+              {appointments.map(appt => (
+                <div
+                  key={appt.id}
+                  className="bg-white rounded-[16px] p-[24px] sm:p-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-[16px]"
+                  style={{ boxShadow: '0px 4px 16px rgba(184,145,72,0.10)' }}
+                >
+                  <div className="flex flex-col gap-[12px]">
+                    <div className="flex items-center gap-[12px] flex-wrap">
+                      <p className="font-cormorant font-bold text-[22px] text-[#3b2d17]">{appt.patient_name}</p>
+                      <StatusBadge date={appt.preferred_date} />
+                    </div>
+                    <div className="flex flex-wrap gap-[16px]">
+                      {appt.preferred_date && (
+                        <div className="flex items-center gap-[6px] text-[#594522]">
+                          <CalendarDays size={15} />
+                          <span className="font-dm-sans text-[14px]">{new Date(appt.preferred_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                        </div>
+                      )}
+                      {appt.preferred_time && (
+                        <div className="flex items-center gap-[6px] text-[#594522]">
+                          <Clock size={15} />
+                          <span className="font-dm-sans text-[14px]">{appt.preferred_time}</span>
+                        </div>
+                      )}
+                      {appt.department_id && (
+                        <div className="flex items-center gap-[6px] text-[#594522]">
+                          <Building2 size={15} />
+                          <span className="font-dm-sans text-[14px]">{appt.department_id}</span>
+                        </div>
+                      )}
+                    </div>
+                    {appt.message && (
+                      <p className="font-dm-sans text-[13px] text-[#7a5f2c] italic line-clamp-1">{appt.message}</p>
+                    )}
+                  </div>
+                  <p className="font-dm-sans text-[12px] text-[#b89148] shrink-0">
+                    {new Date(appt.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </SiteLayout>
-  )
-}
-
-function Field({ label, value, onChange, placeholder, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="font-dm-sans text-[14px] font-medium text-gold-900">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-4 py-3 rounded-[12px] border border-gold-200 font-dm-sans text-[15px] text-gold-900 outline-none focus:border-gold-500 transition-colors"
-        style={{ background: '#fdfaf5' }}
-      />
-    </div>
-  )
-}
-
-function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="font-dm-sans text-[14px] font-medium text-gold-900">{label}</label>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="w-full px-4 py-3 rounded-[12px] border border-gold-200 font-dm-sans text-[15px] text-gold-900 outline-none focus:border-gold-500 transition-colors appearance-none"
-        style={{ background: '#fdfaf5' }}
-      >
-        <option value="">Select...</option>
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
-    </div>
   )
 }

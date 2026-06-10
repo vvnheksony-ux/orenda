@@ -21,8 +21,8 @@ export function useAnalytics() {
     trackCallClick: (slug?: string) => track('call_click', { slug }),
     trackInquirySubmit: () => track('inquiry_submit'),
     trackTourView: (scene: number, slug?: string) => track('tour_scene_view', { scene, slug }),
-    trackDoctorView: (slug: string) => track('doctor_view', { slug }),
-    trackDepartmentView: (slug: string) => track('department_view', { slug }),
+    trackDoctorView: (slug: string) => track('doctor_click', { slug }),
+    trackDepartmentView: (slug: string) => track('map_interaction', { slug }),
     trackLanguageSwitch: (newLocale: LocaleCode) => track('language_switch', { locale: newLocale }),
   }
 }

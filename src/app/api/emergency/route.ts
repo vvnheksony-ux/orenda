@@ -2,15 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/utils/supabase/server'
 
 export async function POST(req: NextRequest) {
-  const client = await createClient()
-
-  // Verify Authentication
-  const { data: { user }, error: authError } = await client.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const body = await req.json()
+  if (!body.contact_info && !body.name && !body.phone) {
+    return NextResponse.json({ error: 'Contact info required' }, { status: 400 })
   }
 
-  const body = await req.json()
+  // Attach user_id if logged in (optional)
+  const anonClient = await createClient()
+  const { data: { user } } = await anonClient.auth.getUser()
+  if (user) body.user_id = user.id
+
   const serviceClient = await createServiceClient()
   const { error } = await serviceClient.from('emergency_logs').insert([body])
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

@@ -45,7 +45,6 @@ import {
   analyticsExportEndpoint,
   contentSearchEndpoint,
 } from './src/payload/endpoints'
-import { initCronJobs } from './src/payload/cron'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -62,21 +61,6 @@ export default buildConfig({
       title: 'Orienda CMS',
       description: 'Orienda Hospital Content Management System',
     },
-    components: {
-      graphics: {
-        Logo: '/src/payload/components/Branding#Logo',
-        Icon: '/src/payload/components/Branding#Icon',
-      },
-      views: {
-        Analytics: {
-          Component: '/src/payload/components/AnalyticsDashboard#AnalyticsDashboard',
-          path: '/analytics',
-        },
-      },
-    },
-  },
-  onInit: async (payload) => {
-    initCronJobs(payload)
   },
   collections: [
     Users,

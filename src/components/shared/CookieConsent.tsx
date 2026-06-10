@@ -5,19 +5,27 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Cookie, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
 
 export default function CookieConsent() {
   const t = useTranslations('CookieConsent')
+  const { user, loading } = useAuth()
   const [isVisible, setIsVisible] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
+    if (loading) return
+    if (user) {
+      setIsVisible(false)
+      return
+    }
+
     const consent = localStorage.getItem('cookie-consent')
     if (!consent) {
       const timer = setTimeout(() => setIsVisible(true), 1500)
       return () => clearTimeout(timer)
     }
-  }, [])
+  }, [loading, user])
 
   const handleAccept = () => {
     localStorage.setItem('cookie-consent', 'accepted')

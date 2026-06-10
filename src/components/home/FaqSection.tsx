@@ -1,48 +1,64 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { ChevronUp } from 'lucide-react'
+import { Link } from '@/i18n/routing'
 
 export default function FaqSection() {
   const t = useTranslations('FaqSection')
-  const [openIdx, setOpenIdx] = useState<number | null>(1)
+  const locale = useLocale()
+  const [openIdx, setOpenIdx] = useState<number | null>(null)
+  const [FAQ_ITEMS, setFaqItems] = useState<{q:string;a:string}[]>([])
 
-  const FAQ_ITEMS = [
-    { q: t('qAppointment'), a: t('aAppointment') },
-    { q: t('qAppointment'), a: t('aAppointment') },
-    { q: t('qAppointment'), a: t('aAppointment') },
-    { q: t('qAppointment'), a: t('aAppointment') },
-    { q: t('qAppointment'), a: t('aAppointment') },
-  ]
+  useEffect(() => {
+    fetch(`/api/faqs?locale=${locale}&limit=5`)
+      .then(r => r.json())
+      .then((data: any[]) => {
+        if (data?.length) {
+          setFaqItems(data.slice(0, 5).map((d: any) => ({ q: d.question, a: d.answer })))
+        }
+      })
+      .catch(() => {})
+  }, [locale])
 
   return (
-    <section className="w-full py-[120px] flex justify-center bg-[#fbf7ee]">
-      <div className="flex gap-[40px] items-center relative w-[1352px]">
+    <section className="w-full bg-[#fbf7ee]">
+      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col lg:flex-row gap-[40px] items-start relative">
 
-        {/* Decorative anatomy illustration */}
-        <div
-          className="absolute pointer-events-none"
-          style={{ left: 2, top: 68, width: 499, height: 628, opacity: 0.7, zIndex: 0 }}
-        >
-          <Image
-            src="/images/faq-decor.png"
-            alt=""
-            fill
-            className="object-contain object-top"
-            sizes="499px"
-          />
+        {/* Mobile-only: title + subtitle above accordion */}
+        <div className="flex flex-col gap-[16px] items-center text-center w-full lg:hidden">
+          <h2 className="font-cormorant font-bold text-[36px] text-[#3b2d17] leading-none">
+            {t('title')}
+          </h2>
+          <p className="font-dm-sans text-[18px] text-[#594522] leading-none w-[299px]">
+            {t('subtitle')}
+          </p>
         </div>
 
-        {/* Left glass panel — self-stretch to match accordion height */}
+        {/* Left panel — anatomy image + glass overlay + FAQ text (desktop only) */}
         <div
-          className="relative self-stretch shrink-0 rounded-[24px] p-[24px] flex flex-col items-center justify-center"
-          style={{ width: 521, background: 'rgba(255,255,255,0.2)', zIndex: 1 }}
+          className="hidden lg:block flex-1 rounded-[24px] relative overflow-hidden lg:h-[640px]"
+          style={{ zIndex: 1 }}
         >
-          <div className="flex flex-col gap-[12px] text-center">
-            <h2 className="font-cormorant font-bold text-[56px] text-[#3b2d17] leading-none w-full">
+          {/* Layer 1: Anatomy illustration — locked to top */}
+          <div className="absolute top-0 left-0 right-0 flex justify-center pointer-events-none z-0">
+            <div className="relative" style={{ width: 490, height: 640, opacity: 0.7 }}>
+              <Image src="/images/faq-decor.png" alt="" fill className="object-contain" sizes="490px" />
+            </div>
+          </div>
+
+          {/* Layer 2: Frosted glass overlay */}
+          <div
+            className="absolute inset-0 z-10 border border-white/30 rounded-[24px]"
+            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+          />
+
+          {/* Layer 3: FAQ text on top — locked with fixed top padding */}
+          <div className="relative z-20 flex flex-col gap-[12px] text-center items-center pt-[80px] lg:pt-[220px] px-[24px]">
+            <h2 className="font-cormorant font-bold text-[32px] lg:text-[56px] text-[#3b2d17] leading-none w-full">
               {t('title')}
             </h2>
             <p className="font-dm-sans text-[20px] text-[#594522] leading-none w-full">
@@ -52,20 +68,22 @@ export default function FaqSection() {
         </div>
 
         {/* Right accordion */}
-        <div className="flex flex-col gap-[24px] flex-1 min-w-0" style={{ zIndex: 1 }}>
+        <div className="flex flex-col gap-[24px] flex-1 min-w-0 w-full" style={{ zIndex: 1 }}>
           {FAQ_ITEMS.map((item, i) => {
             const isOpen = openIdx === i
             return (
               <button
                 key={i}
                 onClick={() => setOpenIdx(isOpen ? null : i)}
-                className="bg-white w-full overflow-hidden rounded-[16px] p-[40px] flex flex-col items-end justify-center text-left"
-                style={{ minHeight: 104, boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}
+                className="bg-white w-full overflow-hidden rounded-[16px] p-[20px] sm:p-[24px] lg:p-[32px] flex flex-col items-start justify-start text-left focus:outline-none active:bg-white"
+                style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}
               >
+                {/* Question row */}
                 <div className="flex items-center justify-between w-full">
-                  <p className="font-cormorant font-bold text-[24px] text-black leading-none">
+                  <p className="font-cormorant font-bold text-[18px] sm:text-[22px] lg:text-[24px] text-black leading-none">
                     {item.q}
                   </p>
+                  {/* Figma: closed = rotate-90 (→), open = rotate-180 (↓) */}
                   <div
                     className="shrink-0 transition-transform duration-200 text-[#3b2d17]"
                     style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(90deg)' }}
@@ -74,6 +92,7 @@ export default function FaqSection() {
                   </div>
                 </div>
 
+                {/* Answer */}
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div
@@ -92,6 +111,11 @@ export default function FaqSection() {
               </button>
             )
           })}
+
+          {/* See More — mobile only */}
+          <Link href="/faq" className="lg:hidden self-center px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
+            {t('seeMore')}
+          </Link>
         </div>
 
       </div>

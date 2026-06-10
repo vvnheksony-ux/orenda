@@ -1,5 +1,4 @@
 import type { Payload } from 'payload'
-import { BetaAnalyticsDataClient } from '@google-analytics/data'
 
 export const fetchGaReports = async (payload: Payload) => {
   const propertyId = process.env.GA4_PROPERTY_ID
@@ -11,6 +10,17 @@ export const fetchGaReports = async (payload: Payload) => {
   }
 
   try {
+    const importModule = new Function('specifier', 'return import(specifier)') as (specifier: string) => Promise<{
+      BetaAnalyticsDataClient: new (options: { credentials: unknown }) => {
+        runReport: (params: {
+          property: string
+          dateRanges: Array<{ startDate: string; endDate: string }>
+          dimensions: Array<{ name: string }>
+          metrics: Array<{ name: string }>
+        }) => Promise<[Record<string, unknown>]>
+      }
+    }>
+    const { BetaAnalyticsDataClient } = await importModule('@google-analytics/data')
     const credentials = JSON.parse(credentialsJson)
     const analyticsDataClient = new BetaAnalyticsDataClient({ credentials })
 
@@ -47,8 +57,8 @@ export const fetchGaReports = async (payload: Payload) => {
       await payload.create({
         collection: 'gaReports',
         data: {
-          reportType: type,
-          dateRange: { startDate: '30daysAgo', endDate: 'today' },
+          reportType: type as 'page_views' | 'traffic_sources' | 'user_demographics' | 'device_breakdown',
+          dateRange: { start: '30daysAgo', end: 'today' },
           data: response as Record<string, unknown>,
           fetchedAt: new Date().toISOString(),
         },

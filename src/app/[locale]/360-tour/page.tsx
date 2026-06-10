@@ -1,120 +1,186 @@
 'use client'
 
-import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import SiteLayout from '@/components/layout/SiteLayout'
-import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
-import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
-import { ROOMS as ROOM_DATA } from '@/lib/rooms'
+import { useLocale } from 'next-intl'
+import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
+import { fetchTourScenes, tourCache, type TourScene } from '@/lib/tour-cache'
 
-const ROOMS = ROOM_DATA.map(r => ({
-  id: r.id,
-  name: r.name,
-  desc: r.desc.split('\n\n')[0].slice(0, 60) + '…',
-  src: r.src,
-  thumb: r.src,
-}))
+// Grid: scenes in sceneNumber order. Middle scene = featured full-width card. All others in rows of 2.
+function buildGrid(scenes: TourScene[]) {
+  const sorted = [...scenes].sort((a, b) => a.sceneNumber - b.sceneNumber)
+  const mid = Math.floor(sorted.length / 2)
+  const center = sorted[mid]
+  const others = sorted.filter(s => s.id !== center.id)
+  const rows: TourScene[][] = []
+  for (let i = 0; i < others.length; i += 2) rows.push(others.slice(i, i + 2))
+  const splitAt = Math.ceil(rows.length / 2)
+  return { rowsBefore: rows.slice(0, splitAt), rowsAfter: rows.slice(splitAt), center }
+}
+
+function SceneCard({ scene }: { scene: TourScene }) {
+  const src = scene.thumbnailUrl || scene.panoramaUrl || '/images/360-page-banner.jpg'
+  return (
+    <Link
+      href={`/360-tour/${scene.sceneNumber}` as any}
+      className="bg-white flex flex-1 flex-col items-center min-w-[300px] overflow-hidden rounded-3xl group"
+      style={{ boxShadow: '0px 4px 30px 12px rgba(138,124,88,0.12)' }}
+    >
+      {/* Image */}
+      <div className="relative h-96 w-full bg-zinc-100 shrink-0 overflow-hidden">
+        <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
+        <div className="absolute top-[14px] left-[14px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
+          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+          <span className="font-dm-sans text-white text-[11px] tracking-wide">360°</span>
+        </div>
+      </div>
+      {/* Footer */}
+      <div className="flex items-end justify-between p-10 w-full gap-4">
+        <div className="flex flex-col justify-center items-start gap-3">
+          <p className="font-cormorant font-bold text-5xl text-[#3b2d17] leading-[48px]">{scene.title}</p>
+          <p className="font-dm-sans text-xl text-[#594522] leading-5">{scene.description.split('\n')[0].slice(0, 50)}</p>
+        </div>
+        <div className="h-12 px-5 py-3.5 rounded-xl outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] flex justify-center items-center gap-1 shrink-0 group-hover:bg-[#b89148] transition-colors">
+          <span className="font-dm-sans text-lg text-[#5c4924] px-2 group-hover:text-white transition-colors">Learn More</span>
+          <ArrowRight size={20} className="text-[#5c4924] group-hover:text-white transition-colors" />
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function SceneCardFull({ scene }: { scene: TourScene }) {
+  const src = scene.thumbnailUrl || scene.panoramaUrl || '/images/360-page-banner.jpg'
+  return (
+    <Link
+      href={`/360-tour/${scene.sceneNumber}` as any}
+      className="bg-white flex w-full overflow-hidden rounded-3xl group"
+      style={{ boxShadow: '0px 4px 30px 12px rgba(138,124,88,0.12)', height: 536 }}
+    >
+      {/* Left: 360° frozen view ~65% width */}
+      <div className="relative shrink-0 overflow-hidden rounded-3xl" style={{ width: '65%', height: '100%' }}>
+        <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
+        <div className="absolute top-[16px] left-[16px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
+          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+          <span className="font-dm-sans text-white text-[11px] tracking-wide">360°</span>
+        </div>
+      </div>
+      {/* Right: info panel */}
+      <div className="flex flex-col justify-between p-10 flex-1">
+        <div className="flex flex-col gap-4">
+          <p className="font-dm-sans text-[14px] text-[#b89148] tracking-[2px] uppercase">Featured Scene</p>
+          <p className="font-cormorant font-bold text-5xl text-[#3b2d17] leading-[48px]">{scene.title}</p>
+          <p className="font-dm-sans text-xl text-[#594522] leading-relaxed line-clamp-4">{scene.description}</p>
+        </div>
+        <div className="h-12 px-5 py-3.5 rounded-xl outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] flex justify-center items-center gap-1 w-fit group-hover:bg-[#b89148] transition-colors">
+          <span className="font-dm-sans text-lg text-[#5c4924] px-2 group-hover:text-white transition-colors">Learn More</span>
+          <ArrowRight size={20} className="text-[#5c4924] group-hover:text-white transition-colors" />
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function Skeleton() {
+  return (
+    <div className="flex flex-col gap-[40px] w-full">
+      <div className="flex gap-[40px] w-full">
+        <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
+        <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
+      </div>
+      <div className="flex gap-[40px] w-full">
+        <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
+        <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
+      </div>
+      <div className="w-full h-[536px] rounded-[16px] bg-[#f0ebe0] animate-pulse" />
+      <div className="flex gap-[40px] w-full">
+        <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
+        <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
+      </div>
+    </div>
+  )
+}
 
 export default function ThreeSixtyTourPage() {
-  const t = useTranslations('TourSection')
-  const [activeRoom, setActiveRoom] = useState<string | null>(null)
+  const locale = useLocale()
+  const [scenes, setScenes] = useState<TourScene[]>(() => tourCache[locale] ?? [])
+  const [loading, setLoading] = useState(() => !tourCache[locale]?.length)
 
-  const selectedRoom = ROOMS.find(r => r.id === activeRoom)
+  useEffect(() => {
+    fetchTourScenes(locale)
+      .then(data => { if (data.length) setScenes(data) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [locale])
+
+  const scene1 = scenes.find(s => s.sceneNumber === 1) ?? scenes[0]
+  const grid = scenes.length ? buildGrid(scenes) : null
+  const hero = scene1?.panoramaUrl || scene1?.thumbnailUrl || '/images/360-page-banner.jpg'
 
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full">
-        <div className="flex flex-col gap-[80px] items-center pb-[120px] px-[80px] pt-[120px] 2xl:pt-[196px]">
 
-          {/* Panoramic banner */}
-          <div className="w-full h-[572px] rounded-[28px] overflow-hidden relative shrink-0">
-            <Image
-              src="/images/360-page-banner.jpg"
-              alt="360 Tour Banner"
-              fill
-              className="object-cover"
-              sizes="100vw"
-              priority
-            />
+        {/* Scene 1 — interactive 360° hero */}
+        <div className="pt-[100px] lg:pt-[212px] px-4 sm:px-8 lg:px-[80px]">
+          {loading ? (
+            <div className="w-full h-[520px] rounded-[28px] bg-[#1a1308] animate-pulse" />
+          ) : !scene1 ? (
+            <div className="flex flex-col items-center justify-center h-[300px] gap-4">
+              <p className="font-cormorant font-bold text-[32px] text-[#3b2d17]">No tours available</p>
+              <p className="font-dm-sans text-[18px] text-[#594522]">360° tour scenes will appear here once uploaded.</p>
+            </div>
+          ) : (
+            <div className="relative w-full overflow-hidden rounded-[28px]"
+              style={{ height: 700, boxShadow: '0 8px 60px 8px rgba(184,145,72,0.18)', border: '1px solid rgba(184,145,72,0.28)' }}>
+              <ThreeSixtyViewer src={hero} height="100%" width="100%" />
+              <div className="absolute bottom-0 inset-x-0 pointer-events-none flex flex-col gap-[8px] px-[48px] pb-[40px]"
+                style={{ background: 'linear-gradient(0deg, rgba(10,8,4,0.80) 0%, transparent 55%)' }}>
+                <p className="font-dm-sans text-[13px] text-[#e8cc88] tracking-[3px] uppercase">Scene 1 · Drag to explore</p>
+                <p className="font-cormorant font-bold text-white text-[42px] leading-none">{scene1.title}</p>
+              </div>
+              <Link
+                href={`/360-tour/${scene1.sceneNumber}` as any}
+                className="absolute top-[20px] right-[20px] z-20 flex items-center gap-[8px] px-[18px] py-[10px] rounded-[10px] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#c8a25a] transition-colors"
+                style={{ background: 'rgba(184,145,72,0.92)', backdropFilter: 'blur(6px)' }}
+              >
+                Full View →
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Grid section */}
+        <div className="flex flex-col gap-[40px] items-center pb-[120px] px-4 sm:px-8 lg:px-[80px] pt-[80px]">
+          <div className="flex flex-col gap-[12px] text-center w-full">
+            <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">Visit Our Rooms</h2>
+            <p className="font-dm-sans text-[20px] text-[#594522] w-full">See full 360 degree views of our rooms</p>
           </div>
 
-          {/* Room cards */}
-          <div className="flex flex-col gap-[40px] items-center w-full">
-            <div className="flex flex-col gap-[12px] text-center w-full">
-              <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">
-                Visit Our Rooms
-              </h2>
-              <p className="font-dm-sans text-[20px] text-[#594522] w-full">
-                See full 360 degree views of our rooms
-              </p>
-            </div>
-
-            {/* 2-col grid */}
-            <div className="flex flex-wrap gap-[40px] items-center w-full">
-              {ROOMS.map((room) => (
-                <div
-                  key={room.id}
-                  className="bg-white flex flex-1 flex-col items-center min-w-[300px] overflow-hidden rounded-[24px]"
-                  style={{ boxShadow: '0px 4px 30px 12px rgba(138,124,88,0.12)' }}
-                >
-                  {/* Room photo */}
-                  <div className="relative h-[376px] w-full bg-[#f3f3f3] overflow-hidden shrink-0">
-                    <Image
-                      src={room.thumb}
-                      alt={room.name}
-                      fill
-                      className="object-cover"
-                      sizes="656px"
-                    />
-                  </div>
-
-                  {/* Card footer */}
-                  <div className="flex flex-wrap gap-y-[24px] items-end justify-between p-[40px] w-full">
-                    <div className="flex flex-col gap-[12px] items-center justify-center text-center whitespace-nowrap">
-                      <p className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">{room.name}</p>
-                      <p className="font-dm-sans text-[20px] text-[#594522]">{room.desc}</p>
-                    </div>
-                    <Link
-                      href={`/360-tour/${room.id}` as any}
-                      className="flex items-center h-[48px] px-[20px] py-[14px] border-[1.5px] border-[#b89148] rounded-[12px] gap-[4px] shrink-0"
-                    >
-                      <span className="font-dm-sans text-[18px] text-[#5c4924] px-[8px]">Learn More</span>
-                      <ArrowRight size={20} className="text-[#5c4924]" />
-                    </Link>
-                  </div>
+          {loading ? <Skeleton /> : grid ? (
+            <div className="flex flex-col gap-[40px] w-full">
+              {grid.rowsBefore.map((pair, i) => (
+                <div key={i} className="flex gap-[40px] w-full">
+                  {pair.map(s => <SceneCard key={s.id} scene={s} />)}
+                  {pair.length === 1 && <div className="flex-1" />}
+                </div>
+              ))}
+              <SceneCardFull scene={grid.center} />
+              {grid.rowsAfter.map((pair, i) => (
+                <div key={`a${i}`} className="flex gap-[40px] w-full">
+                  {pair.map(s => <SceneCard key={s.id} scene={s} />)}
+                  {pair.length === 1 && <div className="flex-1" />}
                 </div>
               ))}
             </div>
-          </div>
-
+          ) : null}
         </div>
+
       </div>
-
-      {/* 360 viewer modal */}
-      {selectedRoom && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center"
-          onClick={() => setActiveRoom(null)}
-        >
-          <div
-            className="relative w-[90vw] h-[80vh] rounded-[16px] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ThreeSixtyViewer src={selectedRoom.src} />
-            <button
-              onClick={() => setActiveRoom(null)}
-              className="absolute top-[16px] right-[16px] z-10 bg-black/50 text-white rounded-full w-[40px] h-[40px] flex items-center justify-center font-dm-sans text-[20px] hover:bg-black/70 transition-colors"
-            >
-              ✕
-            </button>
-            <div className="absolute top-[16px] left-[16px] z-10 bg-black/50 px-[16px] py-[8px] rounded-[8px]">
-              <p className="font-dm-sans text-white text-[16px]">{selectedRoom.name}</p>
-            </div>
-          </div>
-        </div>
-      )}
     </SiteLayout>
   )
 }

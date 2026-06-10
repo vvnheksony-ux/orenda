@@ -75,7 +75,7 @@ export const aggregateKpis = async (payload: Payload, granularity: 'day' | 'week
   await createSnapshot(payload, startDate, KPI_METRICS.PAGE_VIEWS, pageViews.length, granularity)
 
   // 5. Doctor Views (Breakdown by slug)
-  const doctorViews = await fetchEvents(ANALYTICS_EVENTS.DOCTOR_VIEW)
+  const doctorViews = await fetchEvents(ANALYTICS_EVENTS.DOCTOR_CLICK)
   const doctorBreakdown: Record<string, number> = {}
   doctorViews.forEach((d) => {
     if (d.slug) doctorBreakdown[d.slug] = (doctorBreakdown[d.slug] || 0) + 1
@@ -83,7 +83,7 @@ export const aggregateKpis = async (payload: Payload, granularity: 'day' | 'week
   await createSnapshot(payload, startDate, KPI_METRICS.DOCTOR_VIEWS, doctorViews.length, granularity, undefined, doctorBreakdown)
 
   // 6. Department Views (Breakdown by slug)
-  const deptViews = await fetchEvents(ANALYTICS_EVENTS.DEPARTMENT_VIEW)
+  const deptViews = await fetchEvents(ANALYTICS_EVENTS.MAP_INTERACTION)
   const deptBreakdown: Record<string, number> = {}
   deptViews.forEach((d) => {
     if (d.slug) deptBreakdown[d.slug] = (deptBreakdown[d.slug] || 0) + 1
@@ -120,9 +120,9 @@ async function createSnapshot(
     collection: 'kpiSnapshots',
     data: {
       date: date.toISOString(),
-      metric,
+      metric: metric as 'calls' | 'inquiries' | 'tour_sessions' | 'tour_scene_views' | 'doctor_views' | 'department_views' | 'page_views' | 'language_split',
       value,
-      granularity,
+      granularity: granularity as 'day' | 'week' | 'month',
       locale,
       breakdown,
     },

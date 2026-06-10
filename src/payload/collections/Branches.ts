@@ -29,7 +29,7 @@ export const Branches: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField('branches'),
+    ...slugField(),
     {
       name: 'description',
       type: 'richText',

@@ -31,7 +31,7 @@ export function createAuditHooks(collectionSlug: string) {
           documentTitle: String(documentTitle),
           userId: user.id,
           userName: user.email,
-          userRole: (user.role as string) || undefined,
+          userRole: (user.role as 'admin' | 'editor' | 'contributor') || undefined,
           timestamp: new Date().toISOString(),
         },
       })
@@ -57,7 +57,7 @@ export function createAuditHooks(collectionSlug: string) {
           documentTitle: String(documentTitle),
           userId: user.id,
           userName: user.email,
-          userRole: (user.role as string) || undefined,
+          userRole: (user.role as 'admin' | 'editor' | 'contributor') || undefined,
           timestamp: new Date().toISOString(),
         },
       })

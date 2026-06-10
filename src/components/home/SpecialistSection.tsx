@@ -4,14 +4,11 @@ import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
 import { animate, motion, useMotionValue } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
-const n = 9
+function wrapIdx(i: number, n: number) { return ((i % n) + n) % n }
 
-function wrapIdx(i: number) { return ((i % n) + n) % n }
-
-// Shortest circular distance from activeIdx to docIndex
-function wrappedDiff(rawDiff: number) {
+function wrappedDiff(rawDiff: number, n: number) {
   let d = rawDiff % n
   if (d > n / 2)  d -= n
   if (d < -n / 2) d += n
@@ -43,14 +40,15 @@ function getTargetX(diff: number, gap: number = 32) {
   return sign * 2000 // far off-screen
 }
 
-function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt }: {
+function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt, n }: {
   doc: { name: string, specialty: string, image: string }
   docIndex: number
   activeIdx: number
   setIdx: (i: number) => void
   viewProfileTxt: string
+  n: number
 }) {
-  const diff = wrappedDiff(docIndex - activeIdx)
+  const diff = wrappedDiff(docIndex - activeIdx, n)
   const s = sizeByDiff(diff)
 
   const x = useMotionValue(getTargetX(diff))
@@ -84,8 +82,16 @@ function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt }: {
   return (
     <motion.div
       style={{ x, width: w, height: h, zIndex: 5 - Math.abs(diff), borderRadius: s.radius }}
-      className="absolute bg-white overflow-hidden cursor-pointer shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]"
+      className="absolute bg-white overflow-hidden cursor-pointer shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] flex flex-col"
       onClick={() => setIdx(docIndex)}
+      whileHover="hover"
+      animate={{ y: 0 }}
+      variants={{
+        hover: { 
+          y: -12,
+          transition: { type: 'spring', stiffness: 300, damping: 20 }
+        }
+      }}
     >
       {/* Gold gradient header */}
       <div
@@ -97,35 +103,50 @@ function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt }: {
         }}
       />
 
-      {/* Circular photo */}
+      {/* Circular photo wrapper with inner zoom motion */}
       <div
         className="absolute left-1/2 -translate-x-1/2 bg-gold-50 rounded-full overflow-hidden shadow-[0px_4px_30px_12px_rgba(184,145,72,0.2)]"
         style={{ width: s.photo, height: s.photo, top: s.photoTop }}
       >
-        <Image src={doc.image} alt={doc.name} fill className="object-cover object-top" sizes={`${s.photo}px`} />
+        <motion.div 
+          className="relative w-full h-full"
+          variants={{
+            hover: { scale: 1.08, transition: { duration: 0.3 } }
+          }}
+        >
+          <Image src={doc.image} alt={doc.name} fill className="object-cover object-top" sizes={`${s.photo}px`} unoptimized />
+        </motion.div>
       </div>
 
       {/* Info */}
       <div
-        className="absolute left-0 right-0 flex flex-col items-center justify-between px-[10px] pb-[24px]"
-        style={{ top: '53%' }}
+        className="absolute left-0 right-0 flex flex-col items-center justify-between px-[16px] pb-[24px]"
+        style={{ top: '53%', bottom: 0 }}
       >
-        <div className="flex flex-col gap-[16px] items-center text-center overflow-hidden">
-          <p className="font-cormorant text-gold-900 leading-none capitalize" style={{ fontSize: s.name }}>
+        <div className="flex flex-col gap-[12px] items-center text-center w-full overflow-hidden">
+          <p className="font-cormorant text-gold-900 leading-[1.2] font-bold capitalize w-full truncate" style={{ fontSize: s.name }}>
             {doc.name}
           </p>
-          <p className="font-dm-sans text-gold-900 leading-none" style={{ fontSize: s.spec }}>
+          <p className="font-dm-sans text-gold-900/80 leading-[1.2] w-full truncate" style={{ fontSize: s.spec }}>
             {doc.specialty}
           </p>
         </div>
-        <div
-          className="bg-gold-500 flex items-center justify-center overflow-hidden shadow-[0px_2px_6px_6px_rgba(0,0,0,0.05)] mt-[16px]"
+        <motion.div
+          className="bg-[#B89148] flex items-center justify-center overflow-hidden shadow-[0px_2px_6px_6px_rgba(0,0,0,0.05)] mt-[16px]"
           style={{ width: s.btnW, height: s.btnH, borderRadius: 12 }}
+          variants={{
+            hover: { 
+              backgroundColor: '#a3803d', 
+              scale: 1.03, 
+              boxShadow: '0 4px 12px rgba(163,128,61,0.35)',
+              transition: { duration: 0.2 } 
+            }
+          }}
         >
-          <p className="font-dm-sans text-gold-50 text-center" style={{ fontSize: s.btnFs }}>
+          <p className="font-dm-sans text-white text-center font-medium" style={{ fontSize: s.btnFs }}>
             {viewProfileTxt}
           </p>
-        </div>
+        </motion.div>
       </div>
 
       {/* Inactive overlay */}
@@ -136,65 +157,122 @@ function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt }: {
   )
 }
 
+
 export default function SpecialistSection() {
   const t = useTranslations('SpecialistSection')
+  const locale = useLocale()
   const [activeIdx, setActiveIdx] = useState(2)
+  const [doctors, setDoctors] = useState<{ name: string; specialty: string; image: string }[]>([])
 
-  const DOCTORS = [
-    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-1.jpg' },
-    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-2.jpg' },
-    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-3.jpg' },
-    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-4.jpg' },
-    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-2.jpg' },
-    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-3.jpg' },
-    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-1.jpg' },
-    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-4.jpg' },
-    { name: 'DR. Eudaldo Gonzalez Martines', specialty: t('orthopedicSpecialist'), image: '/images/doctor-2.jpg' },
+  useEffect(() => {
+    fetch(`/api/doctors?locale=${locale}`)
+      .then(r => r.json())
+      .then((data: any[]) => {
+        if (data?.length) {
+          setDoctors(data.map((d, i) => ({
+            name:      d.name,
+            specialty: d.specialty,
+            image:     d.image_url || '/images/doctor-1.jpg',
+          })))
+        }
+      })
+      .catch(() => {})
+  }, [locale])
+
+  const DOCTORS = doctors.length >= 3 ? doctors : [
+    { name: 'Dr. Sophea Chanthara', specialty: 'OB Specialist',      image: '/images/doctor-1.jpg' },
+    { name: 'Dr. Ratana Kim',       specialty: 'Pediatrics',         image: '/images/doctor-2.jpg' },
+    { name: 'Dr. Buntha Lim',       specialty: 'Orthopedic',         image: '/images/doctor-3.jpg' },
+    { name: 'Dr. Maly Sovann',      specialty: 'General Medicine',   image: '/images/doctor-4.jpg' },
+    { name: 'Dr. Kheang Dara',      specialty: 'Dermatology',        image: '/images/doctor-1.jpg' },
+    { name: 'Dr. Virak Pheang',     specialty: 'Radiology',          image: '/images/doctor-2.jpg' },
+    { name: 'Dr. Eng Borey',        specialty: 'Anesthesia',         image: '/images/doctor-3.jpg' },
+    { name: 'Sin Haseka',           specialty: 'Cardiology',         image: '/images/doctor-4.jpg' },
+    { name: 'Nop Sovannaret',       specialty: 'Medical Director',   image: '/images/doctor-1.jpg' },
   ]
 
-  const prev = () => setActiveIdx(i => wrapIdx(i - 1))
-  const next = () => setActiveIdx(i => wrapIdx(i + 1))
+  const n = DOCTORS.length
+
+  const prev = () => setActiveIdx(i => wrapIdx(i - 1, n))
+  const next = () => setActiveIdx(i => wrapIdx(i + 1, n))
 
   return (
-    <section className="w-full bg-gold-50 py-[120px] lg:py-[160px] overflow-hidden px-[40px] xl:px-[80px]">
-      <div className="max-w-[1800px] mx-auto flex flex-col gap-[60px] items-center">
+    <section className="w-full bg-[#fbf7ee] overflow-hidden">
+      <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[24px] lg:gap-[60px] items-center">
 
-        <div className="flex flex-col gap-[20px] items-start w-full text-center">
-          <h2 className="font-cormorant font-bold text-[48px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none w-full">
+        <div className="flex flex-col gap-[16px] lg:gap-[20px] items-center w-full text-center px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]">
+          <h2 className="font-cormorant font-bold text-[36px] lg:text-[48px] text-[#3b2d17] leading-none w-full">
             {t('title')}
           </h2>
-          <p className="font-dm-sans text-[20px] lg:text-[24px] xl:text-[26px] text-gold-800 leading-none w-full">
+          <p className="font-dm-sans text-[18px] lg:text-[20px] text-[#594522] leading-none w-[299px] lg:w-full">
             {t('subtitle')}
           </p>
         </div>
 
-        <div className="relative w-full flex items-center justify-center h-[600px]">
-
-          {/* Prev arrow */}
-          <button
-            onClick={prev}
-            className="absolute left-[10px] xl:left-[30px] z-30 w-[56px] h-[56px] rounded-full bg-white flex items-center justify-center hover:bg-gold-50 hover:scale-105 transition-all shadow-[0_8px_30px_rgba(184,145,72,0.3)] shrink-0 group"
-            aria-label="Previous specialist"
+        {/* ── Mobile: centered peek carousel ── */}
+        <div className="lg:hidden w-full relative overflow-hidden">
+          <div
+            className="flex transition-transform duration-300 ease-in-out"
+            style={{ transform: `translateX(calc(50% - ${activeIdx * 266 + 125}px))`, gap: 16 }}
           >
-            <ChevronLeft className="text-gold-700 group-hover:text-gold-900 transition-colors mr-[2px]" size={28} strokeWidth={2} />
-          </button>
-
-          {DOCTORS.map((doc, i) => (
-            <DocCard key={i} doc={doc} docIndex={i} activeIdx={activeIdx} setIdx={setActiveIdx} viewProfileTxt={t('viewProfile')} />
-          ))}
-
-          {/* Next arrow */}
-          <button
-            onClick={next}
-            className="absolute right-[10px] xl:right-[30px] z-30 w-[56px] h-[56px] rounded-full bg-white flex items-center justify-center hover:bg-gold-50 hover:scale-105 transition-all shadow-[0_8px_30px_rgba(184,145,72,0.3)] shrink-0 group"
-            aria-label="Next specialist"
-          >
-            <ChevronRight className="text-gold-700 group-hover:text-gold-900 transition-colors ml-[2px]" size={28} strokeWidth={2} />
-          </button>
-
+            {DOCTORS.map((doc, i) => {
+              const diff = Math.abs(i - activeIdx)
+              return (
+                <div
+                  key={i}
+                  onClick={() => setActiveIdx(i)}
+                  className="bg-white rounded-[16px] overflow-hidden shadow-[0px_3px_13px_3px_rgba(122,95,44,0.12)] shrink-0 flex flex-col items-center transition-all duration-300 cursor-pointer"
+                  style={{ width: 250, height: 329, opacity: diff === 0 ? 1 : 0.5, transform: diff === 0 ? 'scale(1)' : 'scale(0.93)' }}
+                >
+                  {/* Gold gradient header */}
+                  <div className="relative w-full flex-1 flex flex-col items-center justify-start pt-[12px]">
+                    <div
+                      className="absolute top-0 left-0 right-0"
+                      style={{
+                        height: '52%',
+                        opacity: 0.64,
+                        backgroundImage: 'linear-gradient(133.36deg,rgba(234,214,164,0.6) 0%,rgba(206,175,112,0.827) 25%,rgba(184,145,72,0.8) 49.52%,rgba(210,181,120,0.792) 75.96%,rgba(234,214,164,0.6) 100%)',
+                      }}
+                    />
+                    <div className="relative z-10 rounded-full overflow-hidden bg-[#fbf7ee] shadow-[0px_3px_25px_12px_rgba(184,145,72,0.2)]" style={{ width: 120, height: 120, marginTop: 24 }}>
+                      <Image src={doc.image} alt={doc.name} fill className="object-cover object-top" sizes="120px" unoptimized />
+                    </div>
+                  </div>
+                  {/* Info */}
+                  <div className="flex flex-col items-center gap-[10px] px-[16px] pb-[20px] w-full">
+                    <div className="flex flex-col gap-[8px] items-center text-center">
+                      <p className="font-cormorant font-bold text-[18px] text-[#3b2d17] leading-tight capitalize w-full truncate">{doc.name}</p>
+                      <p className="font-dm-sans text-[12px] text-[#3b2d17]/80 leading-tight w-full truncate">{doc.specialty}</p>
+                    </div>
+                    <div className="bg-[#b89148] rounded-[10px] flex items-center justify-center px-[12px] py-[8px] w-full">
+                      <p className="font-dm-sans text-white text-center text-[12px] font-medium">{t('viewProfile')}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
 
-        <button className="px-[40px] py-[14px] rounded-full border border-gold-500 text-gold-900 font-dm-sans text-[18px] hover:bg-gold-200/30 transition-colors cursor-pointer">
+        {/* ── Desktop: motion carousel ── */}
+        <motion.div
+          className="hidden lg:flex relative w-full items-center justify-center h-[600px] cursor-grab active:cursor-grabbing"
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.05}
+          onDragEnd={(_, info) => {
+            if (info.offset.x < -40) next()
+            else if (info.offset.x > 40) prev()
+          }}
+        >
+
+          {DOCTORS.map((doc, i) => (
+            <DocCard key={i} doc={doc} docIndex={i} activeIdx={activeIdx} setIdx={setActiveIdx} viewProfileTxt={t('viewProfile')} n={n} />
+          ))}
+
+        </motion.div>
+
+        <button className="px-[32px] py-[12px] rounded-full border border-[#b89148] text-[#5c4924] font-dm-sans text-[16px] bg-[#F5ECD4]/40 hover:bg-[#b89148]/10 transition-colors cursor-pointer">
           {t('seeMore')}
         </button>
 

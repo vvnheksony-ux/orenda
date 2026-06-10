@@ -1,80 +1,101 @@
+'use client'
+
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { Link } from '@/i18n/routing'
-import { CLINIC_DETAILS } from '@/lib/clinics'
+import { useLocale } from 'next-intl'
 
-/* ── data ── */
+interface Department {
+  id: string
+  name: string
+  slug: string
+  icon: string | null
+}
+
+const WOMENS_KEYWORDS = ['obstetric','ob','gynecolog','gynaecolog','pediatric','paediatric','women','child','neonatal','maternity']
+
+function isWomens(dept: Department) {
+  const lower = dept.name.toLowerCase()
+  return WOMENS_KEYWORDS.some(k => lower.includes(k))
+}
+
 const BANNER_ITEMS = [
   { icon: '/images/clinics/banner-icon1.png', title: 'Discover our clinics',  desc: 'Choose by name, specialty and more.' },
   { icon: '/images/clinics/banner-icon2.png', title: 'Discover our clinics',  desc: 'Ask about our treatments and services' },
   { icon: '/images/clinics/banner-icon3.png', title: 'Discover our clinics',  desc: 'Schedule your visit online.' },
 ]
 
-const WOMEN_CLINICS = [
-  { name: 'Obstetric',         icon: '/images/clinics/obstetric-icon.png'  },
-  { name: 'Gynecology',        icon: '/images/clinics/obstetric-icon2.png' },
-  { name: "Women's Health",    icon: '/images/clinics/obstetric-icon3.png' },
-]
+function ClinicCard({ dept, variant }: { dept: Department; variant: 'pink' | 'gold' }) {
+  const icon = dept.icon || '/images/specialty-obstetric.png'
+  const isPink = variant === 'pink'
 
-const GENERAL_CLINICS = [
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-  { name: 'Spine Center' },
-]
-
-/* ── components ── */
-function PinkClinicCard({ name, icon }: { name: string; icon: string }) {
   return (
-    <div className="bg-white flex flex-col gap-[24px] items-center overflow-hidden p-[24px] rounded-[16px] shrink-0 w-[300px]" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
-      {/* Pink gradient circle */}
-      <div className="relative rounded-full overflow-hidden shrink-0 size-[120px]" style={{ background: 'linear-gradient(180deg, rgba(255,244,249,0.4) 0%, rgba(242,135,180,0.4) 100%)', boxShadow: '0px 4px 30px 12px rgba(242,135,180,0.2)' }}>
-        <Image src={icon} alt={name} fill className="object-cover rounded-full" sizes="120px" />
+    <Link
+      href={`/clinics/${dept.slug || dept.id}` as any}
+      className="bg-white flex flex-col gap-[24px] items-center overflow-hidden p-[24px] rounded-[16px] shrink-0 w-[300px] hover:shadow-lg transition-shadow cursor-pointer"
+      style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}
+    >
+      <div
+        className="relative rounded-full overflow-hidden shrink-0 size-[120px]"
+        style={{
+          background: isPink
+            ? 'linear-gradient(180deg, rgba(255,244,249,0.4) 0%, rgba(242,135,180,0.4) 100%)'
+            : '#fbf7ee',
+          boxShadow: isPink
+            ? '0px 4px 30px 12px rgba(242,135,180,0.2)'
+            : '0px 4px 30px 12px rgba(184,145,72,0.2)',
+        }}
+      >
+        <Image src={icon} alt={dept.name} fill className="object-contain p-[8px]" sizes="120px" unoptimized />
       </div>
       <div className="flex flex-col gap-[24px] items-center w-full">
-        <p className="font-cormorant font-medium text-[24px] text-[#4f1b31] text-center capitalize leading-none whitespace-nowrap">{name}</p>
-        <button className="flex items-center h-[32px] px-[12px] py-[8px] border-[1.5px] border-[#f6a3c6] rounded-[12px] gap-[4px]">
+        <p className={`font-cormorant font-medium text-[24px] text-center capitalize leading-none whitespace-nowrap ${isPink ? 'text-[#4f1b31]' : 'text-[#3b2d17]'}`}>
+          {dept.name}
+        </p>
+        <div className={`flex items-center h-[32px] px-[12px] py-[8px] border-[1.5px] rounded-[12px] gap-[4px] ${isPink ? 'border-[#f6a3c6]' : 'border-[#b89148]'}`}>
           <span className="font-dm-sans text-[16px] text-[#5c4924] px-[8px]">Learn More</span>
           <ArrowRight size={16} className="text-[#5c4924]" />
-        </button>
+        </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
-function GoldClinicCard({ name }: { name: string }) {
-  return (
-    <div className="bg-white flex flex-col gap-[24px] items-center overflow-hidden p-[24px] rounded-[16px] shrink-0 w-[300px]" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
-      {/* Gold gradient circle */}
-      <div className="relative rounded-full overflow-hidden shrink-0 size-[120px] bg-[#fbf7ee]" style={{ boxShadow: '0px 4px 30px 12px rgba(184,145,72,0.2)' }}>
-        <Image src="/images/clinics/spine-icon.png" alt={name} fill className="object-contain p-[10px]" sizes="120px" />
-      </div>
-      <div className="flex flex-col gap-[24px] items-center w-full">
-        <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] text-center capitalize leading-none whitespace-nowrap">{name}</p>
-        <button className="flex items-center h-[32px] px-[12px] py-[8px] border-[1.5px] border-[#b89148] rounded-[12px] gap-[4px]">
-          <span className="font-dm-sans text-[16px] text-[#5c4924] px-[8px]">Learn More</span>
-          <ArrowRight size={16} className="text-[#5c4924]" />
-        </button>
-      </div>
-    </div>
-  )
+function SkeletonCard() {
+  return <div className="rounded-[16px] bg-[#f0ebe0] animate-pulse shrink-0 w-[300px] h-[248px]" />
 }
 
-/* ── page ── */
 export default function ClinicsPage() {
+  const locale = useLocale()
+  const [depts, setDepts] = useState<Department[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/departments?locale=${locale}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d?.docs?.length) {
+          setDepts(d.docs.map((dept: any) => ({
+            id:   String(dept.id),
+            name: dept.name,
+            slug: dept.slug,
+            icon: dept.icon || null,
+          })))
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [locale])
+
+  const womens  = depts.filter(d => isWomens(d))
+  const general = depts.filter(d => !isWomens(d))
+
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full">
-        <div className="flex flex-col gap-[80px] items-center pb-[120px] px-[80px] pt-[120px] 2xl:pt-[196px]">
+        <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[80px] items-center pb-[120px] px-[80px] pt-[212px]">
 
           {/* Hero slider */}
           <div className="flex gap-[16px] h-[472px] items-center justify-center w-full">
@@ -89,7 +110,7 @@ export default function ClinicsPage() {
                 <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">Orienda International Hospital</h1>
                 <div className="font-dm-sans font-light text-[24px] text-[#594522] leading-[1.4]">
                   <p className="mb-[12px]">We dedicated to providing safe and reliable medical services.</p>
-                  <p>Schedule and appointment to experience world-class healthcare.</p>
+                  <p>Schedule an appointment to experience world-class healthcare.</p>
                 </div>
                 <Link href="/about" className="flex items-center h-[48px] px-[20px] py-[14px] border-[1.5px] border-[#b89148] rounded-[12px] gap-[4px]">
                   <span className="font-dm-sans text-[18px] text-[#5c4924] px-[8px]">Learn More</span>
@@ -120,41 +141,47 @@ export default function ClinicsPage() {
           </div>
 
           {/* Clinics & Departments */}
-          <div className="flex flex-col gap-[120px] items-center w-full">
-
-            {/* Header */}
+          <div className="flex flex-col gap-[80px] items-center w-full">
             <div className="flex flex-col gap-[12px] text-center w-full">
               <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">Clinics &amp; Departments</h2>
               <p className="font-dm-sans text-[20px] text-[#594522] w-full">A selected team of experts committed to your health</p>
             </div>
 
-            {/* Women & Children */}
-            <div className="flex flex-col gap-[40px] items-start w-full">
-              <div className="flex flex-col gap-[8px] text-center w-full">
-                <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">Women &amp; Children</h3>
-                <p className="font-dm-sans text-[16px] text-[#594522]">A selected team of experts committed to your health</p>
+            {loading ? (
+              <div className="flex flex-wrap gap-[40px] justify-center w-full">
+                {Array(6).fill(0).map((_, i) => <SkeletonCard key={i} />)}
               </div>
-              <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
-                {WOMEN_CLINICS.map((c) => (
-                  <PinkClinicCard key={c.name} name={c.name} icon={c.icon} />
-                ))}
-              </div>
-            </div>
+            ) : (
+              <>
+                {/* Women & Children */}
+                {womens.length > 0 && (
+                  <div className="flex flex-col gap-[40px] items-start w-full">
+                    <div className="flex flex-col gap-[8px] w-full">
+                      <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">Women &amp; Children</h3>
+                      <p className="font-dm-sans text-[16px] text-[#594522]">A selected team of experts committed to your health</p>
+                    </div>
+                    <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
+                      {womens.map(d => <ClinicCard key={d.id} dept={d} variant="pink" />)}
+                    </div>
+                  </div>
+                )}
 
-            {/* General Hospital */}
-            <div className="flex flex-col gap-[40px] items-start w-full">
-              <div className="flex flex-col gap-[8px] text-center w-full">
-                <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">General Hospital</h3>
-                <p className="font-dm-sans text-[18px] text-[#594522]">A selected team of experts committed to your health</p>
-              </div>
-              <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
-                {GENERAL_CLINICS.map((c, i) => (
-                  <GoldClinicCard key={i} name={c.name} />
-                ))}
-              </div>
-            </div>
-
+                {/* General Hospital */}
+                {general.length > 0 && (
+                  <div className="flex flex-col gap-[40px] items-start w-full">
+                    <div className="flex flex-col gap-[8px] w-full">
+                      <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">General Hospital</h3>
+                      <p className="font-dm-sans text-[18px] text-[#594522]">A selected team of experts committed to your health</p>
+                    </div>
+                    <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
+                      {general.map(d => <ClinicCard key={d.id} dept={d} variant="gold" />)}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
+
         </div>
       </div>
     </SiteLayout>

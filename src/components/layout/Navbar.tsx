@@ -1,185 +1,186 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
 import { usePathname, useRouter } from '@/i18n/routing'
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Building2, Menu, X, Phone, User, LogOut } from 'lucide-react'
+import { ChevronDown, ChevronLeft, Building2, Phone } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useAuth } from '@/lib/auth-context'
 import { useAnalytics } from '@/lib/use-analytics'
 import { LocaleCode } from '@/payload/constants'
+import { Link } from '@/i18n/routing'
+import { useBranch } from '@/lib/branch-context'
+import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
 
 const NAV_ITEMS = [
-  { key: 'about',      href: '/about'       },
-  { key: 'doctors',    href: '/doctors'     },
-  { key: 'promotions', href: '/promotions'  },
-  { key: 'news',       href: '/news'        },
-  { key: 'career',     href: '/career'      },
+  { key: 'about',        href: '/about'        },
+  { key: 'doctors',      href: '/doctors'      },
+  { key: 'promotions',   href: '/promotions'   },
+  { key: 'news',         href: '/news'         },
+  { key: 'career',       href: '/career'       },
   { key: 'testimonials', href: '/testimonials' },
 ]
 
+const LANGUAGES = [
+  { code: 'en', label: 'English', flag: '/images/en-flag.svg' },
+  { code: 'km', label: 'ខ្មែរ',   flag: '/images/kh-flag.svg' },
+  { code: 'zh', label: '中文',    flag: '/images/zh-flag.svg' },
+]
+
+// Breakpoint where desktop nav switches to mobile drawer
+const DESKTOP_BREAKPOINT = 'xl'
+const MOBILE_BREAKPOINT  = 'xl'
+
 export default function Navbar() {
-  const t = useTranslations('Navbar')
-  const locale = useLocale()
-  const pathname = usePathname()
-  const router = useRouter()
-  const { user, signOut } = useAuth()
+  const t          = useTranslations('Navbar')
+  const locale     = useLocale()
+  const pathname   = usePathname()
+  const router     = useRouter()
   const { trackLanguageSwitch, trackCallClick } = useAnalytics()
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const [langOpen, setLangOpen] = useState(false)
-  const [phoneOpen, setPhoneOpen] = useState(false)
-  const langRef = useRef<HTMLDivElement>(null)
-  const phoneRef = useRef<HTMLDivElement>(null)
+  const { branches, selectedBranch, switchBranch } = useBranch()
 
-  const LANGUAGES = [
-    { code: 'en', label: 'English', flag: '/images/en-flag.svg', short: 'EN' },
-    { code: 'km', label: 'ខ្មែរ', flag: '/images/kh-flag.svg', short: 'KH' },
-    { code: 'zh', label: '中文', flag: '/images/zh-flag.svg', short: 'ZH' },
-  ]
-  const currentLang = LANGUAGES.find(l => l.code === locale) || LANGUAGES[0]
+  const [mobileOpen,     setMobileOpen]     = useState(false)
+  const [langOpen,       setLangOpen]       = useState(false)
+  const [mobileLangOpen, setMobileLangOpen] = useState(false)
+  const [phoneOpen,      setPhoneOpen]      = useState(false)
+  const [branchOpen,     setBranchOpen]     = useState(false)
+  const [bookOpen,       setBookOpen]       = useState(false)
 
-  const handleSignOut = async () => {
-    await signOut()
-    router.push('/')
-  }
+  const langRef   = useRef<HTMLDivElement>(null)
+  const phoneRef  = useRef<HTMLDivElement>(null)
+  const branchRef = useRef<HTMLDivElement>(null)
+
+  const currentLang = LANGUAGES.find(l => l.code === locale) ?? LANGUAGES[0]
+
+  const branchLabel = selectedBranch
+    ? selectedBranch.name.replace(/Orienda\s+(Internation(al)?\s+Hospital\s*)/i, '').trim() || selectedBranch.name
+    : 'Branch'
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    
-    const handleClickOutside = (event: MouseEvent) => {
-      if (langRef.current && !langRef.current.contains(event.target as Node)) {
-        setLangOpen(false)
-      }
-      if (phoneRef.current && !phoneRef.current.contains(event.target as Node)) {
-        setPhoneOpen(false)
-      }
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langRef.current   && !langRef.current.contains(e.target as Node))   setLangOpen(false)
+      if (phoneRef.current  && !phoneRef.current.contains(e.target as Node))  setPhoneOpen(false)
+      if (branchRef.current && !branchRef.current.contains(e.target as Node)) setBranchOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
-    
     return () => {
-      window.removeEventListener('scroll', onScroll)
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
 
   return (
-    <header
-      className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
-        scrolled
-          ? 'bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(89,69,34,0.08)] border-b border-white/20 pointer-events-auto'
-          : 'bg-transparent pointer-events-none'
-      )}
-    >
-      {/* ── Desktop ── */}
-      <div className="hidden xl:block pointer-events-auto transition-all duration-500">
-        <div className="flex items-start justify-between w-full gap-[8px] xl:gap-[16px] pl-6 xl:pl-8 2xl:pl-[46px]">
+    <header className="absolute top-0 left-0 right-0 z-50 bg-transparent pointer-events-none">
 
-          {/* 1. Logo */}
-          <div className="flex items-start">
-            <Link
-              href="/"
-              className="relative shrink-0 rounded-full overflow-hidden transition-all duration-500 w-[56px] h-[56px] xl:w-[60px] xl:h-[60px] 2xl:w-[96px] 2xl:h-[96px] mt-4 xl:mt-6 2xl:mt-10 mb-4 xl:mb-6 2xl:mb-10"
-            >
-              <Image
-                src="/images/logo-emblem.png"
-                alt="Orienda International Hospital"
-                fill
-                sizes="(max-width: 1535px) 80px, 96px"
-                className="object-cover"
-                priority
-              />
+      {/* ── Desktop (≥ 1400px) ── */}
+      <div className="hidden xl:block pointer-events-auto transition-all duration-300">
+        <div className="flex items-center justify-between w-full px-6 2xl:px-[46px] py-7">
+
+          {/* Logo */}
+          <div className="flex items-center flex-1 min-w-0">
+            <Link href="/" className="relative shrink-0 w-[64px] h-[84px] transition-all duration-300">
+              <Image src="/images/logo-emblem.png" alt="Orienda International Hospital" fill sizes="64px" className="object-contain" priority />
             </Link>
           </div>
-            
-          {/* 2. Center Nav Group */}
-          <div className="flex items-center justify-center gap-[4px] xl:gap-[8px] 2xl:gap-[20px] mt-4 xl:mt-6 2xl:mt-10 mb-4 xl:mb-6 2xl:mb-10">
 
-            {/* Main Nav Pill */}
-            <div
-              className={cn(
-                'inline-flex items-center px-[10px] xl:px-[12px] 2xl:px-[40px] py-[8px] xl:py-[10px] 2xl:py-[32px] rounded-[100px] 2xl:rounded-[32px]',
-                'bg-white/30 backdrop-blur-lg shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-white/40',
-                'transition-all duration-300'
-              )}
-            >
-              <nav className="flex items-center gap-[24px] xl:gap-[32px] 2xl:gap-[48px]">
+          {/* Center: Nav pill + Branch + Lang */}
+          <div className="flex items-center justify-center shrink-0 gap-[10px]">
+
+            {/* Nav pill */}
+            <div className="flex items-center p-[2px] rounded-[24px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] bg-[#FBF7EE]/40 backdrop-blur-md">
+              <nav className="flex items-center">
                 {NAV_ITEMS.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                   return (
                     <Link
                       key={item.key}
                       href={item.href}
-                      className={cn(
-                        'flex items-center justify-center leading-none whitespace-nowrap transition-all duration-200',
-                        'gap-[2px] 2xl:gap-[8px]',
-                        'text-[10px] xl:text-[11px] 2xl:text-[18px] font-dm-sans font-medium',
-                        isActive
-                          ? 'text-[#6b5a45] opacity-100 drop-shadow-sm'
-                          : 'text-[#6b5a45] opacity-80 hover:opacity-100 hover:drop-shadow-sm'
-                      )}
+                      className="flex items-center justify-center py-[22px] 2xl:py-[32px] pl-[10px] 2xl:pl-[22px] pr-[6px] 2xl:pr-[14px] rounded-[22px] gap-[8px] hover:bg-white/50 transition-colors"
                     >
-                      {t(item.key)}
-                      <ChevronDown className="w-[14px] h-[14px] xl:w-[16px] xl:h-[16px] 2xl:w-[18px] 2xl:h-[18px] shrink-0 text-[#6b5a45]" strokeWidth={2} />
+                      <span className={cn(
+                        'text-[15px] 2xl:text-[17px] font-inter leading-none whitespace-nowrap',
+                        isActive ? 'text-[#3B2D17] font-semibold' : 'text-[#2A2620] font-normal'
+                      )}>
+                        {t(item.key)}
+                      </span>
+                      <ChevronDown className="hidden 2xl:block w-[14px] h-[14px] shrink-0 text-[#7a5f2c]" strokeWidth={2} />
                     </Link>
                   )
                 })}
               </nav>
             </div>
 
-            {/* CH Dropdown */}
-            <div className="relative z-50">
-              <button className="flex items-center gap-[4px] 2xl:gap-[8px] px-[8px] xl:px-[10px] 2xl:px-[24px] py-[6px] xl:py-[8px] 2xl:py-[20px] rounded-[100px] 2xl:rounded-[24px] bg-white/30 backdrop-blur-lg hover:bg-white/40 transition-all duration-200 border border-white/40 shadow-[0_4px_24px_rgba(0,0,0,0.04)] shrink-0 text-[#6b5a45]">
-                <Building2 className="w-[12px] h-[12px] xl:w-[14px] xl:h-[14px] 2xl:w-[22px] 2xl:h-[22px]" strokeWidth={1.5} />
-                <span className="font-dm-sans text-[10px] xl:text-[11px] 2xl:text-[16px] font-medium leading-none">{t('ch')}</span>
-                <ChevronDown className="w-[14px] h-[14px] xl:w-[16px] xl:h-[16px] 2xl:w-[18px] 2xl:h-[18px] shrink-0 text-[#6b5a45]" strokeWidth={2} />
+            {/* Branch selector */}
+            <div className="relative z-50" ref={branchRef}>
+              <button
+                onClick={() => setBranchOpen(!branchOpen)}
+                className={cn(
+                  'flex items-center justify-center py-[11px] px-[14px] 2xl:py-[13px] 2xl:px-[18px] gap-[8px] 2xl:gap-[10px] rounded-[16px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 bg-[#F5ECD4]/40 backdrop-blur-md'
+                )}
+              >
+                <Building2 className="w-[22px] h-[22px] 2xl:w-[24px] 2xl:h-[24px] text-[#3B2D17] shrink-0" strokeWidth={1.5} />
+                <span className="font-dm-sans text-[16px] 2xl:text-[18px] text-[#3B2D17] font-normal leading-none max-w-[80px] truncate">{branchLabel}</span>
+                <ChevronDown className="w-[14px] h-[14px] text-[#3B2D17] shrink-0" strokeWidth={2} />
               </button>
+              <AnimatePresence>
+                {branchOpen && branches.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-[calc(100%+8px)] left-0 bg-white rounded-[14px] shadow-[0_8px_32px_rgba(122,95,44,0.15)] border border-gold-100 overflow-hidden min-w-[200px] flex flex-col py-2 z-50"
+                  >
+                    {branches.map(b => (
+                      <button
+                        key={b.id}
+                        onClick={() => { switchBranch(b); setBranchOpen(false) }}
+                        className={cn(
+                          'flex items-center gap-3 px-4 py-3 hover:bg-gold-50 transition-colors w-full text-left',
+                          selectedBranch?.id === b.id ? 'bg-gold-50/50' : ''
+                        )}
+                      >
+                        <Building2 size={15} className="text-[#b89148] shrink-0" />
+                        <span className={cn('font-dm-sans text-[13px]', selectedBranch?.id === b.id ? 'font-semibold text-gold-900' : 'text-gold-700')}>
+                          {b.name}
+                        </span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-              
-            {/* Language Selector */}
-            <div className="relative shrink-0 ml-[4px] xl:ml-[8px]" ref={langRef}>
-              <button 
+
+            {/* Language flag */}
+            <div className="relative shrink-0" ref={langRef}>
+              <button
                 onClick={() => setLangOpen(!langOpen)}
-                className="overflow-hidden hover:opacity-90 transition-all duration-200 shrink-0 rounded-full w-[32px] h-[32px] xl:w-[36px] xl:h-[36px] 2xl:w-[48px] 2xl:h-[48px] border-[2px] xl:border-[2px] border-white shadow-sm" aria-label="Switch language">
-                <div className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-white">
-                  <Image src={currentLang.flag} alt={currentLang.label} fill sizes="40px" className="object-cover" />
+                className="flex items-center justify-center w-[48px] h-[48px] p-[3px] rounded-full bg-[#F5ECD4]/40 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:opacity-90 transition-all duration-200"
+                aria-label="Switch language"
+              >
+                <div className="relative w-full h-full rounded-full overflow-hidden">
+                  <Image src={currentLang.flag} alt={currentLang.label} fill sizes="48px" className="object-cover" />
                 </div>
               </button>
-
               <AnimatePresence>
                 {langOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-2xl shadow-[0_8px_32px_rgba(122,95,44,0.15)] border border-gold-100 overflow-hidden min-w-[140px] flex flex-col py-2 z-50"
+                    className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-[14px] shadow-[0_8px_32px_rgba(122,95,44,0.15)] border border-gold-100 overflow-hidden min-w-[140px] flex flex-col py-2 z-50"
                   >
                     {LANGUAGES.map(l => (
                       <button
                         key={l.code}
-                        onClick={() => {
-                          setLangOpen(false)
-                          trackLanguageSwitch(l.code as LocaleCode)
-                          router.replace(pathname, { locale: l.code })
-                        }}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-2 hover:bg-gold-50 transition-colors w-full text-left",
-                          locale === l.code ? "bg-gold-50/50" : ""
-                        )}
+                        onClick={() => { setLangOpen(false); trackLanguageSwitch(l.code as LocaleCode); router.replace(pathname, { locale: l.code }) }}
+                        className={cn('flex items-center gap-3 px-4 py-2 hover:bg-gold-50 transition-colors w-full text-left', locale === l.code ? 'bg-gold-50/50' : '')}
                       >
-                        <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0 shadow-sm border border-black/5">
+                        <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 shadow-sm border border-black/5">
                           <Image src={l.flag} alt={l.label} fill className="object-cover" />
                         </div>
-                        <span className={cn(
-                          "font-dm-sans text-[14px] 2xl:text-[15px]",
-                          locale === l.code ? "font-semibold text-gold-900" : "font-medium text-gold-700"
-                        )}>
+                        <span className={cn('font-dm-sans text-[13px]', locale === l.code ? 'font-semibold text-gold-900' : 'font-medium text-gold-700')}>
                           {l.label}
                         </span>
                       </button>
@@ -188,113 +189,190 @@ export default function Navbar() {
                 )}
               </AnimatePresence>
             </div>
+
           </div>
 
-          {/* 3. Right Actions */}
-          <div className="flex items-start shrink-0">
+          {/* Right: Book Appointment + Phone */}
+          <div className="relative flex items-center justify-end flex-1 min-w-0 gap-[10px]" ref={phoneRef}>
+            <button
+              onClick={() => { trackCallClick('navbar'); setBookOpen(true) }}
+              className="flex items-center justify-center h-[50px] 2xl:h-[56px] px-[16px] 2xl:px-[28px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200"
+            >
+              <span className="font-dm-sans text-[14px] 2xl:text-[15px] font-normal text-[#F9F9F9] whitespace-nowrap">{t('bookAppointment')}</span>
+            </button>
+            <BookAppointmentModal open={bookOpen} onClose={() => setBookOpen(false)} />
 
-            {/* Right Pill: Book Appointment & Phone */}
-            <div className="relative shrink-0" ref={phoneRef}>
-              <div className={cn(
-                "flex items-center gap-[4px] xl:gap-[6px] 2xl:gap-[12px]",
-                "pt-[12px] xl:pt-[16px] 2xl:pt-[52px]",
-                "pr-[12px] xl:pr-[16px] 2xl:pr-[58px]",
-                "pb-[12px] xl:pb-[16px] 2xl:pb-[32px]",
-                "pl-[12px] xl:pl-[16px] 2xl:pl-[40px]",
-                "bg-[#f7f5f2] rounded-bl-[24px] 2xl:rounded-bl-[48px] shadow-sm border-b-[1.5px] border-l-[1.5px] border-white"
-              )}>
-                  <Link href="/appointments"
-                    onClick={() => trackCallClick('navbar')}
-                    className="hidden xl:flex items-center justify-center px-[10px] xl:px-[12px] 2xl:px-[36px] rounded-[100px] 2xl:rounded-[32px] hover:opacity-90 transition-all duration-200 h-[32px] xl:h-[36px] 2xl:h-[64px] bg-[#CEB17D]">
-                    <span className="font-dm-sans text-[10px] xl:text-[11px] 2xl:text-[16px] font-medium text-white leading-none whitespace-nowrap">{t('bookAppointment')}</span>
-                  </Link>
-                  <button
-                    onClick={() => setPhoneOpen(!phoneOpen)}
-                    className="flex items-center justify-center w-[36px] h-[36px] xl:w-[40px] xl:h-[40px] 2xl:w-[64px] 2xl:h-[64px] rounded-full 2xl:rounded-[32px] bg-[#CEB17D] hover:opacity-90 transition-all duration-200">
-                    <Phone className="w-[14px] h-[14px] xl:w-[16px] xl:h-[16px] 2xl:w-[24px] 2xl:h-[24px] text-white" strokeWidth={2} />
-                  </button>
-                </div>
+            <button
+              onClick={() => setPhoneOpen(!phoneOpen)}
+              className="flex items-center justify-center h-[50px] w-[50px] 2xl:h-[56px] 2xl:w-[56px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200 shrink-0"
+            >
+              <Phone className="w-[20px] h-[20px] text-[#F9F9F9]" strokeWidth={2} />
+            </button>
 
-                <AnimatePresence>
-                  {phoneOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute top-[calc(100%+12px)] xl:top-[calc(100%+16px)] left-[32px] xl:left-[44px] 2xl:left-[56px] right-[-6px] xl:right-[-8px] 2xl:right-[-46px] bg-[#e4dfd6] rounded-[24px] shadow-[0_12px_40px_rgba(122,95,44,0.2)] border-[2px] border-white overflow-hidden flex flex-col z-50"
-                    >
-                      <a href="tel:098888999" className="bg-[#C5A566] text-white text-center py-[16px] xl:py-[20px] font-dm-sans font-medium text-[14px] xl:text-[16px] hover:bg-[#b89a64] transition-colors">(Telegram) 098 888 999</a>
-                      <a href="tel:088999666" className="border-b border-white text-[#5a4b39] text-center py-[16px] xl:py-[20px] font-dm-sans font-medium text-[14px] xl:text-[16px] hover:bg-white/50 transition-colors">(Telegram) 088 999 666</a>
-                      <a href="tel:077888555" className="text-[#5a4b39] text-center py-[16px] xl:py-[20px] font-dm-sans font-medium text-[14px] xl:text-[16px] hover:bg-white/50 transition-colors">(Telegram) 077 888 555</a>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+            <AnimatePresence>
+              {phoneOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-[calc(100%+12px)] right-0 min-w-[240px] bg-[#e4dfd6] rounded-[20px] shadow-[0_12px_40px_rgba(122,95,44,0.2)] border-2 border-white overflow-hidden flex flex-col z-50"
+                >
+                  <a href="tel:098888999" className="bg-[#C5A566] text-white text-center py-[14px] font-dm-sans font-medium text-[15px] hover:bg-[#b89a64] transition-colors">(Telegram) 098 888 999</a>
+                  <a href="tel:088999666" className="border-b border-white text-[#5a4b39] text-center py-[14px] font-dm-sans font-medium text-[15px] hover:bg-white/50 transition-colors">(Telegram) 088 999 666</a>
+                  <a href="tel:077888555" className="text-[#5a4b39] text-center py-[14px] font-dm-sans font-medium text-[15px] hover:bg-white/50 transition-colors">(Telegram) 077 888 555</a>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
         </div>
+      </div>
 
-      {/* ── Mobile ── */}
-      <div className="xl:hidden flex items-center justify-between px-4 py-4 bg-white/80 backdrop-blur-lg pointer-events-auto">
-        <Link href="/" className="relative w-[50px] h-[50px]">
-          <Image src="/images/logo-emblem.png" alt="Logo" fill className="object-contain" />
-        </Link>
-        <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2">
-          {mobileOpen ? <X size={28} /> : <Menu size={28} />}
+      {/* ── Mobile trigger (< xl) ── */}
+      <div className="xl:hidden flex items-center px-5 py-4 pointer-events-auto">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="flex items-center gap-[12px] bg-[#fbf7ee]/50 backdrop-blur-md rounded-[28px] px-[20px] py-[6px]"
+        >
+          <div className="relative shrink-0" style={{ width: 42, height: 55 }}>
+            <Image src="/images/logo-emblem.png" alt="Logo" fill className="object-contain" />
+          </div>
+          <span className="font-cormorant font-bold text-[#3b2d17] leading-none" style={{ fontSize: 28 }}>Orienda</span>
         </button>
       </div>
 
+      {/* ── Mobile drawer ── */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="xl:hidden absolute top-full left-0 right-0 bg-white shadow-2xl border-t p-6"
-          >
-            <nav className="flex flex-col gap-4">
-              {NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="text-lg font-dm-sans text-gold-900 border-b border-gold-50 pb-2"
-                >
-                  {t(item.key)}
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileOpen(false)}
+              className="xl:hidden fixed inset-0 bg-black/30 backdrop-blur-[2px] z-[45] pointer-events-auto"
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', duration: 0.25, ease: 'easeInOut' }}
+              className="xl:hidden fixed top-0 left-0 h-full bg-[#fbf7ee] z-[50] flex flex-col pointer-events-auto shadow-[4px_0_40px_rgba(59,45,23,0.12)]"
+              style={{ width: 280 }}
+            >
+              {/* Drawer header */}
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#ead6a4]/40">
+                <Link href="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-[8px]">
+                  <div className="relative shrink-0" style={{ width: 32, height: 42 }}>
+                    <Image src="/images/logo-emblem.png" alt="Logo" fill className="object-contain" />
+                  </div>
+                  <span className="font-cormorant font-bold text-[#3b2d17] leading-none text-[22px]">Orienda</span>
                 </Link>
-              ))}
-            </nav>
-            <div className="mt-8 flex flex-col gap-4">
-              {user ? (
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center justify-center gap-2 bg-red-50 text-red-600 py-4 rounded-xl font-bold border border-red-100"
-                >
-                  <LogOut size={20} />
-                  Sign Out
+                <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-[8px] hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]">
+                  <ChevronLeft size={20} />
                 </button>
-              ) : (
-                <Link
-                  href="/login"
-                  className="flex items-center justify-center gap-2 bg-gold-50 text-gold-900 py-4 rounded-xl font-bold border border-gold-100"
+              </div>
+
+              {/* Branch selector */}
+              <div className="flex flex-col gap-2 px-4 py-4 border-b border-[#ead6a4]/40">
+                <button
+                  onClick={() => setBranchOpen(!branchOpen)}
+                  className="flex items-center gap-2 bg-[#f5ecd4]/60 rounded-[12px] px-3 py-2.5"
                 >
-                  <User size={20} />
-                  Log In
-                </Link>
-              )}
-              <Link
-                href="/appointments"
-                onClick={() => { setMobileOpen(false); trackCallClick('navbar-mobile'); }}
-                className="flex items-center justify-center gap-2 bg-[#d3b482] text-white py-4 rounded-xl font-bold"
-              >
-                <Phone size={20} />
-                {t('bookAppointment')}
-              </Link>
-            </div>
-          </motion.div>
+                  <Building2 size={16} className="text-[#3b2d17] shrink-0" />
+                  <span className="font-dm-sans text-[14px] text-[#3b2d17] leading-none flex-1 text-left truncate">{selectedBranch?.name ?? 'Select Branch'}</span>
+                  <ChevronDown size={12} className="text-[#7a5f2c] shrink-0" />
+                </button>
+                {branchOpen && branches.length > 0 && (
+                  <div className="flex flex-col bg-white rounded-[12px] shadow border border-gold-100 overflow-hidden">
+                    {branches.map(b => (
+                      <button
+                        key={b.id}
+                        onClick={() => { switchBranch(b); setBranchOpen(false); setMobileOpen(false) }}
+                        className={cn('flex items-center gap-2 px-4 py-3 text-left hover:bg-gold-50 transition-colors', selectedBranch?.id === b.id ? 'bg-gold-50/50' : '')}
+                      >
+                        <Building2 size={13} className="text-[#b89148] shrink-0" />
+                        <span className={cn('font-dm-sans text-[13px]', selectedBranch?.id === b.id ? 'font-semibold text-gold-900' : 'text-gold-800')}>
+                          {b.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Nav items */}
+              <nav className="flex flex-col px-4 py-3 gap-[2px] flex-1 overflow-y-auto">
+                {NAV_ITEMS.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        'flex items-center px-4 py-3.5 rounded-[12px] font-dm-sans text-[15px] transition-colors',
+                        isActive ? 'bg-[#f5ecd4]/60 font-semibold text-[#3b2d17]' : 'text-[#3b2d17] hover:bg-[#f5ecd4]/40'
+                      )}
+                    >
+                      {t(item.key)}
+                    </Link>
+                  )
+                })}
+              </nav>
+
+              {/* Bottom: Book Appt + Language */}
+              <div className="px-4 pb-8 pt-3 flex flex-col gap-3 border-t border-[#ead6a4]/40">
+                <button
+                  onClick={() => { setMobileOpen(false); setBookOpen(true) }}
+                  className="flex items-center justify-center h-[48px] rounded-[12px] bg-[#B89148]/80 font-dm-sans text-[14px] text-white hover:bg-[#B89148] transition-colors"
+                >
+                  {t('bookAppointment')}
+                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setMobileLangOpen(!mobileLangOpen)}
+                    className="relative w-[34px] h-[34px] rounded-full overflow-hidden ring-2 ring-[#b89148]/60 hover:ring-[#b89148] transition-all"
+                    aria-label="Switch language"
+                  >
+                    <Image src={currentLang.flag} alt={currentLang.label} fill className="object-cover" />
+                  </button>
+                  <AnimatePresence>
+                    {mobileLangOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute bottom-[calc(100%+8px)] left-0 bg-white rounded-[14px] shadow-[0_8px_32px_rgba(122,95,44,0.15)] border border-gold-100 overflow-hidden min-w-[140px] flex flex-col py-2 z-50"
+                      >
+                        {LANGUAGES.map(l => (
+                          <button
+                            key={l.code}
+                            onClick={() => { setMobileLangOpen(false); setMobileOpen(false); trackLanguageSwitch(l.code as LocaleCode); router.replace(pathname, { locale: l.code }) }}
+                            className={cn('flex items-center gap-3 px-4 py-2 hover:bg-gold-50 transition-colors w-full text-left', locale === l.code ? 'bg-gold-50/50' : '')}
+                          >
+                            <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 shadow-sm border border-black/5">
+                              <Image src={l.flag} alt={l.label} fill className="object-cover" />
+                            </div>
+                            <span className={cn('font-dm-sans text-[13px]', locale === l.code ? 'font-semibold text-gold-900' : 'font-medium text-gold-700')}>
+                              {l.label}
+                            </span>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
+
     </header>
   )
 }

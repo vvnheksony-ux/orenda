@@ -6,7 +6,8 @@ import { Phone } from 'lucide-react'
 import { useLocale } from 'next-intl'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { useAnalytics } from '@/lib/use-analytics'
-import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
+import { Link } from '@/i18n/routing'
+import { useBranch } from '@/lib/branch-context'
 
 interface Doctor {
   id: string
@@ -48,11 +49,12 @@ function DoctorCard({ doc }: { doc: Doctor }) {
           <p className="font-cormorant font-medium text-[24px] w-[217px] leading-none">{doc.name}</p>
           <p className="font-dm-sans text-[16px] w-[186px] leading-none text-[#594522]">{doc.specialty}</p>
         </div>
-        <BookAppointmentButton
-          defaultService={doc.specialty}
-          className="bg-[#b89148] flex h-[32px] items-center justify-center overflow-hidden px-[12px] py-[8px] rounded-[12px] w-[145px] font-dm-sans text-[12px] text-[#fbf7ee]"
-          label="View Profile"
-        />
+        <Link
+          href={`/doctors/${doc.id}` as any}
+          className="bg-[#b89148] flex h-[32px] items-center justify-center overflow-hidden px-[12px] py-[8px] rounded-[12px] w-[145px] font-dm-sans text-[12px] text-[#fbf7ee] hover:bg-[#c8a25a] transition-colors"
+        >
+          View Profile
+        </Link>
       </div>
     </div>
   )
@@ -63,11 +65,13 @@ export default function DoctorsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const locale = useLocale()
   const { trackCallClick } = useAnalytics()
+  const { selectedBranch } = useBranch()
 
   useEffect(() => {
     async function fetchDoctors() {
       try {
-        const res = await fetch(`/api/doctors?locale=${encodeURIComponent(locale)}`)
+        const url = `/api/doctors?locale=${encodeURIComponent(locale)}${selectedBranch ? `&branch=${selectedBranch.id}` : ''}`
+        const res = await fetch(url)
         if (res.ok) setDoctors(await res.json())
       } catch (err) {
         console.error('Failed to fetch doctors:', err)
@@ -76,28 +80,33 @@ export default function DoctorsPage() {
       }
     }
     fetchDoctors()
-  }, [locale])
+  }, [locale, selectedBranch])
 
-  // Group by department
-  const groups = doctors.reduce<Record<string, Doctor[]>>((acc, d) => {
-    const dept = d.department || 'General Hospital'
-    if (!acc[dept]) acc[dept] = []
-    acc[dept].push(d)
-    return acc
-  }, {})
+  const WOMENS_KEYWORDS = ['obstetric', 'ob', 'gynecolog', 'gynaecolog', 'pediatric', 'paediatric', 'women', 'child', 'neonatal', 'maternity', 'midwife']
+  function classifyDept(dept: string): 'Women & Children' | 'General Hospital' {
+    const lower = dept.toLowerCase()
+    return WOMENS_KEYWORDS.some(k => lower.includes(k)) ? 'Women & Children' : 'General Hospital'
+  }
+
+  // Always exactly 2 groups in order
+  const fixedGroups: Record<string, Doctor[]> = { 'Women & Children': [], 'General Hospital': [] }
+  doctors.forEach(d => {
+    const group = classifyDept(d.department || '')
+    fixedGroups[group].push(d)
+  })
 
   // Fallback skeleton doctors for loading state
   const skeletonGroups = {
-    'Women & Children': Array(8).fill(null),
-    'General Hospital': Array(8).fill(null),
+    'Women & Children': Array(4).fill(null),
+    'General Hospital': Array(4).fill(null),
   }
 
-  const displayGroups = isLoading ? skeletonGroups : (Object.keys(groups).length ? groups : skeletonGroups)
+  const displayGroups = isLoading ? skeletonGroups : fixedGroups
 
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full">
-        <div className="flex flex-col gap-[80px] items-center pb-[120px] px-[80px] pt-[120px] 2xl:pt-[196px]">
+        <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[80px] items-center pb-[120px] px-4 sm:px-8 lg:px-[80px] pt-[100px] lg:pt-[212px]">
 
           {/* Hero banner */}
           <div
@@ -139,9 +148,14 @@ export default function DoctorsPage() {
               </p>
             </div>
 
+            {/* Empty state */}
+            {!isLoading && doctors.length === 0 && (
+              <p className="font-dm-sans text-[18px] text-[#594522] py-[60px] text-center w-full">No doctors available at this time.</p>
+            )}
+
             {/* Department groups */}
             <div className="flex flex-col gap-[40px] items-start w-full">
-              {Object.entries(displayGroups).map(([dept, deptDoctors]) => (
+              {Object.entries(displayGroups).filter(([, d]) => isLoading || d.length > 0).map(([dept, deptDoctors]) => (
                 <div key={dept} className="flex flex-col gap-[40px] items-start w-full">
                   {/* Department header */}
                   <div className="flex flex-col gap-[8px] w-full">

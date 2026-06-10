@@ -51,3 +51,8 @@ next-env.d.ts
 graphify-out/
 .graphify_*.json
 .graphify_python
+# playwright mcp snapshots
+.playwright-mcp/
+
+# root screenshot captures
+*.jpeg

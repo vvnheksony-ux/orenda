@@ -1,10 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Star } from 'lucide-react'
+import Image from 'next/image'
+import { Send, Star } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from '@/i18n/routing'
 
-const UNION_IMG = '/images/union-decor.svg'
+const UNION_IMG = '/images/Union.svg'
 
 function dispatchAskAI(message: string) {
   window.dispatchEvent(new CustomEvent('orienda:ask-ai', { detail: { message } }))
@@ -13,15 +16,17 @@ function dispatchAskAI(message: string) {
 export default function HeroSection() {
   const t = useTranslations('HeroSection')
   const [query, setQuery] = useState('')
+  const [hasSubmitted, setHasSubmitted] = useState(false)
 
   const handleSubmit = (message: string) => {
     if (!message.trim()) return
     dispatchAskAI(message.trim())
     setQuery('')
+    setHasSubmitted(true)
   }
 
   return (
-    <section className="relative w-full bg-[#dac4a8] z-[10] h-[90vh] min-h-[750px] max-h-[1000px]">
+    <section className="relative w-full bg-[#dac4a8] z-[10] h-[440px] sm:h-[90vh] sm:min-h-[600px] lg:min-h-[750px] sm:max-h-[1000px]">
 
       {/* Hero video background */}
       <video
@@ -36,23 +41,23 @@ export default function HeroSection() {
       {/* Welcome text */}
       <div
         className="absolute flex flex-col gap-[20px] not-italic text-gold-900"
-        style={{ left: 40, top: 'clamp(120px, 20vh, 250px)', width: 595 }}
+        style={{ left: 'clamp(16px, 2.6vw, 40px)', top: 'clamp(100px, 18vh, 250px)', width: 'clamp(180px, 40vw, 595px)' }}
       >
-        <p className="text-[48px] leading-normal" style={{ fontFamily: 'var(--script-font)' }}>
+        <p className="text-[24px] md:text-[36px] xl:text-[48px] leading-normal" style={{ fontFamily: 'var(--font-script)' }}>
           {t('welcome')}
         </p>
-        <p className="font-cormorant font-bold text-[36px] leading-none">
+        <p className="font-cormorant font-bold text-[18px] md:text-[28px] xl:text-[36px] leading-none">
           {t('hospital')}
         </p>
       </div>
 
-      {/* Rating card */}
+      {/* Rating card — hidden on mobile */}
       <div
-        className="absolute rounded-[20px] px-[32px] py-[24px] flex flex-col gap-[12px] bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(107,90,69,0.12)] z-10"
+        className="hidden sm:flex absolute flex-col rounded-[20px] px-[16px] py-[12px] lg:px-[32px] lg:py-[24px] gap-[12px] bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(107,90,69,0.12)] z-10"
         style={{
-          left: 40,
-          bottom: 40,
-          width: 300,
+          left: 'clamp(16px, 2.6vw, 40px)',
+          bottom: 'clamp(90px, 12vw, 110px)',
+          width: 'clamp(200px, 20vw, 300px)',
         }}
       >
         <div className="flex flex-col gap-[6px]">
@@ -75,70 +80,81 @@ export default function HeroSection() {
         </p>
       </div>
 
-      {/* Ask AI pill — center straddles hero/clinic boundary */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          handleSubmit(query)
-        }}
-        className="absolute flex items-center justify-between rounded-[200px] z-[30]"
+      {/* Ask AI form (Always Centered) */}
+      <div 
+        className="absolute z-[30]"
         style={{
           left: '50%',
-          transform: 'translate(-50%, 50%)',
           bottom: 0,
-          width: 'clamp(300px, 49vw, 747px)',
-          height: 'clamp(80px, 10.4vw, 160px)',
-          background: 'rgba(251,247,238,1)',
-          boxShadow: '0px 4px 12px rgba(89,69,34,0.18), 0 0 0 30px rgba(251,247,238,1)',
-          paddingLeft: 'clamp(24px, 4.4vw, 68px)',
-          paddingRight: 'clamp(12px, 2vw, 30px)',
-          paddingTop: 'clamp(12px, 1.6vw, 24px)',
-          paddingBottom: 'clamp(12px, 1.6vw, 24px)',
+          transform: 'translate(-50%, 50%)',
+          width: 'min(92vw, clamp(340px, 48vw, 720px))',
+          height: 'clamp(80px, 8.5vw, 130px)',
         }}
       >
-        <input
-          type="text"
-          placeholder={t('askAi')}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 bg-transparent border-none outline-none font-dm-sans text-gold-900 placeholder-gold-800 placeholder:opacity-50 leading-none"
-          style={{ fontSize: 'clamp(14px, 1.5vw, 24px)' }}
-        />
-        <button
-          type="submit"
-          className="flex items-center justify-center bg-white rounded-full shrink-0 hover:bg-gold-50 transition-colors cursor-pointer shadow-[0px_2px_8px_rgba(89,69,34,0.12)]"
-          style={{ width: 'clamp(50px, 6.5vw, 100px)', height: 'clamp(50px, 6.5vw, 100px)' }}
-        >
-          <Search className="w-[24px] h-[24px] text-gold-700" strokeWidth={1.5} />
-        </button>
-      </form>
-
-      {/* Union + 360° — right-anchored */}
-      <div
-        className="absolute pointer-events-none z-20"
-        style={{ right: 40, bottom: 20, width: 120, height: 90 }}
-      >
-        <div className="absolute" style={{ inset: '0 -3.33% -8.89% -3.33%' }}>
-          <div 
-            className="w-full h-full bg-[#d3b482]/40 backdrop-blur-[12px]"
-            style={{
-              WebkitMaskImage: `url(${UNION_IMG})`,
-              WebkitMaskSize: '100% 100%',
-              maskImage: `url(${UNION_IMG})`,
-              maskSize: '100% 100%',
-            }}
-          />
-        </div>
-        <div
-          className="absolute -translate-y-1/2 flex flex-col text-white whitespace-nowrap pointer-events-none drop-shadow-md"
-          style={{ left: 37, top: 55 }}
-        >
-          <p className="font-cormorant font-bold leading-none">
-            <span className="text-[32px]">360</span>
-            <sup className="text-[20px]">°</sup>
-          </p>
-        </div>
+        <AnimatePresence>
+          {!hasSubmitted && (
+            <motion.form
+              initial={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.3 }}
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleSubmit(query)
+              }}
+              className="w-full h-full flex items-center justify-between rounded-[200px]"
+              style={{
+                background: 'rgba(251,247,238,1)',
+                boxShadow: '0px 4px 12px rgba(89,69,34,0.18), 0 0 0 22px rgba(251,247,238,1)',
+                paddingLeft: 'clamp(20px, 3.5vw, 52px)',
+                paddingRight: 'clamp(14px, 2vw, 28px)',
+                paddingTop: 'clamp(14px, 1.8vw, 26px)',
+                paddingBottom: 'clamp(14px, 1.8vw, 26px)',
+              }}
+            >
+              <input
+                type="text"
+                placeholder={t('askAi')}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="flex-1 bg-transparent border-none outline-none font-dm-sans text-gold-900 placeholder-gold-800 placeholder:opacity-50 leading-none min-w-0"
+                style={{ fontSize: 'clamp(14px, 1.4vw, 22px)' }}
+              />
+              <button
+                type="submit"
+                className="flex items-center justify-center bg-white rounded-full shrink-0 hover:bg-gold-50 transition-colors cursor-pointer shadow-[0px_2px_8px_rgba(89,69,34,0.12)]"
+                style={{ width: 'clamp(44px, 5.5vw, 76px)', height: 'clamp(44px, 5.5vw, 76px)' }}
+              >
+                <Send className="w-[24px] h-[24px] text-gold-700" strokeWidth={1.5} />
+              </button>
+            </motion.form>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* 360° Room Tour Badge (Bottom Right) */}
+      <Link
+        href="/360-tour"
+        className="absolute z-20 cursor-pointer hover:opacity-90 transition-opacity overflow-visible"
+        style={{ right: 60, bottom: 28, width: 184, height: 90, filter: 'drop-shadow(0px 0px 5px rgba(184,145,72,0.25))' }}
+      >
+        {/* Union background */}
+        <img src="/images/Union.svg" alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{ objectFit: 'fill' }} />
+        {/* Content */}
+        <div className="relative flex flex-col items-center justify-center gap-[4px] w-full h-full" style={{ paddingBottom: 6 }}>
+          <div className="flex flex-col items-center gap-[4px]">
+            {/* 360° */}
+            <p className="font-cormorant font-bold text-white leading-none">
+              <span style={{ fontSize: 34 }}>360</span><span style={{ fontSize: 20 }}>°</span>
+            </p>
+            {/* Oval rotation arrow */}
+            <svg viewBox="0 0 134.754 14.4971" width="108" height="11" fill="none">
+              <path fillRule="evenodd" clipRule="evenodd" d="M67.377 2.87128C98.3864 2.87128 123.525 5.23722 123.525 8.15576C123.525 11.0743 98.3864 13.4402 67.377 13.4402C36.3676 13.4402 11.2295 11.0743 11.2295 8.15576C11.2295 7.36791 13.0577 6.6217 16.3311 5.95143C17.6262 5.68625 16.392 5.37247 13.5745 5.25058C10.7569 5.12868 7.42297 5.24484 6.12788 5.51002C2.19192 6.31595 0 7.21248 0 8.15576C0 11.658 30.1657 14.4971 67.377 14.4971C104.588 14.4971 134.754 11.658 134.754 8.15576C134.754 4.65352 104.588 1.81439 67.377 1.81439V2.87128Z" fill="white" />
+            </svg>
+          </div>
+          {/* Room Tour label */}
+          <span className="font-dm-sans font-semibold text-[#fbf7ee] leading-none" style={{ fontSize: 14 }}>Room Tour</span>
+        </div>
+      </Link>
 
     </section>
   )

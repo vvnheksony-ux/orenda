@@ -70,7 +70,11 @@
     "gynecology": "Gynecology",
     "neuro": "Neuro Surgery",
     "imaging": "Imaging Center",
-    "pediatric": "Pediatric"
+    "pediatric": "Pediatric",
+    "stat1": "Success",
+    "stat2": "Surgeries",
+    "stat3": "Satisfactions",
+    "seeMore": "See More"
   },
   "WhySection": {
     "subtitle": "Why Choose Us",
@@ -107,7 +111,8 @@
     "title": "FAQ",
     "subtitle": "Learn more about us, Ask us what you want to know",
     "qAppointment": "How to make an appointment?",
-    "aAppointment": "Orienda International Hospital is committed to transparent and compassionate healthcare. Our focus on patient satisfaction and well-being, drives our continuous improvement in providing exceptional medical care."
+    "aAppointment": "Orienda International Hospital is committed to transparent and compassionate healthcare. Our focus on patient satisfaction and well-being, drives our continuous improvement in providing exceptional medical care.",
+    "seeMore": "See More"
   },
   "NewsSection": {
     "title": "News",
@@ -117,7 +122,8 @@
     "side1": "ACLEDA Bank Teams Up with GreenTech Solutions to Launch Sustainable Financing Programs for Small Businesses",
     "side2": "ACLEDA Bank Collaborates with Orienda International Hospital on Providing the International Quality Standards for Health Services",
     "side3": "ACLEDA Bank Introduces New Mobile Banking Features to Enhance Customer Convenience and Security",
-    "side4": "ACLEDA Bank Introduces New Mobile Banking Features to Enhance Customer Convenience and Security"
+    "side4": "ACLEDA Bank Introduces New Mobile Banking Features to Enhance Customer Convenience and Security",
+    "seeMore": "See More"
   },
   "PartnersSection": {
     "title": "Partners",
@@ -153,5 +159,78 @@
       "year": "A Year",
       "week": "A week"
     }
+  },
+  "AboutHero": {
+    "eyebrow": "About Orienda",
+    "title": "Orienda International Hospital",
+    "desc1": "We are dedicated to providing safe and reliable medical services.",
+    "desc2": "Schedule an appointment to experience world-class healthcare.",
+    "bookAppointment": "Book Appointment"
+  },
+  "VisionMission": {
+    "title": "Our Vision & Mission",
+    "subtitle": "A selected team of experts committed to your health",
+    "visionTitle": "Vision",
+    "visionDesc": "Our vision is to become a leading healthcare center dedicated to delivering trusted, compassionate, and world-class care.",
+    "missionTitle": "Mission",
+    "missionDesc": "Our mission is to provide exceptional clinical care and deliver outstanding service quality and patient-centered excellence."
+  },
+  "BookAppointmentSection": {
+    "title": "Book Appointment",
+    "subtitle": "Learn more about our healthcare services and patient support.",
+    "bookNow": "Book Now"
+  },
+  "FacilitiesSection": {
+    "title": "Discovers Our Facilities",
+    "subtitle": "Choose an option below to quickly find the service you need",
+    "visitTitle": "Visit",
+    "visitDesc": "Orienda International Hospital is committed to transparent and compassionate healthcare. Our focus on patient satisfaction and well-being, drives our continuous improvement in providing exceptional medical care.",
+    "discoverMore": "Discover More",
+    "facilitiesTitle": "Our Medical Facilities",
+    "facilitiesDesc": "Explore our modern and fully-equipped medical facilities, designed to deliver world-class care with comfort and precision."
+  },
+  "OurClinics": {
+    "title": "Our Clinics",
+    "para1": "We began our journey as a health care service provider in 2014 as a very small clinic, called Sokha, providing consultation on gynecology and infertility-related issues. In 2018, Sokha developed into a polyclinic called Orienda. From its inception and for only a period of less than 2 years, Orienda received a remarkable success and vast supports from Cambodian people for having handled complicated cases and saved lives. Such success earned us a recognition internationally, notably ISO9001:2005 from UE CERT and Best Women's Health Care Award from Global Health Award of Singapore. With such support, we moved to open our second branch.",
+    "para2": "Orienda International Hospital offers comprehensive medical services including fertility-related issues, maternity, gynecology, obstetrics, general medicines, diabetes, neo-ICU, laboratory, emergency with 24-hour service coverage and air ambulance. Our quality services are made possible by qualified and experienced doctors and latest medical technology including MRI, CT Scan, X-Ray, Bone Densitometry, mammogram that could provide highly accurate test for scanning of tissues, cells, veins, bones and other various part of bodies. To offer confidence in accuracy of our test results, we have cooperated with a leading Singaporean imaging company called Medisol Solution that can provide a highly accurate translation of the test results. We are one of the biggest Hospital in Cambodia."
+  },
+  "BookAppointmentModal": {
+    "title": "Book Appointment",
+    "subtitle": "Learn more about our healthcare services and patient support.",
+    "successMessage": "We received your request. Our team will contact you shortly to confirm your appointment.",
+    "done": "Done",
+    "patientName": "Patient's Name *",
+    "namePlaceholder": "Full name",
+    "phoneNumber": "Phone Number *",
+    "email": "Email",
+    "emailOptional": "(Optional)",
+    "department": "Clinic / Department *",
+    "selectDepartment": "Select a department",
+    "branch": "Branch *",
+    "selectBranch": "Select branch",
+    "doctor": "Doctor *",
+    "selectDoctor": "Select doctor",
+    "earliestAvailable": "Earliest available",
+    "chooseDate": "Choose a date",
+    "preferredDate": "Preferred date *",
+    "preferredTime": "Preferred time *",
+    "noSlotsToday": "No slots available today",
+    "symptoms": "Describe Your Symptoms",
+    "messagePlaceholder": "Enter your message here",
+    "booking": "Booking...",
+    "bookAppointment": "Book Appointment"
+  },
+  "LoginModal": {
+    "title": "Sign In",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "signingIn": "Signing in…",
+    "signIn": "Sign In",
+    "or": "or",
+    "continueGoogle": "Continue with Google",
+    "noAccount": "No account?",
+    "createOne": "Create one",
+    "resendEmail": "Resend confirmation email →",
+    "confirmationSent": "Confirmation email sent to {email}"
   }
 }

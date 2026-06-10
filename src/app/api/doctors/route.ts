@@ -1,73 +1,98 @@
 import { NextResponse } from 'next/server'
-import { Client } from 'pg'
+import { getPayloadClient } from '@/lib/payload'
+import { mediaUrl, lexicalToText } from '@/lib/payload-api'
 
 export const runtime = 'nodejs'
 
-type DoctorRow = {
-  id: string | number
-  name: string
-  specialty: string
-  department: string
-  image_url: string | null
-}
-
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const requestedLocale = searchParams.get('locale')
-  const locale = requestedLocale === 'km' || requestedLocale === 'zh' ? requestedLocale : 'en'
-  const connectionString = process.env.DATABASE_URL
-
-  if (!connectionString) {
-    console.error('DATABASE_URL is not configured')
-    return NextResponse.json([], { status: 200 })
-  }
-
-  const client = new Client({ connectionString })
+  const locale   = (searchParams.get('locale') || 'en') as 'en' | 'km' | 'zh'
+  const id       = searchParams.get('id')
+  const branchId = searchParams.get('branch') || null
 
   try {
-    await client.connect()
-    const { rows } = await client.query<DoctorRow>(
-      `
-        select
-          d.id,
-          coalesce(dl.name, dl_en.name, '') as name,
-          coalesce(dl.specialty, dl_en.specialty, '') as specialty,
-          coalesce(dep_l.name, dep_l_en.name, 'General') as department,
-          m.url as image_url
-        from payload.doctors d
-        left join payload.doctors_locales dl
-          on dl._parent_id = d.id and dl._locale = $1
-        left join payload.doctors_locales dl_en
-          on dl_en._parent_id = d.id and dl_en._locale = 'en'
-        left join payload.departments dep
-          on dep.id = d.department_id
-        left join payload.departments_locales dep_l
-          on dep_l._parent_id = dep.id and dep_l._locale = $1
-        left join payload.departments_locales dep_l_en
-          on dep_l_en._parent_id = dep.id and dep_l_en._locale = 'en'
-        left join payload.media m
-          on m.id = d.photo_id
-        where d._status = 'published'
-          and (d.published_at is null or d.published_at <= now())
-        order by d.order asc nulls last, d.created_at desc
-        limit 100
-      `,
-      [locale],
-    )
+    const payload = await getPayloadClient()
 
-    const doctors = rows.map((doc) => ({
-      id: doc.id,
-      name: doc.name,
-      specialty: doc.specialty,
-      department: doc.department,
-      image_url: doc.image_url,
-    }))
+    if (id) {
+      const data = await payload.find({
+        collection: 'doctors',
+        locale, fallbackLocale: 'en',
+        overrideAccess: true,
+        depth: 2,
+        where: { id: { equals: Number(id) } },
+        limit: 1,
+      } as any)
 
-    return NextResponse.json(doctors)
-  } catch (err) {
-    console.error('Failed to fetch doctors from database:', err)
+      const doc: any = data.docs?.[0]
+      if (!doc) return NextResponse.json(null, { status: 404 })
+
+      const dept = typeof doc.department === 'object' && doc.department ? doc.department : null
+
+      return NextResponse.json({
+        id:                          String(doc.id),
+        name:                        doc.name ?? '',
+        specialty:                   doc.specialty ?? '',
+        department:                  dept?.name ?? '',
+        department_payload_id:       dept ? String(dept.id) : '',
+        image_url:                   mediaUrl(doc.photo),
+        bio:                         lexicalToText(doc.bio),
+        phone:                       doc.phone ?? '',
+        email:                       doc.email ?? '',
+        nationality:                 doc.nationality ?? '',
+        position_title:              doc.positionTitle ?? '',
+        employment_type:             doc.employmentType ?? '',
+        total_experience_years:      doc.totalClinicalExperienceYears ?? null,
+        specialist_experience_years: doc.specialistExperienceYears ?? null,
+        sex:                         doc.sex ?? '',
+        education:                   (doc.education ?? []).map((e: any) => e.description ?? '').filter(Boolean),
+        languages:                   (doc.languages ?? []).map((e: any) => e.name ?? '').filter(Boolean),
+      })
+    }
+
+    // branch filter: get depts for branch → filter doctors by department_id
+    let deptIds: number[] | null = null
+    if (branchId) {
+      const depts = await payload.find({
+        collection: 'departments',
+        overrideAccess: true,
+        depth: 0,
+        limit: 200,
+        where: { branch: { equals: Number(branchId) } },
+      } as any)
+      deptIds = (depts.docs || []).map((d: any) => Number(d.id))
+    }
+
+    const where: any = deptIds !== null
+      ? deptIds.length > 0 ? { department: { in: deptIds } } : { id: { equals: -1 } }
+      : {}
+
+    const data = await payload.find({
+      collection: 'doctors',
+      locale, fallbackLocale: 'en',
+      overrideAccess: true,
+      depth: 1,
+      sort: 'order',
+      limit: 100,
+      where,
+    } as any)
+
+    const doctors = data.docs.map((doc: any) => {
+      const dept = typeof doc.department === 'object' && doc.department ? doc.department : null
+      return {
+        id:                    String(doc.id),
+        name:                  doc.name ?? '',
+        specialty:             doc.specialty ?? '',
+        department:            dept?.name ?? '',
+        department_payload_id: dept ? String(dept.id) : '',
+        image_url:             mediaUrl(doc.photo),
+      }
+    })
+
+    return NextResponse.json(doctors, {
+      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+    })
+  } catch (err: any) {
+    console.error('Failed to fetch doctors:', err.message)
     return NextResponse.json([], { status: 200 })
-  } finally {
-    await client.end().catch(() => undefined)
   }
 }

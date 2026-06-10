@@ -30,7 +30,7 @@ export const checkOrphanMedia = async (payload: Payload) => {
       depth: 0,
     })
     
-    docs.docs.forEach((doc: Record<string, unknown>) => {
+    docs.docs.forEach((doc: any) => {
       col.fields.forEach(field => {
         const val = doc[field]
         if (val && (typeof val === 'string' || typeof val === 'number')) {

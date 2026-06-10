@@ -2,23 +2,68 @@
 
 import { useState } from 'react'
 import { ChevronDown, Calendar } from 'lucide-react'
+import { useLocale } from 'next-intl'
 
 const inputCls = 'w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors'
 const labelCls = 'font-dm-sans font-medium text-[16px] text-[#3b2d17]'
 const radioCls = 'shrink-0 size-[24px] rounded-[12px] border-[1.5px] border-[#b89148] appearance-none checked:bg-[#b89148] cursor-pointer'
 
 export default function FeedbackForm() {
-  const [response, setResponse] = useState<string>('')
-  const [feedbackType, setFeedbackType] = useState<string>('')
-  const [role, setRole] = useState<string>('')
+  const locale = useLocale()
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+
+  const [form, setForm] = useState({
+    date_of_birth: '',
+    clinic_visited: '',
+    contact_required: false,
+    title: '',
+    feedback_type: '',
+    email: '',
+    phone: '',
+    first_name: '',
+    last_name: '',
+    nationality: '',
+    role: '',
+    comment: '',
+  })
+
+  const set = (field: string, value: any) => setForm(f => ({ ...f, [field]: value }))
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmitting(true)
+    setError('')
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, locale }),
+      })
+      if (!res.ok) throw new Error('Failed to submit')
+      setSubmitted(true)
+    } catch {
+      setError('Failed to submit. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="bg-[#fbf7ee] flex flex-col items-center justify-center p-[40px] rounded-[16px] w-full min-h-[200px] gap-[16px]" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
+        <p className="font-cormorant font-bold text-[32px] text-[#3b2d17]">Thank You!</p>
+        <p className="font-dm-sans text-[18px] text-[#594522]">Your feedback has been submitted successfully.</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="bg-[#fbf7ee] flex flex-col items-center overflow-hidden p-[40px] rounded-[16px] w-full" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
+    <form onSubmit={handleSubmit} className="bg-[#fbf7ee] flex flex-col items-center overflow-hidden p-[40px] rounded-[16px] w-full" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
       <div className="flex flex-col gap-[80px] items-center w-full">
 
-        {/* Form fields */}
         <div className="flex flex-col gap-[32px] items-start w-full">
-          {/* Header */}
           <div className="flex flex-col gap-[8px] text-center w-full">
             <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none w-full">Submit Your Feedback</h3>
             <p className="font-dm-sans text-[16px] text-[#594522] w-full">Book an appointment with us today</p>
@@ -29,7 +74,7 @@ export default function FeedbackForm() {
             <div className="flex flex-col gap-[8px] w-full">
               <label className={labelCls}>Date of Birth</label>
               <div className="relative">
-                <input type="date" placeholder="11/05/2016" className={inputCls} />
+                <input type="date" value={form.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} className={inputCls} />
                 <Calendar size={16} className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[#3b2d17] opacity-40 pointer-events-none" />
               </div>
             </div>
@@ -38,8 +83,9 @@ export default function FeedbackForm() {
             <div className="flex flex-col gap-[8px] w-full">
               <label className={labelCls}>Clinic/Area Visited</label>
               <div className="relative">
-                <select className={inputCls + ' appearance-none pr-[40px]'}>
-                  <option value="">Spine</option>
+                <select value={form.clinic_visited} onChange={e => set('clinic_visited', e.target.value)} className={inputCls + ' appearance-none pr-[40px]'}>
+                  <option value="">Select clinic</option>
+                  <option>Spine</option>
                   <option>Obstetrics</option>
                   <option>Gynecology</option>
                   <option>General Medicine</option>
@@ -52,10 +98,10 @@ export default function FeedbackForm() {
             <div className="flex flex-col gap-[16px] w-full">
               <label className={labelCls}>Would you like us to contact you about your feedback?</label>
               <div className="flex flex-col gap-[16px] px-[12px]">
-                {['Response Required', 'Response Is Not Required'].map(opt => (
-                  <label key={opt} className="flex gap-[16px] items-center cursor-pointer">
-                    <input type="radio" name="response" value={opt} checked={response === opt} onChange={() => setResponse(opt)} className={radioCls} />
-                    <span className="font-dm-sans text-[16px] text-[#3b2d17]">{opt}</span>
+                {[{ label: 'Response Required', value: true }, { label: 'Response Is Not Required', value: false }].map(opt => (
+                  <label key={opt.label} className="flex gap-[16px] items-center cursor-pointer">
+                    <input type="radio" name="contact_required" checked={form.contact_required === opt.value} onChange={() => set('contact_required', opt.value)} className={radioCls} />
+                    <span className="font-dm-sans text-[16px] text-[#3b2d17]">{opt.label}</span>
                   </label>
                 ))}
               </div>
@@ -64,16 +110,16 @@ export default function FeedbackForm() {
             {/* Title */}
             <div className="flex flex-col gap-[8px] w-full">
               <label className={labelCls}>Title</label>
-              <input type="text" placeholder="Dr. Navy Blue" className={inputCls} />
+              <input type="text" placeholder="Dr. Navy Blue" value={form.title} onChange={e => set('title', e.target.value)} className={inputCls} />
             </div>
 
             {/* Feedback type */}
             <div className="flex flex-col gap-[16px] w-full">
-              <label className={labelCls}>Would you like us to contact you about your feedback?</label>
+              <label className={labelCls}>Type of Feedback</label>
               <div className="flex flex-col gap-[16px] px-[12px]">
                 {['Praise', 'Suggestion', 'Complaint'].map(opt => (
                   <label key={opt} className="flex gap-[16px] items-center cursor-pointer">
-                    <input type="radio" name="feedbackType" value={opt} checked={feedbackType === opt} onChange={() => setFeedbackType(opt)} className={radioCls} />
+                    <input type="radio" name="feedbackType" value={opt} checked={form.feedback_type === opt} onChange={() => set('feedback_type', opt)} className={radioCls} />
                     <span className="font-dm-sans text-[16px] text-[#3b2d17]">{opt}</span>
                   </label>
                 ))}
@@ -84,11 +130,11 @@ export default function FeedbackForm() {
             <div className="flex gap-[24px] items-start w-full">
               <div className="flex flex-1 flex-col gap-[8px]">
                 <label className={labelCls}>Email</label>
-                <input type="email" placeholder="Travis@gmail.com" className={inputCls} />
+                <input type="email" placeholder="Travis@gmail.com" value={form.email} onChange={e => set('email', e.target.value)} className={inputCls} />
               </div>
               <div className="flex flex-1 flex-col gap-[8px]">
                 <label className={labelCls}>Phone Number</label>
-                <input type="tel" placeholder="098 000 999" className={inputCls} />
+                <input type="tel" placeholder="098 000 999" value={form.phone} onChange={e => set('phone', e.target.value)} className={inputCls} />
               </div>
             </div>
 
@@ -96,11 +142,11 @@ export default function FeedbackForm() {
             <div className="flex gap-[24px] items-start w-full">
               <div className="flex flex-1 flex-col gap-[8px]">
                 <label className={labelCls}>First Name</label>
-                <input type="text" placeholder="Travis" className={inputCls} />
+                <input type="text" placeholder="Travis" value={form.first_name} onChange={e => set('first_name', e.target.value)} className={inputCls} />
               </div>
               <div className="flex flex-1 flex-col gap-[8px]">
                 <label className={labelCls}>Last Name</label>
-                <input type="text" placeholder="Scott" className={inputCls} />
+                <input type="text" placeholder="Scott" value={form.last_name} onChange={e => set('last_name', e.target.value)} className={inputCls} />
               </div>
             </div>
 
@@ -108,8 +154,9 @@ export default function FeedbackForm() {
             <div className="flex flex-col gap-[8px] w-full">
               <label className={labelCls}>Nationality</label>
               <div className="relative">
-                <select className={inputCls + ' appearance-none pr-[40px]'}>
-                  <option value="">Cambodian</option>
+                <select value={form.nationality} onChange={e => set('nationality', e.target.value)} className={inputCls + ' appearance-none pr-[40px]'}>
+                  <option value="">Select nationality</option>
+                  <option>Cambodian</option>
                   <option>Other</option>
                 </select>
                 <ChevronDown size={20} className="absolute right-[12px] top-1/2 -translate-y-1/2 text-[#3b2d17] opacity-50 pointer-events-none" />
@@ -122,25 +169,41 @@ export default function FeedbackForm() {
               <div className="flex flex-col gap-[16px] px-[12px]">
                 {['Patient', 'Other'].map(opt => (
                   <label key={opt} className="flex gap-[16px] items-center cursor-pointer">
-                    <input type="radio" name="role" value={opt} checked={role === opt} onChange={() => setRole(opt)} className={radioCls} />
+                    <input type="radio" name="role" value={opt} checked={form.role === opt} onChange={() => set('role', opt)} className={radioCls} />
                     <span className="font-dm-sans text-[16px] text-[#3b2d17]">{opt}</span>
                   </label>
                 ))}
               </div>
             </div>
+
+            {/* Comment */}
+            <div className="flex flex-col gap-[8px] w-full">
+              <label className={labelCls}>Your Feedback</label>
+              <textarea
+                value={form.comment}
+                onChange={e => set('comment', e.target.value)}
+                placeholder="Share your experience..."
+                rows={5}
+                className="w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors resize-none placeholder:text-[rgba(59,45,23,0.3)]"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Submit */}
+        {error && <p className="font-dm-sans text-[14px] text-red-500 w-full text-center">{error}</p>}
+
         <div className="flex flex-col items-center w-full">
           <button
             type="submit"
-            className="bg-[#b89148] flex items-center justify-center overflow-hidden px-[24px] py-[16px] rounded-[12px] w-[232px]"
+            disabled={submitting}
+            className="bg-[#b89148] flex items-center justify-center overflow-hidden px-[24px] py-[16px] rounded-[12px] w-[232px] disabled:opacity-60 hover:bg-[#c8a25a] transition-colors"
           >
-            <span className="font-dm-sans font-semibold text-[20px] text-[#fbf7ee]">Send Feedback</span>
+            <span className="font-dm-sans font-semibold text-[20px] text-[#fbf7ee]">
+              {submitting ? 'Sending...' : 'Send Feedback'}
+            </span>
           </button>
         </div>
       </div>
-    </div>
+    </form>
   )
 }

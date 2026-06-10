@@ -36,7 +36,7 @@ export const InsuranceUpdates: CollectionConfig = {
   },
   fields: [
     ...baseContentFields(),
-    ...slugField('insurance-updates'),
+    ...slugField(),
     {
       name: 'insuranceProvider',
       type: 'text',

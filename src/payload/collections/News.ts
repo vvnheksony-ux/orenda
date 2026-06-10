@@ -29,7 +29,7 @@ export const News: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField('news'),
+    ...slugField(),
     {
       name: 'body',
       type: 'richText',

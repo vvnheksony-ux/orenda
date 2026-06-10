@@ -35,7 +35,7 @@ export const HealthTips: CollectionConfig = {
   },
   fields: [
     ...baseContentFields(),
-    ...slugField('health-tips'),
+    ...slugField(),
     {
       name: 'healthTipCategory',
       type: 'select',

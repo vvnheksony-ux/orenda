@@ -1,6 +1,6 @@
 'use client'
 
-import { cormorantGaramond, dmSans, inter, greatVibes, khmerSerif, khmerSans, chineseSerif, chineseSans } from '@/lib/fonts'
+import { cormorantGaramond, dmSans, inter, greatVibes, khmerSerif, khmerSans, chineseSerif } from '@/lib/fonts'
 import NavigationBar from '@/components/admin/NavigationBar'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -24,7 +24,7 @@ export default function AdminLayout({
   return (
     <html
       lang="en"
-      className={`${cormorantGaramond.variable} ${dmSans.variable} ${inter.variable} ${greatVibes.variable} ${khmerSerif.variable} ${khmerSans.variable} ${chineseSerif.variable} ${chineseSans.variable} h-full antialiased`}
+      className={`${cormorantGaramond.variable} ${dmSans.variable} ${inter.variable} ${greatVibes.variable} ${khmerSerif.variable} ${khmerSans.variable} ${chineseSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-[#f8f7f5] font-dm-sans text-[#2d2b28]">
         {!isLoginPage ? (

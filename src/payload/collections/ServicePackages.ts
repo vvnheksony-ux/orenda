@@ -48,7 +48,7 @@ export const ServicePackages: CollectionConfig = {
       required: true,
       localized: true,
     },
-    ...slugField('service-packages'),
+    ...slugField(),
     {
       name: 'department',
       type: 'relationship',

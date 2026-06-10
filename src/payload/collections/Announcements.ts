@@ -35,7 +35,7 @@ export const Announcements: CollectionConfig = {
   },
   fields: [
     ...baseContentFields(),
-    ...slugField('announcements'),
+    ...slugField(),
     {
       name: 'priority',
       type: 'select',

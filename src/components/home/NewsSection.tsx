@@ -1,69 +1,76 @@
+'use client'
+
 import Image from 'next/image'
 import { ChevronRight, ArrowRight } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
+import { useState, useEffect } from 'react'
+
+interface NewsItem { id: string; title: string; slug: string; thumbnail: string | null; publishedAt: string }
 
 export default function NewsSection() {
   const t = useTranslations('NewsSection')
+  const locale = useLocale()
+  const [news, setNews] = useState<NewsItem[]>([])
 
-  const SIDE_NEWS = [
-    { title: t('side1'), image: '/images/figma-news-2.jpg' },
-    { title: t('side2'), image: '/images/figma-news-2.jpg' },
-    { title: t('side3'), image: '/images/figma-news-2.jpg' },
-    { title: t('side4'), image: '/images/figma-news-2.jpg' },
-  ]
+  useEffect(() => {
+    fetch(`/api/news?locale=${locale}&limit=5`)
+      .then(r => r.json())
+      .then(d => { if (d?.docs?.length) setNews(d.docs) })
+      .catch(() => {})
+  }, [locale])
+
+  const featured = news[0]
+  const sideItems = news.slice(1, 5).map(n => ({ title: n.title, image: n.thumbnail || null, slug: n.slug }))
 
   return (
-    <section className="py-[80px] bg-[#fbf7ee]">
-      <div className="flex flex-col gap-[80px] items-center justify-center">
+    <section className="bg-[#fbf7ee]">
+      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[80px]">
 
         {/* Header */}
-        <div className="flex flex-col gap-[12px] text-center w-full px-[80px]">
-          <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">
+        <div className="flex flex-col gap-[12px] lg:gap-[16px] items-center text-center w-full">
+          <h2 className="font-cormorant font-bold text-[52px] lg:text-[72px] text-[#3b2d17] leading-none">
             {t('title')}
           </h2>
-          <p className="font-dm-sans text-[20px] text-[#594522] leading-none">
+          <p className="font-dm-sans text-[20px] lg:text-[24px] text-[#594522] leading-[1.4] max-w-[320px] lg:max-w-none text-center">
             {t('subtitle')}
           </p>
         </div>
 
-        {/* Content row — fixed 1352px, mirrors Figma exactly */}
-        <div className="flex gap-[37px] items-center justify-center w-[1352px]">
+        {/* Content row */}
+        <div className="flex flex-col lg:flex-row gap-[24px] lg:gap-[37px] items-start w-full">
 
-          {/* Left featured card: flex-1 resolves to ~683px, h-588, overflow clipped */}
-          <div className="flex-1 min-w-0 h-[588px] relative overflow-hidden bg-white">
+          {/* Featured card — full width on mobile, flex-1 on desktop */}
+          <div className="w-full lg:flex-1 min-w-0 overflow-hidden bg-white rounded-2xl shadow-[0px_2px_8px_2px_rgba(122,95,44,0.12)]">
 
-            {/* Image: 760×516, overflows right — clipped by parent overflow-hidden */}
-            <div className="absolute top-[-4px] left-0 w-[760px] h-[516px]">
+            {/* Image */}
+            <div className="relative w-full h-[280px] lg:h-[440px]">
               <Image
-                src="/images/figma-news-1.jpg"
-                alt={t('featuredTitle')}
-                fill
-                className="object-cover pointer-events-none"
-                sizes="760px"
+                src={featured?.thumbnail ?? '/images/figma-news-1.jpg'}
+                alt={featured?.title ?? t('featuredTitle')}
+                fill className="object-cover pointer-events-none" sizes="(max-width: 1024px) 100vw, 50vw"
+                unoptimized={!!featured?.thumbnail?.startsWith('/payload')}
               />
             </div>
 
-            {/* White frosted caption at bottom, full container width */}
-            <div className="absolute bottom-0 left-0 w-full flex flex-col gap-[12px] items-end p-[24px] bg-white/90 backdrop-blur-[6.45px]">
-              <p className="font-dm-sans font-medium text-[16px] text-black leading-[1.5] w-full">
-                {t('featuredTitle')}
+            {/* Content */}
+            <div className="flex items-center justify-between gap-4 px-[18px] py-[28px] lg:px-[24px] lg:py-[32px] bg-white">
+              <p className="font-dm-sans font-medium text-[14px] lg:text-[16px] text-black leading-[1.5] flex-1">
+                {featured?.title ?? t('featuredTitle')}
               </p>
               <Link
-                href="/"
-                className="flex items-center justify-center h-[32px] px-[12px] py-[8px] border border-[#b89148] rounded-[12px] overflow-hidden shrink-0"
+                href={featured?.slug ? `/news/${featured.slug}` as any : '/news' as any}
+                className="flex items-center justify-center shrink-0 h-[32px] lg:h-[36px] px-[12px] lg:px-[16px] border border-[#b89148] rounded-[10px] gap-[4px]"
               >
-                <span className="font-dm-sans text-[12px] text-[#594522] px-[8px]">
-                  {t('readMore')}
-                </span>
-                <ArrowRight size={16} className="text-[#594522] -scale-x-100" />
+                <span className="font-dm-sans text-[12px] lg:text-[13px] text-[#594522]">{t('readMore')}</span>
+                <ArrowRight size={13} className="text-[#594522]" />
               </Link>
             </div>
           </div>
 
-          {/* Right: 4 stacked news items, fixed 632px */}
-          <div className="shrink-0 w-[632px] flex flex-col items-start justify-center">
-            {SIDE_NEWS.map((item, i) => (
+          {/* Right: 4 stacked news items — desktop only */}
+          <div className="hidden lg:flex w-full lg:shrink-0 lg:w-[632px] flex-col items-start justify-center">
+            {sideItems.map((item, i) => (
               <div
                 key={i}
                 className="flex items-center w-full bg-white overflow-hidden"
@@ -73,13 +80,16 @@ export default function NewsSection() {
               >
                 {/* Thumbnail */}
                 <div className="relative shrink-0 w-[240px] h-[147px]">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    className="object-cover pointer-events-none"
-                    sizes="240px"
-                  />
+                  {item.image && (
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      className="object-cover pointer-events-none"
+                      sizes="240px"
+                      unoptimized={item.image.startsWith('/payload')}
+                    />
+                  )}
                 </div>
                 {/* Text + chevron */}
                 <div className="flex flex-1 gap-[10px] items-center justify-center pl-[22px] pr-[12px] py-[12px] min-w-0">
@@ -93,6 +103,14 @@ export default function NewsSection() {
           </div>
 
         </div>
+
+        {/* See More — mobile only */}
+        <div className="flex justify-center lg:hidden">
+          <Link href="/news" className="px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
+            {t('seeMore')}
+          </Link>
+        </div>
+
       </div>
     </section>
   )

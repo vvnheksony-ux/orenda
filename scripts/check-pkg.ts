@@ -1,0 +1,10 @@
+import { Client } from 'pg'
+const db = new Client({ connectionString: process.env.DATABASE_URL! })
+await db.connect()
+const { rows: cols } = await db.query("SELECT column_name FROM information_schema.columns WHERE table_schema='payload' AND table_name='service_packages' ORDER BY ordinal_position")
+console.log('COLS:', cols.map((r:any) => r.column_name).join(', '))
+const { rows } = await db.query('SELECT * FROM payload.service_packages LIMIT 3')
+console.log('DATA:', JSON.stringify(rows))
+const { rows: rels } = await db.query('SELECT * FROM payload.service_packages_rels LIMIT 5')
+console.log('RELS:', JSON.stringify(rels))
+await db.end(); process.exit(0)

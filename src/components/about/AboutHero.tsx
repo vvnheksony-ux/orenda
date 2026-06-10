@@ -1,51 +1,46 @@
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
-import { Link } from '@/i18n/routing'
+import { ArrowRight } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
+import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
 
-export default function AboutHero() {
+export default async function AboutHero() {
+  const t = await getTranslations('AboutHero')
   return (
-    <div className="flex gap-[16px] h-[472px] items-center justify-center w-full">
-      {/* Left arrow */}
-      <button className="shrink-0 text-[#594522] opacity-60 hover:opacity-100 transition-opacity">
-        <ChevronLeft size={40} />
-      </button>
+    <div className="flex items-stretch justify-between gap-[40px] w-full rounded-[24px] bg-white overflow-hidden shadow-[0px_4px_30px_12px_rgba(220,189,114,0.10)] min-h-[472px]">
 
-      {/* Main card */}
-      <div className="bg-white flex h-[472px] items-center justify-end overflow-hidden relative rounded-[16px] flex-1 max-w-[1352px]">
-        {/* Hospital image — right side */}
-        <div className="relative h-[448px] rounded-[16px] shrink-0 w-[650px] overflow-hidden">
-          <Image
-            src="/images/about/about-hero-3.jpg"
-            alt="Orienda International Hospital"
-            fill
-            className="object-cover rounded-[16px]"
-            sizes="650px"
-          />
+      {/* Left — text content */}
+      <div className="flex flex-col gap-[32px] justify-center py-[56px] pl-[64px] pr-[32px] flex-1 min-w-0">
+        {/* Eyebrow */}
+        <p className="font-dm-sans text-[16px] text-[#b89148] uppercase tracking-widest leading-none">
+          {t('eyebrow')}
+        </p>
+
+        <h1 className="font-cormorant font-bold text-[52px] text-[#3b2d17] leading-tight">
+          {t('title')}
+        </h1>
+
+        <div className="font-dm-sans font-light text-[20px] text-[#594522] leading-[1.6] flex flex-col gap-[12px]">
+          <p>{t('desc1')}</p>
+          <p>{t('desc2')}</p>
         </div>
 
-        {/* Text block — absolute left */}
-        <div className="absolute left-[58px] top-[79px] flex flex-col gap-[40px] items-start w-[618px]">
-          <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">
-            Orienda International Hospital
-          </h1>
-          <p className="font-dm-sans font-light text-[24px] text-[#594522] leading-[1.4]">
-            We dedicated to providing safe and reliable medical services.{' '}
-            Schedule and appointment to experience world-class healthcare.
-          </p>
-          <Link
-            href="/about"
-            className="flex items-center h-[48px] px-[20px] py-[14px] border-[1.5px] border-[#b89148] rounded-[12px] gap-[4px]"
-          >
-            <span className="font-dm-sans text-[18px] text-[#5c4924] px-[8px]">Learn More</span>
-            <ArrowRight size={20} className="text-[#5c4924]" />
-          </Link>
-        </div>
+        <BookAppointmentButton
+          label={t('bookAppointment')}
+          className="flex items-center gap-[8px] w-fit h-[48px] px-[24px] py-[14px] border-[1.5px] border-[#b89148] rounded-[12px] hover:bg-[#b89148] hover:text-[#5c4924] font-dm-sans text-[18px] text-[#5c4924] transition-all duration-200"
+        />
       </div>
 
-      {/* Right arrow */}
-      <button className="shrink-0 text-[#594522] opacity-60 hover:opacity-100 transition-opacity">
-        <ChevronRight size={40} />
-      </button>
+      {/* Right — hospital image */}
+      <div className="relative shrink-0 w-[560px] self-stretch">
+        <Image
+          src="/images/about/about-hero-3.jpg"
+          alt="Orienda International Hospital"
+          fill
+          className="object-cover"
+          sizes="560px"
+          priority
+        />
+      </div>
     </div>
   )
 }

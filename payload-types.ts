@@ -1024,7 +1024,18 @@ export interface AnalyticsEvent {
 export interface KpiSnapshot {
   id: number;
   date: string;
-  metric: 'calls' | 'inquiries' | 'tour_views' | 'doctor_clicks' | 'map_interactions';
+  metric:
+    | 'calls'
+    | 'inquiries'
+    | 'tour_views'
+    | 'tour_sessions'
+    | 'tour_scene_views'
+    | 'page_views'
+    | 'doctor_views'
+    | 'department_views'
+    | 'language_split'
+    | 'doctor_clicks'
+    | 'map_interactions';
   value: number;
   locale?: string | null;
   granularity: 'day' | 'week' | 'month';

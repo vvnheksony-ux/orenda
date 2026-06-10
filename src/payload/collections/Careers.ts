@@ -37,7 +37,7 @@ export const Careers: CollectionConfig = {
   },
   fields: [
     ...baseContentFields(),
-    ...slugField('careers'),
+    ...slugField(),
     {
       name: 'position',
       type: 'text',

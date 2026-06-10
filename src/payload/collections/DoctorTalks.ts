@@ -36,7 +36,7 @@ export const DoctorTalks: CollectionConfig = {
   },
   fields: [
     ...baseContentFields(),
-    ...slugField('doctor-talks'),
+    ...slugField(),
     {
       name: 'featuredDoctor',
       type: 'relationship',

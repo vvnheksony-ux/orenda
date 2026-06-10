@@ -1,3 +1,6 @@
+import type { Metadata } from 'next'
+export const metadata: Metadata = { title: 'About Us' }
+
 import SiteLayout from '@/components/layout/SiteLayout'
 import AboutHero from '@/components/about/AboutHero'
 import VisionMission from '@/components/about/VisionMission'
@@ -7,7 +10,7 @@ export default function AboutPage() {
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full">
-        <div className="flex flex-col gap-[56px] items-center pb-[120px] px-[80px] pt-[120px] 2xl:pt-[196px]">
+        <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[56px] items-center pb-[120px] px-4 sm:px-8 lg:px-[80px] pt-[100px] lg:pt-[212px]">
           <AboutHero />
           <VisionMission />
           <OurClinics />

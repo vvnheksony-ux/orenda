@@ -1,3 +1,6 @@
+import type { Metadata } from 'next'
+export const metadata: Metadata = { title: 'Insurance' }
+
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
@@ -18,7 +21,7 @@ export default function InsurancePage() {
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full">
-        <div className="flex flex-col gap-[80px] items-center pb-[120px] px-[80px] pt-[120px] 2xl:pt-[196px]">
+        <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[80px] items-center pb-[120px] px-4 sm:px-8 lg:px-[80px] pt-[100px] lg:pt-[212px]">
 
           {/* Hero slider card */}
           <div className="flex gap-[16px] h-[472px] items-center justify-center w-full">
@@ -39,7 +42,7 @@ export default function InsurancePage() {
                 />
               </div>
               {/* Text */}
-              <div className="absolute left-[58px] top-[79px] flex flex-col gap-[40px] items-start w-[618px]">
+              <div className="absolute left-[58px] top-[79px] flex flex-col gap-[40px] items-start" style={{ maxWidth: 'calc(100% - 720px)' }}>
                 <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">
                   Orienda International Hospital
                 </h1>
