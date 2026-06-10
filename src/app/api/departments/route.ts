@@ -1,8 +1,33 @@
 import { NextResponse } from 'next/server'
+import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload'
 import { mediaUrl, lexicalToText } from '@/lib/payload-api'
 
 export const runtime = 'nodejs'
+
+const fetchDepartmentList = unstable_cache(
+  async (locale: string, branchId: string | null, limit: number) => {
+    const payload = await getPayloadClient()
+    const where: any = {}
+    if (branchId) where['branch'] = { equals: Number(branchId) }
+    const data = await payload.find({
+      collection: 'departments',
+      locale: locale as any, fallbackLocale: 'en',
+      overrideAccess: true, depth: 1, sort: 'order', limit, where,
+    } as any)
+    return (data.docs || []).map((doc: any) => ({
+      id:          String(doc.id),
+      name:        doc.name ?? '',
+      slug:        doc.slug ?? '',
+      icon:        mediaUrl(doc.icon),
+      description: lexicalToText(doc.description),
+      order:       doc.order ?? 0,
+      branch_id:   typeof doc.branch === 'object' ? String(doc.branch?.id) : doc.branch ? String(doc.branch) : null,
+    }))
+  },
+  ['departments-list'],
+  { revalidate: 300, tags: ['departments'] }
+)
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -26,30 +51,8 @@ export async function GET(req: Request) {
       })
     }
 
-    const where: any = {}
-    if (branchId) where['branch'] = { equals: Number(branchId) }
-
-    const data = await payload.find({
-      collection: 'departments',
-      locale, fallbackLocale: 'en',
-      overrideAccess: true,
-      depth: 1,
-      sort: 'order',
-      limit,
-      where,
-    } as any)
-
-    const docs = (data.docs || []).map((doc: any) => ({
-      id:          String(doc.id),
-      name:        doc.name ?? '',
-      slug:        doc.slug ?? '',
-      icon:        mediaUrl(doc.icon),
-      description: lexicalToText(doc.description),
-      order:       doc.order ?? 0,
-      branch_id:   typeof doc.branch === 'object' ? String(doc.branch?.id) : doc.branch ? String(doc.branch) : null,
-    }))
-
-    return NextResponse.json({ docs, totalDocs: data.totalDocs ?? docs.length }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } })
+    const docs = await fetchDepartmentList(locale, branchId, limit)
+    return NextResponse.json({ docs, totalDocs: docs.length }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('departments error:', err.message)
     return NextResponse.json({ error: err.message, docs: [], totalDocs: 0 }, { status: 500 })

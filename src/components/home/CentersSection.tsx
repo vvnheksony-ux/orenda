@@ -14,11 +14,13 @@ export default function CentersSection() {
   const locale = useLocale()
   const { selectedBranch } = useBranch()
   const [idx, setIdx] = useState(0)
+  const [loading, setLoading] = useState(true)
   const [SPECIALTIES, setSpecialties] = useState<{key:string;name:string;thumb:string;display:string}[]>([])
 
   useEffect(() => {
     if (!selectedBranch) return
     setIdx(0)
+    setLoading(true)
     fetch(`/api/departments?locale=${locale}&branch=${selectedBranch.id}`)
       .then(r => r.json())
       .then(d => {
@@ -45,11 +47,34 @@ export default function CentersSection() {
         }
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [locale, selectedBranch])
 
   const prev = () => setIdx(i => (i - 1 + SPECIALTIES.length) % SPECIALTIES.length)
   const next = () => setIdx(i => (i + 1) % SPECIALTIES.length)
   const active = SPECIALTIES[idx] ?? SPECIALTIES[0]
+
+  if (loading) return (
+    <section className="w-full" style={{ backgroundColor: '#fbf7ee' }}>
+      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[40px] items-center">
+        <div className="flex flex-col gap-[12px] items-center">
+          <div className="h-[36px] lg:h-[48px] w-[280px] rounded-lg bg-[#e8d9b8] animate-pulse" />
+          <div className="h-[20px] w-[220px] rounded bg-[#e8d9b8] animate-pulse" />
+        </div>
+        <div className="hidden lg:flex gap-[52px] items-center w-full">
+          <div className="flex flex-col gap-[40px] items-center shrink-0">
+            {[0,1,2].map(i => <div key={i} className="rounded-full bg-[#e8d9b8] animate-pulse size-[144px]" />)}
+          </div>
+          <div className="w-[450px] aspect-square rounded-xl bg-[#e8d9b8] animate-pulse shrink-0" />
+          <div className="grid grid-cols-2 grid-rows-2 gap-[20px] flex-1 h-[674px]">
+            {[0,1,2,3].map(i => <div key={i} className="rounded-[12px] bg-[#e8d9b8] animate-pulse" />)}
+          </div>
+        </div>
+        <div className="lg:hidden w-full aspect-square rounded-xl bg-[#e8d9b8] animate-pulse" />
+      </div>
+    </section>
+  )
+
   if (!active) return null
 
   const STATS = [
