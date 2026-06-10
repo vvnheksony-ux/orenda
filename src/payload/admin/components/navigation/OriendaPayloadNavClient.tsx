@@ -22,8 +22,13 @@ type OriendaPayloadNavClientProps = {
 
 const publicOperationLinks = [
   { label: 'Appointments', path: '/operations/appointments' },
-  { label: 'Inquiries', path: '/operations/inquiries' },
   { label: 'Promotion Purchases', path: '/operations/purchases' },
+  { label: 'Feedback', path: '/operations/feedback' },
+] as const
+
+const contactMessagesLinks = [
+  { label: 'Contact Messages', path: '/contact-messages/contact_messages' },
+  { label: 'Inquiries', path: '/contact-messages/inquiries' },
 ] as const
 
 const baseClass = 'nav'
@@ -47,7 +52,20 @@ export default function OriendaPayloadNavClient({
 
   const allGroups = [...groups]
   if (!allGroups.some((group) => group.label === 'Operations')) {
-    allGroups.push({ entities: [], label: 'Operations' })
+    const hospitalIndex = allGroups.findIndex((g) => g.label === 'Hospital')
+    if (hospitalIndex >= 0) {
+      allGroups.splice(hospitalIndex + 1, 0, { entities: [], label: 'Operations' })
+    } else {
+      allGroups.push({ entities: [], label: 'Operations' })
+    }
+  }
+  if (!allGroups.some((group) => group.label === 'Contact Messages')) {
+    const opIndex = allGroups.findIndex((g) => g.label === 'Operations')
+    if (opIndex >= 0) {
+      allGroups.splice(opIndex + 1, 0, { entities: [], label: 'Contact Messages' })
+    } else {
+      allGroups.push({ entities: [], label: 'Contact Messages' })
+    }
   }
 
   const { setPreference } = usePreferences()
@@ -85,14 +103,14 @@ export default function OriendaPayloadNavClient({
       <div className={`${baseClass}__scroll flex h-screen flex-col overflow-hidden`} ref={navRef}>
         <div className="flex min-h-[106px] flex-col items-center gap-1.5 bg-[#5a431f] text-center">
           <Image
-            className="h-auto max-h-[90px] w-auto object-contain"
+            className="h-auto w-auto object-contain"
             src="/logo.png"
             width={300}
             height={104}
             alt="Orienda Logo"
             priority
           />
-          <p className="m-0 text-md font-medium text-[#d4c5ad] mb-4.5">Orienda Staff Portal</p>
+          <p className="-mt-5 text-md font-medium text-[#d4c5ad] mb-4.5">Admin Portal</p>
         </div>
 
         <nav className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 py-5">
@@ -123,6 +141,24 @@ export default function OriendaPayloadNavClient({
 
                 {isOpen ? (
                   <div className="flex flex-col pt-1">
+                    {label === 'Contact Messages'
+                      ? contactMessagesLinks.map((link) => {
+                          const href = formatAdminURL({ adminRoute, path: link.path })
+                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
+
+                          return (
+                            <Link
+                              className={isActive ? activeNavLinkClass : navLinkClass}
+                              href={href}
+                              id={`nav-public-${link.path.replace(/\//g, '-')}`}
+                              key={link.path}
+                              prefetch={false}
+                            >
+                              {link.label}
+                            </Link>
+                          )
+                        })
+                      : null}
                     {label === 'Operations'
                       ? publicOperationLinks.map((link) => {
                           const href = formatAdminURL({ adminRoute, path: link.path })

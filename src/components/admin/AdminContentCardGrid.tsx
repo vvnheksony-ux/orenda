@@ -56,7 +56,6 @@ export type AdminContentCardItem = Record<string, unknown> & {
 const statusStyles: Record<AdminStatus, string> = {
   pending: 'bg-[#fff1cf] text-[#c49124]',
   confirmed: 'bg-[#dff8ed] text-[#2ead73]',
-  completed: 'bg-[#dcf7e9] text-[#31a86e]',
   published: 'bg-[#dcf7e9] text-[#31a86e]',
   draft: 'bg-[#efeeeb] text-[#6f6b64]',
   active: 'bg-[#dcf7e9] text-[#31a86e]',

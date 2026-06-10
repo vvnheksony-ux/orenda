@@ -4,12 +4,15 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { createServiceClient } from '@/utils/supabase/server'
 
-const allowedTables = ['appointments', 'inquiries', 'purchases', 'profiles'] as const
+const allowedTables = ['appointments', 'inquiries', 'purchases', 'profiles', 'feedback', 'testimonials', 'contact_messages'] as const
 const allowedStatusByTable: Record<(typeof allowedTables)[number], string[]> = {
-  appointments: ['pending', 'confirmed', 'completed', 'cancelled'],
+  appointments: ['pending', 'confirmed', 'cancelled'],
   inquiries: ['unread', 'in-progress', 'resolved', 'closed'],
-  purchases: ['pending', 'contacted', 'completed', 'cancelled'],
+  purchases: ['pending', 'contacted', 'confirmed', 'cancelled'],
   profiles: ['active', 'inactive', 'suspended'],
+  feedback: ['pending', 'approved', 'rejected'],
+  testimonials: [],
+  contact_messages: ['pending', 'in-progress', 'resolved', 'closed'],
 }
 const editableFieldsByTable: Record<(typeof allowedTables)[number], string[]> = {
   appointments: [
@@ -53,6 +56,36 @@ const editableFieldsByTable: Record<(typeof allowedTables)[number], string[]> = 
     'user_type',
     'status',
     'date_of_birth',
+  ],
+  feedback: [
+    'first_name',
+    'last_name',
+    'title',
+    'email',
+    'phone',
+    'nationality',
+    'date_of_birth',
+    'role',
+    'clinic_visited',
+    'feedback_type',
+    'contact_required',
+    'comment',
+    'locale',
+    'status',
+  ],
+  testimonials: [
+    'content',
+    'author',
+    'locale',
+  ],
+  contact_messages: [
+    'name',
+    'email',
+    'phone',
+    'message',
+    'locale',
+    'status',
+    'branch_payload_id',
   ],
 }
 

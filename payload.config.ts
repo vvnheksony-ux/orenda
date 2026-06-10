@@ -52,19 +52,25 @@ const enableApiDocs =
   process.env.ENABLE_API_DOCS
 
 const oriendaListView = '@/payload/admin/components/list/OriendaListView'
+const oriendaEditView = '@/payload/admin/components/edit/OriendaEditView'
 
 function withOriendaListView(collection: CollectionConfig): CollectionConfig {
   return {
     ...collection,
     admin: {
       ...collection.admin,
+      hideAPIURL: true,
       components: {
         ...collection.admin?.components,
         views: {
           ...collection.admin?.components?.views,
           list: {
-            ...collection.admin?.components?.views?.list,
             Component: collection.admin?.components?.views?.list?.Component || oriendaListView,
+          },
+          edit: {
+            default: {
+              Component: oriendaEditView,
+            },
           },
         },
       },
@@ -84,6 +90,7 @@ export default buildConfig({
         Logo: '@/payload/admin/components/NavIcon',
       },
       Nav: '@/payload/admin/components/navigation/OriendaPayloadNav',
+      providers: ['@/payload/admin/components/providers/OriendaAdminStyle'],
       // header: ['@/payload/admin/components/header/OriendaAdminHeader'],
       views: {
         dashboard: {
@@ -92,6 +99,14 @@ export default buildConfig({
         publicAppointments: {
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/appointments/:mode?/:id?',
+        },
+        contactMessages: {
+          Component: '@/payload/admin/components/operations/OperationsAdminView',
+          path: '/contact-messages/contact_messages/:mode?/:id?',
+        },
+        contactInquiries: {
+          Component: '@/payload/admin/components/operations/OperationsAdminView',
+          path: '/contact-messages/inquiries/:mode?/:id?',
         },
         publicInquiries: {
           Component: '@/payload/admin/components/operations/OperationsAdminView',
@@ -105,11 +120,20 @@ export default buildConfig({
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/profiles/:mode?/:id?',
         },
+        publicFeedback: {
+          Component: '@/payload/admin/components/operations/OperationsAdminView',
+          path: '/operations/feedback/:mode?/:id?',
+        },
+        publicTestimonials: {
+          Component: '@/payload/admin/components/operations/OperationsAdminView',
+          path: '/operations/testimonials/:mode?/:id?',
+        },
       },
     },
     meta: {
-      title: 'Orienda CMS',
-      description: 'Orienda Hospital Content Management System',
+      title: 'Admin Portal',
+      description: 'Orienda Hospital Admin Portal',
+      favicon: '/logo-cropped.png',
     },
   },
   collections: [
@@ -144,7 +168,13 @@ export default buildConfig({
     OperationalSettings,
     Navigation,
     SocialLinks,
-  ],
+  ].map((g) => ({
+    ...g,
+    admin: {
+      ...g.admin,
+      hideAPIURL: true,
+    },
+  })),
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -152,11 +182,18 @@ export default buildConfig({
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URL || '',
-      // Prevent connection pool exhaustion in development
-      max: process.env.NODE_ENV === 'production' ? 20 : 5,
-      idleTimeoutMillis: 30000, // 30 seconds
-      connectionTimeoutMillis: 5000, // 5 seconds
+      connectionString: (() => {
+        const url = new URL(process.env.DATABASE_URL || '')
+        url.searchParams.set('pgbouncer', 'true')
+        url.searchParams.set('prepare_threshold', '0')
+        return url.toString()
+      })(),
+      max: process.env.NODE_ENV === 'production' ? 10 : 3,
+      idleTimeoutMillis: 60000,
+      connectionTimeoutMillis: 15000,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     },
     migrationDir: path.resolve(dirname, 'src/migrations'),
     push: false,

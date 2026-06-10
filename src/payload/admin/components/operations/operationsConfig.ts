@@ -1,4 +1,4 @@
-export type OperationTableSlug = 'appointments' | 'inquiries' | 'purchases' | 'profiles'
+export type OperationTableSlug = 'appointments' | 'inquiries' | 'purchases' | 'profiles' | 'feedback' | 'testimonials' | 'contact_messages'
 
 export type OperationRecord = {
   id: string
@@ -17,11 +17,13 @@ export type OperationConfig = {
   slug: OperationTableSlug
   title: string
   singularTitle: string
+  group: string
   description: string
   columns: { key: string; label: string }[]
   editableFields: { key: string; label: string; type?: 'date' | 'datetime' | 'textarea' | 'text' }[]
   statusOptions: string[]
   referenceResolvers?: ReferenceResolver[]
+  listHref?: string
 }
 
 export type ReferenceOptionMap = Record<string, Array<{ id: string; name: string }>>
@@ -31,9 +33,11 @@ export type OperationViewMode = 'create' | 'edit' | 'list' | 'view'
 export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
   profiles: {
     slug: 'profiles',
-    title: 'Profiles',
-    singularTitle: 'Profile',
-    description: 'User profiles from Supabase public.profiles.',
+    title: 'Users',
+    singularTitle: 'User',
+    group: 'Access Control',
+    listHref: '/admin/collections/users',
+    description: 'User accounts from Supabase public.profiles.',
     columns: [
       { key: 'name', label: 'Name' },
       { key: 'email', label: 'Email' },
@@ -59,6 +63,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
     slug: 'appointments',
     title: 'Appointments',
     singularTitle: 'Appointment',
+    group: 'Operations',
     description: 'Public appointment requests from Supabase public.appointments.',
     columns: [
       { key: 'patient_name', label: 'Patient' },
@@ -85,7 +90,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
       { key: 'branch_payload_id', label: 'Branch' },
       { key: 'department_payload_id', label: 'Department' },
     ],
-    statusOptions: ['pending', 'confirmed', 'completed', 'cancelled'],
+    statusOptions: ['pending', 'confirmed', 'cancelled'],
     referenceResolvers: [
       { recordField: 'doctor_payload_id', collection: 'doctors', titleField: 'name' },
       { recordField: 'branch_payload_id', collection: 'branches', titleField: 'name' },
@@ -96,6 +101,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
     slug: 'inquiries',
     title: 'Inquiries',
     singularTitle: 'Inquiry',
+    group: 'Contact Messages',
     description: 'Public contact inquiries from Supabase public.inquiries.',
     columns: [
       { key: 'name', label: 'Name' },
@@ -120,6 +126,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
     slug: 'purchases',
     title: 'Promotion Purchases',
     singularTitle: 'Purchase',
+    group: 'Operations',
     description: 'Promotion purchase requests from Supabase public.purchases.',
     columns: [
       { key: 'patient_name', label: 'Patient' },
@@ -145,11 +152,89 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
       { key: 'status', label: 'Status' },
       { key: 'source', label: 'Source' },
     ],
-    statusOptions: ['pending', 'contacted', 'completed', 'cancelled'],
+    statusOptions: ['pending', 'contacted', 'confirmed', 'cancelled'],
     referenceResolvers: [
       { recordField: 'promotion_payload_id', collection: 'promotions', titleField: 'title' },
       { recordField: 'branch_payload_id', collection: 'branches', titleField: 'name' },
     ],
+  },
+  feedback: {
+    slug: 'feedback',
+    title: 'Feedback',
+    singularTitle: 'Feedback',
+    group: 'Operations',
+    description: 'Patient feedback from Supabase public.feedback.',
+    columns: [
+      { key: 'first_name', label: 'First Name' },
+      { key: 'last_name', label: 'Last Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'feedback_type', label: 'Type' },
+      { key: 'comment', label: 'Comment' },
+      { key: 'locale', label: 'Locale' },
+      { key: 'status', label: 'Status' },
+      { key: 'created_at', label: 'Received' },
+    ],
+    editableFields: [
+      { key: 'first_name', label: 'First Name' },
+      { key: 'last_name', label: 'Last Name' },
+      { key: 'title', label: 'Title' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'nationality', label: 'Nationality' },
+      { key: 'date_of_birth', label: 'Date of Birth', type: 'date' },
+      { key: 'role', label: 'Role' },
+      { key: 'clinic_visited', label: 'Clinic Visited' },
+      { key: 'feedback_type', label: 'Feedback Type' },
+      { key: 'contact_required', label: 'Contact Required' },
+      { key: 'comment', label: 'Comment', type: 'textarea' },
+      { key: 'locale', label: 'Locale' },
+      { key: 'status', label: 'Status' },
+    ],
+    statusOptions: ['pending', 'approved', 'rejected'],
+  },
+  testimonials: {
+    slug: 'testimonials',
+    title: 'Testimonials',
+    singularTitle: 'Testimonial',
+    group: 'Operations',
+    description: 'Patient testimonials from Supabase public.testimonials.',
+    columns: [
+      { key: 'author', label: 'Author' },
+      { key: 'content', label: 'Content' },
+      { key: 'locale', label: 'Locale' },
+      { key: 'created_at', label: 'Created' },
+    ],
+    editableFields: [
+      { key: 'author', label: 'Author' },
+      { key: 'content', label: 'Content', type: 'textarea' },
+      { key: 'locale', label: 'Locale' },
+    ],
+    statusOptions: [],
+  },
+  contact_messages: {
+    slug: 'contact_messages',
+    title: 'Contact Messages',
+    singularTitle: 'Contact Message',
+    group: 'Contact Messages',
+    description: 'Contact us messages from Supabase public.contact_messages.',
+    columns: [
+      { key: 'name', label: 'Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'locale', label: 'Locale' },
+      { key: 'status', label: 'Status' },
+      { key: 'created_at', label: 'Created' },
+    ],
+    editableFields: [
+      { key: 'name', label: 'Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'message', label: 'Message', type: 'textarea' },
+      { key: 'locale', label: 'Locale' },
+      { key: 'status', label: 'Status' },
+      { key: 'branch_payload_id', label: 'Branch' },
+    ],
+    statusOptions: ['pending', 'in-progress', 'resolved', 'closed'],
   },
 }
 
@@ -163,18 +248,20 @@ export function getOperationConfig(slug: string | undefined) {
 
 export function getOperationHref(slug: OperationTableSlug, mode?: Exclude<OperationViewMode, 'list'>, id?: string) {
   const suffix = mode && id ? `/${mode}/${id}` : mode === 'create' ? '/create' : ''
-  return `/admin/operations/${slug}${suffix}`
+  const prefix = slug === 'contact_messages' || slug === 'inquiries' ? 'contact-messages' : 'operations'
+  return `/admin/${prefix}/${slug}${suffix}`
 }
 
 export function statusColor(value: string): string {
   const v = value.toLowerCase()
   if (v === 'pending' || v === 'unread' || v === 'in-progress') return 'bg-[#fef3c7] text-[#92400e]'
-  if (v === 'confirmed' || v === 'completed' || v === 'resolved' || v === 'active') return 'bg-[#d1fae5] text-[#065f46]'
+  if (v === 'confirmed' || v === 'approved' || v === 'resolved' || v === 'active') return 'bg-[#d1fae5] text-[#065f46]'
+  if (v === 'rejected') return 'bg-[#fee2e2] text-[#991b1b]'
   return 'bg-[#ebe7e1] text-[#716b60]'
 }
 
 export function parseOperationSegments(segments: string[]) {
-  const offset = segments[0] === 'operations' ? 1 : 0
+  const offset = segments[0] === 'operations' || segments[0] === 'contact-messages' ? 1 : 0
   const table = segments[offset]
   const mode = segments[offset + 1]
   const id = segments[offset + 2]

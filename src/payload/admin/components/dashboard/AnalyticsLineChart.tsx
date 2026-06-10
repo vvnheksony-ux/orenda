@@ -1,7 +1,7 @@
 'use client'
 
 import { type AnalyticsRow } from './AdminMetricCard'
-import { Area, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { parseMetricValue } from './analyticsChartUtils'
 
 export type AnalyticsSeries = {
@@ -26,7 +26,7 @@ export default function AnalyticsLineChart({ rows, series }: { rows: AnalyticsRo
     <div className="orienda-dashboard-line-chart pt-2">
       <div className="orienda-dashboard-line-chart__canvas h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 24, right: 12, bottom: 8, left: 0 }}>
+          <AreaChart data={data} margin={{ top: 24, right: 12, bottom: 8, left: 0 }}>
             <CartesianGrid stroke="#f1eee8" vertical={false} />
             <XAxis dataKey="label" tickLine={{ stroke: '#b9b2a8' }} axisLine={false} tick={{ fill: '#9d978f', fontSize: 13 }} />
             <YAxis tickLine={false} axisLine={false} tick={{ fill: '#9d978f', fontSize: 13 }} />
@@ -34,19 +34,20 @@ export default function AnalyticsLineChart({ rows, series }: { rows: AnalyticsRo
               contentStyle={{ border: '1px solid #eadfcf', borderRadius: 14, boxShadow: '0 14px 30px rgba(53, 42, 22, 0.14)' }}
               labelStyle={{ color: '#6f4e18', fontWeight: 700 }}
             />
-            {series[0] ? <Area type="monotone" dataKey={series[0].label} fill="#c49a42" fillOpacity={0.14} stroke="none" /> : null}
-            {series.map((item) => (
-              <Line
+            {series.map((item, i) => (
+              <Area
                 key={item.label}
                 type="monotone"
                 dataKey={item.label}
                 stroke={item.color}
                 strokeWidth={item.strokeWidth}
+                fill={i === 0 ? '#c49a42' : 'none'}
+                fillOpacity={0.14}
                 dot={false}
                 activeDot={{ r: 5, fill: item.color }}
               />
             ))}
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
       <div className="orienda-dashboard__legend flex flex-wrap justify-center gap-5 text-xs text-[#8f8577]">

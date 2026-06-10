@@ -1,6 +1,8 @@
 import type { AdminViewServerProps, Payload, VisibleEntities } from 'payload'
+import type { StepNavItem } from '@payloadcms/ui'
 
 import { DefaultTemplate } from '@payloadcms/next/templates'
+import { SetStepNav } from '@payloadcms/ui'
 import { createServiceClient } from '@/utils/supabase/server'
 
 import OperationsDetail from './OperationsDetail'
@@ -14,22 +16,31 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
   const { id, mode: viewMode, table } = parseOperationSegments(segments)
   const config = getOperationConfig(table)
   const supabase = await createServiceClient()
-  const { locale, permissions, req, user } = props.initPageResult ?? {}
+  const { locale, permissions, req } = props.initPageResult ?? {}
+  const user = props.user
   const templateProps = {
     ...props,
     locale: props.locale ?? locale,
     permissions: props.permissions ?? permissions,
     req: props.req ?? req,
-    user: props.user ?? user,
+    user: props.user,
     visibleEntities: props.visibleEntities ?? getAllVisibleEntities(props),
   }
 
   const payload = props.payload ?? (req as { payload?: Payload } | undefined)?.payload
 
+  const listUrl = config.listHref ?? getOperationHref(config.slug)
+
   if (viewMode === 'create') {
     const referenceOptions = await fetchReferenceOptions(payload, config, locale || 'en')
+    const createNav: StepNavItem[] = [
+      { label: config.group },
+      { label: config.singularTitle, url: listUrl },
+      { label: 'Create' },
+    ]
     return (
       <DefaultTemplate {...templateProps} className="operations-template">
+        <SetStepNav nav={createNav} />
         <OperationsDetail config={config} mode="create" referenceOptions={referenceOptions} />
       </DefaultTemplate>
     )
@@ -46,9 +57,17 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
     const record = (data || null) as OperationRecord | null
     const enriched = record ? await enrichRecord(payload, config, record, locale || 'en') : null
     const referenceOptions = await fetchReferenceOptions(payload, config, locale || 'en')
+    const shortId = id.slice(0, 8)
+    const detailNav: StepNavItem[] = [
+      { label: config.group },
+      { label: config.singularTitle, url: listUrl },
+      { label: `#${shortId}`, url: getOperationHref(config.slug, 'view', id) },
+      ...(viewMode === 'edit' ? [{ label: 'Edit' } as StepNavItem] : []),
+    ]
 
     return (
       <DefaultTemplate {...templateProps} className="operations-template">
+        <SetStepNav nav={detailNav} />
         <OperationsDetail config={config} error={error?.message} mode={viewMode} record={enriched} referenceOptions={referenceOptions} />
       </DefaultTemplate>
     )
@@ -62,13 +81,18 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
 
   const records = (data || []) as OperationRecord[]
   const enriched = await enrichRecords(payload, config, records, locale || 'en')
+  const listNav: StepNavItem[] = [
+    { label: config.group },
+    { label: config.title },
+  ]
 
   return (
     <DefaultTemplate {...templateProps} className="operations-template">
+      <SetStepNav nav={listNav} />
       <main className="mx-auto flex w-full flex-col gap-6 px-19">
         <header className="flex items-center justify-between rounded-2xl">
           <h1 className="m-0 text-[20px] font-bold text-[#2b2823]">{config.title}</h1>
-          {config.slug === 'appointments' || config.slug === 'purchases' ? (
+          {config.slug === 'appointments' || config.slug === 'purchases' || config.slug === 'inquiries' || config.slug === 'contact_messages' ? (
             <a
               className="inline-flex items-center gap-2 rounded-xl bg-[#b89148] px-5 py-2 text-sm font-bold text-white no-underline transition-colors hover:bg-[#a37d3e]"
               href={getOperationHref(config.slug, 'create')}

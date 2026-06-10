@@ -1,8 +1,9 @@
 'use client'
 
 import type { Column, ListViewClientProps } from 'payload'
+import type { StepNavItem } from '@payloadcms/ui'
 
-import { DefaultListView, useListQuery, useTableColumns } from '@payloadcms/ui'
+import { DefaultListView, SetStepNav, useConfig, useListQuery, useTableColumns } from '@payloadcms/ui'
 import { Eye, Pencil, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -15,18 +16,41 @@ type OriendaListTableProps = {
   hasDeletePermission?: boolean
 }
 
+export function getStaticLabel(label: unknown): string | undefined {
+  if (!label || typeof label === 'boolean') return undefined
+  if (typeof label === 'string') return label
+  if (typeof label === 'object' && label !== null) {
+    return Object.values(label as Record<string, string>)[0]
+  }
+  return undefined
+}
+
 function OriendaListView(props: ListViewClientProps) {
+  const { collectionSlug } = props
+  const { config } = useConfig()
+  const collection = config.collections?.find((c) => c.slug === collectionSlug)
+  const groupLabel = getStaticLabel(collection?.admin?.group)
+
+  const nav: StepNavItem[] = []
+  if (groupLabel) {
+    nav.push({ label: groupLabel })
+  }
+  nav.push({ label: getStaticLabel(collection?.labels?.plural) ?? collectionSlug })
+
   return (
-    <DefaultListView
-      {...props}
-      enableRowSelections={false}
-      Table={
-        <OriendaListTable
-          collectionSlug={props.collectionSlug}
-          hasDeletePermission={props.hasDeletePermission}
-        />
-      }
-    />
+    <>
+      <DefaultListView
+        {...props}
+        enableRowSelections={false}
+        Table={
+          <OriendaListTable
+            collectionSlug={props.collectionSlug}
+            hasDeletePermission={props.hasDeletePermission}
+          />
+        }
+      />
+      <SetStepNav nav={nav} />
+    </>
   )
 }
 

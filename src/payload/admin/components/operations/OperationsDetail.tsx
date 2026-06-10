@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarDays, ClipboardList, Edit, Mail, Package, Phone, UserRound } from 'lucide-react'
+import { CalendarDays, ClipboardList, Edit, Mail, MessageSquare, Package, Phone, UserRound } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
@@ -70,8 +70,8 @@ export default function OperationsDetail({ config, error, mode, record, referenc
     })
   }
 
-  function markCompleted() {
-    const status = config.slug === 'inquiries' ? 'resolved' : config.slug === 'profiles' ? 'active' : 'completed'
+  function markConfirmed() {
+    const status = config.slug === 'inquiries' ? 'resolved' : config.slug === 'profiles' ? 'active' : config.slug === 'feedback' ? 'approved' : 'confirmed'
     updateStatus(status)
   }
 
@@ -95,13 +95,10 @@ export default function OperationsDetail({ config, error, mode, record, referenc
     })
   }
 
-  const breadcrumb = mode === 'create' ? 'Create' : mode === 'edit' ? 'Edit' : 'View'
-
   return (
     <main className="mx-auto flex w-full flex-col gap-6 px-20 py-8">
       <header className="border-b border-[#e7dfd5] bg-white px-1 pb-5">
         <h1 className="m-0 text-2xl font-bold text-[#2b2823]">{mode === 'create' ? `New ${config.singularTitle}` : `${config.singularTitle} Details`}</h1>
-        <p className="m-0 mt-1 text-sm text-[#716b60]">Operations & Sales &gt; {config.title} &gt; {breadcrumb}</p>
       </header>
 
       {message ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{message}</div> : null}
@@ -109,13 +106,13 @@ export default function OperationsDetail({ config, error, mode, record, referenc
       {mode === 'create' || mode === 'edit' ? (
         <EditForm config={config} disabled={isPending} form={form} isNew={mode === 'create'} onChange={updateField} onSave={save} record={record} referenceOptions={referenceOptions} />
       ) : record ? (
-        <ViewDetails config={config} isPending={isPending} markCompleted={markCompleted} record={record} />
+        <ViewDetails config={config} isPending={isPending} markConfirmed={markConfirmed} record={record} />
       ) : null}
     </main>
   )
 }
 
-function ViewDetails({ config, isPending, markCompleted, record }: { config: OperationConfig; isPending: boolean; markCompleted: () => void; record: OperationRecord }) {
+function ViewDetails({ config, isPending, markConfirmed, record }: { config: OperationConfig; isPending: boolean; markConfirmed: () => void; record: OperationRecord }) {
   return (
     <>
       <section className="rounded-2xl border border-[#e7dfd5] bg-white p-6 shadow-[0_10px_24px_rgb(50_39_24_/_6%)]">
@@ -158,9 +155,19 @@ function ViewDetails({ config, isPending, markCompleted, record }: { config: Ope
       </ContentCard>
 
       <div className="flex flex-wrap gap-3">
-        <button className="rounded-xl bg-[#22a95a] border-none px-8 py-4 font-bold text-white" disabled={isPending} onClick={markCompleted} type="button">
-          Mark as {config.slug === 'inquiries' ? 'Resolved' : config.slug === 'profiles' ? 'Active' : 'Completed'}
-        </button>
+        {config.slug === 'feedback' && record?.status === 'approved' ? (
+          <div className="rounded-xl bg-[#dcf7e9] px-8 py-4 font-bold text-[#065f46]">
+            Approved ✓
+          </div>
+        ) : config.slug === 'feedback' && record?.status === 'rejected' ? (
+          <div className="rounded-xl bg-[#fee2e2] px-8 py-4 font-bold text-[#991b1b]">
+            Rejected ✗
+          </div>
+        ) : (
+          <button className="rounded-xl bg-[#22a95a] border-none px-8 py-4 font-bold text-white" disabled={isPending} onClick={markConfirmed} type="button">
+            Mark as {config.slug === 'inquiries' ? 'Resolved' : config.slug === 'profiles' ? 'Active' : config.slug === 'feedback' ? 'Approved' : 'Confirmed'}
+          </button>
+        )}
         <Link className="rounded-xl bg-[#ebe7e1] px-8 py-4 font-bold text-[#2b2823] no-underline" href={getOperationHref(config.slug, 'edit', record.id)}>
           Update Content
         </Link>
@@ -246,6 +253,21 @@ function getInitialForm(config: OperationConfig, record: OperationRecord | null 
 }
 
 function getDetailItems(config: OperationConfig, record: OperationRecord) {
+  if (config.slug === 'feedback') {
+    const fullName = [record.first_name, record.last_name].filter(Boolean).join(' ') || '-'
+    return [
+      { icon: UserRound, label: 'Name', value: fullName, subValue: record.email || undefined },
+      { icon: Phone, label: 'Phone', value: record.phone || '-' },
+      { icon: ClipboardList, label: 'Nationality', value: record.nationality || '-' },
+      { icon: CalendarDays, label: 'Date of Birth', value: record.date_of_birth || '-' },
+      { icon: ClipboardList, label: 'Role', value: record.role || '-' },
+      { icon: ClipboardList, label: 'Clinic Visited', value: record.clinic_visited || '-' },
+      { icon: ClipboardList, label: 'Feedback Type', value: record.feedback_type || '-' },
+      { icon: MessageSquare, label: 'Comment', value: record.comment || '-' },
+      { icon: Mail, label: 'Locale', value: record.locale || undefined },
+    ]
+  }
+
   if (config.slug === 'appointments') {
     return [
       { icon: CalendarDays, label: 'Date & Time', value: record.preferred_date || formatDate(record.slot_start), subValue: record.preferred_time || formatTimeRange(record.slot_start, record.slot_end) },
@@ -257,6 +279,21 @@ function getDetailItems(config: OperationConfig, record: OperationRecord) {
       { icon: ClipboardList, label: 'Doctor & Source', value: resolvedValue(record, 'doctor_payload_id'), subValue: record.source || undefined },
       { icon: UserRound, label: 'Patient', value: record.patient_name, subValue: record.patient_email || undefined },
       { icon: Phone, label: 'Contact Phone', value: record.patient_phone },
+    ]
+  }
+
+  if (config.slug === 'feedback') {
+    const fullName = [record.first_name, record.last_name].filter(Boolean).join(' ') || '-'
+    return [
+      { icon: UserRound, label: 'Name', value: fullName, subValue: record.email || undefined },
+      { icon: Phone, label: 'Phone', value: record.phone || '-' },
+      { icon: ClipboardList, label: 'Nationality', value: record.nationality || '-' },
+      { icon: CalendarDays, label: 'Date of Birth', value: record.date_of_birth || '-' },
+      { icon: ClipboardList, label: 'Role', value: record.role || '-' },
+      { icon: ClipboardList, label: 'Clinic Visited', value: record.clinic_visited || '-' },
+      { icon: ClipboardList, label: 'Feedback Type', value: record.feedback_type || '-' },
+      { icon: MessageSquare, label: 'Comment', value: record.comment || '-' },
+      { icon: Mail, label: 'Locale', value: record.locale || undefined },
     ]
   }
 
@@ -287,8 +324,8 @@ function getDetailItems(config: OperationConfig, record: OperationRecord) {
   ]
 }
 
-function shortId(id: string) {
-  return id.slice(0, 8)
+function shortId(id: string | number) {
+  return String(id).slice(0, 8)
 }
 
 function formatDate(value: OperationRecord[string]) {
