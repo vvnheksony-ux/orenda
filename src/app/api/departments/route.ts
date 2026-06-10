@@ -49,7 +49,7 @@ export async function GET(req: Request) {
       branch_id:   typeof doc.branch === 'object' ? String(doc.branch?.id) : doc.branch ? String(doc.branch) : null,
     }))
 
-    return NextResponse.json({ docs, totalDocs: data.totalDocs ?? docs.length }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } })
+    return NextResponse.json({ docs, totalDocs: data.totalDocs ?? docs.length }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('departments error:', err.message)
     return NextResponse.json({ error: err.message, docs: [], totalDocs: 0 }, { status: 500 })
