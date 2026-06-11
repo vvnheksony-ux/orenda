@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getRawPool } from '@/lib/db'
+import { getRawPool, mediaStorageUrl } from '@/lib/db'
 import { lexicalToText } from '@/lib/payload-api'
 
 export const runtime = 'nodejs'
@@ -16,7 +16,7 @@ async function rawQuery(locale: string, limit: number, slug?: string, category?:
       ht.id, ht.slug, ht._status, ht.published_at, ht.created_at,
       ht.author, ht.health_tip_category, ht.reading_time,
       htl.title, htl.excerpt, htl.body,
-      m.url AS thumbnail_url
+      m.filename AS thumb_filename, m.prefix AS thumb_prefix
     FROM payload.health_tips ht
     JOIN payload.health_tips_locales htl
       ON htl._parent_id = ht.id AND htl._locale = $1
@@ -36,7 +36,7 @@ function toDoc(row: any, full: boolean) {
     slug:        row.slug ?? '',
     excerpt:     row.excerpt ?? '',
     publishedAt: row.published_at ?? row.created_at ?? '',
-    thumbnail:   row.thumbnail_url ?? null,
+    thumbnail:   mediaStorageUrl(row.thumb_filename, row.thumb_prefix),
     category:    row.health_tip_category ?? '',
     readingTime: row.reading_time ?? null,
     tags:        [],

@@ -15,3 +15,13 @@ export function getRawPool(): any {
   }
   return _pool
 }
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const BUCKET = 'orienda-media'
+
+/** Convert Payload media row to public Supabase Storage URL */
+export function mediaStorageUrl(filename: string | null, prefix: string | null): string | null {
+  if (!filename) return null
+  const p = prefix ? `${prefix}/` : ''
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${p}${filename}`
+}

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getRawPool } from '@/lib/db'
+import { getRawPool, mediaStorageUrl } from '@/lib/db'
 import { lexicalToText } from '@/lib/payload-api'
 
 export const runtime = 'nodejs'
@@ -8,10 +8,10 @@ async function rawNewsList(locale: string, limit: number) {
   const pool = getRawPool()
   const { rows } = await pool.query(`
     SELECT
-      n.id, n.slug, n.author, n.published_at, n.created_at, n.thumbnail_id,
-      COALESCE(nl.title, enl.title)   AS title,
+      n.id, n.slug, n.author, n.published_at, n.created_at,
+      COALESCE(nl.title, enl.title)     AS title,
       COALESCE(nl.excerpt, enl.excerpt) AS excerpt,
-      m.url AS thumbnail_url
+      m.filename AS thumb_filename, m.prefix AS thumb_prefix
     FROM payload.news n
     LEFT JOIN payload.news_locales nl  ON nl._parent_id = n.id AND nl._locale = $1
     LEFT JOIN payload.news_locales enl ON enl._parent_id = n.id AND enl._locale = 'en'
@@ -26,7 +26,7 @@ async function rawNewsList(locale: string, limit: number) {
 async function rawNewsImages(pool: any, parentIds: number[]) {
   if (!parentIds.length) return {} as Record<number, string[]>
   const { rows } = await pool.query(`
-    SELECT nr.parent_id, m.url
+    SELECT nr.parent_id, m.filename, m.prefix
     FROM payload.news_rels nr
     JOIN payload.media m ON m.id = nr.media_id
     WHERE nr.parent_id = ANY($1) AND nr.path = 'images'
@@ -34,8 +34,11 @@ async function rawNewsImages(pool: any, parentIds: number[]) {
   `, [parentIds])
   const map: Record<number, string[]> = {}
   for (const r of rows) {
-    if (!map[r.parent_id]) map[r.parent_id] = []
-    map[r.parent_id].push(r.url)
+    const url = mediaStorageUrl(r.filename, r.prefix)
+    if (url) {
+      if (!map[r.parent_id]) map[r.parent_id] = []
+      map[r.parent_id].push(url)
+    }
   }
   return map
 }
@@ -48,7 +51,7 @@ function toListDoc(row: any, images: string[]) {
     excerpt:     row.excerpt ?? '',
     author:      row.author ?? '',
     publishedAt: row.published_at ?? row.created_at ?? '',
-    thumbnail:   row.thumbnail_url ?? null,
+    thumbnail:   mediaStorageUrl(row.thumb_filename, row.thumb_prefix),
     images,
   }
 }
@@ -69,7 +72,7 @@ export async function GET(req: Request) {
           COALESCE(nl.title,   enl.title)   AS title,
           COALESCE(nl.excerpt, enl.excerpt) AS excerpt,
           COALESCE(nl.body,    enl.body)    AS body,
-          m.url AS thumbnail_url
+          m.filename AS thumb_filename, m.prefix AS thumb_prefix
         FROM payload.news n
         LEFT JOIN payload.news_locales nl  ON nl._parent_id = n.id AND nl._locale = $1
         LEFT JOIN payload.news_locales enl ON enl._parent_id = n.id AND enl._locale = 'en'
@@ -89,7 +92,7 @@ export async function GET(req: Request) {
         excerpt:     row.excerpt ?? '',
         author:      row.author ?? '',
         publishedAt: row.published_at ?? row.created_at ?? '',
-        thumbnail:   row.thumbnail_url ?? null,
+        thumbnail:   mediaStorageUrl(row.thumb_filename, row.thumb_prefix),
         images:      imgMap[row.id] ?? [],
       })
     }
