@@ -85,7 +85,7 @@ export const Careers: CollectionConfig = {
       type: 'date',
       admin: {
         date: {
-          pickerAppearance: 'dayOnly',
+          pickerAppearance: 'dayAndTime',
         },
       },
     },

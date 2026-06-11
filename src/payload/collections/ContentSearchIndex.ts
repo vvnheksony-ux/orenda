@@ -28,8 +28,6 @@ export const ContentSearchIndex: CollectionConfig = {
     { name: 'thumbnail', type: 'upload', relationTo: 'media' },
     { name: 'status', type: 'text' },
     { name: 'publishedAt', type: 'date' },
-    { name: 'legacyNewsId', type: 'number' },
-    { name: 'legacySlug', type: 'text' },
     { name: 'metadata', type: 'json' },
   ],
 }

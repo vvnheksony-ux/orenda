@@ -7,6 +7,8 @@ import * as migration_20260609_000000 from './20260609_000000_recreate_variant_t
 import * as migration_20260610_000000 from './20260610_000000_add_news_v_rels_table';
 import * as migration_20260611_000000 from './20260611_000000_drop_insurance_provider';
 import * as migration_20260611_120000 from './20260611_120000_add_branch_to_tour_scenes';
+import * as migration_20260611_140000 from './20260611_140000_drop_legacy_news_fields';
+import * as migration_20260611_150000 from './20260611_150000_rename_health_tips_tags_table';
 
 export const migrations = [
   {
@@ -53,5 +55,15 @@ export const migrations = [
     up: migration_20260611_120000.up,
     down: migration_20260611_120000.down,
     name: '20260611_120000'
+  },
+  {
+    up: migration_20260611_140000.up,
+    down: migration_20260611_140000.down,
+    name: '20260611_140000'
+  },
+  {
+    up: migration_20260611_150000.up,
+    down: migration_20260611_150000.down,
+    name: '20260611_150000'
   },
 ];

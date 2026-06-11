@@ -56,7 +56,7 @@ export const Announcements: CollectionConfig = {
       type: 'date',
       admin: {
         date: {
-          pickerAppearance: 'dayOnly',
+          pickerAppearance: 'dayAndTime',
         },
       },
     },
@@ -65,7 +65,7 @@ export const Announcements: CollectionConfig = {
       type: 'date',
       admin: {
         date: {
-          pickerAppearance: 'dayOnly',
+          pickerAppearance: 'dayAndTime',
         },
       },
     },

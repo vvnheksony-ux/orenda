@@ -37,17 +37,6 @@ export const InsuranceUpdates: CollectionConfig = {
     ...baseContentFields(),
     ...slugField('insurance-updates'),
     {
-      name: 'insurancePlanTypes',
-      type: 'array',
-      fields: [
-        {
-          name: 'planType',
-          type: 'text',
-          required: true,
-        },
-      ],
-    },
-    {
       name: 'coverageDetails',
       type: 'richText',
       localized: true,
@@ -68,26 +57,15 @@ export const InsuranceUpdates: CollectionConfig = {
       name: 'effectiveDate',
       type: 'date',
       admin: {
-        date: { pickerAppearance: 'dayOnly' },
+        date: { pickerAppearance: 'dayAndTime' },
       },
     },
     {
       name: 'expirationDate',
       type: 'date',
       admin: {
-        date: { pickerAppearance: 'dayOnly' },
+        date: { pickerAppearance: 'dayAndTime' },
       },
-    },
-    {
-      name: 'requiredDocuments',
-      type: 'array',
-      fields: [
-        {
-          name: 'document',
-          type: 'text',
-          required: true,
-        },
-      ],
     },
     ...statusFields(),
   ],
