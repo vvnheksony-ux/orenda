@@ -55,7 +55,7 @@ export const DoctorTalks: CollectionConfig = {
       required: true,
       admin: {
         date: {
-          pickerAppearance: 'dayOnly',
+          pickerAppearance: 'dayAndTime',
         },
       },
     },
