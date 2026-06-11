@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload'
+import { getRawPool } from '@/lib/db'
 
 export async function GET() {
   const payload = await getPayloadClient()
@@ -180,7 +181,7 @@ export async function POST() {
   }
 
   // Health Tips — bypass Payload ORM (health_tips_health_tip_tags table missing)
-  const pool = (payload as any).db.pool
+  const pool = getRawPool()
   // Clear wrong news thumbnails from existing health tips (IDs 35,36,47,48,63 are news photos)
   await pool.query(`UPDATE payload.health_tips SET thumbnail_id = NULL WHERE thumbnail_id IN (35,36,47,48,63)`)
   const { rows: tipCountRows } = await pool.query(`SELECT COUNT(*) FROM payload.health_tips WHERE _status = 'published'`)

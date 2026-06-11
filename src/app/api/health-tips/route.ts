@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server'
-import { getPayloadClient } from '@/lib/payload'
+import { getRawPool } from '@/lib/db'
 import { lexicalToText } from '@/lib/payload-api'
 
 export const runtime = 'nodejs'
 
 async function rawQuery(locale: string, limit: number, slug?: string, category?: string) {
-  const payload = await getPayloadClient()
-  const pool = (payload as any).db.pool
+  const pool = getRawPool()
   const params: any[] = [locale, limit]
   const extra: string[] = []
   if (slug)     { params.push(slug);     extra.push(`AND ht.slug = $${params.length}`) }
