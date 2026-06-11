@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
+import { useBranch } from '@/lib/branch-context'
 import { animate, motion, useMotionValue } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -174,11 +175,13 @@ export default function SpecialistSection() {
     fetch(`/api/doctors?locale=${locale}&branch=${selectedBranch.id}`)
       .then(r => r.json())
       .then((data: any[]) => {
-        setDoctors((data || []).map(d => ({
-          name:      d.name,
-          specialty: d.specialty,
-          image:     d.image_url || '/images/doctor-1.jpg',
-        })))
+        if (data?.length) {
+          setDoctors(data.map(d => ({
+            name:      d.name,
+            specialty: d.specialty,
+            image:     d.image_url || '/images/doctor-1.jpg',
+          })))
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false))
