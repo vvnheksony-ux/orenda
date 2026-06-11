@@ -12,6 +12,10 @@ export const Departments: CollectionConfig = {
     group: 'Hospital',
     useAsTitle: 'name',
   },
+  labels: {
+    singular: 'Clinic',
+    plural: 'Clinics',
+  },
   versions: {
     maxPerDoc: 20,
     drafts: true,

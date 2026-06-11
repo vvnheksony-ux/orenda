@@ -22,13 +22,9 @@ type OriendaPayloadNavClientProps = {
 
 const publicOperationLinks = [
   { label: 'Appointments', path: '/operations/appointments' },
+  { label: 'Inquiries', path: '/operations/inquiries' },
   { label: 'Promotion Purchases', path: '/operations/purchases' },
   { label: 'Feedback', path: '/operations/feedback' },
-] as const
-
-const contactMessagesLinks = [
-  { label: 'Contact Messages', path: '/contact-messages/contact_messages' },
-  { label: 'Inquiries', path: '/contact-messages/inquiries' },
 ] as const
 
 const baseClass = 'nav'
@@ -59,15 +55,6 @@ export default function OriendaPayloadNavClient({
       allGroups.push({ entities: [], label: 'Operations' })
     }
   }
-  if (!allGroups.some((group) => group.label === 'Contact Messages')) {
-    const opIndex = allGroups.findIndex((g) => g.label === 'Operations')
-    if (opIndex >= 0) {
-      allGroups.splice(opIndex + 1, 0, { entities: [], label: 'Contact Messages' })
-    } else {
-      allGroups.push({ entities: [], label: 'Contact Messages' })
-    }
-  }
-
   const { setPreference } = usePreferences()
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
@@ -141,24 +128,6 @@ export default function OriendaPayloadNavClient({
 
                 {isOpen ? (
                   <div className="flex flex-col pt-1">
-                    {label === 'Contact Messages'
-                      ? contactMessagesLinks.map((link) => {
-                          const href = formatAdminURL({ adminRoute, path: link.path })
-                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-
-                          return (
-                            <Link
-                              className={isActive ? activeNavLinkClass : navLinkClass}
-                              href={href}
-                              id={`nav-public-${link.path.replace(/\//g, '-')}`}
-                              key={link.path}
-                              prefetch={false}
-                            >
-                              {link.label}
-                            </Link>
-                          )
-                        })
-                      : null}
                     {label === 'Operations'
                       ? publicOperationLinks.map((link) => {
                           const href = formatAdminURL({ adminRoute, path: link.path })

@@ -29,6 +29,15 @@ export const TourScenes: CollectionConfig = {
       },
     },
     {
+      name: 'branch',
+      type: 'relationship',
+      relationTo: 'branches',
+      required: false,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       required: true,

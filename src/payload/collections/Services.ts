@@ -11,6 +11,7 @@ export const Services: CollectionConfig = {
   admin: {
     group: 'Hospital',
     useAsTitle: 'title',
+    hidden: true,
   },
   versions: {
     maxPerDoc: 20,

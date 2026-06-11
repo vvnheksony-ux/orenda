@@ -11,6 +11,7 @@ export const DoctorSchedules: CollectionConfig = {
     group: 'Hospital',
     useAsTitle: 'label',
     defaultColumns: ['doctor', 'department', 'dayOfWeek', 'startTime', 'endTime', 'active'],
+    hidden: true,
   },
   versions: {
     maxPerDoc: 20,

@@ -11,7 +11,6 @@ const indexHooks = createSearchIndexHooks({
   contentType: 'insurance-update',
   canonicalBasePath: '/insurance-updates',
   getMetadata: (doc) => ({
-    insuranceProvider: doc.insuranceProvider,
     effectiveDate: doc.effectiveDate,
     expirationDate: doc.expirationDate,
   }),
@@ -22,7 +21,7 @@ export const InsuranceUpdates: CollectionConfig = {
   admin: {
     group: 'Website Content',
     useAsTitle: 'title',
-    defaultColumns: ['title', 'insuranceProvider', 'effectiveDate', 'status'],
+    defaultColumns: ['title', 'effectiveDate', 'expirationDate', 'status'],
   },
   versions: {
     maxPerDoc: 20,
@@ -37,13 +36,6 @@ export const InsuranceUpdates: CollectionConfig = {
   fields: [
     ...baseContentFields(),
     ...slugField('insurance-updates'),
-    {
-      name: 'insuranceProvider',
-      type: 'text',
-      admin: {
-        description: 'Optional for legacy migrated records; fill when available.',
-      },
-    },
     {
       name: 'insurancePlanTypes',
       type: 'array',

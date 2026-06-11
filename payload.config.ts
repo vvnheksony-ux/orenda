@@ -100,14 +100,6 @@ export default buildConfig({
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/appointments/:mode?/:id?',
         },
-        contactMessages: {
-          Component: '@/payload/admin/components/operations/OperationsAdminView',
-          path: '/contact-messages/contact_messages/:mode?/:id?',
-        },
-        contactInquiries: {
-          Component: '@/payload/admin/components/operations/OperationsAdminView',
-          path: '/contact-messages/inquiries/:mode?/:id?',
-        },
         publicInquiries: {
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/inquiries/:mode?/:id?',

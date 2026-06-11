@@ -92,7 +92,7 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
       <main className="mx-auto flex w-full flex-col gap-6 px-19">
         <header className="flex items-center justify-between rounded-2xl">
           <h1 className="m-0 text-[20px] font-bold text-[#2b2823]">{config.title}</h1>
-          {config.slug === 'appointments' || config.slug === 'purchases' || config.slug === 'inquiries' || config.slug === 'contact_messages' ? (
+          {config.slug === 'appointments' || config.slug === 'purchases' || config.slug === 'inquiries' ? (
             <a
               className="inline-flex items-center gap-2 rounded-xl bg-[#b89148] px-5 py-2 text-sm font-bold text-white no-underline transition-colors hover:bg-[#a37d3e]"
               href={getOperationHref(config.slug, 'create')}

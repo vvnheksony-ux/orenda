@@ -83,8 +83,8 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
       <table className="orienda-list-table">
         <thead>
           <tr>
-            {activeColumns.map((column) => (
-              <th key={column.accessor} style={{ padding: 0 }}>{column.Heading}</th>
+            {activeColumns.map((column, colIndex) => (
+              <th key={column.accessor ?? `th-${colIndex}`} style={{ padding: 0 }}>{column.Heading}</th>
             ))}
             <th className="orienda-list-table__actions-heading" style={{ padding: 0 }}>Actions</th>
           </tr>
@@ -94,9 +94,9 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
             const docURL = `/admin/collections/${collectionSlug}/${doc.id}`
 
             return (
-              <tr data-id={doc.id} key={doc.id}>
-                {activeColumns.map((column) => (
-                  <td className={`cell-${column.accessor.replace(/\./g, '__')}`} key={column.accessor}>
+              <tr data-id={doc.id} key={doc.id ?? `row-${rowIndex}`}>
+                {activeColumns.map((column, colIndex) => (
+                  <td className={`cell-${column.accessor.replace(/\./g, '__')}`} key={column.accessor ?? `td-${rowIndex}-${colIndex}`}>
                     <div className="orienda-list-table__cell-content">
                       {column.renderedCells[rowIndex]}
                     </div>

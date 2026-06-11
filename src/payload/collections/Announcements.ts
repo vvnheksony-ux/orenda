@@ -21,6 +21,7 @@ export const Announcements: CollectionConfig = {
   admin: {
     group: 'Website Content',
     useAsTitle: 'title',
+    hidden: true,
     defaultColumns: ['title', 'priority', 'status', 'publishedAt'],
   },
   versions: {

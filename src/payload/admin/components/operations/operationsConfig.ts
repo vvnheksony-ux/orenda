@@ -1,4 +1,4 @@
-export type OperationTableSlug = 'appointments' | 'inquiries' | 'purchases' | 'profiles' | 'feedback' | 'testimonials' | 'contact_messages'
+export type OperationTableSlug = 'appointments' | 'inquiries' | 'purchases' | 'profiles' | 'feedback' | 'testimonials'
 
 export type OperationRecord = {
   id: string
@@ -101,7 +101,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
     slug: 'inquiries',
     title: 'Inquiries',
     singularTitle: 'Inquiry',
-    group: 'Contact Messages',
+    group: 'Operations',
     description: 'Public contact inquiries from Supabase public.inquiries.',
     columns: [
       { key: 'name', label: 'Name' },
@@ -211,31 +211,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
     ],
     statusOptions: [],
   },
-  contact_messages: {
-    slug: 'contact_messages',
-    title: 'Contact Messages',
-    singularTitle: 'Contact Message',
-    group: 'Contact Messages',
-    description: 'Contact us messages from Supabase public.contact_messages.',
-    columns: [
-      { key: 'name', label: 'Name' },
-      { key: 'email', label: 'Email' },
-      { key: 'phone', label: 'Phone' },
-      { key: 'locale', label: 'Locale' },
-      { key: 'status', label: 'Status' },
-      { key: 'created_at', label: 'Created' },
-    ],
-    editableFields: [
-      { key: 'name', label: 'Name' },
-      { key: 'email', label: 'Email' },
-      { key: 'phone', label: 'Phone' },
-      { key: 'message', label: 'Message', type: 'textarea' },
-      { key: 'locale', label: 'Locale' },
-      { key: 'status', label: 'Status' },
-      { key: 'branch_payload_id', label: 'Branch' },
-    ],
-    statusOptions: ['pending', 'in-progress', 'resolved', 'closed'],
-  },
+
 }
 
 export function getOperationConfig(slug: string | undefined) {
@@ -248,8 +224,7 @@ export function getOperationConfig(slug: string | undefined) {
 
 export function getOperationHref(slug: OperationTableSlug, mode?: Exclude<OperationViewMode, 'list'>, id?: string) {
   const suffix = mode && id ? `/${mode}/${id}` : mode === 'create' ? '/create' : ''
-  const prefix = slug === 'contact_messages' || slug === 'inquiries' ? 'contact-messages' : 'operations'
-  return `/admin/${prefix}/${slug}${suffix}`
+  return `/admin/operations/${slug}${suffix}`
 }
 
 export function statusColor(value: string): string {
@@ -261,7 +236,7 @@ export function statusColor(value: string): string {
 }
 
 export function parseOperationSegments(segments: string[]) {
-  const offset = segments[0] === 'operations' || segments[0] === 'contact-messages' ? 1 : 0
+  const offset = segments[0] === 'operations' ? 1 : 0
   const table = segments[offset]
   const mode = segments[offset + 1]
   const id = segments[offset + 2]
