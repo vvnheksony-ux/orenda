@@ -125,7 +125,6 @@ export default buildConfig({
     meta: {
       title: 'Admin Portal',
       description: 'Orienda Hospital Admin Portal',
-      favicon: '/logo-cropped.png',
     },
   },
   collections: [
