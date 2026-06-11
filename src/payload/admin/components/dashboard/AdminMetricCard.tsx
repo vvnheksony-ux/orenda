@@ -1,6 +1,5 @@
 'use client'
 
-import { Download } from 'lucide-react'
 import { Line, LineChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { parseMetricValue } from './analyticsChartUtils'
 
@@ -30,7 +29,6 @@ export default function AdminMetricCard({ metric }: { metric: AdminMetric }) {
           <p className="orienda-dashboard-card__value mt-3 text-3xl font-bold tracking-tight text-[#2d2b28]">{metric.value}</p>
           <p className="orienda-dashboard-card__change mt-2 text-sm font-bold text-[#2fac73]">{metric.change}</p>
         </div>
-        <Download className="orienda-dashboard-card__icon size-4 text-[#bb8d36]" />
       </div>
       <div className="orienda-dashboard-card__chart mt-6 h-12 w-full">
         <ResponsiveContainer width="100%" height="100%">

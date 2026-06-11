@@ -4,7 +4,8 @@ import { isAdminOrEditor, publicRead } from '../access'
 export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
+    hidden: true,
   },
   access: {
     read: publicRead,

@@ -9,7 +9,7 @@ export default function AdminLoginPage() {
           <div className="relative z-10 flex h-full flex-col justify-between">
             <div>
               <div className="grid size-16 place-items-center rounded-full bg-white text-2xl font-bold text-[#6a4f23] shadow-sm">DA</div>
-              <p className="mt-6 text-xs font-bold uppercase tracking-[0.32em] text-[#b38a3c]">Orienda Staff Portal</p>
+              <p className="mt-6 text-xs font-bold uppercase tracking-[0.32em] text-[#b38a3c]">Admin Portal</p>
               <h1 className="mt-4 text-4xl font-bold leading-tight text-white">Secure hospital operations dashboard.</h1>
               <p className="mt-4 max-w-sm text-sm leading-6 text-[#c6b69a]">
                 Access appointments, content workflow, analytics, and hospital operations from one custom admin layer.
@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
           <div className="mx-auto max-w-md">
             <div className="lg:hidden">
               <div className="grid size-14 place-items-center rounded-full bg-[#3b2a14] text-xl font-bold text-white">DA</div>
-              <p className="mt-4 text-xs font-bold uppercase tracking-[0.28em] text-[#b38a3c]">Orienda Staff Portal</p>
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.28em] text-[#b38a3c]">Admin Portal</p>
             </div>
             <h2 className="mt-6 text-3xl font-bold tracking-tight text-[#242424] lg:mt-0">Admin Login</h2>
             <p className="mt-2 text-sm text-[#8f8a82]">Sign in to manage Orienda International Hospital content and operations.</p>

@@ -1,15 +1,14 @@
 'use client'
 
 import { getTranslation } from '@payloadcms/translations'
-import { Hamburger, Link, useConfig, useNav, useTranslation } from '@payloadcms/ui'
+import { Hamburger, Link, useConfig, useNav, usePreferences, useTranslation } from '@payloadcms/ui'
 import type { NavGroupType } from '@payloadcms/ui/shared'
 import { EntityType } from '@payloadcms/ui/shared'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { formatAdminURL } from 'payload/shared'
+import { formatAdminURL, PREFERENCE_KEYS } from 'payload/shared'
 import { useState } from 'react'
-import { LogOut } from 'lucide-react' 
 
 type NavPreferences = {
   groups?: Record<string, { open?: boolean }>
@@ -20,6 +19,13 @@ type OriendaPayloadNavClientProps = {
   navPreferences: NavPreferences | null
   user?: { email?: unknown; name?: unknown } | null
 }
+
+const publicOperationLinks = [
+  { label: 'Appointments', path: '/operations/appointments' },
+  { label: 'Inquiries', path: '/operations/inquiries' },
+  { label: 'Promotion Purchases', path: '/operations/purchases' },
+  { label: 'Feedback', path: '/operations/feedback' },
+] as const
 
 const baseClass = 'nav'
 const navLinkClass =
@@ -39,8 +45,20 @@ export default function OriendaPayloadNavClient({
   const { config } = useConfig()
   const { i18n } = useTranslation()
   const { hydrated, navOpen, navRef, setNavOpen, shouldAnimate } = useNav()
+
+  const allGroups = [...groups]
+  if (!allGroups.some((group) => group.label === 'Operations')) {
+    const hospitalIndex = allGroups.findIndex((g) => g.label === 'Hospital')
+    if (hospitalIndex >= 0) {
+      allGroups.splice(hospitalIndex + 1, 0, { entities: [], label: 'Operations' })
+    } else {
+      allGroups.push({ entities: [], label: 'Operations' })
+    }
+  }
+  const { setPreference } = usePreferences()
+
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(groups.map(({ label }) => [label, navPreferences?.groups?.[label]?.open ?? true]))
+    Object.fromEntries(allGroups.map(({ label }) => [label, navPreferences?.groups?.[label]?.open ?? true]))
   )
 
   const adminRoute = config.routes.admin
@@ -60,7 +78,11 @@ export default function OriendaPayloadNavClient({
   const dashboardHref = formatAdminURL({ adminRoute, path: '/' })
   const dashboardActive = pathname === dashboardHref || pathname === `${dashboardHref}/`
   const toggleGroup = (label: string) => {
-    setOpenGroups((current) => ({ ...current, [label]: !current[label] }))
+    setOpenGroups((current) => {
+      const next = !current[label]
+      setPreference(PREFERENCE_KEYS.NAV, { groups: { [label]: { open: next } } }, true)
+      return { ...current, [label]: next }
+    })
   }
 
   return (
@@ -68,14 +90,14 @@ export default function OriendaPayloadNavClient({
       <div className={`${baseClass}__scroll flex h-screen flex-col overflow-hidden`} ref={navRef}>
         <div className="flex min-h-[106px] flex-col items-center gap-1.5 bg-[#5a431f] text-center">
           <Image
-            className="h-auto max-h-[90px] w-auto object-contain"
+            className="h-auto w-auto object-contain"
             src="/logo.png"
             width={300}
             height={104}
             alt="Orienda Logo"
             priority
           />
-          <p className="m-0 text-md font-medium text-[#d4c5ad] mb-4.5">Orienda Staff Portal</p>
+          <p className="-mt-5 text-md font-medium text-[#d4c5ad] mb-4.5">Admin Portal</p>
         </div>
 
         <nav className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 py-5">
@@ -87,7 +109,7 @@ export default function OriendaPayloadNavClient({
             Dashboard
           </Link>
 
-          {groups.map(({ entities, label }) => {
+          {allGroups.map(({ entities, label }) => {
             const isOpen = openGroups[label] ?? true
 
             return (
@@ -106,6 +128,24 @@ export default function OriendaPayloadNavClient({
 
                 {isOpen ? (
                   <div className="flex flex-col pt-1">
+                    {label === 'Operations'
+                      ? publicOperationLinks.map((link) => {
+                          const href = formatAdminURL({ adminRoute, path: link.path })
+                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
+
+                          return (
+                            <Link
+                              className={isActive ? activeNavLinkClass : navLinkClass}
+                              href={href}
+                              id={`nav-public-${link.path.replace(/\//g, '-')}`}
+                              key={link.path}
+                              prefetch={false}
+                            >
+                              {link.label}
+                            </Link>
+                          )
+                        })
+                      : null}
                     {entities.map(({ label: entityLabel, slug, type }) => {
                       const href = formatAdminURL({
                         adminRoute,

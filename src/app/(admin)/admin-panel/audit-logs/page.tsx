@@ -1,15 +1,49 @@
 import { AdminTablePage } from '@/components/admin/AdminManagementPage'
+import config from '@payload-config'
+import { getPayload } from 'payload'
 
-const auditLogs = [
-  { action: 'Created appointment', user: 'Sok Dara', date: '2025-06-12', time: '09:00', status: 'success' },
-  { action: 'Updated appointment', user: 'Maria Santos', date: '2025-06-12', time: '10:30', status: 'success' },
-  { action: 'Deleted appointment', user: 'Wei Zhang', date: '2025-06-13', time: '14:00', status: 'failed' },
-  { action: 'Created appointment', user: 'Pisach Hor', date: '2025-06-13', time: '15:30', status: 'success' },
-  { action: 'Updated appointment', user: 'Sreyleap Mao', date: '2025-06-14', time: '08:00', status: 'success' },
-  { action: 'Deleted appointment', user: 'Dara Keo', date: '2025-06-11', time: '11:00', status: 'failed' },
-]
+function mapAuditAction(action: string): string {
+  const map: Record<string, string> = {
+    created: 'Created',
+    updated: 'Updated',
+    deleted: 'Deleted',
+    published: 'Published',
+    archived: 'Archived',
+  }
+  return map[action] ?? action
+}
 
-export default function AuditLogPage() {
+function formatTimestampParts(ts: string | null | undefined): { date: string; time: string } {
+  if (!ts) return { date: '-', time: '-' }
+  try {
+    const d = new Date(ts)
+    if (isNaN(d.getTime())) return { date: String(ts), time: '-' }
+    const dateStr = d.toISOString().slice(0, 10)
+    const timeStr = d.toISOString().slice(11, 16)
+    return { date: dateStr, time: timeStr }
+  } catch {
+    return { date: String(ts), time: '-' }
+  }
+}
+
+export default async function AuditLogPage() {
+  const payload = await getPayload({ config })
+  const result = await payload.find({ collection: 'auditLogs', limit: 50, sort: '-timestamp', depth: 0 })
+
+  const rows = (result.docs ?? []).map((log) => {
+    const { date, time } = formatTimestampParts(log.timestamp)
+    const actionLabel = log.documentTitle
+      ? `${mapAuditAction(log.action)} ${log.collectionSlug}: ${log.documentTitle}`
+      : `${mapAuditAction(log.action)} ${log.collectionSlug}`
+    return {
+      action: actionLabel,
+      user: log.userName ?? log.userId ?? '-',
+      date,
+      time,
+      status: log.action,
+    }
+  })
+
   return (
     <AdminTablePage
       title="Audit Logs"
@@ -17,8 +51,8 @@ export default function AuditLogPage() {
       searchPlaceholder="Search audit logs..."
       primaryActionLabel="New Audit Log"
       table={{
-        rows: auditLogs,
-        rowKey: (_row, index) => `audit-log-${index}`,
+        rows,
+        rowKey: (_, index) => `audit-log-${index}`,
         columns: [
           { key: 'action', label: 'Action' },
           { key: 'user', label: 'User' },

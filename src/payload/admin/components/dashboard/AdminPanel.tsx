@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react'
+
 
 export default function AdminPanel({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
@@ -8,7 +8,6 @@ export default function AdminPanel({ title, subtitle, children }: { title: strin
           <h2 className="text-xl font-bold text-[#2d2b28]">{title}</h2>
           <p className="mt-1 text-sm text-[#918b82]">{subtitle}</p>
         </div>
-        <Download className="orienda-dashboard-panel__icon size-4 text-[#bb8d36]" />
       </div>
       {children}
     </article>

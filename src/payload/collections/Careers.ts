@@ -21,7 +21,7 @@ const indexHooks = createSearchIndexHooks({
 export const Careers: CollectionConfig = {
   slug: 'careers',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
     defaultColumns: ['title', 'position', 'careerEmploymentType', 'status'],
   },
@@ -85,7 +85,7 @@ export const Careers: CollectionConfig = {
       type: 'date',
       admin: {
         date: {
-          pickerAppearance: 'dayOnly',
+          pickerAppearance: 'dayAndTime',
         },
       },
     },

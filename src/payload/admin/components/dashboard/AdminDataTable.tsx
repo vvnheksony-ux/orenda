@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Edit, Eye, Globe, Plus, Search, Trash2 } from 'lucide-react'
 
-export type AdminStatus = 'pending' | 'confirmed' | 'completed' | 'published' | 'draft' | 'active' | 'inactive' | 'update' | 'delete' | 'create'
+export type AdminStatus = 'pending' | 'confirmed' | 'published' | 'draft' | 'active' | 'inactive' | 'update' | 'delete' | 'create'
 
 export type AdminTableColumn<T> = {
   key: keyof T | string
@@ -22,7 +22,6 @@ export type AdminTableAction<T> = {
 const statusStyles: Record<AdminStatus, string> = {
   pending: 'bg-[#fff1cf] text-[#c49124]',
   confirmed: 'bg-[#dff8ed] text-[#2ead73]',
-  completed: 'bg-[#dcf7e9] text-[#31a86e]',
   published: 'bg-[#dcf7e9] text-[#31a86e]',
   draft: 'bg-[#efeeeb] text-[#6f6b64]',
   active: 'bg-[#dcf7e9] text-[#31a86e]',
@@ -48,6 +47,7 @@ export default function AdminDataTable<T extends Record<string, string>>({
   rows,
   actions,
   footer,
+  footerHref,
   rowKey,
 }: {
   title?: string
@@ -58,6 +58,7 @@ export default function AdminDataTable<T extends Record<string, string>>({
   rows: T[]
   actions?: AdminTableAction<T>[]
   footer?: string
+  footerHref?: string
   rowKey?: keyof T | ((row: T, index: number) => string)
 }) {
   return (
@@ -115,7 +116,11 @@ export default function AdminDataTable<T extends Record<string, string>>({
             </tbody>
           </table>
         </div>
-        {footer && <button className="px-7 py-5 text-sm font-semibold text-[#b38531] bg-white border-none">{footer}</button>}
+        {footer && footerHref ? (
+          <a href={footerHref} className="block px-7 py-5 text-sm font-semibold text-[#b38531] bg-white border-none">{footer}</a>
+        ) : footer ? (
+          <button className="px-7 py-5 text-sm font-semibold text-[#b38531] bg-white border-none">{footer}</button>
+        ) : null}
       </div>
     </article>
   )

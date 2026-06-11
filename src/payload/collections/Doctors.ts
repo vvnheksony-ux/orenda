@@ -11,7 +11,7 @@ const auditHooks = createAuditHooks('doctors')
 export const Doctors: CollectionConfig = {
   slug: 'doctors',
   admin: {
-    group: 'Content',
+    group: 'Hospital',
     useAsTitle: 'name',
   },
   versions: {

@@ -9,7 +9,7 @@ const webhookHooks = createWebhookHooks('servicePackages')
 export const ServicePackages: CollectionConfig = {
   slug: 'service-packages',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
   },
   versions: {

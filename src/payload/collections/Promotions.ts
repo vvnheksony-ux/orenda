@@ -11,7 +11,7 @@ const auditHooks = createAuditHooks('promotions')
 export const Promotions: CollectionConfig = {
   slug: 'promotions',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
   },
   versions: {

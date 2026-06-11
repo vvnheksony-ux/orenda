@@ -19,8 +19,9 @@ const indexHooks = createSearchIndexHooks({
 export const Announcements: CollectionConfig = {
   slug: 'announcements',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
+    hidden: true,
     defaultColumns: ['title', 'priority', 'status', 'publishedAt'],
   },
   versions: {
@@ -55,7 +56,7 @@ export const Announcements: CollectionConfig = {
       type: 'date',
       admin: {
         date: {
-          pickerAppearance: 'dayOnly',
+          pickerAppearance: 'dayAndTime',
         },
       },
     },
@@ -64,7 +65,7 @@ export const Announcements: CollectionConfig = {
       type: 'date',
       admin: {
         date: {
-          pickerAppearance: 'dayOnly',
+          pickerAppearance: 'dayAndTime',
         },
       },
     },

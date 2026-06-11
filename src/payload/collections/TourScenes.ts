@@ -9,7 +9,7 @@ const auditHooks = createAuditHooks('tourScenes')
 export const TourScenes: CollectionConfig = {
   slug: 'tourScenes',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
   },
   access: {
@@ -26,6 +26,15 @@ export const TourScenes: CollectionConfig = {
       min: 1,
       max: 15,
       unique: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'branch',
+      type: 'relationship',
+      relationTo: 'branches',
+      required: false,
       admin: {
         position: 'sidebar',
       },

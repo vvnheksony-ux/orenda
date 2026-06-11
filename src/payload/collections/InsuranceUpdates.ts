@@ -11,7 +11,6 @@ const indexHooks = createSearchIndexHooks({
   contentType: 'insurance-update',
   canonicalBasePath: '/insurance-updates',
   getMetadata: (doc) => ({
-    insuranceProvider: doc.insuranceProvider,
     effectiveDate: doc.effectiveDate,
     expirationDate: doc.expirationDate,
   }),
@@ -20,9 +19,9 @@ const indexHooks = createSearchIndexHooks({
 export const InsuranceUpdates: CollectionConfig = {
   slug: 'insurance-updates',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
-    defaultColumns: ['title', 'insuranceProvider', 'effectiveDate', 'status'],
+    defaultColumns: ['title', 'effectiveDate', 'expirationDate', 'status'],
   },
   versions: {
     maxPerDoc: 20,
@@ -37,24 +36,6 @@ export const InsuranceUpdates: CollectionConfig = {
   fields: [
     ...baseContentFields(),
     ...slugField(),
-    {
-      name: 'insuranceProvider',
-      type: 'text',
-      admin: {
-        description: 'Optional for legacy migrated records; fill when available.',
-      },
-    },
-    {
-      name: 'insurancePlanTypes',
-      type: 'array',
-      fields: [
-        {
-          name: 'planType',
-          type: 'text',
-          required: true,
-        },
-      ],
-    },
     {
       name: 'coverageDetails',
       type: 'richText',
@@ -76,26 +57,15 @@ export const InsuranceUpdates: CollectionConfig = {
       name: 'effectiveDate',
       type: 'date',
       admin: {
-        date: { pickerAppearance: 'dayOnly' },
+        date: { pickerAppearance: 'dayAndTime' },
       },
     },
     {
       name: 'expirationDate',
       type: 'date',
       admin: {
-        date: { pickerAppearance: 'dayOnly' },
+        date: { pickerAppearance: 'dayAndTime' },
       },
-    },
-    {
-      name: 'requiredDocuments',
-      type: 'array',
-      fields: [
-        {
-          name: 'document',
-          type: 'text',
-          required: true,
-        },
-      ],
     },
     ...statusFields(),
   ],

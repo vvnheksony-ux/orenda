@@ -4,7 +4,7 @@ import { isAdmin } from '../access'
 export const AuditLogs: CollectionConfig = {
   slug: 'auditLogs',
   admin: {
-    group: 'System',
+    group: 'Systems',
     defaultColumns: ['action', 'collectionSlug', 'documentTitle', 'userName', 'timestamp'],
   },
   access: {

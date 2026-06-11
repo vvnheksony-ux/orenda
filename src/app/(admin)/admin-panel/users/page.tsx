@@ -1,36 +1,23 @@
-import { AdminTablePage } from '@/components/admin/AdminManagementPage'
+import { AdminPageFrame } from '@/components/admin/AdminManagementPage'
+import { getCombinedUsers } from '@/lib/admin/users'
+import config from '@payload-config'
+import { getPayload } from 'payload'
 
-const users = [
-  { name: 'Admin User', email: 'admin@orienda.com', role: 'admin', lastLogin: '2 hours ago', status: 'active' },
-  { name: 'Dr. Pheakdey Lim', email: 'p.lim@orienda.com', role: 'contributor', lastLogin: '1 day ago', status: 'active' },
-  { name: 'Editor User', email: 'editor@orienda.com', role: 'editor', lastLogin: '5 hours ago', status: 'active' },
-  { name: 'Reception Staff', email: 'reception@orienda.com', role: 'contributor', lastLogin: '30 min ago', status: 'active' },
-  { name: 'Dr. Chanthou Kim', email: 'c.kim@orienda.com', role: 'admin', lastLogin: '3 days ago', status: 'inactive' },
-]
+import UsersTable from './UsersTable'
 
-export default function UsersPage() {
+export const dynamic = 'force-dynamic'
+
+export default async function UsersPage() {
+  const payload = await getPayload({ config })
+  const { users, error } = await getCombinedUsers(payload)
+
   return (
-    <AdminTablePage
+    <AdminPageFrame
       title="Users"
-      breadcrumb="Identity > Users"
-      searchPlaceholder="Search users..."
+      breadcrumb="Access Control > Users"
       primaryActionLabel="Add User"
-      table={{
-        rows: users,
-        rowKey: 'email',
-        columns: [
-          { key: 'name', label: 'Name' },
-          { key: 'email', label: 'Email' },
-          { key: 'role', label: 'Role', kind: 'status' },
-          { key: 'lastLogin', label: 'Last Login' },
-          { key: 'status', label: 'Status', kind: 'status' },
-          { key: 'actions', label: 'Actions', kind: 'actions' },
-        ],
-        actions: [
-          { label: 'Edit user', icon: 'edit', tone: 'muted' },
-          { label: 'Delete user', icon: 'delete', tone: 'danger' },
-        ],
-      }}
-    />
+    >
+      <UsersTable users={users} error={error} />
+    </AdminPageFrame>
   )
 }
