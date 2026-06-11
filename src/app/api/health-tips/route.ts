@@ -21,7 +21,7 @@ async function rawQuery(locale: string, limit: number, slug?: string, category?:
     FROM payload.health_tips ht
     JOIN payload.health_tips_locales htl
       ON htl._parent_id = ht.id AND htl._locale = $1
-    LEFT JOIN payload.media m ON m.id = ht.thumbnail_id
+    LEFT JOIN payload.media m ON m.id = ht.thumbnail_id AND (m.filename IS NULL OR m.filename NOT LIKE 'news-thumb%')
     WHERE ht._status = 'published'
     ${extra.join(' ')}
     ORDER BY ht.published_at DESC NULLS LAST

@@ -181,15 +181,17 @@ export async function POST() {
 
   // Health Tips — bypass Payload ORM (health_tips_health_tip_tags table missing)
   const pool = (payload as any).db.pool
+  // Clear wrong news thumbnails from existing health tips (IDs 35,36,47,48,63 are news photos)
+  await pool.query(`UPDATE payload.health_tips SET thumbnail_id = NULL WHERE thumbnail_id IN (35,36,47,48,63)`)
   const { rows: tipCountRows } = await pool.query(`SELECT COUNT(*) FROM payload.health_tips WHERE _status = 'published'`)
   const tipCount = parseInt(tipCountRows[0].count, 10)
   if (tipCount === 0) {
     const tipsRaw = [
-      { title: '5 Simple Habits for a Healthy Heart', slug: '5-simple-habits-for-a-healthy-heart', excerpt: 'Discover daily habits that significantly reduce your risk of heart disease — from diet changes to stress management techniques.', category: 'preventiveCare', readingTime: 4, thumbnailId: 35, publishedAt: '2026-06-01T00:00:00.000Z' },
-      { title: 'Understanding Diabetes: Prevention & Management', slug: 'understanding-diabetes-prevention-management', excerpt: 'Key insights into preventing Type 2 diabetes and managing blood sugar levels through nutrition, exercise, and regular screening.', category: 'chronicDisease', readingTime: 6, thumbnailId: 36, publishedAt: '2026-05-25T00:00:00.000Z' },
-      { title: 'Maternal Health: What to Expect During Pregnancy', slug: 'maternal-health-what-to-expect-during-pregnancy', excerpt: 'A comprehensive guide to prenatal care, nutrition, and warning signs every expectant mother should know.', category: 'preventiveCare', readingTime: 7, thumbnailId: 47, publishedAt: '2026-05-18T00:00:00.000Z' },
-      { title: "Children's Nutrition: Building Strong Foundations", slug: 'childrens-nutrition-building-strong-foundations', excerpt: 'Essential nutritional guidance for growing children — what to eat, what to avoid, and how to build healthy eating habits early.', category: 'nutrition', readingTime: 5, thumbnailId: 48, publishedAt: '2026-05-10T00:00:00.000Z' },
-      { title: 'Mental Wellness: Coping with Stress in Modern Life', slug: 'mental-wellness-coping-with-stress-in-modern-life', excerpt: "Practical strategies for managing stress, improving sleep, and maintaining mental wellbeing in today's fast-paced world.", category: 'mentalHealth', readingTime: 5, thumbnailId: 63, publishedAt: '2026-05-03T00:00:00.000Z' },
+      { title: '5 Simple Habits for a Healthy Heart', slug: '5-simple-habits-for-a-healthy-heart', excerpt: 'Discover daily habits that significantly reduce your risk of heart disease — from diet changes to stress management techniques.', category: 'preventiveCare', readingTime: 4, publishedAt: '2026-06-01T00:00:00.000Z' },
+      { title: 'Understanding Diabetes: Prevention & Management', slug: 'understanding-diabetes-prevention-management', excerpt: 'Key insights into preventing Type 2 diabetes and managing blood sugar levels through nutrition, exercise, and regular screening.', category: 'chronicDisease', readingTime: 6, publishedAt: '2026-05-25T00:00:00.000Z' },
+      { title: 'Maternal Health: What to Expect During Pregnancy', slug: 'maternal-health-what-to-expect-during-pregnancy', excerpt: 'A comprehensive guide to prenatal care, nutrition, and warning signs every expectant mother should know.', category: 'preventiveCare', readingTime: 7, publishedAt: '2026-05-18T00:00:00.000Z' },
+      { title: "Children's Nutrition: Building Strong Foundations", slug: 'childrens-nutrition-building-strong-foundations', excerpt: 'Essential nutritional guidance for growing children — what to eat, what to avoid, and how to build healthy eating habits early.', category: 'nutrition', readingTime: 5, publishedAt: '2026-05-10T00:00:00.000Z' },
+      { title: 'Mental Wellness: Coping with Stress in Modern Life', slug: 'mental-wellness-coping-with-stress-in-modern-life', excerpt: "Practical strategies for managing stress, improving sleep, and maintaining mental wellbeing in today's fast-paced world.", category: 'mentalHealth', readingTime: 5, publishedAt: '2026-05-03T00:00:00.000Z' },
     ]
     const created = []
     for (const tip of tipsRaw) {
@@ -197,8 +199,8 @@ export async function POST() {
         const body = JSON.stringify({ root: { type: 'root', children: [{ type: 'paragraph', version: 1, children: [{ type: 'text', text: tip.excerpt }], direction: 'ltr', format: '', indent: 0 }], direction: 'ltr', format: '', indent: 0, version: 1 } })
         const { rows: ins } = await pool.query(
           `INSERT INTO payload.health_tips (slug, thumbnail_id, author, health_tip_category, reading_time, published_at, updated_at, created_at, _status)
-           VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), 'published') RETURNING id`,
-          [tip.slug, tip.thumbnailId, 'Orienda Medical Team', tip.category, tip.readingTime, tip.publishedAt]
+           VALUES ($1, NULL, $2, $3, $4, $5, NOW(), NOW(), 'published') RETURNING id`,
+          [tip.slug, 'Orienda Medical Team', tip.category, tip.readingTime, tip.publishedAt]
         )
         const newId = ins[0].id
         await pool.query(
