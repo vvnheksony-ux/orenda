@@ -1,8 +1,9 @@
 'use client'
 
 import type { Column, ListViewClientProps } from 'payload'
+import type { StepNavItem } from '@payloadcms/ui'
 
-import { DefaultListView, useListQuery, useTableColumns } from '@payloadcms/ui'
+import { DefaultListView, SetStepNav, useConfig, useListQuery, useTableColumns } from '@payloadcms/ui'
 import { Eye, Pencil, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -15,18 +16,41 @@ type OriendaListTableProps = {
   hasDeletePermission?: boolean
 }
 
+export function getStaticLabel(label: unknown): string | undefined {
+  if (!label || typeof label === 'boolean') return undefined
+  if (typeof label === 'string') return label
+  if (typeof label === 'object' && label !== null) {
+    return Object.values(label as Record<string, string>)[0]
+  }
+  return undefined
+}
+
 function OriendaListView(props: ListViewClientProps) {
+  const { collectionSlug } = props
+  const { config } = useConfig()
+  const collection = config.collections?.find((c) => c.slug === collectionSlug)
+  const groupLabel = getStaticLabel(collection?.admin?.group)
+
+  const nav: StepNavItem[] = []
+  if (groupLabel) {
+    nav.push({ label: groupLabel })
+  }
+  nav.push({ label: getStaticLabel(collection?.labels?.plural) ?? collectionSlug })
+
   return (
-    <DefaultListView
-      {...props}
-      enableRowSelections={false}
-      Table={
-        <OriendaListTable
-          collectionSlug={props.collectionSlug}
-          hasDeletePermission={props.hasDeletePermission}
-        />
-      }
-    />
+    <>
+      <DefaultListView
+        {...props}
+        enableRowSelections={false}
+        Table={
+          <OriendaListTable
+            collectionSlug={props.collectionSlug}
+            hasDeletePermission={props.hasDeletePermission}
+          />
+        }
+      />
+      <SetStepNav nav={nav} />
+    </>
   )
 }
 
@@ -59,10 +83,10 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
       <table className="orienda-list-table">
         <thead>
           <tr>
-            {activeColumns.map((column) => (
-              <th key={column.accessor}>{column.Heading}</th>
+            {activeColumns.map((column, colIndex) => (
+              <th key={column.accessor ?? `th-${colIndex}`} style={{ padding: 0 }}>{column.Heading}</th>
             ))}
-            <th className="orienda-list-table__actions-heading">Actions</th>
+            <th className="orienda-list-table__actions-heading" style={{ padding: 0 }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -70,9 +94,9 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
             const docURL = `/admin/collections/${collectionSlug}/${doc.id}`
 
             return (
-              <tr data-id={doc.id} key={doc.id}>
-                {activeColumns.map((column) => (
-                  <td className={`cell-${column.accessor.replace(/\./g, '__')}`} key={column.accessor}>
+              <tr data-id={doc.id} key={doc.id ?? `row-${rowIndex}`}>
+                {activeColumns.map((column, colIndex) => (
+                  <td className={`cell-${column.accessor.replace(/\./g, '__')}`} key={column.accessor ?? `td-${rowIndex}-${colIndex}`}>
                     <div className="orienda-list-table__cell-content">
                       {column.renderedCells[rowIndex]}
                     </div>

@@ -9,7 +9,7 @@ const webhookHooks = createWebhookHooks('promotions')
 export const Promotions: CollectionConfig = {
   slug: 'promotions',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
   },
   versions: {

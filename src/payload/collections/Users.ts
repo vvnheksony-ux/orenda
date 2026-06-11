@@ -5,7 +5,15 @@ export const Users: CollectionConfig = {
   slug: 'users',
   auth: true,
   admin: {
+    group: 'Access Control',
     useAsTitle: 'email',
+    components: {
+      views: {
+        list: {
+          Component: '@/payload/admin/components/users/UsersListView',
+        },
+      },
+    },
   },
   fields: [
     {

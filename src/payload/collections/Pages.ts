@@ -71,8 +71,9 @@ const SectionBlock: Block = {
 export const Pages: CollectionConfig = {
   slug: 'pages',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
+    hidden: true,
   },
   versions: {
     maxPerDoc: 20,

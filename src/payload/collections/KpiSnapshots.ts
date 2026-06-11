@@ -5,7 +5,8 @@ import { KPI_METRIC_OPTIONS } from '../constants'
 export const KpiSnapshots: CollectionConfig = {
   slug: 'kpiSnapshots',
   admin: {
-    group: 'Analytics',
+    group: 'Systems',
+    hidden: true,
     defaultColumns: ['date', 'metric', 'value', 'locale', 'granularity'],
   },
   access: {

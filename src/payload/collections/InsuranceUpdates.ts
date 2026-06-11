@@ -19,7 +19,7 @@ const indexHooks = createSearchIndexHooks({
 export const InsuranceUpdates: CollectionConfig = {
   slug: 'insurance-updates',
   admin: {
-    group: 'Legacy',
+    group: 'Website Content',
     useAsTitle: 'title',
     defaultColumns: ['title', 'effectiveDate', 'expirationDate', 'status'],
   },

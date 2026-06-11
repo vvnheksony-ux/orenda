@@ -1,0 +1,91 @@
+/* ==========================================================================
+   PAYLOAD-LIKE PAGINATION
+   ========================================================================== */
+
+.orienda-pagination {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #f5f2eb;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.orienda-pagination__info {
+  color: #716b60;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.orienda-pagination__controls {
+  align-items: center;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.orienda-pagination__btn {
+  align-items: center;
+  background: transparent;
+  border: 1px solid #e7dfd5;
+  border-radius: 0.5rem;
+  color: #4c4740;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  gap: 0.25rem;
+  line-height: 1;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: #fbfaf7;
+    border-color: #d4c5ad;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+}
+
+.orienda-pagination__page {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  color: #4c4740;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  height: 2rem;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0 0.25rem;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #f5f2eb;
+  }
+}
+
+.orienda-pagination__page--active {
+  background: #473318 !important;
+  border-color: #473318 !important;
+  color: #d4c5ad !important;
+  font-weight: 700 !important;
+}
+
+.orienda-pagination__ellipsis {
+  color: #aaa6a0;
+  display: inline-flex;
+  font-size: 0.875rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+}

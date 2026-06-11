@@ -21,7 +21,7 @@ const indexHooks = createSearchIndexHooks({
 export const Careers: CollectionConfig = {
   slug: 'careers',
   admin: {
-    group: 'Legacy',
+    group: 'Website Content',
     useAsTitle: 'title',
     defaultColumns: ['title', 'position', 'careerEmploymentType', 'status'],
   },

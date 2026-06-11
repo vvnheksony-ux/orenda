@@ -2,11 +2,11 @@ import { AdminTablePage } from '@/components/admin/AdminManagementPage'
 
 const appointments = [
   { patient: 'Sok Dara', doctor: 'Dr. Pheakdey Lim', department: 'Cardiology', date: '2025-06-12', time: '09:00', type: 'Consultation', status: 'pending' },
-  { patient: 'Maria Santos', doctor: 'Dr. Chanthou Kim', department: 'Pediatrics', date: '2025-06-12', time: '10:30', type: 'Check-up', status: 'completed' },
+  { patient: 'Maria Santos', doctor: 'Dr. Chanthou Kim', department: 'Pediatrics', date: '2025-06-12', time: '10:30', type: 'Check-up', status: 'confirmed' },
   { patient: 'Wei Zhang', doctor: 'Dr. Sophea Nak', department: 'Orthopedics', date: '2025-06-13', time: '14:00', type: 'Follow-up', status: 'pending' },
-  { patient: 'Pisach Hor', doctor: 'Dr. Pheakdey Lim', department: 'Cardiology', date: '2025-06-13', time: '15:30', type: 'Consultation', status: 'completed' },
-  { patient: 'Sreyleap Mao', doctor: 'Dr. Borei Chan', department: 'Dermatology', date: '2025-06-14', time: '08:00', type: 'Follow-up', status: 'completed' },
-  { patient: 'Dara Keo', doctor: 'Dr. Chanthou Kim', department: 'Pediatrics', date: '2025-06-11', time: '11:00', type: 'Vaccination', status: 'completed' },
+  { patient: 'Pisach Hor', doctor: 'Dr. Pheakdey Lim', department: 'Cardiology', date: '2025-06-13', time: '15:30', type: 'Consultation', status: 'confirmed' },
+  { patient: 'Sreyleap Mao', doctor: 'Dr. Borei Chan', department: 'Dermatology', date: '2025-06-14', time: '08:00', type: 'Follow-up', status: 'confirmed' },
+  { patient: 'Dara Keo', doctor: 'Dr. Chanthou Kim', department: 'Pediatrics', date: '2025-06-11', time: '11:00', type: 'Vaccination', status: 'confirmed' },
 ]
 
 export default function TestimonialsPage() {

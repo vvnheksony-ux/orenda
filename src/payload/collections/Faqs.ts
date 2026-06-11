@@ -8,7 +8,7 @@ const webhookHooks = createWebhookHooks('faqs')
 export const Faqs: CollectionConfig = {
   slug: 'faqs',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'question',
   },
   versions: {
