@@ -1,79 +1,129 @@
+'use client'
+
 import Image from 'next/image'
 import { ChevronRight } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { Link } from '@/i18n/routing'
+import { useState, useEffect } from 'react'
+import { useBranch } from '@/lib/branch-context'
+
+interface Clinic {
+  key: string
+  name: string
+  image: string
+  circle: boolean
+}
+
+function ClinicCard({ c }: { c: Clinic }) {
+  return (
+    <Link href="/departments"
+      className="flex flex-col items-center justify-center gap-6 px-8 py-8 bg-[#fbf7ee] rounded-xl border border-white shadow-[0px_4px_12px_3px_rgba(89,69,34,0.20),inset_0px_2px_8px_rgba(89,69,34,0.08)] hover:shadow-[0px_6px_16px_4px_rgba(89,69,34,0.28),inset_0px_2px_8px_rgba(89,69,34,0.08)] transition-shadow cursor-pointer group"
+    >
+      <div className="relative rounded-full overflow-hidden shrink-0 size-28 bg-white shadow-sm transition-transform duration-300 group-hover:scale-105">
+        {c.image && <Image src={c.image} alt={c.name} fill className="object-cover" sizes="112px" unoptimized />}
+      </div>
+      <span className="font-cormorant font-bold text-2xl text-[#2A2620] leading-6 text-center">
+        {c.name}
+      </span>
+    </Link>
+  )
+}
 
 export default function ClinicSection() {
   const t = useTranslations('ClinicSection')
+  const locale = useLocale()
 
-  const CLINICS = [
-    { key: 'obstetric',   name: t('obstetric'),   image: '/images/specialty-obstetric.png',  circle: true  },
-    { key: 'gynecology',  name: t('gynecology'),  image: '/images/specialty-gynecology.png', circle: true  },
-    { key: 'imaging',     name: t('imaging'),     image: '/images/specialty-imaging.png',    circle: false },
-    { key: 'neuro',       name: t('neuro'),       image: '/images/specialty-neuro.png',      circle: false },
-    { key: 'pediatric',   name: t('pediatric'),   image: '/images/specialty-pediatric.png',  circle: false },
-    { key: 'cardiology',  name: t('cardiology'),  image: '/images/specialty-neuro.png',      circle: false },
-    { key: 'orthopedics', name: t('orthopedics'), image: '/images/specialty-neuro.png',      circle: false },
-  ]
+  const { selectedBranch } = useBranch()
+  const [clinics, setClinics] = useState<Clinic[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!selectedBranch) return
+    setLoading(true)
+    const url = `/api/departments?locale=${locale}&branch=${selectedBranch.id}`
+    fetch(url)
+      .then(r => r.json())
+      .then(d => {
+        const withIcons = (d?.docs || []).filter((dept: any) => dept.icon?.trim())
+        setClinics(withIcons.map((dept: any) => ({
+          key:    dept.slug || String(dept.id),
+          name:   dept.name,
+          image:  dept.icon,
+          circle: false,
+        })))
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [locale, selectedBranch])
+
+  const row1 = clinics.slice(0, 4)
+  const row2 = clinics.slice(4, 7)
+
+  const SeeMorePill = () => (
+    <div className="flex justify-center">
+      <Link href="/departments" className="px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
+        See More
+      </Link>
+    </div>
+  )
+
   return (
-    <section className="w-full px-[40px] xl:px-[46px] pt-[120px] pb-[80px]">
-      <div className="flex flex-col gap-[40px] items-center">
+    <section className="w-full" style={{ paddingTop: 'clamp(140px, 12vw, 180px)' }}>
+      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[32px] lg:gap-[40px] items-center">
 
         <div className="flex flex-col gap-[24px] items-center">
-          <h2 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none text-center whitespace-nowrap">
+          <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-[#3d3123] leading-none text-center">
             {t('title')}
           </h2>
-          <p className="font-dm-sans text-[20px] text-gold-800 text-center">
+          <p className="font-dm-sans text-[15px] sm:text-[17px] xl:text-[20px] text-[#8c7d6c] text-center w-full">
             {t('subtitle')}
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-[20px] max-w-[1100px] mx-auto w-full">
-          {CLINICS.map((clinic) => (
-            <button
-              key={clinic.key}
-              className="aspect-square flex flex-col gap-[20px] items-center justify-center rounded-[12px] overflow-hidden cursor-pointer hover:opacity-90 transition-opacity w-full"
-              style={{
-                background: 'rgba(245,236,212,0.20)',
-                boxShadow: '0px 4px 12px 3px rgba(89,69,34,0.20)',
-              }}
-            >
-              <div
-                className="relative shrink-0 overflow-hidden"
-                style={{
-                  width: 100,
-                  height: 100,
-                  borderRadius: clinic.circle ? 9999 : 0,
-                  background: clinic.circle ? '#ffffff' : 'transparent',
-                }}
-              >
-                <Image
-                  src={clinic.image}
-                  alt={clinic.name}
-                  fill
-                  className="object-contain"
-                  sizes="100px"
-                />
-              </div>
-              <p className="font-cormorant font-bold text-[24px] text-neutral-800 leading-none whitespace-nowrap">
-                {clinic.name}
-              </p>
-            </button>
-          ))}
+        {loading && (
+          <>
+            {/* Mobile skeleton: 2 cards */}
+            <div className="grid grid-cols-2 gap-[12px] w-full sm:hidden">
+              {Array(2).fill(0).map((_,i) => <div key={i} className="h-[160px] rounded-[12px] bg-[rgba(245,236,212,0.2)] animate-pulse"/>)}
+            </div>
+            {/* Desktop skeleton: 8 cards */}
+            <div className="hidden sm:flex flex-col gap-[16px] w-full">
+              <div className="grid sm:grid-cols-4 gap-[12px] w-full">{Array(4).fill(0).map((_,i)=><div key={i} className="h-[190px] lg:h-[228px] rounded-[12px] bg-[rgba(245,236,212,0.2)] animate-pulse"/>)}</div>
+              <div className="grid sm:grid-cols-4 gap-[12px] w-full">{Array(4).fill(0).map((_,i)=><div key={i} className="h-[190px] lg:h-[228px] rounded-[12px] bg-[rgba(245,236,212,0.2)] animate-pulse"/>)}</div>
+            </div>
+          </>
+        )}
 
-          {/* See More */}
-          <button
-            className="aspect-square flex items-center justify-center gap-[8px] rounded-[12px] cursor-pointer hover:opacity-90 transition-opacity w-full"
-            style={{
-              background: 'rgba(184,145,72,0.60)',
-              boxShadow: '0px 4px 12px 3px rgba(89,69,34,0.20)',
-            }}
-          >
-            <p className="font-cormorant font-bold text-[24px] text-gold-50 leading-none whitespace-nowrap">
-              {t('seeMore')}
-            </p>
-            <ChevronRight className="w-[24px] h-[24px] text-gold-50" strokeWidth={1.5} />
-          </button>
-        </div>
+        {!loading && (
+          <>
+            {/* ── Mobile: 2 cards + See More ── */}
+            <div className="flex flex-col gap-[16px] w-full sm:hidden">
+              <div className="grid grid-cols-2 gap-[12px] w-full">
+                {clinics.slice(0, 2).map(c => <ClinicCard key={c.key} c={c} />)}
+              </div>
+              <SeeMorePill />
+            </div>
+
+            {/* ── Desktop: all cards in rows + gold See More card ── */}
+            <div className="hidden sm:flex flex-col gap-[12px] w-full">
+              <div className="grid sm:grid-cols-4 gap-[12px] w-full">
+                {row1.map(c => <ClinicCard key={c.key} c={c} />)}
+              </div>
+              <div className="grid sm:grid-cols-4 gap-[12px] w-full">
+                {row2.map(c => <ClinicCard key={c.key} c={c} />)}
+                {/* Gold "See More" as 4th card in row 2 */}
+                <Link
+                  href="/departments"
+                  className="flex items-center justify-center gap-[8px] rounded-xl shadow-[0px_4px_12px_3px_rgba(89,69,34,0.2)] hover:opacity-90 transition-opacity"
+                  style={{ background: 'rgba(184,145,72,0.6)' }}
+                >
+                  <span className="font-cormorant font-bold text-[18px] lg:text-[24px] text-[#fbf7ee] leading-none">See More</span>
+                  <ChevronRight className="w-[20px] h-[20px] lg:w-[24px] lg:h-[24px] text-[#fbf7ee]" />
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
 
       </div>
     </section>

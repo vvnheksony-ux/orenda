@@ -5,14 +5,26 @@
   "Navbar": {
     "about": "关于欧瑞达",
     "doctors": "医生",
-    "departments": "科室",
+    "departments": "诊所",
     "news": "新闻",
     "contact": "联系我们",
     "emergency": "急诊",
     "ch": "CH",
     "signIn": "登录",
     "signOut": "登出",
-    "bookAppointment": "预约挂号"
+    "bookAppointment": "预约挂号",
+    "clinics": "诊所与中心",
+    "healthTip": "健康贴士",
+    "doctorTalks": "医生讲座",
+    "centers": "卓越中心",
+    "insurance": "保险",
+    "faq": "常见问题",
+    "expect": "就诊须知",
+    "inquiry": "发送咨询",
+    "promotions": "促销与套餐",
+    "packages": "套餐",
+    "career": "职业",
+    "testimonials": "推荐"
   },
   "Footer": {
     "aboutUs": "关于我们",
@@ -65,7 +77,11 @@
     "gynecology": "妇科",
     "neuro": "神经外科",
     "imaging": "影像中心",
-    "pediatric": "儿科"
+    "pediatric": "儿科",
+    "stat1": "成功率",
+    "stat2": "手术次数",
+    "stat3": "满意度",
+    "seeMore": "查看更多"
   },
   "WhySection": {
     "subtitle": "为什么选择我们",
@@ -102,7 +118,8 @@
     "title": "常见问题",
     "subtitle": "了解更多关于我们的信息，问你想知道的",
     "qAppointment": "如何预约？",
-    "aAppointment": "欧瑞达国际医院致力于提供透明和富有同情心的医疗保健。我们专注于患者的满意度和福祉，推动我们不断改进提供卓越医疗护理。"
+    "aAppointment": "欧瑞达国际医院致力于提供透明和富有同情心的医疗保健。我们专注于患者的满意度和福祉，推动我们不断改进提供卓越医疗护理。",
+    "seeMore": "查看更多"
   },
   "NewsSection": {
     "title": "新闻",
@@ -111,11 +128,13 @@
     "readMore": "阅读更多",
     "side1": "ACLEDA 银行与 GreenTech Solutions 合作推出针对小企业的可持续融资项目",
     "side2": "ACLEDA 银行与欧瑞达国际医院合作，提供符合国际质量标准的健康服务",
-    "side3": "ACLEDA 银行推出新移动银行功能，增强客户便利和安全性"
+    "side3": "ACLEDA 银行推出新移动银行功能，增强客户便利和安全性",
+    "side4": "ACLEDA 银行推出新移动银行功能，增强客户便利和安全性",
+    "seeMore": "查看更多"
   },
   "PartnersSection": {
     "title": "合作伙伴",
-    "subtitle": "欧瑞达国际医院的合作伙伴"
+    "subtitle": "欧瑞达国际医院合作伙伴"
   },
   "MapSection": {
     "hospitalName": "欧瑞达国际医院",
@@ -147,5 +166,78 @@
       "year": "一年",
       "week": "一周"
     }
+  },
+  "AboutHero": {
+    "eyebrow": "关于欧瑞达",
+    "title": "欧瑞达国际医院",
+    "desc1": "我们致力于提供安全可靠的医疗服务。",
+    "desc2": "预约体验世界级医疗保健服务。",
+    "bookAppointment": "预约挂号"
+  },
+  "VisionMission": {
+    "title": "我们的愿景与使命",
+    "subtitle": "致力于您健康的精选专家团队",
+    "visionTitle": "愿景",
+    "visionDesc": "我们的愿景是成为领先的医疗中心，专注于提供值得信赖、富有同情心的世界级医疗服务。",
+    "missionTitle": "使命",
+    "missionDesc": "我们的使命是提供卓越的临床护理，以及以患者为中心的出色服务质量。"
+  },
+  "BookAppointmentSection": {
+    "title": "预约挂号",
+    "subtitle": "了解更多关于我们的医疗服务和患者支持。",
+    "bookNow": "立即预约"
+  },
+  "FacilitiesSection": {
+    "title": "探索我们的设施",
+    "subtitle": "选择下方选项以快速找到您需要的服务",
+    "visitTitle": "参观",
+    "visitDesc": "欧瑞达国际医院致力于提供透明和富有同情心的医疗保健。我们专注于患者的满意度和福祉，推动我们不断改进提供卓越的医疗护理。",
+    "discoverMore": "了解更多",
+    "facilitiesTitle": "我们的医疗设施",
+    "facilitiesDesc": "探索我们现代化且设备齐全的医疗设施，旨在以舒适和精准的方式提供世界级护理。"
+  },
+  "OurClinics": {
+    "title": "我们的诊所",
+    "para1": "我们于2014年开始作为医疗服务提供商，当时是一家名为Sokha的小型诊所，提供妇科和不孕不育相关问题的咨询服务。2018年，Sokha发展成为名为欧瑞达的综合诊所。从成立到不到两年的时间里，欧瑞达因处理复杂病例和救治生命而获得了柬埔寨人民的广泛认可和大力支持。这一成功使我们在国际上获得认可，尤其是UE CERT颁发的ISO9001:2005认证以及新加坡全球健康奖颁发的最佳女性医疗奖。凭借这些支持，我们开设了第二家分院。",
+    "para2": "欧瑞达国际医院提供全面的医疗服务，包括不孕不育、产科、妇科、普通内科、糖尿病、新生儿重症监护、实验室、24小时急救服务和空中救护。我们优质的服务得益于经验丰富的医生和最新医疗技术，包括MRI、CT扫描、X光、骨密度测量、乳腺钼靶等，可对组织、细胞、静脉、骨骼等各部位进行高精度检测。为确保检测结果的准确性，我们与新加坡领先的影像公司Medisol Solution合作，提供高精度的检测结果解读。我们是柬埔寨最大的医院之一。"
+  },
+  "BookAppointmentModal": {
+    "title": "预约挂号",
+    "subtitle": "了解更多关于我们的医疗服务和患者支持。",
+    "successMessage": "我们已收到您的预约请求。我们的团队将尽快与您联系确认预约。",
+    "done": "完成",
+    "patientName": "患者姓名 *",
+    "namePlaceholder": "全名",
+    "phoneNumber": "电话号码 *",
+    "email": "电子邮件",
+    "emailOptional": "（可选）",
+    "department": "诊所 / 科室 *",
+    "selectDepartment": "选择科室",
+    "branch": "分院 *",
+    "selectBranch": "选择分院",
+    "doctor": "医生 *",
+    "selectDoctor": "选择医生",
+    "earliestAvailable": "最早可用时间",
+    "chooseDate": "选择日期",
+    "preferredDate": "首选日期 *",
+    "preferredTime": "首选时间 *",
+    "noSlotsToday": "今天没有可用时间",
+    "symptoms": "描述您的症状",
+    "messagePlaceholder": "在此输入您的信息",
+    "booking": "预约中...",
+    "bookAppointment": "预约挂号"
+  },
+  "LoginModal": {
+    "title": "登录",
+    "emailLabel": "电子邮件",
+    "passwordLabel": "密码",
+    "signingIn": "登录中…",
+    "signIn": "登录",
+    "or": "或",
+    "continueGoogle": "使用 Google 继续",
+    "noAccount": "没有账号？",
+    "createOne": "创建账号",
+    "resendEmail": "重新发送确认邮件 →",
+    "confirmationSent": "确认邮件已发送至 {email}"
   }
 }

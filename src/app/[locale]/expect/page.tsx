@@ -1,5 +1,5 @@
 import SiteLayout from '@/components/layout/SiteLayout'
-import Link from 'next/link'
+import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
 import { ClipboardCheck, Stethoscope, BedDouble, FileText } from 'lucide-react'
 
 const STEPS = [
@@ -12,7 +12,7 @@ const STEPS = [
 export default function ExpectPage() {
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[160px] xl:pt-[200px] pb-20 px-5" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-20 px-5" style={{ background: '#fbf7ee' }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="font-cormorant font-bold text-[56px] text-gold-900 leading-none mb-3">What to Expect</h1>
@@ -42,9 +42,10 @@ export default function ExpectPage() {
           </div>
 
           <div className="mt-16 text-center">
-             <Link href="/appointments" className="inline-block px-10 py-4 rounded-full font-dm-sans text-[18px] font-medium text-white transition-opacity hover:opacity-90" style={{ background: '#b89148' }}>
-              Book an Appointment
-            </Link>
+            <BookAppointmentButton
+              label="Book an Appointment"
+              className="inline-block px-10 py-4 rounded-full bg-[#b89148] font-dm-sans text-[18px] font-medium text-white transition-opacity hover:opacity-90"
+            />
           </div>
         </div>
       </div>

@@ -1,96 +1,123 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
-import { ChevronRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
-import { useTranslations } from 'next-intl'
-
-// FAQ_ITEMS moved to component
+import { useTranslations, useLocale } from 'next-intl'
+import { ChevronUp } from 'lucide-react'
+import { Link } from '@/i18n/routing'
 
 export default function FaqSection() {
   const t = useTranslations('FaqSection')
+  const locale = useLocale()
   const [openIdx, setOpenIdx] = useState<number | null>(null)
+  const [FAQ_ITEMS, setFaqItems] = useState<{q:string;a:string}[]>([])
 
-  const FAQ_ITEMS = [
-    { q: t('qAppointment'), a: t('aAppointment') },
-    { q: t('qAppointment'), a: t('aAppointment') },
-    { q: t('qAppointment'), a: t('aAppointment') },
-    { q: t('qAppointment'), a: t('aAppointment') },
-    { q: t('qAppointment'), a: t('aAppointment') },
-  ]
+  useEffect(() => {
+    fetch(`/api/faqs?locale=${locale}&limit=5`)
+      .then(r => r.json())
+      .then((data: any[]) => {
+        if (data?.length) {
+          setFaqItems(data.slice(0, 5).map((d: any) => ({ q: d.question, a: d.answer })))
+        }
+      })
+      .catch(() => {})
+  }, [locale])
 
   return (
-    <section className="w-full py-[80px] px-[40px] xl:px-[46px] bg-[#fbf7ee] overflow-hidden">
-      <div className="max-w-[1352px] mx-auto">
-        <div className="relative">
+    <section className="w-full bg-[#fbf7ee]">
+      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col lg:flex-row gap-[40px] items-start relative">
 
-          {/* Anatomical figure — absolute */}
-          <div className="absolute left-[2px] top-0 w-[499px] h-[628px] opacity-70 pointer-events-none select-none z-0">
-            <Image
-              src="/images/faq-decor.png"
-              alt=""
-              fill
-              className="object-contain"
-              sizes="499px"
-            />
+        {/* Mobile-only: title + subtitle above accordion */}
+        <div className="flex flex-col gap-[16px] items-center text-center w-full lg:hidden">
+          <h2 className="font-cormorant font-bold text-[36px] text-[#3b2d17] leading-none">
+            {t('title')}
+          </h2>
+          <p className="font-dm-sans text-[18px] text-[#594522] leading-none w-[299px]">
+            {t('subtitle')}
+          </p>
+        </div>
+
+        {/* Left panel — anatomy image + glass overlay + FAQ text (desktop only) */}
+        <div
+          className="hidden lg:block flex-1 rounded-[24px] relative overflow-hidden lg:h-[640px]"
+          style={{ zIndex: 1 }}
+        >
+          {/* Layer 1: Anatomy illustration — locked to top */}
+          <div className="absolute top-0 left-0 right-0 flex justify-center pointer-events-none z-0">
+            <div className="relative" style={{ width: 490, height: 640, opacity: 0.7 }}>
+              <Image src="/images/faq-decor.png" alt="" fill className="object-contain" sizes="490px" />
+            </div>
           </div>
 
-          {/* Left panel background — stretches with accordion */}
-          <div className="absolute left-0 top-0 h-full w-[521px] z-10 bg-[rgba(255,255,255,0.2)] rounded-[24px]" />
+          {/* Layer 2: Frosted glass overlay */}
+          <div
+            className="absolute inset-0 z-10 border border-white/30 rounded-[24px]"
+            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+          />
 
-          {/* Text — fixed position, never moves regardless of accordion height */}
-          <div className="absolute left-0 top-[260px] z-20 flex flex-col gap-[12px] px-[24px]">
-            <h2 className="font-cormorant font-bold text-[56px] text-gold-900 leading-none">
+          {/* Layer 3: FAQ text on top — locked with fixed top padding */}
+          <div className="relative z-20 flex flex-col gap-[12px] text-center items-center pt-[80px] lg:pt-[220px] px-[24px]">
+            <h2 className="font-cormorant font-bold text-[32px] lg:text-[56px] text-[#3b2d17] leading-none w-full">
               {t('title')}
             </h2>
-            <p className="font-dm-sans text-[20px] text-gold-800 leading-none">
+            <p className="font-dm-sans text-[20px] text-[#594522] leading-none w-full">
               {t('subtitle')}
             </p>
           </div>
+        </div>
 
-          {/* Right — accordion, margin-left clears the left panel */}
-          <div className="ml-[561px] flex flex-col gap-[24px]">
-            {FAQ_ITEMS.map((item, i) => (
-              <div
+        {/* Right accordion */}
+        <div className="flex flex-col gap-[24px] flex-1 min-w-0 w-full" style={{ zIndex: 1 }}>
+          {FAQ_ITEMS.map((item, i) => {
+            const isOpen = openIdx === i
+            return (
+              <button
                 key={i}
-                className="bg-white rounded-[16px] overflow-hidden shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] cursor-pointer"
-                onClick={() => setOpenIdx(openIdx === i ? null : i)}
+                onClick={() => setOpenIdx(isOpen ? null : i)}
+                className="bg-white w-full overflow-hidden rounded-[16px] p-[20px] sm:p-[24px] lg:p-[32px] flex flex-col items-start justify-start text-left focus:outline-none active:bg-white"
+                style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}
               >
-                <div className="flex items-center justify-between px-[40px] py-[32px]">
-                  <span className="font-cormorant font-bold text-[24px] text-black leading-none">
+                {/* Question row */}
+                <div className="flex items-center justify-between w-full">
+                  <p className="font-cormorant font-bold text-[18px] sm:text-[22px] lg:text-[24px] text-black leading-none">
                     {item.q}
-                  </span>
-                  <ChevronRight
-                    className={cn(
-                      'w-[24px] h-[24px] text-gold-700 transition-transform duration-300 shrink-0 ml-4',
-                      openIdx === i && 'rotate-90'
-                    )}
-                    strokeWidth={1.5}
-                  />
+                  </p>
+                  {/* Figma: closed = rotate-90 (→), open = rotate-180 (↓) */}
+                  <div
+                    className="shrink-0 transition-transform duration-200 text-[#3b2d17]"
+                    style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(90deg)' }}
+                  >
+                    <ChevronUp size={24} />
+                  </div>
                 </div>
 
-                <AnimatePresence>
-                  {openIdx === i && (
+                {/* Answer */}
+                <AnimatePresence initial={false}>
+                  {isOpen && (
                     <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: 'auto' }}
-                      exit={{ height: 0 }}
-                      transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      className="overflow-hidden"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: 'easeInOut' }}
+                      className="overflow-hidden w-full"
                     >
-                      <p className="px-[40px] pb-[40px] font-dm-sans text-[16px] text-black leading-[1.5]">
+                      <p className="font-dm-sans font-normal text-[16px] text-black leading-[1.5] pt-[24px] w-full">
                         {item.a}
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
-            ))}
-          </div>
+              </button>
+            )
+          })}
 
+          {/* See More — mobile only */}
+          <Link href="/faq" className="lg:hidden self-center px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
+            {t('seeMore')}
+          </Link>
         </div>
+
       </div>
     </section>
   )

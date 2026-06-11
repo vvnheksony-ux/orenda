@@ -1,65 +1,99 @@
-import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+'use client'
 
-/* Figma: Two branch cards side by side, each 756px wide × 450px tall
-   B1 (left): image fills card, info card overlaid at bottom
-   B2 (right): image + semi-transparent cream overlay with info */
+import Image from 'next/image'
+import { useTranslations, useLocale } from 'next-intl'
+import { useState, useEffect } from 'react'
+
+interface Branch { id: string; name: string; address: string; phone: string; hours: string; image: string | null; mapUrl?: string }
+
+function BranchCard({ branch, t, alwaysOpen = false }: { branch: Branch; t: ReturnType<typeof useTranslations>; alwaysOpen?: boolean }) {
+  const [hovered, setHovered] = useState(false)
+  const open = alwaysOpen || hovered
+
+  return (
+    <div
+      className="relative flex-1 h-[280px] sm:h-[360px] lg:h-[450px] overflow-hidden cursor-pointer"
+      onMouseEnter={() => { if (!alwaysOpen) setHovered(true) }}
+      onMouseLeave={() => { if (!alwaysOpen) setHovered(false) }}
+    >
+      {/* Background image — full bleed, blurs through overlay */}
+      <Image
+        src={branch.image ?? '/images/facility-building.jpg'}
+        alt={branch.name}
+        fill
+        className="object-cover"
+        sizes="(max-width: 1024px) 100vw, 50vw"
+        unoptimized={!!branch.image?.startsWith('/payload')}
+      />
+
+      {/* Info panel — slides up from bottom on hover, covers full card */}
+      <div
+        className="absolute inset-0 overflow-hidden p-[24px] sm:p-[32px] lg:p-[40px] z-10"
+        style={{
+          background: 'rgba(245,236,212,0.5)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          transform: open ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        {/* Content wrapper — stacks top-to-bottom, button right-aligned */}
+        <div className="flex flex-col gap-[16px] lg:gap-[24px] items-end w-full h-full">
+
+          {/* Name + address — left aligned, full width */}
+          <div className="flex flex-col gap-[8px] lg:gap-[12px] items-start w-full">
+            <p className="font-cormorant font-bold text-[26px] sm:text-[36px] lg:text-[48px] text-[#3b2d17] leading-[1.1]">
+              {branch.name}
+            </p>
+            <p className="font-dm-sans font-light text-[13px] sm:text-[18px] lg:text-[24px] text-black leading-snug">
+              {branch.address}
+            </p>
+          </div>
+
+          {/* Hours + phone — left aligned, full width */}
+          <div className="flex flex-col gap-[6px] lg:gap-[12px] items-start w-full font-dm-sans font-light text-[13px] sm:text-[18px] lg:text-[24px] text-[#594522]">
+            {branch.hours && <p>{branch.hours}</p>}
+            {branch.phone && <p>{branch.phone}</p>}
+          </div>
+
+          {/* View Map button — right aligned (items-end on parent) */}
+          <a
+            href={branch.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(branch.address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center bg-[#b89148] hover:bg-[#9a7630] transition-colors text-white font-dm-sans font-normal text-[15px] sm:text-[18px] lg:text-[24px] px-[28px] sm:px-[40px] lg:px-[56px] py-[10px] lg:py-[16px] rounded-[32px] shrink-0"
+            onClick={e => e.stopPropagation()}
+          >
+            {t('viewMap')}
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function MapSection() {
   const t = useTranslations('MapSection')
+  const locale = useLocale()
+  const [branches, setBranches] = useState<Branch[]>([])
+
+  useEffect(() => {
+    fetch(`/api/branches?locale=${locale}`)
+      .then(r => r.json())
+      .then(d => { if (d?.docs?.length) setBranches(d.docs) })
+      .catch(() => {})
+  }, [locale])
+
+  // branches[0] = Hospital II (left), branches[1] = Hospital I (right)
+  const left = branches[0]
+  const right = branches[1]
+
+  if (!branches.length) return null
 
   return (
-    <section className="flex flex-col lg:flex-row w-full h-[650px] overflow-hidden">
-      
-      {/* Left Side (Blur + Text) */}
-      <div className="relative flex-1 overflow-hidden">
-        <Image
-          src="/images/branch-building.jpg"
-          alt="Orienda International Hospital Chamkarmon Background"
-          fill
-          className="object-cover object-left"
-          sizes="(max-width: 1024px) 100vw, 50vw"
-        />
-        {/* Full blur overlay - transparent with heavy glass blur */}
-        <div 
-          className="absolute inset-0 bg-white/30"
-          style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
-        />
-        
-        {/* Info Content */}
-        <div className="absolute inset-0 flex flex-col justify-center px-[40px] lg:px-[60px] xl:px-[80px] z-10">
-          <div className="max-w-[460px]">
-            <h3 className="font-cormorant font-bold text-[32px] xl:text-[40px] text-[#3e2c1c] leading-[1.2] mb-4 drop-shadow-sm">
-              {t('hospitalName')}<br />{t('branch')}
-            </h3>
-            <p className="font-dm-sans text-[16px] xl:text-[18px] text-[#3e2c1c] mb-6 font-medium">
-              {t('address')}
-            </p>
-            <div className="flex flex-col gap-2 mb-8 font-medium">
-              <p className="font-dm-sans text-[16px] xl:text-[18px] text-[#5e4b37]">
-                {t('hours')}
-              </p>
-              <p className="font-dm-sans text-[16px] xl:text-[18px] text-[#5e4b37]">
-                (+855) 081 811 789
-              </p>
-            </div>
-            <button className="self-start px-[32px] py-[12px] bg-[#b89552] text-white font-dm-sans font-medium text-[16px] rounded-[24px] hover:bg-[#a3803d] transition-colors shadow-lg">
-              {t('viewMap')}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Side (Just Image) */}
-      <div className="relative flex-1 overflow-hidden">
-        <Image
-          src="/images/branch-building.jpg"
-          alt="Orienda International Hospital Chamkarmon"
-          fill
-          className="object-cover object-right"
-          sizes="(max-width: 1024px) 100vw, 50vw"
-        />
-      </div>
+    <section className="flex flex-col lg:flex-row w-full overflow-hidden">
+      {left && <BranchCard branch={left} t={t} alwaysOpen={true} />}
+      {right && <BranchCard branch={right} t={t} />}
     </section>
   )
 }

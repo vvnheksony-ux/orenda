@@ -1,79 +1,216 @@
+'use client'
+
 import Image from 'next/image'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { useLocale } from 'next-intl'
+import { Link } from '@/i18n/routing'
+import { ArrowRight, ChevronRight } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 
-const CATEGORIES = ['All', 'Medical News', 'Health Tips', 'Hospital Updates', 'Events']
+interface NewsItem {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  thumbnail: string | null
+  publishedAt: string
+}
 
-const NEWS = [
-  { title: 'Orienda Opens New Neurosurgery Wing', excerpt: 'Our state-of-the-art neurosurgery wing is now open, featuring the latest robotic-assisted surgical systems for precision treatment.', image: '/images/news-featured.jpg', category: 'Hospital Updates', date: 'May 20, 2026', featured: true },
-  { title: 'Understanding Heart Health: Prevention Tips', excerpt: 'Our cardiology specialists share essential tips for maintaining a healthy heart and preventing cardiovascular disease.', image: '/images/news-thumb-1.jpg', category: 'Health Tips', date: 'May 18, 2026', featured: false },
-  { title: 'Free Health Screening Campaign', excerpt: 'Join us this weekend for free blood pressure, glucose, and cholesterol screenings open to the public.', image: '/images/news-thumb-2.jpg', category: 'Events', date: 'May 15, 2026', featured: false },
-  { title: 'New Partnership with International Medical Center', excerpt: 'Orienda International Hospital announces a new collaboration to bring world-class specialists to Cambodia.', image: '/images/news-thumb-3.jpg', category: 'Medical News', date: 'May 10, 2026', featured: false },
-  { title: 'Children\'s Health Month Celebration', excerpt: 'Our pediatric department hosted a fun and informative health awareness day for children and families.', image: '/images/news-thumb-4.jpg', category: 'Events', date: 'May 5, 2026', featured: false },
-  { title: 'Advances in Orthopedic Surgery', excerpt: 'Dr. Gonzalez shares insights on the latest minimally invasive techniques in joint replacement surgery.', image: '/images/news-thumb-1.jpg', category: 'Medical News', date: 'April 28, 2026', featured: false },
-]
+function formatDate(iso: string) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const month = d.toLocaleDateString('en-US', { month: 'short' })
+  const day = d.getDate()
+  const year = d.getFullYear()
+  const suffix =
+    day === 1 || day === 21 || day === 31 ? 'st'
+    : day === 2 || day === 22 ? 'nd'
+    : day === 3 || day === 23 ? 'rd'
+    : 'th'
+  return `${month} ${day}${suffix} ${year}`
+}
 
 export default function NewsPage() {
-  const featured = NEWS[0]
-  const rest = NEWS.slice(1)
+  const locale = useLocale()
+  const [news, setNews] = useState<NewsItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/news?locale=${locale}&limit=30`)
+      .then(r => r.json())
+      .then(d => { if (d?.docs?.length) setNews(d.docs) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [locale])
+
+  const featured = news[0]
+  const sideNews = news.slice(1, 4)
+  const smallCards = news.slice(4, 8)
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[160px] xl:pt-[200px] pb-20" style={{ background: '#fbf7ee' }}>
+      <div className="bg-[#fbf7ee] w-full pt-[100px] lg:pt-[212px] pb-[120px]">
+        <div className="max-w-[1512px] mx-auto px-[24px] lg:px-[80px] flex flex-col gap-[80px] items-center">
 
-        <div className="text-center px-5 mb-12">
-          <h1 className="font-cormorant font-bold text-[64px] text-gold-900 leading-none mb-4">News & Updates</h1>
-          <p className="font-dm-sans text-[18px] text-gold-800">Stay informed with the latest from Orienda International Hospital</p>
-        </div>
-
-        {/* Category filter */}
-        <div className="flex flex-wrap gap-3 justify-center px-5 mb-12">
-          {CATEGORIES.map((c, i) => (
-            <button key={c} className={`px-5 py-2 rounded-full font-dm-sans text-[14px] border transition-colors ${i === 0 ? 'text-white border-transparent' : 'text-gold-800 border-gold-300 hover:border-gold-500 bg-white'}`}
-              style={i === 0 ? { background: '#b89148' } : {}}>
-              {c}
-            </button>
-          ))}
-        </div>
-
-        <div className="max-w-6xl mx-auto px-5">
-          {/* Featured */}
-          <div className="bg-white rounded-[24px] overflow-hidden shadow-[0px_4px_16px_rgba(122,95,44,0.10)] mb-10 grid grid-cols-1 lg:grid-cols-2">
-            <div className="relative h-[280px] lg:h-auto">
-              <Image src={featured.image} alt={featured.title} fill className="object-cover" sizes="600px" />
-            </div>
-            <div className="p-8 lg:p-10 flex flex-col justify-center gap-4">
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 rounded-full font-dm-sans text-[12px] text-white" style={{ background: '#b89148' }}>{featured.category}</span>
-                <span className="font-dm-sans text-[13px] text-gold-700">{featured.date}</span>
+          {/* Skeletons */}
+          {loading && (
+            <div className="w-full flex flex-col gap-[40px]">
+              <div className="flex flex-col gap-[12px] items-center">
+                <div className="h-[48px] w-[200px] rounded-[8px] bg-[#f0ebe0] animate-pulse" />
+                <div className="h-[24px] w-[140px] rounded-[8px] bg-[#f0ebe0] animate-pulse" />
               </div>
-              <h2 className="font-cormorant font-bold text-[36px] text-gold-900 leading-tight">{featured.title}</h2>
-              <p className="font-dm-sans text-[15px] text-gold-800 leading-[1.7]">{featured.excerpt}</p>
-              <Link href="#" className="self-start px-6 py-3 rounded-full font-dm-sans text-[14px] text-white transition-opacity hover:opacity-90 mt-2" style={{ background: '#b89148' }}>
-                Read More
-              </Link>
-            </div>
-          </div>
-
-          {/* Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rest.map((article) => (
-              <div key={article.title} className="bg-white rounded-[20px] overflow-hidden shadow-[0px_4px_16px_rgba(122,95,44,0.10)] flex flex-col hover:shadow-[0px_8px_24px_rgba(122,95,44,0.14)] transition-shadow">
-                <div className="relative h-[180px]">
-                  <Image src={article.image} alt={article.title} fill className="object-cover" sizes="400px" />
+              <div className="flex gap-[40px]">
+                <div className="flex-1 h-[472px] rounded-[16px] bg-[#f0ebe0] animate-pulse" />
+                <div className="w-[632px] flex flex-col gap-[40px]">
+                  {[1,2,3].map(i => <div key={i} className="h-[147px] rounded-[16px] bg-[#f0ebe0] animate-pulse" />)}
                 </div>
-                <div className="p-5 flex flex-col gap-3 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full font-dm-sans text-[11px] text-white" style={{ background: '#b89148' }}>{article.category}</span>
-                    <span className="font-dm-sans text-[12px] text-gold-600">{article.date}</span>
+              </div>
+              <div className="flex gap-[40px]">
+                {[1,2,3,4].map(i => <div key={i} className="flex-1 h-[200px] rounded-[12px] bg-[#f0ebe0] animate-pulse" />)}
+              </div>
+            </div>
+          )}
+
+          {!loading && (
+            <>
+              {/* ── Latest News ────────────────────────────────── */}
+              {featured && (
+                <div className="flex flex-col gap-[40px] items-start w-full max-w-[1352px]">
+                  <div className="flex flex-col gap-[12px] text-center w-full leading-none">
+                    <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17]">Latest News</h1>
+                    <p className="font-dm-sans text-[20px] text-[#594522]">Orienda&apos;s News</p>
                   </div>
-                  <h3 className="font-cormorant font-bold text-[20px] text-gold-900 leading-tight flex-1">{article.title}</h3>
-                  <p className="font-dm-sans text-[13px] text-gold-800 leading-[1.6] line-clamp-2">{article.excerpt}</p>
-                  <Link href="#" className="font-dm-sans text-[13px] font-medium text-gold-700 hover:text-gold-900 mt-1">Read More →</Link>
+
+                  <div className="flex flex-col gap-[40px] w-full">
+                    {/* Featured + side rows */}
+                    <div className="flex gap-[40px] items-stretch w-full">
+                      {/* Large featured card */}
+                      <Link
+                        href={`/news/${featured.slug}` as any}
+                        className="bg-white flex-1 min-w-0 overflow-hidden relative rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] hover:shadow-lg transition-shadow"
+                        style={{ minHeight: '472px' }}
+                      >
+                        <div className="absolute inset-0">
+                          {featured.thumbnail
+                            ? <Image src={featured.thumbnail} alt={featured.title} fill className="object-cover" sizes="760px" unoptimized />
+                            : <div className="w-full h-full bg-[#f0ebe0]" />
+                          }
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 backdrop-blur-[6px] bg-[rgba(255,255,255,0.9)] p-[24px] flex flex-col gap-[12px] items-end">
+                          <p className="font-dm-sans font-medium text-[16px] text-black leading-[1.5] w-full line-clamp-2">
+                            {featured.title}
+                          </p>
+                          <div className="border border-[#b89148] rounded-[12px] flex items-center h-[32px] px-[12px] py-[8px] gap-[4px] shrink-0">
+                            <span className="font-dm-sans text-[12px] text-[#594522] px-[8px]">Read More</span>
+                            <ArrowRight size={16} className="text-[#594522]" />
+                          </div>
+                        </div>
+                      </Link>
+
+                      {/* 3 horizontal side items */}
+                      <div className="flex flex-col gap-[40px] shrink-0 w-[632px] justify-center">
+                        {sideNews.map(item => (
+                          <Link
+                            key={item.id}
+                            href={`/news/${item.slug}` as any}
+                            className="bg-white flex items-center overflow-hidden rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] hover:shadow-md transition-shadow"
+                          >
+                            <div className="relative shrink-0 w-[240px] h-[147px] bg-[#f9f9f9]">
+                              {item.thumbnail
+                                ? <Image src={item.thumbnail} alt={item.title} fill className="object-cover" sizes="240px" unoptimized />
+                                : <div className="w-full h-full bg-[#f0ebe0]" />
+                              }
+                            </div>
+                            <div className="flex flex-1 min-w-0 gap-[16px] items-center pl-[22px] pr-[12px] py-[12px]">
+                              <p className="flex-1 min-w-0 font-dm-sans text-[16px] text-[#050505] leading-[1.5] line-clamp-3">
+                                {item.title}
+                              </p>
+                              <ChevronRight size={24} className="text-[#594522] shrink-0" />
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 4 small image cards with overlay */}
+                    {smallCards.length > 0 && (
+                      <div className="flex gap-[40px] items-center w-full">
+                        {smallCards.map(item => (
+                          <Link
+                            key={item.id}
+                            href={`/news/${item.slug}` as any}
+                            className="bg-[#f9f9f9] flex-1 min-w-0 h-[200px] overflow-hidden relative rounded-[12px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] hover:shadow-md transition-shadow"
+                          >
+                            {item.thumbnail
+                              ? <Image src={item.thumbnail} alt={item.title} fill className="object-cover" sizes="300px" unoptimized />
+                              : <div className="w-full h-full bg-[#f0ebe0]" />
+                            }
+                            <div className="absolute bottom-0 left-0 right-0 backdrop-blur-[6px] bg-gradient-to-t from-[rgba(255,255,255,0.8)] to-[rgba(153,153,153,0)] h-[87px] flex flex-col justify-end pb-[24px] pt-[12px] px-[24px]">
+                              <p className="font-dm-sans font-light text-[10px] text-[rgba(59,45,23,0.7)] leading-[1.5]">
+                                {formatDate(item.publishedAt)}
+                              </p>
+                              <p className="font-dm-sans font-medium text-[16px] text-[#3b2d17] leading-[1.5] truncate">
+                                {item.title}
+                              </p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
+
+              {/* ── News (full list) ───────────────────────────── */}
+              {news.length > 0 && (
+                <div className="flex flex-col gap-[40px] items-center w-full max-w-[1352px]">
+                  <div className="flex flex-col gap-[12px] text-center w-full leading-none">
+                    <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17]">News</h2>
+                    <p className="font-dm-sans text-[20px] text-[#594522]">Published News</p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-[40px] justify-center">
+                    {news.map(item => (
+                      <Link
+                        key={item.id}
+                        href={`/news/${item.slug}` as any}
+                        className="bg-white flex flex-col h-[386px] w-[300px] overflow-hidden rounded-[12px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] shrink-0 hover:shadow-md transition-shadow"
+                      >
+                        <div className="relative h-[200px] bg-[#f9f9f9] shrink-0 overflow-hidden">
+                          {item.thumbnail
+                            ? <Image src={item.thumbnail} alt={item.title} fill className="object-cover" sizes="300px" unoptimized />
+                            : <div className="w-full h-full bg-[#f0ebe0]" />
+                          }
+                        </div>
+                        <div className="flex flex-col flex-1 gap-[23px] items-end pb-[24px] pt-[12px] px-[24px]">
+                          <div className="flex flex-col gap-[12px] items-start leading-[1.5] w-full">
+                            <p className="font-dm-sans font-light text-[10px] text-[rgba(59,45,23,0.7)]">
+                              {formatDate(item.publishedAt)}
+                            </p>
+                            <div className="flex flex-col gap-[8px] items-start text-[#3b2d17] w-full">
+                              <p className="font-dm-sans font-medium text-[16px] truncate w-full">{item.title}</p>
+                              <p className="font-dm-sans text-[12px] text-[#3b2d17] line-clamp-2 w-full overflow-hidden">{item.excerpt}</p>
+                            </div>
+                          </div>
+                          <div className="border border-[#b89148] rounded-[12px] flex items-center h-[32px] px-[12px] py-[8px] gap-[4px] shrink-0 mt-auto">
+                            <span className="font-dm-sans text-[12px] text-[#594522] px-[8px]">Read More</span>
+                            <ArrowRight size={16} className="text-[#594522]" />
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!featured && (
+                <p className="text-center font-dm-sans text-[#594522] text-[18px] py-[80px]">
+                  No news available.
+                </p>
+              )}
+            </>
+          )}
+
         </div>
       </div>
     </SiteLayout>

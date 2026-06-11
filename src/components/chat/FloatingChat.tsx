@@ -1,7 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { Send, X, Minimize2, Maximize2, Calendar, User, MapPin, FileText, Plus, ArrowLeft, MessageSquare } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
+import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
+import LoginModal from '@/components/shared/LoginModal'
 
 type Message = {
   id: string
@@ -10,254 +14,424 @@ type Message = {
   timestamp: string
 }
 
+type Session = {
+  id: string
+  date: string
+  preview: string
+  messages: Message[]
+}
+
+const QUICK_ACTIONS: { icon: React.ReactNode; text: string; action: 'booking' | 'navigate' | 'message'; path?: string }[] = [
+  { icon: <Calendar size={11} strokeWidth={2} />, text: 'Book Appointment', action: 'booking' },
+  { icon: <User size={11} strokeWidth={2} />, text: 'Find a Doctor', action: 'navigate', path: '/doctors' },
+  { icon: <MapPin size={11} strokeWidth={2} />, text: 'Locations', action: 'navigate', path: '/contact' },
+  { icon: <FileText size={11} strokeWidth={2} />, text: 'Medical Records', action: 'message' },
+]
+
+const FAQ_GUEST = [
+  'What are your hospital opening hours?',
+  'Which insurance plans do you accept?',
+  'How much does a consultation cost?',
+  'Do you have emergency services 24/7?',
+  'What specialists are available?',
+  'Where are your hospital locations?',
+  'How do I book an appointment?',
+  'What documents do I need for my first visit?',
+  'Do you offer international patient services?',
+  'What languages do your doctors speak?',
+]
+
+const FAQ_USER = [
+  'How do I book an appointment?',
+  'Can I reschedule my appointment?',
+  'How do I view my upcoming appointments?',
+  'Where can I find my medical records?',
+  'How do I find a specialist for my condition?',
+  'What is the cost for a follow-up visit?',
+  'Do you have pharmacy services on site?',
+  'How do I request a referral to a specialist?',
+  'What should I bring to my appointment?',
+  'How do I contact my doctor directly?',
+]
+
+const MAX_SESSIONS = 30
+const MAX_MESSAGES = 20
+const COOLDOWN_MS = 3000
+
+const timeNow = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+const INIT_MSG = (): Message => ({
+  id: '1', role: 'ai',
+  content: "Hello! I'm your Orienda healthcare assistant. How can I help you today?",
+  timestamp: timeNow(),
+})
+
+function storageKey(userId?: string) {
+  return userId ? `orienda_chat_${userId}` : 'orienda_chat_guest'
+}
+function loadSessions(userId?: string): Session[] {
+  if (typeof window === 'undefined') return []
+  try { return JSON.parse(localStorage.getItem(storageKey(userId)) ?? '[]') } catch { return [] }
+}
+function persistSession(session: Session, userId?: string) {
+  if (typeof window === 'undefined') return
+  try {
+    const key = storageKey(userId)
+    const updated = [session, ...loadSessions(userId).filter(s => s.id !== session.id)].slice(0, MAX_SESSIONS)
+    localStorage.setItem(key, JSON.stringify(updated))
+  } catch {}
+}
+function removeSession(id: string, userId?: string) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(storageKey(userId), JSON.stringify(loadSessions(userId).filter(s => s.id !== id)))
+  } catch {}
+}
+function formatDate(iso: string) {
+  const d = new Date(iso)
+  const diff = Math.floor((Date.now() - d.getTime()) / 86400000)
+  if (diff === 0) return 'Today'
+  if (diff === 1) return 'Yesterday'
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 export default function FloatingChat() {
+  const { user } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
+  const locale = pathname.split('/')[1] || 'en'
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
-  const [showLoginBanner, setShowLoginBanner] = useState(false)
+  const [bookingOpen, setBookingOpen] = useState(false)
+  const [loginOpen, setLoginOpen] = useState(false)
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('chat') === 'open') setIsOpen(true)
+  }, [])
+  const [view, setView] = useState<'chat' | 'history'>('chat')
   const [inputValue, setInputValue] = useState('')
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', role: 'ai', content: "Hello! I'm your Orienda healthcare assistant. How can I help you today?", timestamp: '03:01 AM' },
-    { id: '2', role: 'user', content: "Help me find a doctor", timestamp: '03:01 AM' },
-    { id: '3', role: 'ai', content: "Our hospital has highly qualified specialists in various fields including Obstetrics, Gynecology, Pediatrics, and Neurosurgery. Would you like me to help you find a doctor in a specific department?", timestamp: '03:01 AM' },
-    { id: '4', role: 'user', content: "I need access to my medical records", timestamp: '03:01 AM' }
-  ])
+  const [messages, setMessages] = useState<Message[]>([INIT_MSG()])
   const [isTyping, setIsTyping] = useState(false)
+  const [lastSentAt, setLastSentAt] = useState(0)
+  const [faqExpanded, setFaqExpanded] = useState(false)
+  const [activeActions, setActiveActions] = useState(() => QUICK_ACTIONS.map((_, i) => i))
+  const [sessions, setSessions] = useState<Session[]>([])
+const [sessionId, setSessionId] = useState(() => Date.now().toString())
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const sendMessageRef = useRef<((text: string) => Promise<void>) | null>(null)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const userCount = messages.filter(m => m.role === 'user').length
+  const canSend = !isTyping && !!inputValue.trim() && Date.now() - lastSentAt >= COOLDOWN_MS && userCount < MAX_MESSAGES
+
+  useEffect(() => { setSessions(loadSessions(user?.id)) }, [user?.id])
 
   useEffect(() => {
-    if (isOpen) scrollToBottom()
-  }, [messages, isOpen])
+    if (isOpen && view === 'chat') messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isOpen, view])
 
-  const handleSend = () => {
-    if (!inputValue.trim()) return
-    
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: inputValue.trim(), timestamp: time }
-    setMessages(prev => [...prev, userMsg])
-    setInputValue('')
+  const saveCurrentSession = useCallback(() => {
+    if (userCount === 0) return
+    persistSession({
+      id: sessionId,
+      date: new Date().toISOString(),
+      preview: messages.find(m => m.role === 'user')?.content ?? '',
+      messages,
+    }, user?.id)
+    setSessions(loadSessions(user?.id))
+  }, [messages, userCount, sessionId, user?.id])
+
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || isTyping || Date.now() - lastSentAt < COOLDOWN_MS || userCount >= MAX_MESSAGES) return
+    setLastSentAt(Date.now())
+    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: text.trim(), timestamp: timeNow() }])
     setIsTyping(true)
-
-    // Simulate AI response delay for realism
-    setTimeout(() => {
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'ai',
-        content: "I've received your message. Since I'm not fully connected to the API yet, this is an automated placeholder response!",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }
-      setMessages(prev => [...prev, aiMsg])
-      setIsTyping(false)
-    }, 1500)
+    try {
+      const res = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text.trim(), session_key: sessionId, locale, user_id: user?.id ?? null }),
+      })
+      const raw = await res.json()
+      const data = Array.isArray(raw) ? raw[0] : raw
+      const reply = data?.output ?? data?.message ?? data?.response ?? data?.text ?? JSON.stringify(data)
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', content: reply, timestamp: timeNow() }])
+    } catch {
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', content: 'Sorry, I could not reach the server. Please try again.', timestamp: timeNow() }])
+    } finally {
+      setIsTyping(false) }
   }
 
+  sendMessageRef.current = sendMessage
+
   useEffect(() => {
-    const consent = localStorage.getItem('cookie-consent')
-    if (consent !== 'accepted') {
-      setShowLoginBanner(true)
+    const handler = (e: Event) => {
+      const msg = (e as CustomEvent<{ message: string }>).detail.message
+      if (!msg) return
+      setIsOpen(true); setView('chat')
+      void sendMessageRef.current?.(msg)
     }
+    window.addEventListener('orienda:ask-ai', handler)
+    return () => window.removeEventListener('orienda:ask-ai', handler)
   }, [])
 
+  const handleSend = () => { if (!canSend) return; sendMessage(inputValue.trim()); setInputValue('') }
+
+  // X = save + close + reset
+  const handleClose = () => {
+    saveCurrentSession()
+    setIsOpen(false); setView('chat')
+    setMessages([INIT_MSG()]); setInputValue('')
+  }
+
+  const openHistory = () => {
+    if (!user) { setLoginOpen(true); return }
+    setSessions(loadSessions(user.id))
+    setView('history')
+  }
+
+  const handleNewChat = useCallback(() => {
+    saveCurrentSession()
+    setMessages([INIT_MSG()])
+    setInputValue('')
+    setSessionId(Date.now().toString())
+    setActiveActions(QUICK_ACTIONS.map((_, i) => i))
+    setView('chat')
+  }, [saveCurrentSession])
+
+  // ── render helpers ──────────────────────────────────────
+  const msgBubble = (msg: Message) => (
+    <div key={msg.id} className={`flex flex-col gap-[4px] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+      <div
+        className="font-dm-sans text-[13px] leading-relaxed px-[14px] py-[10px]"
+        style={{
+          background: msg.role === 'user' ? 'rgba(184,145,72,0.85)' : 'rgba(245,236,212,0.70)',
+          color: msg.role === 'user' ? '#fff' : '#3b2d17',
+          borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+          maxWidth: '85%', whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word',
+        }}
+      >{msg.content}</div>
+      <span className="font-dm-sans text-[#7a5f2c]/70" style={{ fontSize: 10 }}>{msg.timestamp}</span>
+    </div>
+  )
+
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
-      {/* Expanded Chat Window */}
+    <div className="fixed bottom-20 right-8 sm:bottom-6 sm:right-4 md:right-6 z-50 flex flex-col items-end">
+
       {isOpen && (
-        <div className="relative">
-          <div 
-            className={`flex flex-col animate-in slide-in-from-bottom-5 relative transition-all duration-300 ease-in-out ${isExpanded ? 'w-[calc(100vw-32px)] md:w-[600px] h-[80vh] md:h-[800px]' : 'w-[calc(100vw-32px)] sm:w-[420px] h-[75vh] sm:h-[650px] max-h-[85vh]'}`}
-            style={{ 
-              background: '#F5EFE6', // Match the off-white/cream background
-              borderRadius: '24px',
-              boxShadow: '0px 10px 40px rgba(0, 0, 0, 0.1)'
-            }}
+        <div
+          className="mb-3 flex flex-col overflow-hidden"
+          style={{
+            width: isExpanded ? 'min(520px, calc(100vw - 32px))' : 'min(360px, calc(100vw - 32px))',
+            height: isExpanded ? 680 : 500,
+            background: 'rgba(251,247,238,0.98)', borderRadius: 16,
+            boxShadow: '0 8px 40px rgba(59,45,23,0.18)',
+            transition: 'width 0.2s ease, height 0.2s ease',
+          }}
+        >
+          {/* ── Header ── */}
+          <div
+            className="shrink-0 flex items-center justify-between"
+            style={{ background: '#fbf7ee', minHeight: 62, padding: '11px 17px', borderBottom: '1px solid rgba(184,145,72,0.12)' }}
           >
-            {/* Header */}
-            <div className="px-6 pt-8 pb-4 flex justify-between items-start">
-              <div>
-                <h3 className="font-cormorant font-bold text-[28px]" style={{ color: '#4A3B2C' }}>
-                  Orienda AI Assistant
-                </h3>
-                <p className="font-dm-sans text-[13px] mt-1" style={{ color: '#A07A44' }}>
-                  Always here to help
-                </p>
-              </div>
-              
-              <div className="flex items-center gap-3 mt-2 -mr-2">
-                <button 
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="w-6 h-6 flex items-center justify-center hover:opacity-70 transition-opacity" style={{ color: '#4A3B2C' }}
-                >
-                  {isExpanded ? (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="4 14 10 14 10 20"></polyline>
-                      <polyline points="20 10 14 10 14 4"></polyline>
-                      <line x1="14" y1="10" x2="21" y2="3"></line>
-                      <line x1="3" y1="21" x2="10" y2="14"></line>
-                    </svg>
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="15 3 21 3 21 9"></polyline>
-                      <polyline points="9 21 3 21 3 15"></polyline>
-                      <line x1="21" y1="3" x2="14" y2="10"></line>
-                      <line x1="3" y1="21" x2="10" y2="14"></line>
-                    </svg>
-                  )}
-                </button>
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="w-6 h-6 flex items-center justify-center hover:opacity-70 transition-opacity" style={{ color: '#4A3B2C' }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Quick Actions Row */}
-            <div className="pb-6 flex gap-3 overflow-x-auto scrollbar-hide shrink-0 w-full">
-              <style jsx>{`
-                .scrollbar-hide::-webkit-scrollbar { display: none; }
-                .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-              `}</style>
-              {/* Spacer for left padding */}
-              <div className="w-4 shrink-0" />
-              {[
-                { 
-                  icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#82A1D1' }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>, 
-                  text: 'Book Appointment' 
-                },
-                { 
-                  icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#9782D1' }}><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>, 
-                  text: 'Find a Doctor' 
-                },
-                { 
-                  icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#D18296' }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>, 
-                  text: 'Locations' 
-                },
-                { 
-                  icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#82D19D' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>, 
-                  text: 'Medical Records' 
-                }
-              ].map((action, i) => (
-                <button 
-                  key={i}
-                  className="whitespace-nowrap px-4 py-2.5 rounded-full font-dm-sans text-[13px] bg-white shadow-sm flex items-center gap-2 hover:bg-gold-50 transition-colors border border-black/5 shrink-0"
-                  style={{ color: '#4A3B2C' }}
-                >
-                  {action.icon}
-                  <span className="font-medium">{action.text}</span>
-                </button>
-              ))}
-              {/* Spacer for right edge */}
-              <div className="w-6 shrink-0" />
-            </div>
-
-            {/* Chat Thread */}
-            <div className="flex-1 px-6 overflow-y-auto flex flex-col gap-6 pb-4 scrollbar-hide">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`flex flex-col gap-1.5 max-w-[85%] ${msg.role === 'user' ? 'items-end self-end' : 'items-start'}`}>
-                  <div 
-                    className={`px-5 py-4 font-dm-sans text-[14px] leading-relaxed shadow-sm ${msg.role === 'user' ? 'shadow-md' : ''}`}
-                    style={{ 
-                      background: msg.role === 'user' ? '#C7A779' : '#EAE2D3', 
-                      color: msg.role === 'user' ? '#FFFFFF' : '#4A3B2C',
-                      borderRadius: msg.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
-                      whiteSpace: 'pre-wrap'
-                    }}
-                  >
-                    {msg.content}
-                  </div>
-                  <span className="font-dm-sans text-[10px]" style={{ color: '#8B7E74' }}>{msg.timestamp}</span>
-                </div>
-              ))}
-              
-              {isTyping && (
-                <div className="flex flex-col items-start gap-1.5 max-w-[85%]">
-                  <div className="px-5 py-4 font-dm-sans text-[14px] leading-relaxed shadow-sm flex gap-1" style={{ background: '#EAE2D3', borderRadius: '20px 20px 20px 4px' }}>
-                    <div className="w-2 h-2 rounded-full bg-black/20 animate-bounce" />
-                    <div className="w-2 h-2 rounded-full bg-black/20 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                    <div className="w-2 h-2 rounded-full bg-black/20 animate-bounce" style={{ animationDelay: '0.4s' }} />
-                  </div>
-                </div>
+            <div className="flex items-center gap-[6px]">
+              {view === 'chat' && (
+                <button
+                  onClick={openHistory}
+                  title="History"
+                  className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+                ><ArrowLeft size={13} /></button>
               )}
-              
-              <div ref={messagesEndRef} />
+              {view === 'history' && (
+                <button
+                  onClick={() => setView('chat')}
+                  className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+                ><ArrowLeft size={13} /></button>
+              )}
+              <div className="flex flex-col gap-[3px]">
+                <span className="font-cormorant font-bold text-[#3b2d17] leading-none" style={{ fontSize: 20 }}>
+                  {view === 'history' ? 'Chat History' : 'Orienda AI Assistant'}
+                </span>
+                <span className="font-dm-sans text-[#7a5f2c] leading-none" style={{ fontSize: 10 }}>
+                  {view === 'history'
+                    ? `${sessions.length} conversation${sessions.length !== 1 ? 's' : ''}`
+                    : (user ? `Signed in · ${user.email?.split('@')[0]}` : 'Always here to help')}
+                </span>
+              </div>
             </div>
-
-            {/* Login / Save Data Banner */}
-            {showLoginBanner && (
-              <div className="mx-6 mb-2 p-3 rounded-2xl flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-bottom-2 bg-white/80 backdrop-blur">
-                <div className="flex flex-col">
-                  <span className="font-dm-sans text-[12px] font-bold" style={{ color: '#4A3B2C' }}>Save your chat history?</span>
-                  <span className="font-dm-sans text-[11px]" style={{ color: '#8B7E74' }}>Please log in.</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Link href="/login" className="px-3 py-1.5 rounded-full font-dm-sans text-[11px] font-bold text-white transition-opacity hover:opacity-90 shadow-sm" style={{ background: '#C7A779' }}>
-                    Log In
-                  </Link>
-                  <button onClick={() => setShowLoginBanner(false)} className="p-1 rounded-full hover:bg-black/5" style={{ color: '#8B7E74' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Input Footer */}
-            <div className="px-6 pb-6 pt-2">
-              <div 
-                className="w-full flex items-center rounded-[32px] p-2 pl-6 bg-white shadow-lg"
-              >
-                <textarea 
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Type your question here..." 
-                  rows={1}
-                  className="flex-1 bg-transparent border-none outline-none font-dm-sans text-[15px] resize-none py-3 max-h-[100px] scrollbar-hide"
-                  style={{ color: '#4A3B2C' }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSend()
-                    }
-                  }}
-                />
-                <button 
-                  onClick={handleSend}
-                  disabled={!inputValue.trim()}
-                  className="w-12 h-12 rounded-full flex shrink-0 items-center justify-center hover:opacity-90 transition-opacity ml-2 disabled:opacity-50"
-                  style={{ background: '#C7A779' }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                  </svg>
-                </button>
-              </div>
+            <div className="flex items-center gap-[6px]">
+              {view === 'chat' && (
+                <button onClick={handleNewChat} title="New chat"
+                  className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+                ><Plus size={13} /></button>
+              )}
+              <button onClick={() => setIsExpanded(v => !v)} title={isExpanded ? 'Shrink' : 'Expand'}
+                className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+              >{isExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}</button>
+              <button onClick={handleClose}
+                className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+              ><X size={13} /></button>
             </div>
           </div>
+
+          {/* ── History list ── */}
+          {view === 'history' && (
+            <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+              {sessions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
+                  <MessageSquare size={32} className="text-[#b89148]/30" />
+                  <p className="font-dm-sans text-[13px] text-[#7a5f2c]">No past conversations yet.</p>
+                  <button onClick={() => setView('chat')} className="font-dm-sans text-[12px] text-[#b89148] underline">
+                    Start a new chat
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col p-3 gap-[6px]">
+                  {sessions.map(s => {
+                    const msgCount = s.messages.filter(m => m.role === 'user').length
+                    return (
+                      <div key={s.id} className="flex items-center gap-2">
+                        <button
+                          onClick={() => { setMessages(s.messages); setSessionId(s.id); setView('chat') }}
+                          className="flex-1 text-left rounded-[10px] px-3 py-[10px] hover:bg-[#f5ecd4] transition-colors"
+                          style={{ border: '1px solid rgba(184,145,72,0.15)' }}
+                        >
+                          <p className="font-dm-sans text-[12px] text-[#3b2d17] font-medium truncate">{s.preview || 'Conversation'}</p>
+                          <p className="font-dm-sans text-[10px] text-[#7a5f2c]/60 mt-[2px]">
+                            {formatDate(s.date)} · {msgCount} message{msgCount !== 1 ? 's' : ''}
+                          </p>
+                        </button>
+                        <button
+                          onClick={() => { removeSession(s.id, user?.id); setSessions(loadSessions(user?.id)) }}
+                          className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-red-50 transition-colors text-[#7a5f2c]/40 hover:text-red-400 shrink-0"
+                        ><X size={11} /></button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Active chat ── */}
+          {view === 'chat' && (
+            <>
+              {/* Quick actions — sticky strip */}
+              {activeActions.length > 0 && (
+                <div className="shrink-0 flex gap-[8px] overflow-x-auto px-[14px] py-[10px]"
+                  style={{ scrollbarWidth: 'none', borderBottom: '1px solid rgba(184,145,72,0.08)' }}>
+                  {activeActions.map(i => {
+                    const a = QUICK_ACTIONS[i]
+                    return (
+                      <button key={i} onClick={() => {
+                        if (a.action === 'booking') { setBookingOpen(true) }
+                        else if (a.action === 'navigate' && a.path) { router.push(`/${locale}${a.path}`) }
+                        else { sendMessage(a.text) }
+                        setActiveActions([])
+                      }}
+                        className="flex items-center gap-[6px] shrink-0 font-dm-sans text-[#3b2d17] hover:opacity-80 transition-opacity whitespace-nowrap"
+                        style={{ background: 'rgba(245,236,212,0.30)', borderRadius: 14, padding: '7px 10px', fontSize: 11, boxShadow: '0 1px 4px rgba(59,45,23,0.10)' }}
+                      >{a.icon}{a.text}</button>
+                    )
+                  })}
+                </div>
+              )}
+
+              <div className="flex-1 overflow-y-auto flex flex-col px-[23px] pt-[14px]" style={{ scrollbarWidth: 'none' }}>
+
+                {/* FAQ — only on fresh chat */}
+                {userCount === 0 && (() => {
+                  const all = user ? FAQ_USER : FAQ_GUEST
+                  const visible = faqExpanded ? all : all.slice(0, 5)
+                  return (
+                    <div className="flex flex-col gap-[5px] pb-[14px]">
+                      <span className="font-dm-sans text-[#7a5f2c]/60 text-[10px] mb-[2px]">
+                        {user ? 'How can I help you today?' : 'Frequently asked'}
+                      </span>
+                      {visible.map((q, i) => (
+                        <button key={i} onClick={() => sendMessage(q)}
+                          className="text-left font-dm-sans text-[#3b2d17] hover:opacity-80 transition-opacity"
+                          style={{ background: 'rgba(245,236,212,0.50)', borderRadius: 10, padding: '7px 11px', fontSize: 11, boxShadow: '0 1px 3px rgba(59,45,23,0.08)', border: '1px solid rgba(184,145,72,0.15)' }}
+                        >{q}</button>
+                      ))}
+                      {all.length > 5 && (
+                        <button onClick={() => setFaqExpanded(v => !v)}
+                          className="font-dm-sans text-[#b89148] hover:opacity-80 transition-opacity text-left"
+                          style={{ fontSize: 11, padding: '3px 2px' }}
+                        >{faqExpanded ? '▲ Show less' : `▼ Show ${all.length - 5} more`}</button>
+                      )}
+                    </div>
+                  )
+                })()}
+
+                {/* Messages */}
+                <div className="flex flex-col gap-[11px] pb-3">
+                  {messages.map(msgBubble)}
+                  {isTyping && (
+                    <div className="flex items-center gap-[4px] px-[14px] py-[10px] self-start" style={{ background: 'rgba(245,236,212,0.70)', borderRadius: '16px 16px 16px 4px' }}>
+                      {[0, 0.2, 0.4].map((d, i) => (
+                        <div key={i} className="w-2 h-2 rounded-full bg-[#7a5f2c]/40 animate-bounce" style={{ animationDelay: `${d}s` }} />
+                      ))}
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+
+              {/* Input */}
+              <div className="shrink-0 px-[18px] pb-[16px] pt-[10px]" style={{ background: 'rgba(249,249,249,0.30)' }}>
+                {userCount >= MAX_MESSAGES && (
+                  <p className="font-dm-sans text-[10px] text-center text-[#7a5f2c] mb-1.5">
+                    Message limit reached. Start a new chat with +
+                  </p>
+                )}
+                {!user && (
+                  <p className="font-dm-sans text-[10px] text-center text-[#7a5f2c]/50 mb-1.5">
+                    <button onClick={() => setLoginOpen(true)} className="underline hover:text-[#b89148] transition-colors">Sign in</button>
+                    {' '}to save your conversation
+                  </p>
+                )}
+                <div className="flex items-center gap-2"
+                  style={{ background: 'rgba(249,249,249,0.50)', borderRadius: 71, padding: '10px 6px 10px 18px', boxShadow: '0 1px 8px rgba(59,45,23,0.10)' }}
+                >
+                  <input
+                    type="text" value={inputValue}
+                    onChange={e => setInputValue(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSend() } }}
+                    placeholder={isTyping ? 'Waiting...' : 'Ask AI'}
+                    disabled={isTyping || userCount >= MAX_MESSAGES}
+                    className="flex-1 bg-transparent border-none outline-none font-dm-sans text-[#3b2d17] placeholder:text-[#7a5f2c]/60 min-w-0 disabled:opacity-50"
+                    style={{ fontSize: 12 }}
+                  />
+                  <button onClick={handleSend} disabled={!canSend}
+                    className="shrink-0 flex items-center justify-center rounded-full hover:opacity-90 transition-opacity disabled:opacity-40"
+                    style={{ width: 32, height: 32, background: 'rgba(184,145,72,0.70)', boxShadow: '0 2px 8px rgba(59,45,23,0.15)' }}
+                  ><Send size={12} color="white" strokeWidth={2.5} /></button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
-      {/* Floating Toggle Button */}
-      {!isOpen && (
-        <button 
-          onClick={() => setIsOpen(true)}
-          className="h-[56px] px-8 rounded-full shadow-xl flex items-center justify-center gap-3 hover:scale-105 transition-transform"
-          style={{ background: '#C7A779' }}
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            <circle cx="9" cy="10" r="1" fill="white" />
-            <circle cx="15" cy="10" r="1" fill="white" />
-          </svg>
-          <span className="font-cormorant font-bold text-white text-[20px] tracking-wide">AI Chat</span>
-        </button>
-      )}
+      <BookAppointmentModal open={bookingOpen} onClose={() => setBookingOpen(false)} />
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={() => { setLoginOpen(false); setSessions(loadSessions(user?.id)); setView('history') }}
+        message="Sign in to view your chat history"
+      />
+
+      {/* Trigger pill */}
+      <button
+        onClick={() => setIsOpen(o => !o)}
+        className="flex items-center justify-center gap-[8px] hover:opacity-90 transition-opacity"
+        style={{ width: 108, height: 66, background: '#b89148', borderRadius: '50px 50px 0 50px', boxShadow: '0 4px 16px rgba(59,45,23,0.25)' }}
+      >
+        <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
+          <path d="M6 0L7 5L12 6L7 7L6 12L5 7L0 6L5 5Z" fill="#fbf7ee" />
+        </svg>
+        <span className="font-cormorant font-bold text-[#fbf7ee] leading-none" style={{ fontSize: 24 }}>AI</span>
+      </button>
+
     </div>
   )
 }

@@ -1,25 +1,24 @@
-import { ArrowRight } from 'lucide-react'
+'use client'
+
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import { useState, useEffect } from 'react'
+import { ArrowRight } from 'lucide-react'
+import { useTranslations, useLocale } from 'next-intl'
 
-  // We will move STATS inside the component to use t()
 
-function StatCard({ pct, label, body }: { pct: string; label: string; body: string }) {
+function StatCard({ value, label, body }: { value: string; label: string; body: string }) {
   return (
     <div
-      className="bg-[#f7f5f2]/30 backdrop-blur-2xl border border-white/60 rounded-[16px] shadow-[0_8px_32px_rgba(107,90,69,0.12)] overflow-hidden"
-      style={{ padding: '24px 28px', width: 280 }}
+      className="flex flex-col overflow-hidden rounded-[16px] border border-[#fbf7ee] shadow-[0px_4px_12px_3px_rgba(89,69,34,0.2)]"
+      style={{ padding: '16px', background: 'rgba(251,247,238,0.8)' }}
     >
-      <div className="flex flex-col items-center text-center w-full">
-        <div className="flex items-baseline justify-center gap-[8px] w-full mb-3">
-          <span className="font-cormorant font-bold text-[36px] text-[#A2834E] leading-none whitespace-nowrap drop-shadow-sm">
-            {pct}
-          </span>
-          <span className="font-cormorant font-medium text-[20px] text-[#2c241b] leading-none whitespace-nowrap">
-            {label}
-          </span>
+      <div className="flex flex-col gap-[10px] pt-[4px] pb-[12px] w-full items-center text-center">
+        {/* Value + label: inline on mobile, stacked on xl */}
+        <div className="flex flex-wrap xl:flex-col items-baseline xl:items-center justify-center gap-x-[6px] gap-y-[2px] xl:gap-y-[8px] font-cormorant font-bold leading-none">
+          <span className="text-[20px] sm:text-[28px] xl:text-[36px] text-[#7a5f2c] whitespace-nowrap">{value}</span>
+          <span className="text-[14px] sm:text-[18px] xl:text-[24px] text-[#3b2d17]">{label}</span>
         </div>
-        <p className="font-dm-sans text-[12px] text-[#6b5a45] leading-[1.6] w-full">
+        <p className="font-dm-sans font-normal text-[13px] sm:text-[15px] text-[#3b2d17] leading-[1.3] text-center">
           {body}
         </p>
       </div>
@@ -27,101 +26,74 @@ function StatCard({ pct, label, body }: { pct: string; label: string; body: stri
   )
 }
 
+const STATIC_STATS = [
+  { value: '99%', label: 'Patient satisfaction', body: 'Based on patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities.' },
+  { value: 'Over 100,000', label: 'Patient Visits since 2024', body: 'Including both Cambodian and International patients from over 20 countries — a sign of growing trust in local healthcare quality.' },
+  { value: '0%', label: 'Readmission Rate', body: "Orienda's readmission rate stands at 0%, reflecting consistent follow-up and preventive care success." },
+  { value: '0.5%', label: 'Surgical Infection Rate', body: 'A 0.5% surgical infection rate shows our commitment to safe surgeries and careful post-operative care for every patient.' },
+]
+
 export default function WhySection() {
   const t = useTranslations('WhySection')
+  const locale = useLocale()
+  const [STATS, setStats] = useState<typeof STATIC_STATS | null>(null)
 
-  const STATS = Array(4).fill({
-    pct: '99%',
-    label: t('statSatisfactionLabel'),
-    body: t('statSatisfactionBody'),
-  })
+  useEffect(() => {
+    fetch(`/api/why-stats?locale=${locale}`)
+      .then(r => r.json())
+      .then(d => setStats(d.docs?.length ? d.docs : STATIC_STATS))
+      .catch(() => setStats(STATIC_STATS))
+  }, [locale])
+
+  if (!STATS) return null
 
   return (
-    <section className="relative w-full overflow-hidden bg-gold-50 py-[80px] lg:py-[160px]">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/why-bg.jpg"
-          alt="Why Choose Orienda Background"
-          fill
-          className="object-cover"
-          quality={90}
-        />
-        {/* Overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]"></div>
+    <section className="relative w-full overflow-hidden py-[48px] xl:py-[100px] bg-[#fbf7ee] lg:bg-transparent">
+
+      {/* Background image — desktop only */}
+      <div className="absolute inset-0 hidden lg:block">
+        <Image src="/images/figma-facility-1.jpg" alt="Why Orienda" fill className="object-cover" sizes="100vw" priority />
       </div>
 
-      {/* ── Desktop layout (lg+) ─────────────────── */}
-      <div className="relative z-10 hidden lg:flex items-center justify-between max-w-[1400px] mx-auto px-10 xl:px-20" style={{ minHeight: 700 }}>
+      {/* Dark blur overlay — desktop only */}
+      <div className="absolute inset-0 hidden lg:block bg-[rgba(0,0,0,0.3)]" style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }} />
 
-        {/* Left text column */}
-        <div className="flex flex-col gap-8 max-w-[450px] xl:max-w-[500px]">
-          <div className="flex flex-col gap-4">
-            <h2 className="font-cormorant font-semibold text-[36px] xl:text-[44px] text-[#2c241b] leading-[1.2]">
+      {/* Content */}
+      <div className="relative z-10 max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[32px] xl:gap-[82px]">
+
+        {/* Text block */}
+        <div className="flex flex-col gap-[16px] items-start max-w-full xl:max-w-[695px]">
+          <div className="flex flex-col gap-[12px] lg:gap-[16px]">
+            <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] leading-tight text-[#3b2d17] lg:text-[#fbf7ee]">
               Why Orienda Is Your Best Choice?
             </h2>
-            <p className="font-dm-sans font-normal text-[15px] xl:text-[16px] text-[#6b5a45] leading-[1.6]">
-              {t('description')}
+            <p className="font-dm-sans font-light text-[14px] sm:text-[16px] xl:text-[24px] leading-[1.5] overflow-hidden text-[#3b2d17] lg:text-[#fbf7ee]" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+              Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with a proven track record of life-saving success. As an ISO-certified institution, we provide 24/7 comprehensive medical services—ranging from specialized fertility and maternity care to emergency air ambulance transport—all powered by a dedicated team of over 800 professionals.
             </p>
           </div>
-          <button className="flex items-center gap-2 bg-[#d3b482] text-white px-6 py-3 rounded-full font-dm-sans text-[14px] font-medium w-fit hover:bg-[#b09366] transition-colors mt-2 shadow-sm">
+          <button className="flex items-center gap-[8px] bg-[#b89148] text-white rounded-[12px] font-dm-sans text-[15px] xl:text-[16px] px-[20px]" style={{ height: 44 }}>
             {t('discoverMore')}
-            <ArrowRight size={18} />
+            <ArrowRight size={16} />
           </button>
         </div>
 
-        {/* Right cards column (Staggered Grid) */}
-        <div className="flex gap-[20px] xl:gap-[24px] items-start shrink-0">
-          {/* Left Column (shifted down) */}
-          <div className="flex flex-col gap-[20px] xl:gap-[24px] mt-[120px]">
-            <StatCard {...STATS[1]} />
-            <StatCard {...STATS[2]} />
+        {/* 4 stat cards — 2 cols on mobile, staggered row on xl */}
+        {STATS.length > 0 && (
+          <div className="grid grid-cols-2 gap-[12px] xl:hidden">
+            {STATS.map((s) => (
+              <StatCard key={s.label} value={s.value} label={s.label} body={s.body} />
+            ))}
           </div>
-          {/* Right Column (starts at top) */}
-          <div className="flex flex-col gap-[20px] xl:gap-[24px]">
-            <StatCard {...STATS[0]} />
-            <StatCard {...STATS[3]} />
-          </div>
-        </div>
-      </div>
-
-      {/* ── Mobile stacked layout (< lg) ─────────────────── */}
-      <div className="relative z-10 lg:hidden px-6 py-16 flex flex-col gap-10">
-        <div className="flex flex-col gap-6 relative">
-          <p className="font-dm-sans font-medium text-[13px] text-gold-700 uppercase tracking-[0.18em]">
-            {t('subtitle')}
-          </p>
-          <h2 className="font-cormorant font-bold text-[40px] text-gold-900 leading-[1.1]">
-            {t('title')}
-          </h2>
-          <p className="font-dm-sans font-light text-[18px] text-gold-900/80 leading-[1.5]">
-            {t('description')}
-          </p>
-          <button className="flex items-center gap-2 bg-[#A2834E] text-white px-6 py-3.5 rounded-[8px] font-dm-sans text-base w-fit hover:bg-gold-800 transition-colors">
-            {t('discoverMore')}
-            <ArrowRight size={20} />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {STATS.map((stat, i) => (
-            <div
-              key={i}
-              className="bg-[#f7f5f2]/30 backdrop-blur-2xl border border-white/50 rounded-[16px] shadow-[0_4px_24px_rgba(0,0,0,0.05)] p-6"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="font-cormorant font-bold text-[32px] text-gold-900 leading-none">
-                  {stat.pct}
-                </span>
-                <span className="font-cormorant font-bold text-[20px] text-gold-900 leading-none">
-                  {stat.label}
-                </span>
-              </div>
-              <p className="font-dm-sans text-[14px] text-gold-900/80 leading-[1.4]">{stat.body}</p>
+        )}
+        <div className="hidden xl:flex gap-[20px] items-start">
+          {[STATS[0], STATS[2], STATS[1], STATS[3]].filter(Boolean).map((s, i) => (
+            <div key={s.label} className="shrink-0 w-[322px]" style={{ marginTop: i % 2 === 1 ? 86 : 0 }}>
+              <StatCard value={s.value} label={s.label} body={s.body} />
             </div>
           ))}
         </div>
-      </div>
 
+      </div>
     </section>
   )
 }

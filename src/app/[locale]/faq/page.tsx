@@ -1,20 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useLocale } from 'next-intl'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
-const FAQS = [
-  { q: 'What are your operating hours?', a: 'Orienda International Hospital is open 24/7 for emergency services. Outpatient clinics operate from 8:00 AM to 5:00 PM.' },
-  { q: 'Do you accept international insurance?', a: 'Yes, we accept a wide range of international and local insurance providers. Please contact our billing department for a specific list.' },
-  { q: 'How do I book an appointment?', a: 'You can book an appointment directly through this website, via our Member Lite app, or by calling our hotline at (+855) 081 811 789.' },
-  { q: 'Do you offer translation services?', a: 'Yes, we provide translation services in English, Khmer, and Chinese to ensure clear communication with our international medical team.' },
-  { q: 'What should I bring to my first appointment?', a: 'Please bring your ID/Passport, insurance card, and any previous medical records or test results relevant to your condition.' }
-]
+interface FAQ { id: string; question: string; answer: string }
 
 export default function FAQPage() {
+  const locale = useLocale()
+  const [faqs, setFaqs] = useState<FAQ[]>([])
   const [openIndex, setOpenIndex] = useState<number | null>(0)
+
+  useEffect(() => {
+    fetch(`/api/faqs?locale=${locale}&limit=50`)
+      .then(r => r.json())
+      .then(d => {
+        const docs = d.docs || d || []
+        setFaqs(docs.map((f: any) => ({
+          id: String(f.id),
+          question: f.question ?? '',
+          answer: f.answer ?? '',
+        })))
+      })
+      .catch(() => {})
+  }, [locale])
 
   const toggle = (i: number) => {
     setOpenIndex(openIndex === i ? null : i)
@@ -22,7 +33,7 @@ export default function FAQPage() {
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[160px] xl:pt-[200px] pb-20 px-5" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-20 px-5" style={{ background: '#fbf7ee' }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="font-cormorant font-bold text-[56px] text-gold-900 leading-none mb-3">Frequently Asked Questions</h1>
@@ -30,20 +41,20 @@ export default function FAQPage() {
           </div>
 
           <div className="flex flex-col gap-4">
-            {FAQS.map((faq, i) => {
+            {faqs.map((faq, i) => {
               const isOpen = openIndex === i
               return (
-                <div key={i} className="bg-white rounded-[16px] shadow-[0px_4px_16px_rgba(122,95,44,0.08)] overflow-hidden transition-all">
-                  <button 
+                <div key={faq.id} className="bg-white rounded-[16px] shadow-[0px_4px_16px_rgba(122,95,44,0.08)] overflow-hidden transition-all">
+                  <button
                     onClick={() => toggle(i)}
                     className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
                   >
-                    <span className="font-cormorant font-bold text-[22px] text-gold-900">{faq.q}</span>
+                    <span className="font-cormorant font-bold text-[22px] text-gold-900">{faq.question}</span>
                     {isOpen ? <ChevronUp className="text-gold-700" /> : <ChevronDown className="text-gold-700" />}
                   </button>
                   {isOpen && (
                     <div className="px-6 pb-6 pt-2 border-t border-gold-50/50">
-                      <p className="font-dm-sans text-[16px] text-gold-800 leading-relaxed">{faq.a}</p>
+                      <p className="font-dm-sans text-[16px] text-gold-800 leading-relaxed">{faq.answer}</p>
                     </div>
                   )}
                 </div>

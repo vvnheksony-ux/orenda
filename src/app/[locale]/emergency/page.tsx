@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import SiteLayout from '@/components/layout/SiteLayout'
 
@@ -8,6 +8,14 @@ export default function EmergencyPage() {
   const [form, setForm] = useState({ contact_info: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
+  const [emergencyPhone, setEmergencyPhone] = useState('')
+
+  useEffect(() => {
+    fetch('/api/branches')
+      .then(r => r.json())
+      .then(d => { if (d.docs?.[0]?.phone) setEmergencyPhone(d.docs[0].phone) })
+      .catch(() => {})
+  }, [])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,13 +28,13 @@ export default function EmergencyPage() {
 
   if (status === 'success') return (
     <SiteLayout>
-      <div className="min-h-screen flex items-center justify-center pt-[160px] xl:pt-[200px]" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen flex items-center justify-center pt-[100px] lg:pt-[212px]" style={{ background: '#fbf7ee' }}>
         <div className="text-center flex flex-col items-center gap-6 px-6">
           <div className="w-20 h-20 rounded-full flex items-center justify-center bg-red-600">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </div>
           <h1 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none">Alert Sent</h1>
-          <p className="font-dm-sans text-[18px] text-gold-800 max-w-md">Our emergency team has been notified. Call <strong>(+855) 081 811 789</strong> for immediate assistance.</p>
+          <p className="font-dm-sans text-[18px] text-gold-800 max-w-md">Our emergency team has been notified.{emergencyPhone ? <> Call <strong>{emergencyPhone}</strong> for immediate assistance.</> : ' We will contact you shortly.'}</p>
           <Link href="/" className="mt-4 inline-flex items-center justify-center px-10 py-4 rounded-full font-dm-sans text-[16px] text-white" style={{ background: '#b89148' }}>Back to Home</Link>
         </div>
       </div>
@@ -35,15 +43,17 @@ export default function EmergencyPage() {
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[160px] xl:pt-[200px] pb-20 px-5" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-20 px-5" style={{ background: '#fbf7ee' }}>
         <div className="max-w-xl mx-auto">
 
           {/* Emergency banner */}
           <div className="bg-red-600 rounded-[16px] p-6 mb-10 text-center">
             <p className="font-dm-sans text-white text-[14px] mb-1">For life-threatening emergencies call immediately</p>
-            <a href="tel:+85581811789" className="font-cormorant font-bold text-[32px] text-white">
-              (+855) 081 811 789
-            </a>
+            {emergencyPhone && (
+              <a href={`tel:${emergencyPhone.replace(/\s/g, '')}`} className="font-cormorant font-bold text-[32px] text-white">
+                {emergencyPhone}
+              </a>
+            )}
           </div>
 
           <div className="text-center mb-10">

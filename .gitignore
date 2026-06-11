@@ -39,9 +39,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-*.png
-*.jpeg
-*.jpg
+# *.png
+# *.jpeg
+# *.jpg
 *.sql
 *.log
 .claude/
+
+#graphify 
+.graphify/
+graphify-out/
+.graphify_*.json
+.graphify_python
+# playwright mcp snapshots
+.playwright-mcp/
+
+# root screenshot captures
+*.jpeg

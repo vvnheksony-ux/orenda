@@ -1,4 +1,4 @@
-import { Cormorant_Garamond, DM_Sans, Inter, Great_Vibes, Suwannaphum, Kantumruy_Pro, Noto_Sans_SC, Noto_Serif_SC } from 'next/font/google'
+import { Cormorant_Garamond, DM_Sans, Inter, Great_Vibes, Suwannaphum, Kantumruy_Pro, Noto_Serif_SC } from 'next/font/google'
 
 export const cormorantGaramond = Cormorant_Garamond({
   subsets: ['latin'],
@@ -50,10 +50,3 @@ export const chineseSerif = Noto_Serif_SC({
   preload: false,
 })
 
-export const chineseSans = Noto_Sans_SC({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--chinese-sans',
-  display: 'swap',
-  preload: false,
-})
