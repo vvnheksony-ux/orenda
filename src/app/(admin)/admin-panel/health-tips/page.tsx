@@ -1,14 +1,26 @@
 import { AdminCardPage } from '@/components/admin/AdminManagementPage'
+import { getPayloadClient } from '@/lib/payload'
 
-const news = [
-  { title: 'Health Tip title', description: 'This is health tip short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'Health Tip title', description: 'This is health tip short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'Health Tip title', description: 'This is health tip short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'Health Tip title', description: 'This is health tip short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'Health Tip title', description: 'This is health tip short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-]
+export default async function HealthPage() {
+  let tips: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const data = await payload.find({
+      collection: 'health-tips',
+      overrideAccess: true,
+      depth: 0,
+      sort: '-updatedAt',
+      limit: 100,
+    } as any)
+    tips = data.docs.map((doc: any) => ({
+      title: doc.title ?? '',
+      description: doc.excerpt ?? '',
+      author: doc.author ?? '',
+      updated: doc.updatedAt ?? '',
+      status: doc._status ?? 'draft',
+    }))
+  } catch {}
 
-export default function HealthPage() {
   return (
     <AdminCardPage
       title="Health Tips"
@@ -16,8 +28,8 @@ export default function HealthPage() {
       searchPlaceholder="Search health tips..."
       primaryActionLabel="Add Health Tip"
       cards={{
-        items: news,
-        rowKey: (_item, index) => `news-${index}`,
+        items: tips,
+        rowKey: (_item: any, index: number) => `tip-${index}`,
         actions: [
           { label: 'Preview health tip', icon: 'view', tone: 'muted' },
           { label: 'Edit health tip', icon: 'edit', tone: 'blue' },

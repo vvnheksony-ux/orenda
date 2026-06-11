@@ -1,14 +1,24 @@
 import { AdminTablePage } from '@/components/admin/AdminManagementPage'
+import { getPayloadClient } from '@/lib/payload'
 
-const faqs = [
-  { question: 'What is the return policy?', answer: 'You can return any item within 30 days of purchase.', status: 'published' },
-  { question: 'How to track my order?', answer: 'You can track your order using the tracking link sent to your email.', status: 'published' },
-  { question: 'What payment methods are accepted?', answer: 'We accept all major credit cards and PayPal.', status: 'draft' },
-  { question: 'How to contact customer support?', answer: 'You can contact us via the contact form on our website.', status: 'published' },
-  { question: 'Do you offer international shipping?', answer: 'Yes, we ship to most countries worldwide.', status: 'draft' },
-]
+export default async function FAQsPage() {
+  let faqs: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const data = await payload.find({
+      collection: 'faqs',
+      overrideAccess: true,
+      depth: 0,
+      sort: 'order',
+      limit: 200,
+    } as any)
+    faqs = data.docs.map((doc: any) => ({
+      question: doc.question ?? '',
+      category: doc.category ?? '',
+      status: doc._status ?? 'published',
+    }))
+  } catch {}
 
-export default function FAQsPage() {
   return (
     <AdminTablePage
       title="FAQs"
@@ -17,14 +27,17 @@ export default function FAQsPage() {
       primaryActionLabel="New FAQ"
       table={{
         rows: faqs,
-        rowKey: (_row, index) => `faq-${index}`,
+        rowKey: (_row: any, index: number) => `faq-${index}`,
         columns: [
           { key: 'question', label: 'Question' },
-          { key: 'answer', label: 'Answer' },
+          { key: 'category', label: 'Category' },
           { key: 'status', label: 'Status', kind: 'status' },
           { key: 'actions', label: 'Actions', kind: 'actions' },
         ],
-        actions: [{ label: 'View Details', tone: 'gold' }],
+        actions: [
+          { label: 'Edit FAQ', icon: 'edit', tone: 'muted' },
+          { label: 'Delete FAQ', icon: 'delete', tone: 'danger' },
+        ],
       }}
     />
   )

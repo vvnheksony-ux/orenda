@@ -27,6 +27,7 @@ import {
   Tickets,
   Users,
   Video,
+  Bell,
 } from 'lucide-react'
 
 type NavItem = {
@@ -67,6 +68,7 @@ const navGroups: NavGroup[] = [
       { label: 'Pages', href: '/admin-panel/pages', icon: FileText },
       { label: 'Promotions Packages', href: '/admin-panel/promotions', icon: Megaphone },
       { label: 'News', href: '/admin-panel/news', icon: Newspaper },
+      { label: 'Announcements', href: '/admin-panel/announcements', icon: Bell },
       { label: 'Health Tips', href: '/admin-panel/health-tips', icon: HeartPulse },
       { label: 'Doctor Talks', href: '/admin-panel/doctor-talks', icon: Video },
       { label: 'Career', href: '/admin-panel/career', icon: BriefcaseBusiness },
