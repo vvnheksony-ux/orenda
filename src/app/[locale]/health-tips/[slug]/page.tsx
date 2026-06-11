@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState, useEffect, use } from 'react'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
-import { ArrowRight, Phone, Clock, ChevronRight } from 'lucide-react'
+import { ArrowRight, Phone, Clock } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 
 interface HealthTipDetail {
@@ -12,7 +12,7 @@ interface HealthTipDetail {
   excerpt: string; thumbnail: string | null; publishedAt: string
   author: string; category: string; readingTime: number | null
 }
-interface TipCard { id: string; title: string; slug: string; thumbnail: string | null }
+interface ContentCard { id: string; title: string; slug: string; thumbnail: string | null; href: string }
 
 function formatDate(iso: string) {
   if (!iso) return ''
@@ -31,17 +31,28 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
   const { slug } = use(params)
   const locale = useLocale()
   const [tip, setTip] = useState<HealthTipDetail | null>(null)
-  const [related, setRelated] = useState<TipCard[]>([])
+  const [related, setRelated] = useState<ContentCard[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
       fetch(`/api/health-tips?locale=${locale}&slug=${encodeURIComponent(slug)}`).then(r => r.json()),
-      fetch(`/api/health-tips?locale=${locale}&limit=5`).then(r => r.json()).catch(() => ({ docs: [] })),
-    ]).then(([detail, list]) => {
+      fetch(`/api/health-tips?locale=${locale}&limit=10`).then(r => r.json()).catch(() => ({ docs: [] })),
+      fetch(`/api/news?locale=${locale}&limit=10`).then(r => r.json()).catch(() => ({ docs: [] })),
+      fetch(`/api/doctor-talks?locale=${locale}&limit=10`).then(r => r.json()).catch(() => ({ docs: [] })),
+    ]).then(([detail, tips, news, talks]) => {
       if (detail) setTip(detail)
-      const others = (list?.docs || []).filter((t: any) => t.slug !== slug).slice(0, 4)
-      setRelated(others)
+      const pool: ContentCard[] = [
+        ...(tips?.docs || []).filter((t: any) => t.slug !== slug).map((t: any) => ({ id: `tip-${t.id}`, title: t.title, slug: t.slug, thumbnail: t.thumbnail, href: `/health-tips/${t.slug}` })),
+        ...(news?.docs || []).map((n: any) => ({ id: `news-${n.id}`, title: n.title, slug: n.slug, thumbnail: n.thumbnail, href: `/news/${n.slug}` })),
+        ...(talks?.docs || []).map((d: any) => ({ id: `talk-${d.id}`, title: d.title, slug: d.slug, thumbnail: d.thumbnail, href: `/doctor-talks/${d.slug}` })),
+      ]
+      // shuffle
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]]
+      }
+      setRelated(pool.slice(0, 4))
     }).catch(() => {}).finally(() => setLoading(false))
   }, [locale, slug])
 
@@ -129,10 +140,10 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
                 </div>
               </div>
 
-              {/* More Health Tips */}
+              {/* Explore More */}
               <div className="flex flex-col gap-[40px] items-center">
                 <div className="flex flex-col gap-[12px] text-center w-full leading-none">
-                  <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17]">More Health Tips</h2>
+                  <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17]">Explore More</h2>
                   <p className="font-dm-sans text-[20px] text-[#594522]">Articles for health care tips</p>
                 </div>
 
@@ -141,7 +152,7 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
                     {related.map(item => (
                       <Link
                         key={item.id}
-                        href={`/health-tips/${item.slug}` as any}
+                        href={item.href as any}
                         className="bg-white flex flex-col items-center overflow-hidden rounded-[16px] shrink-0 w-[300px] hover:shadow-lg transition-shadow"
                         style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }}
                       >
@@ -168,14 +179,6 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
                     ))}
                   </div>
                 )}
-
-                <Link
-                  href="/health-tips"
-                  className="flex items-center gap-[8px] px-[32px] py-[12px] rounded-full border border-[#b89148] font-dm-sans text-[16px] text-[#5c4924] hover:bg-[#b89148]/10 transition-colors"
-                >
-                  View All Health Tips
-                  <ChevronRight size={16} />
-                </Link>
               </div>
             </>
           )}
