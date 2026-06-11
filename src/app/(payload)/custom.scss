@@ -1,0 +1,510 @@
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
+// @tailwind base;
+// @tailwind components;
+// @tailwind utilities;
+
+@source "../../payload/admin/components";
+
+@theme {
+  /* Orienda Color Tokens synchronized from globals.css */
+  --color-gold-900: #3b2d17;
+  --color-gold-800: #594522;
+  --color-gold-700: #7a5f2c;
+  --color-gold-500: #b89148;
+  --color-gold-200: #ead6a4;
+  --color-gold-50: #fbf7ee;
+  --color-neutral-0: #ffffff;
+  --color-neutral-800: #2a2620;
+  --color-neutral-black: #050505;
+  --color-star: #ffcc00;
+
+  /* Font families */
+  --font-cormorant: var(--cormorant-font), var(--khmer-serif), var(--chinese-serif);
+  --font-dm-sans: var(--dm-sans-font), var(--khmer-sans), var(--chinese-sans);
+  --font-inter: var(--inter-font), var(--khmer-sans), var(--chinese-sans);
+  --font-script: var(--script-font), var(--khmer-serif), var(--chinese-serif);
+}
+
+@layer utilities {
+  /* The overarching main layout bar across the page top */
+  .list-header,
+  .collection-list__header,
+  header[class*="list-header"],
+  div[class*="header__title-wrap"] {
+    display: flex !important;
+    position: relative !important; /* Establishes a solid baseline coordinate link */
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-bottom: 2rem !important;
+  }
+  /* Target main titles natively */
+  .list-header h1,
+  .collection-list__header h1,
+  header[class*="list-header"] h1 {
+    color: #2b2823 !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    display: inline-block !important;
+  }
+
+  /* THE FORCE FIX: Absolute alignment bypasses deep container constraints */
+  .list-header__create-new-button,
+  .collection-list a[class*="create-new"],
+  header[class*="list-header"] a[class*="create"],
+  [class*="header"] a[href*="/create"] {
+    position: absolute !important;
+    right: 0 !important; /* Lock it exactly to the far right margin edge */
+    top: 50% !important;
+    transform: translateY(
+      -50%
+    ) !important; /* Keep it perfectly vertically centered with title */
+    z-index: 10 !important;
+  }
+
+  /* Base template styling for the button action */
+  .list-header__create-new-button,
+  .collection-list .btn,
+  header[class*="list-header"] a[class*="btn"],
+  .collection-list button.btn--style-primary,
+  .form-submit button.btn--style-primary {
+    background: #b98c3d !important; /* Figma warm gold theme accent */
+    border: 0 !important;
+    border-radius: 0.625rem !important;
+    box-shadow: 0 4px 12px rgb(185 140 61 / 15%) !important;
+    color: #ffffff !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    height: 2.25rem !important;
+    padding-inline: 1.25rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    text-decoration: none !important;
+  }
+
+  .list-header__create-new-button:hover,
+  .collection-list .btn:hover,
+  header[class*="list-header"] a[class*="btn"]:hover {
+    background: #a97c31 !important;
+  }
+
+  /* Handle side-car functional components (like Columns, Filters buttons group) */
+  .list-header__actions,
+  .collection-list__header .collection-list__wrap,
+  div[class*="header__actions"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    /* Give it an explicit offset spacing so it sits neatly adjacent to the new button placement */
+    margin-right: 8.5rem !important;
+  }
+  /* ==========================================================================
+     3. DATA TABLES LAYER (Controlled Column Widths + Horizontal Scroll)
+     ========================================================================== */
+
+  /* Prevent the whole browser admin screen from overflowing horizontally */
+  .collection-list,
+  .collection-list__wrap,
+  main.template-default,
+  div[class*="list__wrap"] {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* 1. THE OUTER WINDOW LAYER (Drop shadow, rounded corners, and native scroll) */
+  .orienda-list-table-wrap,
+  .collection-list__table-wrap,
+  div[class*="table-wrap"],
+  div[class*="TableWrapper"] {
+    background: #ffffff !important;
+    border: 1px solid #e7dfd5 !important;
+    border-radius: 0.875rem !important;
+    box-shadow: 0 10px 24px rgb(50 39 24 / 4%) !important;
+
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important; /* The container scrollbar */
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin-top: 1rem !important;
+  }
+
+  /* 2. THE TABLE GRID STRUCTURE */
+  .orienda-list-table,
+  table.table,
+  table[class*="table"] {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    color: #4c4740 !important;
+    font-size: 0.875rem !important;
+    width: 100% !important;
+
+    /* Force layout to strictly respect our max-width assignments */
+    table-layout: fixed !important;
+  }
+
+  /* 3. THE HEADER CELL STYLING */
+  .orienda-list-table thead,
+  table thead,
+  [class*="table"] thead,
+  tr[class*="header"] {
+    background: #473318 !important;
+  }
+  .orienda-list-table th,
+  table th,
+  [class*="table"] th {
+    background: #473318 !important;
+    color: #d4c5ad !important;
+    font-size: 0.8125rem !important;
+    font-weight: 700 !important;
+    height: 3rem !important;
+    padding: 0.75rem 1.25rem !important;
+    border: none !important;
+    text-transform: none !important;
+
+    /* Set cell maximum constraints */
+    min-width: 120px !important; /* Ensure a minimum width for headers */
+    max-width: 200px !important; /* Allow headers to grow up to this size */
+    overflow: hidden; /* Keep overflow hidden for ellipsis */
+    text-overflow: ellipsis; /* Truncate text with ellipsis */
+  }
+
+  /* 4. THE DATA CELLS (Locks maximum width limits) */
+  .orienda-list-table td,
+  table td,
+  [class*="table"] td {
+    border-top: 1px solid #f5f2eb !important;
+    color: #403c35 !important;
+    padding: 0.875rem 1.25rem !important;
+    background: #ffffff !important;
+    vertical-align: middle !important;
+
+    /* CRITICAL CAP LIMITS: Prevents text from infinitely stretching cells */
+    min-width: 150px !important; /* Ensure a minimum width for data cells */
+    max-width: 220px !important; /* Allow data cells to grow up to this size */
+    overflow: hidden; /* Keep overflow hidden for ellipsis */
+    text-overflow: ellipsis; /* Truncate text with ellipsis */
+  }
+
+  /* Target specific columns if needed (e.g., ID columns can stay small) */
+  td[class*="id"],
+  th[class*="id"] {
+    max-width: 90px !important;
+  }
+
+  /* Soft row background hover highlight */
+  table tbody tr:hover td,
+  tr:hover td {
+    background: #fbfaf7 !important;
+  }
+  /* ==========================================================================
+     CUSTOM STATUS PILL CONDITIONALS
+     ========================================================================== */
+  .cell-status,
+  .cell-_status,
+  [class*="cell-status"] {
+    /* Base wrapper style for all status spans */
+    span {
+      padding: 0.25rem 0.55rem !important;
+      border-radius: 0.5rem !important;
+      font-weight: 600 !important;
+      font-size: 0.8rem !important;
+      display: inline-block !important;
+      text-transform: capitalize !important;
+    }
+
+    /* 1. PUBLISHED / COMPLETE STATUS (Green - Default Fallback) */
+    span[data-value*="published" i],
+    span[id*="published" i],
+    span[class*="published" i] {
+      background-color: #e6f7ed !important;
+      color: #24a148 !important;
+    }
+
+    span[data-value*="completed" i],
+    span[id*="completed" i],
+    span[class*="completed" i] {
+      background-color: #e6f7ed !important;
+      color: #24a148 !important;
+    }
+
+    /* 2. PENDING STATUS (Yellow / Orange)
+       Looks for 'pending' or 'Pending' anywhere within raw data or structural attributes */
+    span[data-value*="pending" i],
+    span[id*="pending" i],
+    span[class*="pending" i] {
+      background-color: #fff3e0 !important; /* Soft warm orange-yellow background */
+      color: #e65100 !important; /* Deep readable orange text */
+    }
+
+    /* 3. DRAFT STATUS (Gray-ish)
+       Looks for 'draft' or 'Draft' anywhere within raw data or structural attributes */
+    span[data-value*="draft" i],
+    span[id*="draft" i],
+    span[class*="draft" i] {
+      background-color: #f1f0ec !important; /* Muted gray-tan background */
+      color: #716b60 !important; /* Deep neutral gray-brown text */
+    }
+  }
+
+  .orienda-list-table {
+    min-width: 100% !important;
+    table-layout: fixed !important;
+    width: max-content !important;
+  }
+
+  .orienda-list-table th,
+  .orienda-list-table td {
+    max-width: 12.5rem !important;
+    min-width: 12.5rem !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    width: 12.5rem !important;
+  }
+
+  .orienda-list-table tbody tr {
+    min-height: 4.25rem !important;
+  }
+
+  .orienda-list-table__cell-content {
+    display: block !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+  }
+
+  .orienda-list-table__cell-content > * {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .orienda-list-table__actions-heading,
+  .orienda-list-table__actions-cell {
+    min-width: 7.5rem !important;
+    text-align: right !important;
+    width: 7.5rem !important;
+  }
+
+  .orienda-list-table__actions {
+    align-items: center !important;
+    display: flex !important;
+    gap: 0.45rem !important;
+    justify-content: flex-end !important;
+  }
+
+  .orienda-table-action {
+    align-items: center !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    gap: 0.3rem !important;
+    min-height: 2rem !important;
+    padding: 0 0.65rem !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+  }
+
+  .orienda-table-action--view {
+    background: #fbf6ec !important;
+    color: #7a5518 !important;
+  }
+
+  .orienda-table-action--edit {
+    background: #eef4ff !important;
+    color: #2563eb !important;
+  }
+
+  .orienda-table-action--delete {
+    background: #fff1f1 !important;
+    color: #dc2626 !important;
+  }
+
+  .orienda-table-action:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.45 !important;
+  }
+
+  .orienda-list-empty {
+    background: #ffffff !important;
+    border: 1px solid #eeeae4 !important;
+    border-radius: 0.875rem !important;
+    color: #716b60 !important;
+    padding: 2rem !important;
+  }
+
+  .orienda-dashboard {
+    background: #ffffff !important;
+    padding: 2.5rem 2rem 2.5rem !important;
+  }
+  .orienda-dashboard__toolbar,
+  .orienda-dashboard__stats,
+  .orienda-dashboard__tables,
+  .orienda-dashboard__charts {
+    display: grid !important;
+    gap: 1.5rem !important;
+    margin-bottom: 1.75rem !important;
+  }
+
+  .orienda-dashboard__toolbar {
+    display: flex !important;
+  }
+
+  .orienda-dashboard__toolbar button {
+    align-items: center !important;
+    background: #ffffff !important;
+    border: 1px solid #eeeae4 !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 4px 10px rgb(50 39 24 / 8%) !important;
+    color: #2b2823 !important;
+    display: inline-flex !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    gap: 0.7rem !important;
+    min-height: 3.2rem !important;
+    padding: 0 1.35rem !important;
+  }
+
+  
+}
+/* ==========================================================================
+   6. RESPONSIVE MEDIA BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 768px) {
+  :root {
+    --nav-width: 100vw;
+  }
+  .search-filter {
+    width: 100% !important;
+  }
+  .list-header,
+  .collection-list__header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+  .list-header__actions,
+  .collection-list__header .collection-list__wrap {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .orienda-list-toolbar {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .orienda-list-toolbar__search {
+    max-width: none !important;
+  }
+
+  .orienda-dashboard {
+    padding: 1.25rem !important;
+  }
+
+  .orienda-dashboard__stats,
+  .orienda-dashboard__tables,
+  .orienda-dashboard__charts {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@import "./payload-form-controls.scss";
+@import "./payload-collection-pages.scss";
+
+//* ==========================================================================
+    //  4. FILTER & COLUMN CHIPS LAYER (Fixed Active State Conditionals)
+    //  ========================================================================== */*
+  /* The wrapper area holding the active filter/column chips */
+  div[class*="list-controls__active-columns"],
+  div[class*="active-filters"],
+  .list-controls .pill-container,
+  [class*="list-header"] + div {
+    gap: 0.5rem !important;
+    margin-block: 1rem !important;
+    padding: 0.25rem 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* ------------------------------------------------------------------------
+     CONDITION A: UNSELECTED / BASE CHIPS (Light Background)
+     Matches column selection options and standard inactive filters
+     ------------------------------------------------------------------------ */
+  .list-controls button[class*="pill"]:not([class*="active"]),
+  div[class*="list-controls__active-columns"] button:not([class*="active"]),
+  .list-controls button[class*="add-filter"] {
+    background: #fbfaf7 !important;           /* Light elegant cream/gray layout background */
+    border: 1px solid #e7dfd5 !important;      /* Soft warm-gray border line */
+    border-radius: 0.75rem !important;         /* EXACTLY 12px Border Radius */
+    color: #60574d !important;                 /* Muted charcoal-brown font color */
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+    padding: 0.4rem 0.85rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.375rem !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 2px 4px rgb(50 39 24 / 2%) !important;
+  }
+
+  /* Hover state for unselected chips -> previews the deep brown style */
+  .list-controls button[class*="pill"]:not([class*="active"]):hover {
+    background: #5d4627 !important;            /* Slightly lighter deep brown for hover state */
+    border-color: #5d4627 !important;
+    color: #d4c5ad !important;                 /* Light cream text */
+  }
+
+/* Fix for Sidebar layout, height, and displacement */
+.template-default {
+  display: flex !important;
+  flex-direction: row !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  .nav {
+    height: 100vh !important;
+    position: sticky !important;
+    top: 0 !important;
+    flex-shrink: 0;
+    width: 0 !important;
+    border-right-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .nav__scroll {
+    padding: 0 !important;
+  }
+
+  .nav.nav--nav-open {
+    width: var(--nav-width) !important;
+    border-right-width: 1px !important;
+  }
+
+  .template-default__wrap {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    overflow-y: auto !important;
+    position: relative;
+  }
+}

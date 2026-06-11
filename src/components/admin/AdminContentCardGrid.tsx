@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import Image from 'next/image'
 import { Edit, Eye, FileText, ImageIcon, Link2, Play, Trash2 } from 'lucide-react'
-import { type AdminStatus } from './AdminDataTable'
+import { type AdminStatus } from '../../payload/admin/components/dashboard/AdminDataTable'
 
 export type AdminContentCardAction<T> = {
   label: string
@@ -104,7 +104,16 @@ export default function AdminContentCardGrid<T extends AdminContentCardItem>({
               <h3 className="text-sm font-bold text-[#2d2b28]">{getTitle(item, index)}</h3>
               <ActionButtons item={item} index={index} actions={actions} />
             </div>
-            {getDescription && <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#918b82]">{getDescription(item, index)}</p>}
+            {getDescription && (
+              <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#918b82]">
+                {(() => {
+                  const rawHtml = String(getDescription(item, index) || '')
+                  const plainText = rawHtml.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim()
+                  const words = plainText.split(' ').filter(Boolean)
+                  return words.length > 15 ? words.slice(0, 15).join(' ') + '...' : plainText
+                })()}
+              </p>
+            )}
             {getMeta && <div className="mt-4 border-t border-[#efede8] pt-3 text-xs leading-5 text-[#7f7a72]">{getMeta(item, index)}</div>}
           </div>
         </article>

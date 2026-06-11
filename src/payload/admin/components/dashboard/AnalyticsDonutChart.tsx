@@ -13,12 +13,13 @@ export default function AnalyticsDonutChart({ rows }: { rows: AnalyticsRow[] }) 
   }))
 
   return (
-    <div className="grid min-h-[315px] place-items-center">
-      <div className="h-56 w-full">
+    <div className="orienda-dashboard-donut grid min-h-[315px] place-items-center">
+      <div className="orienda-dashboard-donut__canvas h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Tooltip
               contentStyle={{ border: '1px solid #eadfcf', borderRadius: 14, boxShadow: '0 14px 30px rgba(53, 42, 22, 0.14)' }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(value: any) => [
                 value != null ? `${value}%` : '',
                 `${data.find((item) => item.value === value)?.name ?? ''}`,
@@ -32,7 +33,7 @@ export default function AnalyticsDonutChart({ rows }: { rows: AnalyticsRow[] }) 
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-3 flex flex-wrap justify-center gap-4 text-xs text-[#8f8577]">
+      <div className="orienda-dashboard__language-legend mt-3 flex flex-wrap justify-center gap-4 text-xs text-[#8f8577]">
         {data.map((item, index) => (
           <span key={item.name} className="inline-flex items-center gap-1.5">
             <i className="size-3" style={{ backgroundColor: colors[index % colors.length] }} />
