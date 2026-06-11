@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [phone, setPhone] = useState('')
+  const [phoneSignup, setPhoneSignup] = useState('')
   const [otp, setOtp] = useState('')
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
   const [loading, setLoading] = useState(false)
@@ -29,10 +30,22 @@ export default function RegisterPage() {
     if (password !== confirmPassword) { setErrorMsg('Passwords do not match.'); return }
     if (password.length < 6) { setErrorMsg('Password must be at least 6 characters.'); return }
     setLoading(true); setErrorMsg('')
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { phone: phoneSignup || undefined } },
+    })
     if (error) {
       setErrorMsg(error.message)
     } else {
+      if (data?.user && phoneSignup) {
+        try {
+          await supabase.from('profiles').upsert(
+            { id: data.user.id, email_user: email, phone: phoneSignup },
+            { onConflict: 'id', ignoreDuplicates: false }
+          )
+        } catch {}
+      }
       router.push('/login?registered=1')
     }
     setLoading(false)
@@ -134,6 +147,10 @@ export default function RegisterPage() {
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] font-bold text-gold-900 font-dm-sans uppercase tracking-wide">Confirm Password</label>
                 <input type="password" placeholder="Repeat password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className={inputCls} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[13px] font-bold text-gold-900 font-dm-sans uppercase tracking-wide">Phone Number <span className="text-gold-400 normal-case font-normal">(optional)</span></label>
+                <input type="tel" placeholder="+855 12 345 678" value={phoneSignup} onChange={e => setPhoneSignup(e.target.value)} className={inputCls} />
               </div>
               <button disabled={loading} type="submit" className={btnPrimary}>
                 {loading ? 'Creating account...' : 'Create Account'}

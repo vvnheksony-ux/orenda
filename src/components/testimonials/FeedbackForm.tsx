@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, Calendar } from 'lucide-react'
 import { useLocale } from 'next-intl'
+import { DatePicker, CustomSelect } from '@/components/shared/FormControls'
 
 const inputCls = 'w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors'
 const labelCls = 'font-dm-sans font-medium text-[16px] text-[#3b2d17]'
@@ -71,28 +71,23 @@ export default function FeedbackForm() {
 
           <div className="flex flex-col gap-[24px] w-full">
             {/* Date of Birth */}
-            <div className="flex flex-col gap-[8px] w-full">
-              <label className={labelCls}>Date of Birth</label>
-              <div className="relative">
-                <input type="date" value={form.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} className={inputCls} />
-                <Calendar size={16} className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[#3b2d17] opacity-40 pointer-events-none" />
-              </div>
-            </div>
+            <DatePicker
+              label="Date of Birth"
+              value={form.date_of_birth}
+              onChange={v => set('date_of_birth', v)}
+              placeholder="Select date of birth"
+              labelCls={labelCls}
+            />
 
             {/* Clinic/Area Visited */}
-            <div className="flex flex-col gap-[8px] w-full">
-              <label className={labelCls}>Clinic/Area Visited</label>
-              <div className="relative">
-                <select value={form.clinic_visited} onChange={e => set('clinic_visited', e.target.value)} className={inputCls + ' appearance-none pr-[40px]'}>
-                  <option value="">Select clinic</option>
-                  <option>Spine</option>
-                  <option>Obstetrics</option>
-                  <option>Gynecology</option>
-                  <option>General Medicine</option>
-                </select>
-                <ChevronDown size={20} className="absolute right-[12px] top-1/2 -translate-y-1/2 text-[#3b2d17] opacity-50 pointer-events-none" />
-              </div>
-            </div>
+            <CustomSelect
+              label="Clinic/Area Visited"
+              value={form.clinic_visited}
+              onChange={v => set('clinic_visited', v)}
+              options={['Spine', 'Obstetrics', 'Gynecology', 'General Medicine']}
+              placeholder="Select clinic"
+              labelCls={labelCls}
+            />
 
             {/* Response required */}
             <div className="flex flex-col gap-[16px] w-full">
@@ -151,17 +146,14 @@ export default function FeedbackForm() {
             </div>
 
             {/* Nationality */}
-            <div className="flex flex-col gap-[8px] w-full">
-              <label className={labelCls}>Nationality</label>
-              <div className="relative">
-                <select value={form.nationality} onChange={e => set('nationality', e.target.value)} className={inputCls + ' appearance-none pr-[40px]'}>
-                  <option value="">Select nationality</option>
-                  <option>Cambodian</option>
-                  <option>Other</option>
-                </select>
-                <ChevronDown size={20} className="absolute right-[12px] top-1/2 -translate-y-1/2 text-[#3b2d17] opacity-50 pointer-events-none" />
-              </div>
-            </div>
+            <CustomSelect
+              label="Nationality"
+              value={form.nationality}
+              onChange={v => set('nationality', v)}
+              options={['Cambodian', 'Other']}
+              placeholder="Select nationality"
+              labelCls={labelCls}
+            />
 
             {/* Role */}
             <div className="flex flex-col gap-[16px] w-full">

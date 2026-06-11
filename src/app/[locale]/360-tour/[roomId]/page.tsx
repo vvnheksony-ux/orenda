@@ -56,6 +56,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   )
   const [expanded, setExpanded] = useState(false)
   const [loading, setLoading] = useState(() => !tourCache[locale]?.length)
+  const [locked, setLocked] = useState(true)
   const [doctors, setDoctors] = useState<Doctor[]>([])
 
   useEffect(() => {
@@ -111,22 +112,39 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
           {!loading && scene && (
             <>
               {/* Full-width 360° banner */}
-              <div className="relative w-full h-[598px] rounded-[24px] overflow-hidden bg-[#1a1410]">
-                <ThreeSixtyViewer src={panorama} />
+              <div
+                className="relative w-full h-[598px] rounded-[24px] overflow-hidden bg-[#1a1410]"
+                onDoubleClick={() => setLocked(false)}
+              >
+                <ThreeSixtyViewer src={panorama} interactive={!locked} />
+
+                {/* Lock overlay — subtle dark tint with hint */}
+                {locked && (
+                  <div className="absolute inset-0 z-30 bg-black/50 flex flex-col items-center justify-center gap-[16px] select-none backdrop-blur-[2px]">
+                    <div className="flex flex-col items-center gap-[12px]">
+                      <span className="font-dm-sans text-[48px] text-white/90 font-bold tracking-widest">360°</span>
+                      <p className="font-dm-sans text-[16px] text-white/70 tracking-wide">Double-click to explore</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* 360 badge */}
-                <div className="absolute top-[20px] left-[20px] z-10 flex items-center gap-[6px] px-[12px] h-[32px] rounded-full bg-black/50 backdrop-blur border border-white/20">
-                  <span className="font-dm-sans text-[12px] text-white font-bold tracking-widest">360°</span>
-                </div>
+                {!locked && (
+                  <div className="absolute top-[20px] left-[20px] z-10 flex items-center gap-[6px] px-[12px] h-[32px] rounded-full bg-black/50 backdrop-blur border border-white/20">
+                    <span className="font-dm-sans text-[12px] text-white font-bold tracking-widest">360°</span>
+                  </div>
+                )}
 
                 {/* Expand button bottom-right */}
-                <button
-                  onClick={() => setExpanded(true)}
-                  className="absolute bottom-[24px] right-[24px] z-20 size-[60px] rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors shadow-[0px_4px_16px_rgba(122,95,44,0.25)] flex items-center justify-center border border-white/60"
-                  aria-label="Expand fullscreen"
-                >
-                  <Maximize2 size={22} className="text-[#3b2d17]" strokeWidth={1.5} />
-                </button>
+                {!locked && (
+                  <button
+                    onClick={() => setExpanded(true)}
+                    className="absolute bottom-[24px] right-[24px] z-20 size-[60px] rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors shadow-[0px_4px_16px_rgba(122,95,44,0.25)] flex items-center justify-center border border-white/60"
+                    aria-label="Expand fullscreen"
+                  >
+                    <Maximize2 size={22} className="text-[#3b2d17]" strokeWidth={1.5} />
+                  </button>
+                )}
               </div>
 
               {/* Title + description */}

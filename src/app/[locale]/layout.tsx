@@ -7,6 +7,7 @@ import { getMessages } from 'next-intl/server'
 import CookieConsent from '@/components/shared/CookieConsent'
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker'
 import { BranchProvider } from '@/lib/branch-context'
+import FloatingChat from '@/components/chat/FloatingChat'
 
 export const metadata: Metadata = {
   title: {
@@ -55,6 +56,7 @@ export default async function RootLayout({
             <BranchProvider locale={locale}>
               <AnalyticsTracker />
               {children}
+              <FloatingChat />
               <CookieConsent />
             </BranchProvider>
           </AuthProvider>

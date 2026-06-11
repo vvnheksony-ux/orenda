@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { ChevronDown, ChevronRight, ChevronLeft, Phone, Calendar } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Phone } from 'lucide-react'
+import { DatePicker, CustomSelect } from '@/components/shared/FormControls'
 
 const INQUIRY_TYPES = ['General Inquiry', 'Appointment Request', 'Medical Record', 'Billing', 'Feedback', 'Other']
 const GENDERS = ['Male', 'Female', 'Other', 'Prefer not to say']
@@ -167,8 +168,8 @@ export default function InquiryPage() {
               {/* Fields */}
               <div className="flex flex-col gap-6">
                 <Field label="Condition/Treatment of Interest" value={form.condition} onChange={v => set('condition', v)} placeholder="e.g. Cardiology, General Checkup" />
-                <SelectField label="Type of Inquiry" value={form.inquiryType} onChange={v => set('inquiryType', v)} options={INQUIRY_TYPES} placeholder="Select type" />
-                <SelectField label="Hospital Name" value={form.hospitalName} onChange={v => set('hospitalName', v)} options={hospitalNames} placeholder="Select hospital" />
+                <CustomSelect label="Type of Inquiry" value={form.inquiryType} onChange={v => set('inquiryType', v)} options={INQUIRY_TYPES} placeholder="Select type" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
+                <CustomSelect label="Hospital Name" value={form.hospitalName} onChange={v => set('hospitalName', v)} options={hospitalNames} placeholder="Select hospital" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
 
                 {/* Your Question */}
                 <div className="flex flex-col gap-2">
@@ -196,26 +197,14 @@ export default function InquiryPage() {
 
                 {/* DOB + Gender */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Date of birth */}
-                  <div className="flex flex-col gap-2">
-                    <label className="font-dm-sans font-medium text-[16px] text-gold-900">Date of Birth</label>
-                    <div className="relative">
-                      <input
-                        type="date"
-                        value={form.dob}
-                        onChange={e => set('dob', e.target.value)}
-                        className="w-full px-4 py-3 pr-10 rounded-[12px] border border-[#dcbd72] font-dm-sans text-[16px] text-gold-900 outline-none focus:border-gold-500 transition-colors bg-white appearance-none"
-                      />
-                      <Calendar size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gold-700 pointer-events-none" />
-                    </div>
-                  </div>
-                  <SelectField label="Gender" value={form.gender} onChange={v => set('gender', v)} options={GENDERS} placeholder="Select gender" />
+                  <DatePicker label="Date of Birth" value={form.dob} onChange={v => set('dob', v)} placeholder="Select date of birth" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
+                  <CustomSelect label="Gender" value={form.gender} onChange={v => set('gender', v)} options={GENDERS} placeholder="Select gender" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
                 </div>
 
                 {/* Nationality + Country */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <SelectField label="Nationality" value={form.nationality} onChange={v => set('nationality', v)} options={NATIONALITIES} placeholder="Select nationality" />
-                  <SelectField label="Country of Residence" value={form.country} onChange={v => set('country', v)} options={COUNTRIES} placeholder="Select country" />
+                  <CustomSelect label="Nationality" value={form.nationality} onChange={v => set('nationality', v)} options={NATIONALITIES} placeholder="Select nationality" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
+                  <CustomSelect label="Country of Residence" value={form.country} onChange={v => set('country', v)} options={COUNTRIES} placeholder="Select country" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
                 </div>
               </div>
 
@@ -286,23 +275,3 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
   )
 }
 
-function SelectField({ label, value, onChange, options, placeholder }: {
-  label: string; value: string; onChange: (v: string) => void; options: string[]; placeholder?: string
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="font-dm-sans font-medium text-[16px] text-gold-900">{label}</label>
-      <div className="relative">
-        <select
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          className="w-full px-4 py-3 pr-10 rounded-[12px] border border-[#dcbd72] font-dm-sans text-[16px] text-gold-900 outline-none focus:border-gold-500 transition-colors bg-white appearance-none"
-        >
-          <option value="" disabled>{placeholder || 'Select...'}</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-        <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gold-700 pointer-events-none" />
-      </div>
-    </div>
-  )
-}

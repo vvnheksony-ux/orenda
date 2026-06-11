@@ -109,6 +109,7 @@ export default function ThreeSixtyTourPage() {
   const locale = useLocale()
   const [scenes, setScenes] = useState<TourScene[]>(() => tourCache[locale] ?? [])
   const [loading, setLoading] = useState(() => !tourCache[locale]?.length)
+  const [heroLocked, setHeroLocked] = useState(true)
 
   useEffect(() => {
     fetchTourScenes(locale)
@@ -136,8 +137,16 @@ export default function ThreeSixtyTourPage() {
             </div>
           ) : (
             <div className="relative w-full overflow-hidden rounded-[28px]"
-              style={{ height: 700, boxShadow: '0 8px 60px 8px rgba(184,145,72,0.18)', border: '1px solid rgba(184,145,72,0.28)' }}>
-              <ThreeSixtyViewer src={hero} height="100%" width="100%" />
+              style={{ height: 700, boxShadow: '0 8px 60px 8px rgba(184,145,72,0.18)', border: '1px solid rgba(184,145,72,0.28)' }}
+              onDoubleClick={() => setHeroLocked(false)}
+            >
+              <ThreeSixtyViewer src={hero} height="100%" width="100%" interactive={!heroLocked} />
+              {heroLocked && (
+                <div className="absolute inset-0 z-30 bg-black/50 flex flex-col items-center justify-center gap-[12px] select-none backdrop-blur-[2px]">
+                  <span className="font-dm-sans text-[48px] text-white/90 font-bold tracking-widest">360°</span>
+                  <p className="font-dm-sans text-[16px] text-white/70 tracking-wide">Double-click to explore</p>
+                </div>
+              )}
               <div className="absolute bottom-0 inset-x-0 pointer-events-none flex flex-col gap-[8px] px-[48px] pb-[40px]"
                 style={{ background: 'linear-gradient(0deg, rgba(10,8,4,0.80) 0%, transparent 55%)' }}>
                 <p className="font-dm-sans text-[13px] text-[#e8cc88] tracking-[3px] uppercase">Scene 1 · Drag to explore</p>
