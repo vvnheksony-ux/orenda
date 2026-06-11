@@ -5,7 +5,8 @@
  * Adding bracket params causes Node.js fetch to encode [] as %5B%5D which breaks Payload's parser.
  */
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+const BASE = process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
 export async function payloadFetch(path: string): Promise<any> {
   const url = `${BASE}${path}`
