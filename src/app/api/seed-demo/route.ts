@@ -269,3 +269,52 @@ export async function POST() {
 
   return NextResponse.json(results)
 }
+
+// DELETE /api/seed-demo — revert seed changes
+export async function DELETE() {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not allowed in production' }, { status: 403 })
+  }
+  const pool = getRawPool()
+  const results: Record<string, any> = {}
+
+  // 1. Restore dept icons we unconditionally set
+  await pool.query(`
+    UPDATE payload.departments SET icon_id = NULL
+    WHERE id IN (22,23,24,25,26,27,28,29,30,31,32,33,34)
+  `)
+  results.deptIcons = 'cleared'
+
+  // 2. Restore health tip thumbnails we unconditionally set
+  await pool.query(`
+    UPDATE payload.health_tips SET thumbnail_id = NULL WHERE id IN (2,3,4,5,6)
+  `)
+  results.healthTipThumbnails = 'cleared'
+
+  // 3. Remove news gallery rows we inserted (by exact order+parent+media combos)
+  const galleryToDelete = [
+    // order=1 thumbnail copies
+    [1, 1], [1, 5], [1, 10], [1, 11], [1, 12], [1, 13], [1, 14], [1, 15],
+  ]
+  // delete order=1 rows (thumbnail copies)
+  await pool.query(`
+    DELETE FROM payload.news_rels
+    WHERE path = 'images' AND "order" = 1
+      AND parent_id IN (1,5,10,11,12,13,14,15)
+  `)
+  // delete the exact extra gallery pairs
+  const galleryPairs: [number, number, number][] = [
+    [2,1,25],[3,1,22],[2,5,61],[3,5,62],[2,10,46],[3,10,34],
+    [2,11,49],[3,11,37],[2,12,57],[3,12,45],[2,13,10],[3,13,13],
+    [2,14,13],[3,14,22],[2,15,22],[3,15,34],
+  ]
+  for (const [ord, nid, mid] of galleryPairs) {
+    await pool.query(
+      `DELETE FROM payload.news_rels WHERE path='images' AND "order"=$1 AND parent_id=$2 AND media_id=$3`,
+      [ord, nid, mid]
+    )
+  }
+  results.newsGallery = 'removed seeded gallery rows'
+
+  return NextResponse.json({ reverted: results })
+}
