@@ -261,6 +261,20 @@ export async function POST() {
     results.moreDoctorTalks = `skipped — ${talkCount.totalDocs} already exist`
   }
 
+  // Seed images into news articles (news_rels with path='images')
+  // Copy each news thumbnail into the images[] field if not already present
+  await pool.query(`
+    INSERT INTO payload.news_rels ("order", parent_id, path, media_id)
+    SELECT 1, n.id, 'images', n.thumbnail_id
+    FROM payload.news n
+    WHERE n.thumbnail_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM payload.news_rels nr
+        WHERE nr.parent_id = n.id AND nr.path = 'images' AND nr.media_id = n.thumbnail_id
+      )
+  `)
+  results.newsImages = 'seeded thumbnail as gallery image for each news article'
+
   // Fix news thumbnails — assign real media to items missing thumbnails
   // news-thumb media IDs: 11,12,23,24,35,36,47,48,63,64,65
   const newsThumbnailMap: Record<number, number> = {

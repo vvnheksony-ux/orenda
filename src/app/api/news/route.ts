@@ -23,6 +23,7 @@ const fetchNewsList = unstable_cache(
       author:      doc.author ?? '',
       publishedAt: doc.publishedAt ?? doc.createdAt ?? '',
       thumbnail:   mediaUrl(doc.thumbnail),
+      images:      (doc.images ?? []).map((img: any) => mediaUrl(img)).filter(Boolean),
     }))
   },
   ['news-list'],
@@ -58,6 +59,7 @@ export async function GET(req: Request) {
         author:      (doc as any).author ?? '',
         publishedAt: (doc as any).publishedAt ?? (doc as any).createdAt ?? '',
         thumbnail:   mediaUrl((doc as any).thumbnail),
+        images:      ((doc as any).images ?? []).map((img: any) => mediaUrl(img)).filter(Boolean),
       })
     }
 
