@@ -23,16 +23,26 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
   const locale = useLocale()
   const [article, setArticle] = useState<NewsDetail | null>(null)
   const [related, setRelated] = useState<NewsItem[]>([])
+  const [relatedIsNews, setRelatedIsNews] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
       fetch(`/api/news?locale=${locale}&slug=${encodeURIComponent(newsId)}`).then(r => r.json()),
-      fetch(`/api/news?locale=${locale}&limit=5`).then(r => r.json()),
-    ]).then(([art, all]) => {
+      fetch(`/api/health-tips?locale=${locale}&limit=5`).then(r => r.json()).catch(() => ({ docs: [] })),
+    ]).then(async ([art, tips]) => {
       if (art) setArticle(art)
-      const others = (all?.docs || []).filter((n: NewsItem) => n.slug !== newsId).slice(0, 5)
-      setRelated(others)
+      const tipDocs = (tips?.docs || []).slice(0, 4)
+      if (tipDocs.length > 0) {
+        setRelated(tipDocs)
+        setRelatedIsNews(false)
+      } else {
+        // fallback: other news articles
+        const newsList = await fetch(`/api/news?locale=${locale}&limit=10`).then(r => r.json()).catch(() => ({ docs: [] }))
+        const others = (newsList?.docs || []).filter((n: any) => n.slug !== newsId).slice(0, 4)
+        setRelated(others)
+        setRelatedIsNews(true)
+      }
     }).catch(() => {}).finally(() => setLoading(false))
   }, [locale, newsId])
 
@@ -119,18 +129,21 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
               </div>
 
               {/* Explore More */}
-              {related.length > 0 && (
-                <div className="flex flex-col gap-[40px] items-center">
-                  <div className="flex flex-col gap-[12px] text-center w-full">
-                    <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">Explore More</h2>
-                    <p className="font-dm-sans text-[20px] text-[#594522]">Article for health care tips</p>
-                  </div>
+              <div className="flex flex-col gap-[40px] items-center">
+                <div className="flex flex-col gap-[12px] text-center w-full leading-none">
+                  <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17]">Explore More</h2>
+                  <p className="font-dm-sans text-[20px] text-[#594522]">Article for health care tips</p>
+                </div>
 
+                {related.length > 0 ? (
                   <div className="flex gap-[40px] items-center justify-center flex-wrap">
                     {related.map(item => (
-                      <Link key={item.id} href={`/news/${item.slug}` as any}
+                      <Link
+                        key={item.id}
+                        href={(relatedIsNews ? `/news/${item.slug}` : `/health-tips/${item.slug}`) as any}
                         className="bg-white flex flex-col items-center overflow-hidden rounded-[16px] shrink-0 w-[300px] hover:shadow-lg transition-shadow"
-                        style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }}>
+                        style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }}
+                      >
                         <div className="relative h-[170px] w-full bg-[#f9f9f9] overflow-hidden">
                           {item.thumbnail
                             ? <Image src={item.thumbnail} alt={item.title} fill className="object-cover" sizes="300px" unoptimized />
@@ -147,8 +160,14 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
                       </Link>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flex gap-[40px] flex-wrap justify-center">
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="w-[300px] h-[370px] rounded-[16px] bg-[#f0ebe0] animate-pulse" />
+                    ))}
+                  </div>
+                )}
+              </div>
             </>
           )}
 

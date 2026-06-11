@@ -6,7 +6,6 @@ import { useBranch } from '@/lib/branch-context'
 import { animate, motion, useMotionValue } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
-import { useBranch } from '@/lib/branch-context'
 
 function wrapIdx(i: number, n: number) { return ((i % n) + n) % n }
 
