@@ -1,34 +1,41 @@
 import { NextResponse } from 'next/server'
-import { getPayloadClient } from '@/lib/payload'
+import { getRawPool } from '@/lib/db'
 import { lexicalToText } from '@/lib/payload-api'
 
 export const runtime = 'nodejs'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const locale = (searchParams.get('locale') || 'en') as 'en' | 'km' | 'zh'
+  const locale = searchParams.get('locale') || 'en'
   const limit  = parseInt(searchParams.get('limit') || '50', 10)
 
   try {
-    const payload = await getPayloadClient()
-    const data = await payload.find({
-      collection: 'faqs',
-      locale, fallbackLocale: 'en',
-      overrideAccess: true,
-      depth: 0,
-      sort: 'order',
-      limit,
-    } as any)
+    const pool = getRawPool()
 
-    const faqs = (data.docs || []).map((doc: any) => ({
-      id:       String(doc.id),
-      question: doc.question ?? '',
-      answer:   lexicalToText(doc.answer),
-      category: doc.category ?? '',
-      order:    doc.order ?? 0,
+    const { rows } = await pool.query(`
+      SELECT
+        f.id, f.category, f."order",
+        COALESCE(fl.question, enfl.question) AS question,
+        COALESCE(fl.answer, enfl.answer)     AS answer
+      FROM payload.faqs f
+      LEFT JOIN payload.faqs_locales fl    ON fl._parent_id = f.id AND fl._locale = $1
+      LEFT JOIN payload.faqs_locales enfl  ON enfl._parent_id = f.id AND enfl._locale = 'en'
+      WHERE f.status = 'published'
+      ORDER BY f."order"
+      LIMIT $2
+    `, [locale, limit])
+
+    const faqs = rows.map((row: any) => ({
+      id:       String(row.id),
+      question: row.question ?? '',
+      answer:   lexicalToText(row.answer),
+      category: row.category ?? '',
+      order:    row.order ?? 0,
     }))
 
-    return NextResponse.json(faqs, { headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600' } })
+    return NextResponse.json(faqs, {
+      headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600' },
+    })
   } catch (err: any) {
     console.error('faqs:', err.message)
     return NextResponse.json([])

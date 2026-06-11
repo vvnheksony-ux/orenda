@@ -1,92 +1,107 @@
 import { NextResponse } from 'next/server'
-import { unstable_cache } from 'next/cache'
-import { getPayloadClient } from '@/lib/payload'
-import { mediaUrl, lexicalToText } from '@/lib/payload-api'
+import { getRawPool, mediaStorageUrl } from '@/lib/db'
+import { lexicalToText } from '@/lib/payload-api'
 
 export const runtime = 'nodejs'
 
-const fetchDoctorList = unstable_cache(
-  async (locale: string, branchId: string | null) => {
-    const payload = await getPayloadClient()
-    let deptIds: number[] | null = null
-    if (branchId) {
-      const depts = await payload.find({
-        collection: 'departments',
-        overrideAccess: true, depth: 0, limit: 200,
-        where: { branch: { equals: Number(branchId) } },
-      } as any)
-      deptIds = (depts.docs || []).map((d: any) => Number(d.id))
-    }
-    const where: any = deptIds !== null
-      ? deptIds.length > 0 ? { department: { in: deptIds } } : { id: { equals: -1 } }
-      : {}
-    const data = await payload.find({
-      collection: 'doctors',
-      locale: locale as any, fallbackLocale: 'en',
-      overrideAccess: true, depth: 1, sort: 'order', limit: 100, where,
-    } as any)
-    return data.docs.map((doc: any) => {
-      const dept = typeof doc.department === 'object' && doc.department ? doc.department : null
-      return {
-        id:                    String(doc.id),
-        name:                  doc.name ?? '',
-        specialty:             doc.specialty ?? '',
-        department:            dept?.name ?? '',
-        department_payload_id: dept ? String(dept.id) : '',
-        image_url:             mediaUrl(doc.photo),
-      }
-    })
-  },
-  ['doctors-list'],
-  { revalidate: 300, tags: ['doctors'] }
-)
-
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const locale   = (searchParams.get('locale') || 'en') as 'en' | 'km' | 'zh'
+  const locale   = searchParams.get('locale') || 'en'
   const id       = searchParams.get('id')
   const branchId = searchParams.get('branch') || null
 
   try {
-    const payload = await getPayloadClient()
+    const pool = getRawPool()
 
     if (id) {
-      const data = await payload.find({
-        collection: 'doctors',
-        locale, fallbackLocale: 'en',
-        overrideAccess: true,
-        depth: 2,
-        where: { id: { equals: Number(id) } },
-        limit: 1,
-      } as any)
+      const { rows } = await pool.query(`
+        SELECT
+          doc.id, doc.slug, doc.phone, doc.email, doc.sex, doc.nationality,
+          doc.position_title, doc.employment_type,
+          doc.total_clinical_experience_years, doc.specialist_experience_years,
+          doc."order", doc.department_id,
+          COALESCE(dl.name, endll.name)           AS name,
+          COALESCE(dl.specialty, endll.specialty) AS specialty,
+          COALESCE(dl.bio, endll.bio)             AS bio,
+          m.filename AS photo_filename, m.prefix AS photo_prefix
+        FROM payload.doctors doc
+        LEFT JOIN payload.doctors_locales dl    ON dl._parent_id = doc.id AND dl._locale = $1
+        LEFT JOIN payload.doctors_locales endll ON endll._parent_id = doc.id AND endll._locale = 'en'
+        LEFT JOIN payload.media m ON m.id = doc.photo_id
+        WHERE doc.status = 'published' AND doc.id = $2
+        LIMIT 1
+      `, [locale, Number(id)])
 
-      const doc: any = data.docs?.[0]
-      if (!doc) return NextResponse.json(null, { status: 404 })
+      if (!rows[0]) return NextResponse.json(null, { status: 404 })
+      const row = rows[0]
 
-      const dept = typeof doc.department === 'object' && doc.department ? doc.department : null
+      const [{ rows: langs }, { rows: edu }, { rows: depts }] = await Promise.all([
+        pool.query(`SELECT name FROM payload.doctors_languages WHERE _parent_id = $1 ORDER BY _order`, [row.id]),
+        pool.query(`SELECT description FROM payload.doctors_education WHERE _parent_id = $1 ORDER BY _order`, [row.id]),
+        row.department_id
+          ? pool.query(`SELECT name FROM payload.departments_locales WHERE _parent_id = $1 AND _locale = 'en' LIMIT 1`, [row.department_id])
+          : Promise.resolve({ rows: [] }),
+      ])
 
       return NextResponse.json({
-        id:                          String(doc.id),
-        name:                        doc.name ?? '',
-        specialty:                   doc.specialty ?? '',
-        department:                  dept?.name ?? '',
-        department_payload_id:       dept ? String(dept.id) : '',
-        image_url:                   mediaUrl(doc.photo),
-        bio:                         lexicalToText(doc.bio),
-        phone:                       doc.phone ?? '',
-        email:                       doc.email ?? '',
-        nationality:                 doc.nationality ?? '',
-        position_title:              doc.positionTitle ?? '',
-        employment_type:             doc.employmentType ?? '',
-        total_experience_years:      doc.totalClinicalExperienceYears ?? null,
-        specialist_experience_years: doc.specialistExperienceYears ?? null,
-        sex:                         doc.sex ?? '',
-        education:                   (doc.education ?? []).map((e: any) => e.description ?? '').filter(Boolean),
-        languages:                   (doc.languages ?? []).map((e: any) => e.name ?? '').filter(Boolean),
+        id:                          String(row.id),
+        name:                        row.name ?? '',
+        specialty:                   row.specialty ?? '',
+        department:                  depts[0]?.name ?? '',
+        department_payload_id:       row.department_id ? String(row.department_id) : '',
+        image_url:                   mediaStorageUrl(row.photo_filename, row.photo_prefix),
+        bio:                         lexicalToText(row.bio),
+        phone:                       row.phone ?? '',
+        email:                       row.email ?? '',
+        nationality:                 row.nationality ?? '',
+        position_title:              row.position_title ?? '',
+        employment_type:             row.employment_type ?? '',
+        total_experience_years:      row.total_clinical_experience_years ?? null,
+        specialist_experience_years: row.specialist_experience_years ?? null,
+        sex:                         row.sex ?? '',
+        education:                   edu.map((e: any) => e.description ?? '').filter(Boolean),
+        languages:                   langs.map((l: any) => l.name ?? '').filter(Boolean),
       })
     }
 
-    const doctors = await fetchDoctorList(locale, branchId)
+    // List with optional branch filter via department subquery
+    const params: any[] = [locale]
+    let branchFilter = ''
+    if (branchId) {
+      params.push(Number(branchId))
+      branchFilter = `AND doc.department_id IN (
+        SELECT id FROM payload.departments WHERE branch_id = $${params.length} AND status = 'published'
+      )`
+    }
+
+    const { rows } = await pool.query(`
+      SELECT
+        doc.id, doc.department_id,
+        COALESCE(dl.name, endll.name)           AS name,
+        COALESCE(dl.specialty, endll.specialty) AS specialty,
+        m.filename AS photo_filename, m.prefix AS photo_prefix,
+        dept_l.name AS department_name
+      FROM payload.doctors doc
+      LEFT JOIN payload.doctors_locales dl    ON dl._parent_id = doc.id AND dl._locale = $1
+      LEFT JOIN payload.doctors_locales endll ON endll._parent_id = doc.id AND endll._locale = 'en'
+      LEFT JOIN payload.media m ON m.id = doc.photo_id
+      LEFT JOIN payload.departments_locales dept_l
+        ON dept_l._parent_id = doc.department_id AND dept_l._locale = 'en'
+      WHERE doc.status = 'published'
+      ${branchFilter}
+      ORDER BY doc."order"
+      LIMIT 100
+    `, params)
+
+    const doctors = rows.map((row: any) => ({
+      id:                    String(row.id),
+      name:                  row.name ?? '',
+      specialty:             row.specialty ?? '',
+      department:            row.department_name ?? '',
+      department_payload_id: row.department_id ? String(row.department_id) : '',
+      image_url:             mediaStorageUrl(row.photo_filename, row.photo_prefix),
+    }))
+
     return NextResponse.json(doctors, {
       headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
     })

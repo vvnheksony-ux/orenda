@@ -1,36 +1,47 @@
 import { NextResponse } from 'next/server'
-import { getPayloadClient } from '@/lib/payload'
-import { mediaUrl } from '@/lib/payload-api'
+import { getRawPool, mediaStorageUrl } from '@/lib/db'
 
 export const runtime = 'nodejs'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const locale = (searchParams.get('locale') || 'en') as 'en' | 'km' | 'zh'
+  const locale = searchParams.get('locale') || 'en'
   const deptId = searchParams.get('department') || null
 
   try {
-    const payload = await getPayloadClient()
-    const where: any = {}
-    if (deptId) where['department'] = { equals: Number(deptId) }
+    const pool = getRawPool()
+    const params: any[] = [locale]
+    let deptFilter = ''
+    if (deptId) {
+      params.push(Number(deptId))
+      deptFilter = `AND s.department_id = $${params.length}`
+    }
 
-    const data = await payload.find({
-      collection: 'services',
-      locale, fallbackLocale: 'en',
-      overrideAccess: true,
-      depth: 1,
-      sort: 'title',
-      limit: 100,
-      where,
-    } as any)
+    const { rows } = await pool.query(`
+      SELECT
+        s.id, s.slug, s.department_id,
+        COALESCE(sl.title, ensl.title)   AS title,
+        dept_l.name                      AS department_name,
+        m.filename AS icon_filename, m.prefix AS icon_prefix
+      FROM payload.services s
+      LEFT JOIN payload.services_locales sl    ON sl._parent_id = s.id AND sl._locale = $1
+      LEFT JOIN payload.services_locales ensl  ON ensl._parent_id = s.id AND ensl._locale = 'en'
+      LEFT JOIN payload.media m ON m.id = s.icon_id
+      LEFT JOIN payload.departments_locales dept_l
+        ON dept_l._parent_id = s.department_id AND dept_l._locale = 'en'
+      WHERE s.status = 'published'
+      ${deptFilter}
+      ORDER BY title
+      LIMIT 100
+    `, params)
 
-    const docs = (data.docs || []).map((doc: any) => ({
-      id:    String(doc.id),
-      title: doc.title ?? '',
-      slug:  doc.slug ?? '',
-      icon:  mediaUrl(doc.icon),
-      department: typeof doc.department === 'object' && doc.department
-        ? { id: String(doc.department.id), name: doc.department.name ?? '' }
+    const docs = rows.map((row: any) => ({
+      id:    String(row.id),
+      title: row.title ?? '',
+      slug:  row.slug ?? '',
+      icon:  mediaStorageUrl(row.icon_filename, row.icon_prefix),
+      department: row.department_id
+        ? { id: String(row.department_id), name: row.department_name ?? '' }
         : null,
     }))
 
