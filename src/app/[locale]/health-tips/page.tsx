@@ -73,7 +73,7 @@ export default function HealthTipsPage() {
           {/* Hero banner */}
           <div className="relative bg-white rounded-[16px] overflow-hidden h-[472px] shadow-[0px_4px_16px_rgba(122,95,44,0.08)] mb-[60px]">
             <div className="absolute right-3 top-3 bottom-3 w-[43%] rounded-[12px] overflow-hidden">
-              <div className="absolute inset-0 bg-[#d4c9b0]" />
+              <Image src="/images/about/about-hero-3.jpg" alt="Orienda International Hospital" fill className="object-cover" sizes="700px" priority unoptimized />
             </div>
 
             <button className="absolute left-3 top-1/2 -translate-y-1/2 size-10 flex items-center justify-center rounded-full hover:bg-[#fbf7ee] transition-colors z-10">

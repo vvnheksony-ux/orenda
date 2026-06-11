@@ -13,11 +13,39 @@ import { Link } from '@/i18n/routing'
 import { useBranch } from '@/lib/branch-context'
 import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
 
-const NAV_ITEMS = [
-  { key: 'about',        href: '/about'        },
-  { key: 'doctors',      href: '/doctors'      },
-  { key: 'promotions',   href: '/promotions'   },
-  { key: 'news',         href: '/news'         },
+type NavChild = { key: string; href: string }
+type NavItem  = { key: string; href: string; children?: NavChild[] }
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    key: 'about', href: '/about',
+    children: [
+      { key: 'faq',     href: '/faq'     },
+      { key: 'inquiry', href: '/inquiry' },
+      { key: 'expect',  href: '/expect'  },
+    ],
+  },
+  {
+    key: 'doctors', href: '/doctors',
+    children: [
+      { key: 'departments', href: '/departments'          },
+      { key: 'clinics',     href: '/clinics'              },
+      { key: 'centers',     href: '/centers-of-excellence'},
+    ],
+  },
+  {
+    key: 'promotions', href: '/promotions',
+    children: [
+      { key: 'insurance', href: '/insurance' },
+    ],
+  },
+  {
+    key: 'news', href: '/news',
+    children: [
+      { key: 'healthTip',   href: '/health-tips'  },
+      { key: 'doctorTalks', href: '/doctor-talks' },
+    ],
+  },
   { key: 'career',       href: '/career'       },
   { key: 'testimonials', href: '/testimonials' },
 ]
@@ -40,12 +68,14 @@ export default function Navbar() {
   const { trackLanguageSwitch, trackCallClick } = useAnalytics()
   const { branches, selectedBranch, switchBranch } = useBranch()
 
-  const [mobileOpen,     setMobileOpen]     = useState(false)
-  const [langOpen,       setLangOpen]       = useState(false)
-  const [mobileLangOpen, setMobileLangOpen] = useState(false)
-  const [phoneOpen,      setPhoneOpen]      = useState(false)
-  const [branchOpen,     setBranchOpen]     = useState(false)
-  const [bookOpen,       setBookOpen]       = useState(false)
+  const [mobileOpen,        setMobileOpen]        = useState(false)
+  const [langOpen,          setLangOpen]          = useState(false)
+  const [mobileLangOpen,    setMobileLangOpen]    = useState(false)
+  const [phoneOpen,         setPhoneOpen]         = useState(false)
+  const [branchOpen,        setBranchOpen]        = useState(false)
+  const [bookOpen,          setBookOpen]          = useState(false)
+  const [hoveredKey,        setHoveredKey]        = useState<string | null>(null)
+  const [mobileExpandedKey, setMobileExpandedKey] = useState<string | null>(null)
 
   const langRef   = useRef<HTMLDivElement>(null)
   const phoneRef  = useRef<HTMLDivElement>(null)
@@ -91,20 +121,66 @@ export default function Navbar() {
               <nav className="flex items-center">
                 {NAV_ITEMS.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                  const hasChildren = !!item.children?.length
+                  const isHovered = hoveredKey === item.key
                   return (
-                    <Link
+                    <div
                       key={item.key}
-                      href={item.href}
-                      className="flex items-center justify-center py-[22px] 2xl:py-[32px] pl-[10px] 2xl:pl-[22px] pr-[6px] 2xl:pr-[14px] rounded-[22px] gap-[8px] hover:bg-white/50 transition-colors"
+                      className="relative"
+                      onMouseEnter={() => hasChildren && setHoveredKey(item.key)}
+                      onMouseLeave={() => setHoveredKey(null)}
                     >
-                      <span className={cn(
-                        'text-[15px] 2xl:text-[17px] font-inter leading-none whitespace-nowrap',
-                        isActive ? 'text-[#3B2D17] font-semibold' : 'text-[#2A2620] font-normal'
-                      )}>
-                        {t(item.key)}
-                      </span>
-                      <ChevronDown className="hidden 2xl:block w-[14px] h-[14px] shrink-0 text-[#7a5f2c]" strokeWidth={2} />
-                    </Link>
+                      <Link
+                        href={item.href}
+                        className="flex items-center justify-center py-[22px] 2xl:py-[32px] pl-[10px] 2xl:pl-[22px] pr-[6px] 2xl:pr-[14px] rounded-[22px] gap-[8px] hover:bg-white/50 transition-colors"
+                      >
+                        <span className={cn(
+                          'text-[15px] 2xl:text-[17px] font-inter leading-none whitespace-nowrap',
+                          isActive ? 'text-[#3B2D17] font-semibold' : 'text-[#2A2620] font-normal'
+                        )}>
+                          {t(item.key)}
+                        </span>
+                        <ChevronDown
+                          className={cn('w-[14px] h-[14px] shrink-0 text-[#7a5f2c] transition-transform duration-200', hasChildren ? 'block' : 'hidden 2xl:block', isHovered && 'rotate-180')}
+                          strokeWidth={2}
+                        />
+                      </Link>
+                      {hasChildren && (
+                        <AnimatePresence>
+                          {isHovered && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.96 }}
+                              transition={{ duration: 0.18, ease: 'easeOut' }}
+                              className="absolute top-[calc(100%+6px)] left-1/2 -translate-x-1/2 z-50"
+                              style={{ filter: 'drop-shadow(0 8px 24px rgba(122,95,44,0.18))' }}
+                            >
+                              {/* Arrow pointer */}
+                              <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#FBF7EE]/80 border-l border-t border-white/60 rotate-45 rounded-tl-[2px]" />
+                              <div className="relative bg-[#FBF7EE]/80 backdrop-blur-xl rounded-[16px] border border-white/60 overflow-hidden min-w-[190px] flex flex-col py-[6px]">
+                                {item.children!.map((child, ci) => (
+                                  <Link
+                                    key={child.key}
+                                    href={child.href}
+                                    onClick={() => setHoveredKey(null)}
+                                    className={cn(
+                                      'flex items-center gap-[10px] px-5 py-[11px] hover:bg-white/60 transition-colors group',
+                                      ci < item.children!.length - 1 && 'border-b border-[#ead6a4]/30'
+                                    )}
+                                  >
+                                    <span className="w-[3px] h-[14px] rounded-full bg-[#b89148]/40 group-hover:bg-[#b89148] transition-colors shrink-0" />
+                                    <span className="font-dm-sans text-[13px] text-[#3b2d17] whitespace-nowrap leading-none">
+                                      {t(child.key)}
+                                    </span>
+                                  </Link>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      )}
+                    </div>
                   )
                 })}
               </nav>
@@ -307,18 +383,45 @@ export default function Navbar() {
               <nav className="flex flex-col px-4 py-3 gap-[2px] flex-1 overflow-y-auto">
                 {NAV_ITEMS.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                  const hasChildren = !!item.children?.length
+                  const isExpanded = mobileExpandedKey === item.key
                   return (
-                    <Link
-                      key={item.key}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={cn(
-                        'flex items-center px-4 py-3.5 rounded-[12px] font-dm-sans text-[15px] transition-colors',
-                        isActive ? 'bg-[#f5ecd4]/60 font-semibold text-[#3b2d17]' : 'text-[#3b2d17] hover:bg-[#f5ecd4]/40'
+                    <div key={item.key}>
+                      <div className="flex items-center">
+                        <Link
+                          href={item.href}
+                          onClick={() => { if (!hasChildren) setMobileOpen(false) }}
+                          className={cn(
+                            'flex-1 flex items-center px-4 py-3.5 rounded-[12px] font-dm-sans text-[15px] transition-colors',
+                            isActive ? 'bg-[#f5ecd4]/60 font-semibold text-[#3b2d17]' : 'text-[#3b2d17] hover:bg-[#f5ecd4]/40'
+                          )}
+                        >
+                          {t(item.key)}
+                        </Link>
+                        {hasChildren && (
+                          <button
+                            onClick={() => setMobileExpandedKey(isExpanded ? null : item.key)}
+                            className="p-2 rounded-[10px] hover:bg-[#f5ecd4]/40 transition-colors"
+                          >
+                            <ChevronDown size={15} className={cn('text-[#7a5f2c] transition-transform duration-200', isExpanded && 'rotate-180')} />
+                          </button>
+                        )}
+                      </div>
+                      {hasChildren && isExpanded && (
+                        <div className="flex flex-col pl-4 gap-[2px] pb-1">
+                          {item.children!.map(child => (
+                            <Link
+                              key={child.key}
+                              href={child.href}
+                              onClick={() => { setMobileOpen(false); setMobileExpandedKey(null) }}
+                              className="flex items-center px-4 py-2.5 rounded-[10px] font-dm-sans text-[14px] text-[#7a5f2c] hover:bg-[#f5ecd4]/40 transition-colors"
+                            >
+                              {t(child.key)}
+                            </Link>
+                          ))}
+                        </div>
                       )}
-                    >
-                      {t(item.key)}
-                    </Link>
+                    </div>
                   )
                 })}
               </nav>
