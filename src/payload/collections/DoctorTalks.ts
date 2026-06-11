@@ -20,7 +20,7 @@ const indexHooks = createSearchIndexHooks({
 export const DoctorTalks: CollectionConfig = {
   slug: 'doctor-talks',
   admin: {
-    group: 'Content',
+    group: 'Legacy',
     useAsTitle: 'title',
     defaultColumns: ['title', 'featuredDoctor', 'eventDate', 'status'],
   },

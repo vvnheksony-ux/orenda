@@ -846,10 +846,6 @@ export interface InsuranceUpdate {
   legacyNewsId?: number | null;
   legacySlug?: string | null;
   slug: string;
-  /**
-   * Optional for legacy migrated records; fill when available.
-   */
-  insuranceProvider?: string | null;
   insurancePlanTypes?:
     | {
         planType: string;
@@ -957,6 +953,7 @@ export interface Faq {
 export interface TourScene {
   id: number;
   sceneNumber: number;
+  branch?: (number | null) | Branch;
   title: string;
   description?: string | null;
   thumbnailImage?: (number | null) | Media;
@@ -1665,7 +1662,6 @@ export interface InsuranceUpdatesSelect<T extends boolean = true> {
   legacyNewsId?: T;
   legacySlug?: T;
   slug?: T;
-  insuranceProvider?: T;
   insurancePlanTypes?:
     | T
     | {
@@ -1751,6 +1747,7 @@ export interface FaqsSelect<T extends boolean = true> {
  */
 export interface TourScenesSelect<T extends boolean = true> {
   sceneNumber?: T;
+  branch?: T;
   title?: T;
   description?: T;
   thumbnailImage?: T;
