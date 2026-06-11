@@ -179,73 +179,40 @@ export async function POST() {
     results.careers = `skipped — ${existingCareers.totalDocs} already exist`
   }
 
-  // Health Tips
-  const existingTips = await (payload as any).find({ collection: 'health-tips', overrideAccess: true, draft: true, limit: 1 })
-  if (existingTips.totalDocs === 0) {
-    const tips = [
-      {
-        title: '5 Simple Habits for a Healthy Heart',
-        excerpt: 'Discover daily habits that significantly reduce your risk of heart disease — from diet changes to stress management techniques.',
-        healthTipCategory: 'preventiveCare',
-        readingTime: 4,
-        author: 'Orienda Medical Team',
-        publishedAt: '2026-06-01T00:00:00.000Z',
-        thumbnail: 35, // news-thumb-5.jpg
-        _status: 'published',
-      },
-      {
-        title: 'Understanding Diabetes: Prevention & Management',
-        excerpt: 'Key insights into preventing Type 2 diabetes and managing blood sugar levels through nutrition, exercise, and regular screening.',
-        healthTipCategory: 'chronicDisease',
-        readingTime: 6,
-        author: 'Orienda Medical Team',
-        publishedAt: '2026-05-25T00:00:00.000Z',
-        thumbnail: 36, // news-thumb-6.jpg
-        _status: 'published',
-      },
-      {
-        title: 'Maternal Health: What to Expect During Pregnancy',
-        excerpt: 'A comprehensive guide to prenatal care, nutrition, and warning signs every expectant mother should know.',
-        healthTipCategory: 'preventiveCare',
-        readingTime: 7,
-        author: 'Orienda Medical Team',
-        publishedAt: '2026-05-18T00:00:00.000Z',
-        thumbnail: 47, // news-thumb-7.jpg
-        _status: 'published',
-      },
-      {
-        title: 'Children\'s Nutrition: Building Strong Foundations',
-        excerpt: 'Essential nutritional guidance for growing children — what to eat, what to avoid, and how to build healthy eating habits early.',
-        healthTipCategory: 'nutrition',
-        readingTime: 5,
-        author: 'Orienda Medical Team',
-        publishedAt: '2026-05-10T00:00:00.000Z',
-        thumbnail: 48, // news-thumb-8.jpg
-        _status: 'published',
-      },
-      {
-        title: 'Mental Wellness: Coping with Stress in Modern Life',
-        excerpt: 'Practical strategies for managing stress, improving sleep, and maintaining mental wellbeing in today\'s fast-paced world.',
-        healthTipCategory: 'mentalHealth',
-        readingTime: 5,
-        author: 'Orienda Medical Team',
-        publishedAt: '2026-05-03T00:00:00.000Z',
-        thumbnail: 63, // news-thumb-9.jpg
-        _status: 'published',
-      },
+  // Health Tips — bypass Payload ORM (health_tips_health_tip_tags table missing)
+  const pool = (payload as any).db.pool
+  const { rows: tipCountRows } = await pool.query(`SELECT COUNT(*) FROM payload.health_tips WHERE _status = 'published'`)
+  const tipCount = parseInt(tipCountRows[0].count, 10)
+  if (tipCount === 0) {
+    const tipsRaw = [
+      { title: '5 Simple Habits for a Healthy Heart', slug: '5-simple-habits-for-a-healthy-heart', excerpt: 'Discover daily habits that significantly reduce your risk of heart disease — from diet changes to stress management techniques.', category: 'preventiveCare', readingTime: 4, thumbnailId: 35, publishedAt: '2026-06-01T00:00:00.000Z' },
+      { title: 'Understanding Diabetes: Prevention & Management', slug: 'understanding-diabetes-prevention-management', excerpt: 'Key insights into preventing Type 2 diabetes and managing blood sugar levels through nutrition, exercise, and regular screening.', category: 'chronicDisease', readingTime: 6, thumbnailId: 36, publishedAt: '2026-05-25T00:00:00.000Z' },
+      { title: 'Maternal Health: What to Expect During Pregnancy', slug: 'maternal-health-what-to-expect-during-pregnancy', excerpt: 'A comprehensive guide to prenatal care, nutrition, and warning signs every expectant mother should know.', category: 'preventiveCare', readingTime: 7, thumbnailId: 47, publishedAt: '2026-05-18T00:00:00.000Z' },
+      { title: "Children's Nutrition: Building Strong Foundations", slug: 'childrens-nutrition-building-strong-foundations', excerpt: 'Essential nutritional guidance for growing children — what to eat, what to avoid, and how to build healthy eating habits early.', category: 'nutrition', readingTime: 5, thumbnailId: 48, publishedAt: '2026-05-10T00:00:00.000Z' },
+      { title: 'Mental Wellness: Coping with Stress in Modern Life', slug: 'mental-wellness-coping-with-stress-in-modern-life', excerpt: "Practical strategies for managing stress, improving sleep, and maintaining mental wellbeing in today's fast-paced world.", category: 'mentalHealth', readingTime: 5, thumbnailId: 63, publishedAt: '2026-05-03T00:00:00.000Z' },
     ]
     const created = []
-    for (const tip of tips) {
+    for (const tip of tipsRaw) {
       try {
-        const d = await (payload as any).create({ collection: 'health-tips', data: tip as any, overrideAccess: true, locale: 'en', disableTransaction: true })
-        created.push({ id: d.id, title: (d as any).title ?? tip.title })
+        const body = JSON.stringify({ root: { type: 'root', children: [{ type: 'paragraph', version: 1, children: [{ type: 'text', text: tip.excerpt }], direction: 'ltr', format: '', indent: 0 }], direction: 'ltr', format: '', indent: 0, version: 1 } })
+        const { rows: ins } = await pool.query(
+          `INSERT INTO payload.health_tips (slug, thumbnail_id, author, health_tip_category, reading_time, published_at, updated_at, created_at, _status)
+           VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), 'published') RETURNING id`,
+          [tip.slug, tip.thumbnailId, 'Orienda Medical Team', tip.category, tip.readingTime, tip.publishedAt]
+        )
+        const newId = ins[0].id
+        await pool.query(
+          `INSERT INTO payload.health_tips_locales (title, body, excerpt, _locale, _parent_id) VALUES ($1, $2::jsonb, $3, 'en', $4)`,
+          [tip.title, body, tip.excerpt, newId]
+        )
+        created.push({ id: newId, title: tip.title })
       } catch (e: any) {
         created.push({ error: e.message, title: tip.title })
       }
     }
     results.healthTips = created
   } else {
-    results.healthTips = `skipped — ${existingTips.totalDocs} already exist`
+    results.healthTips = `skipped — ${tipCount} already exist`
   }
 
   // More Doctor Talks (additional 4 for richer demo)

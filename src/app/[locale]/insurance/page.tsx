@@ -5,19 +5,38 @@ import Image from 'next/image'
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { Link } from '@/i18n/routing'
+import { getPayloadClient } from '@/lib/payload'
+import { mediaUrl } from '@/lib/payload-api'
 
-const INSURERS = [
-  { name: 'Mekong Microinsurance' },
-  { name: 'Mekong Microinsurance' },
-  { name: 'Mekong Microinsurance' },
-  { name: 'Mekong Microinsurance' },
-  { name: 'Indochina Coverage Partners' },
-  { name: 'Indochina Coverage Partners' },
-  { name: 'River Delta Assurance' },
-  { name: 'River Delta Assurance' },
-]
+async function getInsuranceUpdates(locale: string) {
+  try {
+    const payload = await getPayloadClient()
+    const data = await payload.find({
+      collection: 'insurance-updates',
+      locale: locale as any,
+      depth: 1,
+      limit: 50,
+      overrideAccess: false,
+      sort: '-publishedAt',
+    } as any)
+    return data.docs.map((doc: any) => ({
+      id: String(doc.id),
+      name: doc.insuranceProvider || doc.title || '',
+      logo: mediaUrl(doc.thumbnail) ?? null,
+    }))
+  } catch {
+    return []
+  }
+}
 
-export default function InsurancePage() {
+export default async function InsurancePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const insurers = await getInsuranceUpdates(locale)
+
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full">
@@ -30,7 +49,6 @@ export default function InsurancePage() {
             </button>
 
             <div className="bg-white flex h-[472px] items-center justify-end overflow-hidden relative rounded-[16px] flex-1 max-w-[1352px]">
-              {/* Hospital image */}
               <div className="relative h-[448px] rounded-[16px] shrink-0 w-[650px] overflow-hidden mr-[12px]">
                 <Image
                   src="/images/insurance/hero-3.jpg"
@@ -41,7 +59,6 @@ export default function InsurancePage() {
                   priority
                 />
               </div>
-              {/* Text */}
               <div className="absolute left-[58px] top-[79px] flex flex-col gap-[40px] items-start" style={{ maxWidth: 'calc(100% - 720px)' }}>
                 <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">
                   Orienda International Hospital
@@ -67,8 +84,6 @@ export default function InsurancePage() {
 
           {/* Insurance section */}
           <div className="flex flex-col gap-[40px] items-center w-full">
-
-            {/* Header */}
             <div className="flex flex-col gap-[12px] text-center w-full">
               <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">
                 Insurance
@@ -78,31 +93,45 @@ export default function InsurancePage() {
               </p>
             </div>
 
-            {/* Cards grid — 2 columns, 4 rows */}
-            <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
-              {INSURERS.map((ins, i) => (
-                <div
-                  key={i}
-                  className="bg-white flex flex-1 gap-[40px] items-center min-w-[560px] overflow-hidden px-[40px] py-[24px] rounded-[16px]"
-                  style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }}
-                >
-                  <div className="relative shrink-0 size-[120px]">
-                    <Image
-                      src="/images/insurance/insurance-logo.png"
-                      alt={ins.name}
-                      fill
-                      className="object-contain"
-                      sizes="120px"
-                    />
+            {insurers.length > 0 ? (
+              <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
+                {insurers.map((ins) => (
+                  <div
+                    key={ins.id}
+                    className="bg-white flex flex-1 gap-[40px] items-center min-w-[560px] overflow-hidden px-[40px] py-[24px] rounded-[16px]"
+                    style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }}
+                  >
+                    <div className="relative shrink-0 size-[120px]">
+                      {ins.logo ? (
+                        <Image
+                          src={ins.logo}
+                          alt={ins.name}
+                          fill
+                          className="object-contain"
+                          sizes="120px"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="size-[120px] bg-[#f5ede0] rounded-[8px] flex items-center justify-center">
+                          <span className="text-[#b89148] text-[32px] font-cormorant font-bold">
+                            {ins.name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="font-dm-sans font-normal text-[24px] text-black text-center whitespace-nowrap">
+                      {ins.name}
+                    </p>
                   </div>
-                  <p className="font-dm-sans font-normal text-[24px] text-black text-center whitespace-nowrap">
-                    {ins.name}
-                  </p>
-                </div>
-              ))}
-            </div>
-
+                ))}
+              </div>
+            ) : (
+              <p className="font-dm-sans text-[18px] text-[#594522] opacity-60">
+                No insurance providers listed yet.
+              </p>
+            )}
           </div>
+
         </div>
       </div>
     </SiteLayout>
