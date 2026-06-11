@@ -1,14 +1,28 @@
 import { AdminCardPage } from '@/components/admin/AdminManagementPage'
+import { getPayloadClient } from '@/lib/payload'
 
-const doctorTalks = [
-  { title: 'Doctor Talk title', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'Doctor Talk title', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'Doctor Talk title', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'Doctor Talk title', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'Doctor Talk title', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-]
+export default async function DoctorTalksPage() {
+  let doctorTalks: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const data = await payload.find({
+      collection: 'doctor-talks',
+      overrideAccess: true,
+      depth: 1,
+      sort: '-eventDate',
+      limit: 100,
+    } as any)
+    doctorTalks = data.docs.map((doc: any) => {
+      const doctor = typeof doc.featuredDoctor === 'object' ? doc.featuredDoctor : null
+      return {
+        title: doc.talkTopic ?? '',
+        author: doctor?.name ?? '',
+        updated: doc.eventDate ?? doc.updatedAt ?? '',
+        status: doc._status ?? 'draft',
+      }
+    })
+  } catch {}
 
-export default function DoctorTalksPage() {
   return (
     <AdminCardPage
       title="Doctor Talks"
@@ -17,7 +31,7 @@ export default function DoctorTalksPage() {
       primaryActionLabel="Add Doctor Talk"
       cards={{
         items: doctorTalks,
-        rowKey: (_item, index) => `doctorTalk-${index}`,
+        rowKey: (_item: any, index: number) => `doctorTalk-${index}`,
         actions: [
           { label: 'Preview doctor talk', icon: 'view', tone: 'muted' },
           { label: 'Edit doctor talk', icon: 'edit', tone: 'blue' },

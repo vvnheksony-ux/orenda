@@ -1,14 +1,26 @@
 import { AdminCardPage } from '@/components/admin/AdminManagementPage'
+import { getPayloadClient } from '@/lib/payload'
 
-const insuranceItems = [
-  { title: 'Insurance title', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'Insurance title', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'Insurance title', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'Insurance title', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'Insurance title', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-]
+export default async function InsurancePage() {
+  let items: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const data = await payload.find({
+      collection: 'insurance-updates',
+      overrideAccess: true,
+      depth: 0,
+      sort: '-updatedAt',
+      limit: 100,
+    } as any)
+    items = data.docs.map((doc: any) => ({
+      title: doc.title ?? doc.insuranceProvider ?? '',
+      description: doc.insuranceProvider ?? '',
+      author: doc.author ?? '',
+      updated: doc.updatedAt ?? '',
+      status: doc._status ?? 'draft',
+    }))
+  } catch {}
 
-export default function InsurancePage() {
   return (
     <AdminCardPage
       title="Insurance"
@@ -16,8 +28,8 @@ export default function InsurancePage() {
       searchPlaceholder="Search insurance..."
       primaryActionLabel="Add Insurance"
       cards={{
-        items: insuranceItems,
-        rowKey: (_item, index) => `insurance-${index}`,
+        items,
+        rowKey: (_item: any, index: number) => `insurance-${index}`,
         actions: [
           { label: 'Preview insurance', icon: 'view', tone: 'muted' },
           { label: 'Edit insurance', icon: 'edit', tone: 'blue' },

@@ -1,6 +1,6 @@
-import AdminHeader from './AdminHeader'
+import AdminHeader from '../../payload/admin/components/dashboard/AdminHeader'
 import { Plus, Search } from 'lucide-react'
-import AdminDataTable, { type AdminStatus, type AdminTableAction, type AdminTableColumn } from './AdminDataTable'
+import AdminDataTable, { type AdminStatus, type AdminTableAction, type AdminTableColumn } from '../../payload/admin/components/dashboard/AdminDataTable'
 import AdminContentCardGrid, { type AdminContentCardAction, type AdminContentCardItem } from './AdminContentCardGrid'
 
 type BaseRow = Record<string, string>

@@ -39,6 +39,8 @@ export default function CookieConsent() {
     setIsVisible(false)
   }
 
+  return null
+
   return (
     <AnimatePresence>
       {isVisible && (

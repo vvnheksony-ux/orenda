@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { Send, X, Minimize2, Calendar, User, MapPin, FileText, Clock, ArrowLeft, MessageSquare } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
+import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
 
 type Message = {
   id: string
@@ -18,11 +20,11 @@ type Session = {
   messages: Message[]
 }
 
-const QUICK_ACTIONS = [
-  { icon: <Calendar size={11} strokeWidth={2} />, text: 'Book Appointment' },
-  { icon: <User size={11} strokeWidth={2} />, text: 'Find a Doctor' },
-  { icon: <MapPin size={11} strokeWidth={2} />, text: 'Locations' },
-  { icon: <FileText size={11} strokeWidth={2} />, text: 'Medical Records' },
+const QUICK_ACTIONS: { icon: React.ReactNode; text: string; action: 'booking' | 'navigate' | 'message'; path?: string }[] = [
+  { icon: <Calendar size={11} strokeWidth={2} />, text: 'Book Appointment', action: 'booking' },
+  { icon: <User size={11} strokeWidth={2} />, text: 'Find a Doctor', action: 'navigate', path: '/doctors' },
+  { icon: <MapPin size={11} strokeWidth={2} />, text: 'Locations', action: 'navigate', path: '/contact' },
+  { icon: <FileText size={11} strokeWidth={2} />, text: 'Medical Records', action: 'message' },
 ]
 
 const FAQ_GUEST = [
@@ -93,7 +95,15 @@ function formatDate(iso: string) {
 
 export default function FloatingChat() {
   const { user } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
+  const locale = pathname.split('/')[1] || 'en'
   const [isOpen, setIsOpen] = useState(false)
+  const [bookingOpen, setBookingOpen] = useState(false)
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('chat') === 'open') setIsOpen(true)
+  }, [])
   const [view, setView] = useState<'chat' | 'history' | 'session'>('chat')
   const [inputValue, setInputValue] = useState('')
   const [messages, setMessages] = useState<Message[]>([INIT_MSG()])
@@ -180,7 +190,7 @@ export default function FloatingChat() {
           background: msg.role === 'user' ? 'rgba(184,145,72,0.85)' : 'rgba(245,236,212,0.70)',
           color: msg.role === 'user' ? '#fff' : '#3b2d17',
           borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-          maxWidth: '85%', whiteSpace: 'pre-wrap',
+          maxWidth: '85%', whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word',
         }}
       >{msg.content}</div>
       <span className="font-dm-sans text-[#7a5f2c]/70" style={{ fontSize: 10 }}>{msg.timestamp}</span>
@@ -188,7 +198,7 @@ export default function FloatingChat() {
   )
 
   return (
-    <div className="fixed bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-20 right-8 sm:bottom-6 sm:right-4 md:right-6 z-50 flex flex-col items-end">
 
       {isOpen && (
         <div
@@ -304,7 +314,11 @@ export default function FloatingChat() {
                 {/* Quick actions */}
                 <div className="flex gap-[8px] overflow-x-auto shrink-0 pb-[14px]" style={{ scrollbarWidth: 'none' }}>
                   {QUICK_ACTIONS.map((a, i) => (
-                    <button key={i} onClick={() => sendMessage(a.text)}
+                    <button key={i} onClick={() => {
+                      if (a.action === 'booking') { setBookingOpen(true) }
+                      else if (a.action === 'navigate' && a.path) { router.push(`/${locale}${a.path}`) }
+                      else { sendMessage(a.text) }
+                    }}
                       className="flex items-center gap-[6px] shrink-0 font-dm-sans text-[#3b2d17] hover:opacity-80 transition-opacity whitespace-nowrap"
                       style={{ background: 'rgba(245,236,212,0.30)', borderRadius: 14, padding: '8px 11px', fontSize: 11, boxShadow: '0 1px 4px rgba(59,45,23,0.10)' }}
                     >{a.icon}{a.text}</button>
@@ -358,7 +372,7 @@ export default function FloatingChat() {
                   </p>
                 )}
                 <div className="flex items-center gap-2"
-                  style={{ background: 'rgba(249,249,249,0.50)', borderRadius: 71, padding: '11px 8px 11px 23px', boxShadow: '0 1px 8px rgba(59,45,23,0.10)' }}
+                  style={{ background: 'rgba(249,249,249,0.50)', borderRadius: 71, padding: '14px 8px 14px 23px', boxShadow: '0 1px 8px rgba(59,45,23,0.10)' }}
                 >
                   <input
                     type="text" value={inputValue}
@@ -367,7 +381,7 @@ export default function FloatingChat() {
                     placeholder={isTyping ? 'Waiting...' : 'Ask AI'}
                     disabled={isTyping || userCount >= MAX_MESSAGES}
                     className="flex-1 bg-transparent border-none outline-none font-dm-sans text-[#3b2d17] placeholder:text-[#7a5f2c]/60 min-w-0 disabled:opacity-50"
-                    style={{ fontSize: 11 }}
+                    style={{ fontSize: 13 }}
                   />
                   <button onClick={handleSend} disabled={!canSend}
                     className="shrink-0 flex items-center justify-center rounded-full hover:opacity-90 transition-opacity disabled:opacity-40"
@@ -379,6 +393,8 @@ export default function FloatingChat() {
           )}
         </div>
       )}
+
+      <BookAppointmentModal open={bookingOpen} onClose={() => setBookingOpen(false)} />
 
       {/* Trigger pill */}
       <button

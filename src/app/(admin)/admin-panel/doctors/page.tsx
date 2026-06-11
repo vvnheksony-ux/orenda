@@ -1,14 +1,27 @@
 import { AdminTablePage } from '@/components/admin/AdminManagementPage'
+import { getPayloadClient } from '@/lib/payload'
 
-const doctors = [
-  { name: 'Dr. Pheakdey Lim', specialty: 'Cardiology', clinic: 'Cardiology', email: 'p.lim@orienda.com', phone: '+855 12 345 678', status: 'active' },
-  { name: 'Dr. Chanthou Kim', specialty: 'Pediatrics', clinic: 'Pediatrics', email: 'c.kim@orienda.com', phone: '+855 12 345 679', status: 'active' },
-  { name: 'Dr. Sophea Nak', specialty: 'Orthopedics', clinic: 'Orthopedics', email: 's.nak@orienda.com', phone: '+855 12 345 680', status: 'active' },
-  { name: 'Dr. Borei Chan', specialty: 'Dermatology', clinic: 'Dermatology', email: 'b.chan@orienda.com', phone: '+855 12 345 681', status: 'active' },
-  { name: 'Dr. Sreymao Pich', specialty: 'Neurology', clinic: 'Neurology', email: 's.pich@orienda.com', phone: '+855 12 345 682', status: 'inactive' },
-]
+export default async function DoctorsPage() {
+  let doctors: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const data = await payload.find({
+      collection: 'doctors',
+      overrideAccess: true,
+      depth: 1,
+      sort: 'order',
+      limit: 200,
+    } as any)
+    doctors = data.docs.map((doc: any) => ({
+      name: doc.name ?? '',
+      specialty: doc.specialty ?? '',
+      clinic: typeof doc.department === 'object' ? (doc.department?.name ?? '') : '',
+      email: doc.email ?? '-',
+      phone: doc.phone ?? '-',
+      status: doc._status ?? 'published',
+    }))
+  } catch {}
 
-export default function DoctorsPage() {
   return (
     <AdminTablePage
       title="Doctors"
@@ -17,7 +30,7 @@ export default function DoctorsPage() {
       primaryActionLabel="Add Doctor"
       table={{
         rows: doctors,
-        rowKey: 'email',
+        rowKey: (_row: any, index: number) => `doctor-${index}`,
         columns: [
           { key: 'name', label: 'Name' },
           { key: 'specialty', label: 'Specialty' },

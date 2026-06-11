@@ -1,15 +1,25 @@
 import { AdminTablePage } from '@/components/admin/AdminManagementPage'
+import { createServiceClient } from '@/utils/supabase/server'
 
-const appointments = [
-  { patient: 'Sok Dara', doctor: 'Dr. Pheakdey Lim', department: 'Cardiology', date: '2025-06-12', time: '09:00', type: 'Consultation', status: 'pending' },
-  { patient: 'Maria Santos', doctor: 'Dr. Chanthou Kim', department: 'Pediatrics', date: '2025-06-12', time: '10:30', type: 'Check-up', status: 'completed' },
-  { patient: 'Wei Zhang', doctor: 'Dr. Sophea Nak', department: 'Orthopedics', date: '2025-06-13', time: '14:00', type: 'Follow-up', status: 'pending' },
-  { patient: 'Pisach Hor', doctor: 'Dr. Pheakdey Lim', department: 'Cardiology', date: '2025-06-13', time: '15:30', type: 'Consultation', status: 'completed' },
-  { patient: 'Sreyleap Mao', doctor: 'Dr. Borei Chan', department: 'Dermatology', date: '2025-06-14', time: '08:00', type: 'Follow-up', status: 'completed' },
-  { patient: 'Dara Keo', doctor: 'Dr. Chanthou Kim', department: 'Pediatrics', date: '2025-06-11', time: '11:00', type: 'Vaccination', status: 'completed' },
-]
+export default async function AppointmentsPage() {
+  let appointments: any[] = []
+  try {
+    const supabase = await createServiceClient()
+    const { data } = await supabase
+      .from('appointments')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100)
+    appointments = (data ?? []).map((row: any) => ({
+      patient: row.patient_name ?? '',
+      phone: row.patient_phone ?? '',
+      date: row.preferred_date ?? '',
+      time: row.preferred_time ?? '',
+      source: row.source ?? '',
+      status: row.status ?? 'pending',
+    }))
+  } catch {}
 
-export default function AppointmentsPage() {
   return (
     <AdminTablePage
       title="Appointments"
@@ -18,14 +28,13 @@ export default function AppointmentsPage() {
       primaryActionLabel="New Appointment"
       table={{
         rows: appointments,
-        rowKey: (_row, index) => `appointment-${index}`,
+        rowKey: (_row: any, index: number) => `appointment-${index}`,
         columns: [
           { key: 'patient', label: 'Patient' },
-          { key: 'doctor', label: 'Doctor' },
-          { key: 'department', label: 'Department' },
+          { key: 'phone', label: 'Phone' },
           { key: 'date', label: 'Date' },
           { key: 'time', label: 'Time' },
-          { key: 'type', label: 'Type' },
+          { key: 'source', label: 'Source' },
           { key: 'status', label: 'Status', kind: 'status' },
           { key: 'actions', label: 'Actions', kind: 'actions' },
         ],

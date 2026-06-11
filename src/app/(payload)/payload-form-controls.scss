@@ -1,0 +1,558 @@
+/* Payload admin form reconstruction after Tailwind reset. */
+/* Target and neutralize Payload's nested dynamic select search boxes */
+.collection-edit,
+.global-edit {
+
+  /* Select and force-clean any text input elements living inside a React Select container */
+  .react-select,
+  .rs__control,
+  .rs__value-container {
+
+    input[type="text"],
+    input[type="search"],
+    .rs__input-container input {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      border-color: transparent !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      outline: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      min-height: 0 !important;
+      height: auto !important;
+      width: auto !important;
+      display: inline-block !important;
+
+      /* Block any focused ring effects from showing up inside the dropdown capsule */
+      &:focus {
+        border-color: transparent !important;
+        box-shadow: none !important;
+      }
+    }
+  }
+}
+
+.app-header {
+  height: calc(var(--app-header-height) + 1rem) !important;
+  padding-top: 1rem !important;
+}
+
+.app-header__content,
+.app-header__wrapper {
+  box-sizing: border-box !important;
+  // padding-left: 2rem !important;
+  // padding-right: 2rem !important;
+}
+
+.app-header__content {
+  height: var(--app-header-height) !important;
+}
+
+.app-header__wrapper {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+
+
+.collection-edit,
+.global-edit {
+  // background: #fbfaf7 !important;
+  color: #2b2823 !important;
+
+  .doc-controls,
+  .doc-controls__wrapper {
+    box-sizing: border-box !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+
+  .doc-controls__wrapper {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  .doc-controls {
+    background: #fbfaf7 !important;
+    padding-bottom: 0.75rem !important;
+    padding-top: 0.75rem !important;
+  }
+
+  .doc-controls__wrapper,
+  .doc-controls__content,
+  .doc-controls__controls-wrapper,
+  .doc-controls__controls {
+    align-items: center !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+  }
+
+  .doc-controls__wrapper {
+    justify-content: space-between !important;
+  }
+
+  .doc-controls__meta {
+    align-items: center !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .collection-edit__main-wrapper {
+    padding: 1.5rem 2rem 2.5rem !important;
+    gap: 1.5rem !important;
+  }
+
+  .collection-edit__main {
+    // background: #ffffff !important;
+    width: 100% !important;
+    // border: 1px solid #eeeae4 !important;
+    // border-radius: 1rem !important;
+    box-shadow: 0 10px 26px rgb(50 39 24 / 5%) !important;
+    margin: 0 auto !important;
+    // padding: 1.5rem !important;
+  }
+
+  .document-fields {
+    display: grid !important;
+    gap: 1.5rem !important;
+  }
+
+  .document-fields--has-sidebar {
+    // grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem) !important;
+  }
+
+  .document-fields__main,
+  .document-fields__sidebar-wrap,
+  .document-fields__edit,
+  .document-fields__sidebar,
+  .document-fields__sidebar-fields {
+    width: 100% !important;
+    height: fit-content !important;
+  }
+
+  .document-fields__sidebar-fields {
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .render-fields {
+    display: grid !important;
+    gap: 1.25rem 1.5rem !important;
+  }
+
+  .row,
+  .row__fields {
+    display: grid !important;
+    gap: 1.25rem 1.5rem !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .tabs-field,
+  .collapsible-field,
+  .group-field,
+  .array-field,
+  .blocks-field {
+    background: #ffffff !important;
+    border: 1px solid #eeeae4 !important;
+    border-radius: 0.875rem !important;
+    padding: 1rem !important;
+  }
+
+  .field-type {
+    margin: 0 !important;
+    min-width: 0 !important;
+  }
+
+  .field-type__wrap {
+    display: grid !important;
+    gap: 0.45rem !important;
+  }
+
+  .field-label {
+    color: #716b60 !important;
+    display: inline-flex !important;
+    font-size: 0.8125rem !important;
+    font-weight: 700 !important;
+    gap: 0.2rem !important;
+    line-height: 1.2 !important;
+    margin: 0 0 0.45rem !important;
+  }
+
+  .required {
+    color: #b89148 !important;
+  }
+
+  .field-description,
+  .quill-rich-text-field__description {
+    color: #999187 !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.45 !important;
+    margin: 0.35rem 0 0 !important;
+  }
+
+  .field-error,
+  .error-message {
+    color: #c2410c !important;
+    font-size: 0.8125rem !important;
+    margin: 0 0 0.35rem !important;
+  }
+}
+
+.collection-edit input[type="text"],
+.collection-edit input[type="email"],
+.collection-edit input[type="number"],
+.collection-edit input[type="password"],
+.collection-edit input[type="search"],
+.collection-edit input[type="url"],
+.collection-edit input[type="tel"],
+.collection-edit textarea,
+.global-edit input[type="text"],
+.global-edit input[type="email"],
+.global-edit input[type="number"],
+.global-edit input[type="password"],
+.global-edit input[type="search"],
+.global-edit input[type="url"],
+.global-edit input[type="tel"],
+.global-edit textarea {
+  background: #ffffff !important;
+  border: 1px solid #ded7ce !important;
+  border-radius: 0.625rem !important;
+  box-shadow: 0 1px 2px rgb(50 39 24 / 3%) !important;
+  color: #2b2823 !important;
+  font-size: 0.875rem !important;
+  min-height: 2.625rem !important;
+  outline: none !important;
+  padding: 0.65rem 0.85rem !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  width: 100% !important;
+
+  &::placeholder {
+    color: #aaa39a !important;
+  }
+
+  &:focus {
+    border-color: #b89148 !important;
+    box-shadow: 0 0 0 3px rgb(184 145 72 / 16%) !important;
+  }
+
+  &:disabled {
+    background: #f7f4ee !important;
+    color: #8a8378 !important;
+    cursor: not-allowed !important;
+  }
+}
+
+.collection-edit textarea,
+.global-edit textarea {
+  min-height: 8rem !important;
+  resize: vertical !important;
+}
+
+.collection-edit .react-select,
+.global-edit .react-select {
+  width: 100% !important;
+}
+
+.collection-edit .rs__control,
+.global-edit .rs__control {
+  align-items: center !important;
+  background: #ffffff !important;
+  border: 1px solid #ded7ce !important;
+  border-radius: 0.625rem !important;
+  box-shadow: 0 1px 2px rgb(50 39 24 / 3%) !important;
+  color: #2b2823 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  min-height: 2.625rem !important;
+  padding: 0 0.75rem !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.collection-edit .rs__input,
+.collection-edit .rs__input-container,
+.collection-edit .rs__input input,
+.global-edit .rs__input,
+.global-edit .rs__input-container,
+.global-edit .rs__input input {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  outline: 0 !important;
+  padding: 0 !important;
+}
+
+.collection-edit .react-select:focus-within .rs__control,
+.global-edit .react-select:focus-within .rs__control {
+  border-color: #b89148 !important;
+  box-shadow: 0 0 0 3px rgb(184 145 72 / 16%) !important;
+}
+
+.collection-edit .rs__value-container,
+.global-edit .rs__value-container {
+  align-items: center !important;
+  display: flex !important;
+  flex: 1 !important;
+  gap: 0.35rem !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+}
+
+.collection-edit .rs__placeholder,
+.collection-edit .rs__single-value,
+.collection-edit .rs__input-container,
+.global-edit .rs__placeholder,
+.global-edit .rs__single-value,
+.global-edit .rs__input-container {
+  color: #6f675f !important;
+  font-size: 0.875rem !important;
+}
+
+.collection-edit .rs__placeholder,
+.global-edit .rs__placeholder {
+  color: #aaa39a !important;
+}
+
+.collection-edit .rs__indicators,
+.global-edit .rs__indicators {
+  align-items: center !important;
+  color: #716b60 !important;
+  display: flex !important;
+  gap: 0.25rem !important;
+}
+
+.collection-edit .rs__menu,
+.global-edit .rs__menu {
+  background: #ffffff !important;
+  border: 1px solid #e7dfd5 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 16px 36px rgb(50 39 24 / 12%) !important;
+  margin-top: 0.35rem !important;
+  overflow: hidden !important;
+  z-index: 20 !important;
+}
+
+.collection-edit .rs__option,
+.global-edit .rs__option {
+  color: #403c35 !important;
+  cursor: pointer !important;
+  font-size: 0.875rem !important;
+  padding: 0.7rem 0.85rem !important;
+}
+
+.collection-edit .rs__option--is-focused,
+.global-edit .rs__option--is-focused {
+  background: #fbf7ee !important;
+}
+
+.collection-edit .rs__option--is-selected,
+.global-edit .rs__option--is-selected {
+  background: #594522 !important;
+  color: #ffffff !important;
+}
+
+.collection-edit .rs__multi-value,
+.global-edit .rs__multi-value {
+  align-items: center !important;
+  background: #fbf7ee !important;
+  border: 1px solid #ead6a4 !important;
+  border-radius: 999px !important;
+  color: #594522 !important;
+  display: inline-flex !important;
+  font-size: 0.8125rem !important;
+  gap: 0.25rem !important;
+  padding: 0.2rem 0.5rem !important;
+}
+
+.collection-edit .upload .dropzone,
+.global-edit .upload .dropzone {
+  align-items: center !important;
+  background: #ffffff !important;
+  border: 1.5px dashed #9b958c !important;
+  border-radius: 0.875rem !important;
+  color: #8a8378 !important;
+  display: flex !important;
+  justify-content: center !important;
+  min-height: 8rem !important;
+  padding: 1rem !important;
+  text-align: center !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease !important;
+}
+
+.collection-edit .upload .dropzone:hover,
+.collection-edit .upload .dropzone.dragging,
+.global-edit .upload .dropzone:hover,
+.global-edit .upload .dropzone.dragging {
+  // background: #fbf7ee !important;
+  // border-color: #b89148 !important;
+}
+
+.collection-edit .upload__dropzoneContent,
+.global-edit .upload__dropzoneContent {
+  align-items: center !important;
+  display: grid !important;
+  gap: 0.65rem !important;
+  justify-items: center !important;
+}
+
+.collection-edit .upload__dropzoneContent__buttons,
+.global-edit .upload__dropzoneContent__buttons {
+  align-items: center !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  justify-content: center !important;
+}
+
+.collection-edit .upload__dragAndDropText,
+.global-edit .upload__dragAndDropText {
+  color: #8a8378 !important;
+  font-size: 0.8125rem !important;
+  margin: 0 !important;
+}
+
+.collection-edit .quill-rich-text-field,
+.global-edit .quill-rich-text-field {
+  display: grid !important;
+  gap: 0.45rem !important;
+}
+
+.collection-edit .quill-rich-text-field__editor,
+.global-edit .quill-rich-text-field__editor {
+  background: #ffffff !important;
+  border: 1px solid #ded7ce !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 1px 2px rgb(50 39 24 / 3%) !important;
+  overflow: hidden !important;
+}
+
+.collection-edit .quill-rich-text-field__editor:focus-within,
+.global-edit .quill-rich-text-field__editor:focus-within {
+  border-color: #b89148 !important;
+  box-shadow: 0 0 0 3px rgb(184 145 72 / 16%) !important;
+}
+
+.collection-edit .quill-rich-text-field__editor--error,
+.global-edit .quill-rich-text-field__editor--error {
+  border-color: #c2410c !important;
+}
+
+.collection-edit .ql-toolbar,
+.global-edit .ql-toolbar {
+  background: #fbfaf7 !important;
+  border: 0 !important;
+  border-bottom: 1px solid #eeeae4 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.35rem !important;
+  padding: 0.6rem 0.75rem !important;
+}
+
+.collection-edit .ql-toolbar button,
+.collection-edit .ql-toolbar .ql-picker-label,
+.global-edit .ql-toolbar button,
+.global-edit .ql-toolbar .ql-picker-label {
+  align-items: center !important;
+  background: #ffffff !important;
+  border: 1px solid #eeeae4 !important;
+  border-radius: 0.375rem !important;
+  color: #403c35 !important;
+  display: inline-flex !important;
+  justify-content: center !important;
+  min-height: 1.75rem !important;
+  min-width: 1.75rem !important;
+  padding: 0.25rem 0.45rem !important;
+}
+
+.collection-edit .ql-toolbar button:hover,
+.collection-edit .ql-toolbar button.ql-active,
+.collection-edit .ql-toolbar .ql-picker-label:hover,
+.global-edit .ql-toolbar button:hover,
+.global-edit .ql-toolbar button.ql-active,
+.global-edit .ql-toolbar .ql-picker-label:hover {
+  background: #fbf7ee !important;
+  border-color: #ead6a4 !important;
+  color: #7a5f2c !important;
+}
+
+.collection-edit .ql-container,
+.global-edit .ql-container {
+  border: 0 !important;
+  color: #2b2823 !important;
+  font-size: 0.9375rem !important;
+}
+
+.collection-edit .ql-editor,
+.global-edit .ql-editor {
+  line-height: 1.6 !important;
+  min-height: 12rem !important;
+  padding: 0.85rem !important;
+}
+
+.collection-edit .ql-editor.ql-blank::before,
+.global-edit .ql-editor.ql-blank::before {
+  color: #aaa39a !important;
+  font-style: normal !important;
+}
+
+.collection-edit .btn,
+.global-edit .btn {
+  border-radius: 0.625rem !important;
+  font-weight: 700 !important;
+  min-height: 2.5rem !important;
+  padding: 0.65rem 1.15rem !important;
+}
+
+.collection-edit .btn--style-primary,
+.global-edit .btn--style-primary {
+  background: #b89148 !important;
+  border-color: #b89148 !important;
+  color: #ffffff !important;
+}
+
+.collection-edit .doc-controls .btn,
+.global-edit .doc-controls .btn {
+  min-height: 2.625rem !important;
+  padding: 0.7rem 1.25rem !important;
+}
+
+.collection-edit .doc-controls .btn+.btn,
+.global-edit .doc-controls .btn+.btn {
+  margin-left: 0.5rem !important;
+}
+
+@media (max-width: 768px) {
+
+  .app-header__content,
+  .app-header__wrapper {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .collection-edit,
+  .global-edit {
+
+    .doc-controls,
+    .doc-controls__wrapper {
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
+
+    .document-fields,
+    .document-fields--has-sidebar {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}

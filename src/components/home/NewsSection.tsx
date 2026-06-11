@@ -12,16 +12,40 @@ export default function NewsSection() {
   const t = useTranslations('NewsSection')
   const locale = useLocale()
   const [news, setNews] = useState<NewsItem[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetch(`/api/news?locale=${locale}&limit=5`)
       .then(r => r.json())
       .then(d => { if (d?.docs?.length) setNews(d.docs) })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [locale])
 
   const featured = news[0]
   const sideItems = news.slice(1, 5).map(n => ({ title: n.title, image: n.thumbnail || null, slug: n.slug }))
+
+  if (loading) return (
+    <section className="bg-[#fbf7ee]">
+      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[80px]">
+        <div className="flex flex-col gap-[12px] items-center">
+          <div className="h-[52px] lg:h-[72px] w-[200px] rounded-lg bg-[#e8d9b8] animate-pulse" />
+          <div className="h-[24px] w-[260px] rounded bg-[#e8d9b8] animate-pulse" />
+        </div>
+        <div className="flex flex-col lg:flex-row gap-[24px] lg:gap-[37px] items-start w-full">
+          <div className="w-full lg:flex-1 rounded-2xl overflow-hidden bg-[#e8d9b8] animate-pulse h-[360px] lg:h-[508px]" />
+          <div className="hidden lg:flex w-[632px] flex-col">
+            {[0,1,2,3].map(i => (
+              <div key={i} className="flex gap-[22px] items-center py-[12px] border-b border-[#e8d9b8]">
+                <div className="shrink-0 w-[240px] h-[147px] bg-[#e8d9b8] animate-pulse rounded" />
+                <div className="flex-1 h-[20px] bg-[#e8d9b8] animate-pulse rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
 
   return (
     <section className="bg-[#fbf7ee]">

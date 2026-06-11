@@ -17,10 +17,19 @@ export async function payloadFetch(path: string): Promise<any> {
   return res.json()
 }
 
-/** Extract URL from a Payload media field */
+const SUPABASE_BASE = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const STORAGE_BUCKET = 'orienda-media'
+
+/** Extract URL from a Payload media field — resolves to direct Supabase Storage URL */
 export function mediaUrl(field: any): string | null {
   if (!field) return null
-  if (typeof field === 'object' && field.url) return field.url
+  if (typeof field === 'object') {
+    if (field.filename) {
+      const prefix = field.prefix ? `${field.prefix}/` : ''
+      return `${SUPABASE_BASE}/storage/v1/object/public/${STORAGE_BUCKET}/${prefix}${field.filename}`
+    }
+    if (field.url) return field.url
+  }
   return null
 }
 

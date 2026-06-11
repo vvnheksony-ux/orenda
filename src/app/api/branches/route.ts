@@ -1,38 +1,46 @@
 import { NextResponse } from 'next/server'
-import { getPayloadClient } from '@/lib/payload'
-import { mediaUrl } from '@/lib/payload-api'
+import { getRawPool, mediaStorageUrl } from '@/lib/db'
 
 export const runtime = 'nodejs'
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const locale = (searchParams.get('locale') || 'en') as 'en' | 'km' | 'zh'
+  const locale = new URL(req.url).searchParams.get('locale') || 'en'
 
   try {
-    const payload = await getPayloadClient()
-    const data = await payload.find({
-      collection: 'branches',
-      locale, fallbackLocale: 'en',
-      overrideAccess: true,
-      depth: 1,
-      sort: 'order',
-      limit: 20,
-    } as any)
+    const pool = getRawPool()
 
-    const docs = (data.docs || []).map((doc: any) => ({
-      id:      String(doc.id),
-      name:    doc.name ?? '',
-      slug:    doc.slug ?? '',
-      address: doc.address ?? '',
-      phone:   doc.phone ?? '',
-      email:   doc.email ?? '',
-      mapUrl:  doc.mapUrl ?? '',
-      hours:   doc.hours ?? '',
-      image:   mediaUrl(doc.image),
-      order:   doc.order ?? 0,
+    const { rows } = await pool.query(`
+      SELECT
+        b.id, b.slug, b.phone, b.email, b.map_url, b."order",
+        COALESCE(bl.name, enbl.name)           AS name,
+        COALESCE(bl.address, enbl.address)     AS address,
+        COALESCE(bl.hours, enbl.hours)         AS hours,
+        m.filename AS image_filename, m.prefix AS image_prefix
+      FROM payload.branches b
+      LEFT JOIN payload.branches_locales bl    ON bl._parent_id = b.id AND bl._locale = $1
+      LEFT JOIN payload.branches_locales enbl  ON enbl._parent_id = b.id AND enbl._locale = 'en'
+      LEFT JOIN payload.media m ON m.id = b.image_id
+      WHERE b.status = 'published'
+      ORDER BY b."order"
+      LIMIT 20
+    `, [locale])
+
+    const docs = rows.map((row: any) => ({
+      id:      String(row.id),
+      name:    row.name ?? '',
+      slug:    row.slug ?? '',
+      address: row.address ?? '',
+      phone:   row.phone ?? '',
+      email:   row.email ?? '',
+      mapUrl:  row.map_url ?? '',
+      hours:   row.hours ?? '',
+      image:   mediaStorageUrl(row.image_filename, row.image_prefix),
+      order:   row.order ?? 0,
     }))
 
-    return NextResponse.json({ docs }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } })
+    return NextResponse.json({ docs }, {
+      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+    })
   } catch (err: any) {
     console.error('branches:', err.message)
     return NextResponse.json({ docs: [] })

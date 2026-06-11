@@ -1,0 +1,23 @@
+/* Fix for Sidebar height and Layout displacement by Custom Header */
+.template-default {
+  display: flex !important;
+  flex-direction: row !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+
+  .nav {
+    height: 100vh !important;
+    position: sticky !important;
+    top: 0 !important;
+    flex-shrink: 0;
+  }
+
+  .template-default__wrap {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    overflow-y: auto !important;
+    position: relative;
+  }
+}

@@ -1,14 +1,29 @@
 import { AdminCardPage } from '@/components/admin/AdminManagementPage'
+import { getPayloadClient } from '@/lib/payload'
 
-const news = [
-  { title: 'Career title', description: 'This is career short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'Career title', description: 'This is career short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'Career title', description: 'This is career short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'Career title', description: 'This is career short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'Career title', description: 'This is career short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-]
+export default async function CareerPage() {
+  let careers: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const data = await payload.find({
+      collection: 'careers',
+      overrideAccess: true,
+      depth: 1,
+      sort: '-applicationDeadline',
+      limit: 100,
+    } as any)
+    careers = data.docs.map((doc: any) => {
+      const dept = typeof doc.careerDepartment === 'object' ? doc.careerDepartment : null
+      return {
+        title: doc.position ?? '',
+        description: dept?.name ?? doc.careerEmploymentType ?? '',
+        author: doc.applicationDeadline ?? '',
+        updated: doc.updatedAt ?? '',
+        status: doc._status ?? 'draft',
+      }
+    })
+  } catch {}
 
-export default function CareerPage() {
   return (
     <AdminCardPage
       title="Career"
@@ -16,8 +31,8 @@ export default function CareerPage() {
       searchPlaceholder="Search career..."
       primaryActionLabel="Add Career"
       cards={{
-        items: news,
-        rowKey: (_item, index) => `news-${index}`,
+        items: careers,
+        rowKey: (_item: any, index: number) => `career-${index}`,
         actions: [
           { label: 'Preview career', icon: 'view', tone: 'muted' },
           { label: 'Edit career', icon: 'edit', tone: 'blue' },

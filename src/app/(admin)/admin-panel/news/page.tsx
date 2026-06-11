@@ -1,14 +1,26 @@
 import { AdminCardPage } from '@/components/admin/AdminManagementPage'
+import { getPayloadClient } from '@/lib/payload'
 
-const news = [
-  { title: 'News title', description: 'This is news short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'News title', description: 'This is news short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'News title', description: 'This is news short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
-  { title: 'News title', description: 'This is news short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-  { title: 'News title', description: 'This is news short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },
-]
+export default async function NewsPage() {
+  let news: any[] = []
+  try {
+    const payload = await getPayloadClient()
+    const data = await payload.find({
+      collection: 'news',
+      overrideAccess: true,
+      depth: 0,
+      sort: '-publishedAt',
+      limit: 100,
+    } as any)
+    news = data.docs.map((doc: any) => ({
+      title: doc.title ?? '',
+      description: doc.excerpt ?? '',
+      author: doc.author ?? '',
+      updated: doc.publishedAt ?? doc.updatedAt ?? '',
+      status: doc._status ?? 'draft',
+    }))
+  } catch {}
 
-export default function NewsPage() {
   return (
     <AdminCardPage
       title="News"
@@ -17,7 +29,7 @@ export default function NewsPage() {
       primaryActionLabel="Add News"
       cards={{
         items: news,
-        rowKey: (_item, index) => `news-${index}`,
+        rowKey: (_item: any, index: number) => `news-${index}`,
         actions: [
           { label: 'Preview news', icon: 'view', tone: 'muted' },
           { label: 'Edit news', icon: 'edit', tone: 'blue' },

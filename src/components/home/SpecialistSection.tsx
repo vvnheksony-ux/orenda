@@ -165,15 +165,17 @@ export default function SpecialistSection() {
   const { selectedBranch } = useBranch()
   const [activeIdx, setActiveIdx] = useState(2)
   const [doctors, setDoctors] = useState<{ name: string; specialty: string; image: string }[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!selectedBranch) return
+    setLoading(true)
     setActiveIdx(2)
     fetch(`/api/doctors?locale=${locale}&branch=${selectedBranch.id}`)
       .then(r => r.json())
       .then((data: any[]) => {
         if (data?.length) {
-          setDoctors(data.map((d) => ({
+          setDoctors(data.map(d => ({
             name:      d.name,
             specialty: d.specialty,
             image:     d.image_url || '/images/doctor-1.jpg',
@@ -181,14 +183,32 @@ export default function SpecialistSection() {
         }
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [locale, selectedBranch])
 
   const DOCTORS = doctors
-
   const n = DOCTORS.length
 
   const prev = () => setActiveIdx(i => wrapIdx(i - 1, n))
   const next = () => setActiveIdx(i => wrapIdx(i + 1, n))
+
+  if (loading) return (
+    <section className="w-full bg-[#fbf7ee] overflow-hidden">
+      <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[24px] lg:gap-[60px] items-center">
+        <div className="flex flex-col gap-[16px] items-center w-full text-center px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]">
+          <div className="h-[36px] lg:h-[48px] w-[240px] rounded-lg bg-[#e8d9b8] animate-pulse" />
+          <div className="h-[20px] w-[200px] rounded bg-[#e8d9b8] animate-pulse" />
+        </div>
+        <div className="flex gap-[32px] items-end justify-center w-full h-[540px] relative overflow-hidden">
+          {[315, 360, 405, 360, 315].map((w, i) => (
+            <div key={i} className="shrink-0 rounded-[19px] bg-[#e8d9b8] animate-pulse" style={{ width: w, height: w === 405 ? 540 : w === 360 ? 480 : 420 }} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+
+  if (!n) return null
 
   return (
     <section className="w-full bg-[#fbf7ee] overflow-hidden">

@@ -1,31 +1,40 @@
 import { NextResponse } from 'next/server'
-import { getPayloadClient } from '@/lib/payload'
-import { mediaUrl, lexicalToText } from '@/lib/payload-api'
+import { getRawPool, mediaStorageUrl } from '@/lib/db'
+import { lexicalToText } from '@/lib/payload-api'
 
 export const runtime = 'nodejs'
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const locale = (searchParams.get('locale') || 'en') as 'en' | 'km' | 'zh'
+  const locale = new URL(req.url).searchParams.get('locale') || 'en'
 
   try {
-    const payload = await getPayloadClient()
-    const data = await payload.find({
-      collection: 'service-packages',
-      locale, fallbackLocale: 'en',
-      overrideAccess: true,
-      depth: 1,
-      sort: 'order',
-      limit: 20,
-    } as any)
+    const pool = getRawPool()
 
-    const docs = (data.docs || []).map((doc: any) => ({
-      id:          String(doc.id),
-      slug:        doc.slug ?? '',
-      title:       doc.title ?? '',
-      description: lexicalToText(doc.description),
-      price:       doc.priceLabel ?? '',
-      image:       mediaUrl(doc.image),
+    const { rows } = await pool.query(`
+      SELECT
+        sp.id, sp.slug, sp."order",
+        COALESCE(spl.title, enspl.title)             AS title,
+        COALESCE(spl.description, enspl.description) AS description,
+        COALESCE(spl.price_label, enspl.price_label) AS price_label,
+        m.filename AS img_filename, m.prefix AS img_prefix
+      FROM payload.service_packages sp
+      LEFT JOIN payload.service_packages_locales spl
+        ON spl._parent_id = sp.id AND spl._locale = $1
+      LEFT JOIN payload.service_packages_locales enspl
+        ON enspl._parent_id = sp.id AND enspl._locale = 'en'
+      LEFT JOIN payload.media m ON m.id = sp.image_id
+      WHERE sp.status = 'published'
+      ORDER BY sp."order"
+      LIMIT 20
+    `, [locale])
+
+    const docs = rows.map((row: any) => ({
+      id:          String(row.id),
+      slug:        row.slug ?? '',
+      title:       row.title ?? '',
+      description: lexicalToText(row.description),
+      price:       row.price_label ?? '',
+      image:       mediaStorageUrl(row.img_filename, row.img_prefix),
     }))
 
     return NextResponse.json(docs)

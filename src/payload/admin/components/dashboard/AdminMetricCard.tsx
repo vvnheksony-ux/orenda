@@ -23,16 +23,16 @@ export default function AdminMetricCard({ metric }: { metric: AdminMetric }) {
   }))
 
   return (
-    <article className="rounded-2xl bg-white p-6 shadow-[0_12px_30px_rgba(53,42,22,0.08)] ring-1 ring-[#f0ece4]">
-      <div className="flex items-start justify-between gap-4">
+    <article className="orienda-dashboard-card rounded-2xl bg-white p-6 shadow-[0_12px_30px_rgba(53,42,22,0.08)] ring-1 ring-[#f0ece4]">
+      <div className="orienda-dashboard-card__top flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-[#918b82]">{metric.label}</p>
-          <p className="mt-3 text-3xl font-bold tracking-tight text-[#2d2b28]">{metric.value}</p>
-          <p className="mt-2 text-sm font-bold text-[#2fac73]">{metric.change}</p>
+          <p className="orienda-dashboard-card__label text-sm font-medium text-[#918b82]">{metric.label}</p>
+          <p className="orienda-dashboard-card__value mt-3 text-3xl font-bold tracking-tight text-[#2d2b28]">{metric.value}</p>
+          <p className="orienda-dashboard-card__change mt-2 text-sm font-bold text-[#2fac73]">{metric.change}</p>
         </div>
-        <Download className="size-4 text-[#bb8d36]" />
+        <Download className="orienda-dashboard-card__icon size-4 text-[#bb8d36]" />
       </div>
-      <div className="mt-6 h-12 w-full">
+      <div className="orienda-dashboard-card__chart mt-6 h-12 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 3, right: 2, bottom: 3, left: 2 }}>
             <Tooltip
