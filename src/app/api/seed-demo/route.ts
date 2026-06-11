@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { getPayloadClient } from '@/lib/payload'
 import { getRawPool } from '@/lib/db'
 
 export async function GET() {
@@ -13,7 +12,6 @@ export async function POST() {
     return NextResponse.json({ error: 'Not allowed in production' }, { status: 403 })
   }
 
-  const payload = await getPayloadClient()
   const pool = getRawPool()
   const results: Record<string, any> = {}
 

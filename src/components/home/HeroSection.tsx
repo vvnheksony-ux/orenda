@@ -134,25 +134,25 @@ export default function HeroSection() {
       {/* 360° Room Tour Badge (Bottom Right) */}
       <Link
         href="/360-tour"
-        className="absolute z-20 cursor-pointer hover:opacity-90 transition-opacity overflow-visible"
-        style={{ right: 60, bottom: 28, width: 184, height: 90, filter: 'drop-shadow(0px 0px 5px rgba(184,145,72,0.25))' }}
+        className="absolute z-20 cursor-pointer hover:opacity-90 transition-opacity overflow-visible right-3 bottom-[88px] sm:right-[60px] sm:bottom-7"
+        style={{ width: 'clamp(118px, 13vw, 184px)', height: 'clamp(58px, 6.4vw, 90px)', filter: 'drop-shadow(0px 0px 5px rgba(184,145,72,0.25))' }}
       >
         {/* Union background */}
         <img src="/images/Union.svg" alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{ objectFit: 'fill' }} />
         {/* Content */}
-        <div className="relative flex flex-col items-center justify-center gap-[4px] w-full h-full" style={{ paddingBottom: 6 }}>
-          <div className="flex flex-col items-center gap-[4px]">
+        <div className="relative flex flex-col items-center justify-center gap-[3px] w-full h-full" style={{ paddingBottom: 4 }}>
+          <div className="flex flex-col items-center gap-[3px]">
             {/* 360° */}
             <p className="font-cormorant font-bold text-white leading-none">
-              <span style={{ fontSize: 34 }}>360</span><span style={{ fontSize: 20 }}>°</span>
+              <span style={{ fontSize: 'clamp(22px, 2.4vw, 34px)' }}>360</span><span style={{ fontSize: 'clamp(13px, 1.4vw, 20px)' }}>°</span>
             </p>
             {/* Oval rotation arrow */}
-            <svg viewBox="0 0 134.754 14.4971" width="108" height="11" fill="none">
+            <svg viewBox="0 0 134.754 14.4971" width="80" height="8" fill="none" className="sm:w-[108px] sm:h-[11px]">
               <path fillRule="evenodd" clipRule="evenodd" d="M67.377 2.87128C98.3864 2.87128 123.525 5.23722 123.525 8.15576C123.525 11.0743 98.3864 13.4402 67.377 13.4402C36.3676 13.4402 11.2295 11.0743 11.2295 8.15576C11.2295 7.36791 13.0577 6.6217 16.3311 5.95143C17.6262 5.68625 16.392 5.37247 13.5745 5.25058C10.7569 5.12868 7.42297 5.24484 6.12788 5.51002C2.19192 6.31595 0 7.21248 0 8.15576C0 11.658 30.1657 14.4971 67.377 14.4971C104.588 14.4971 134.754 11.658 134.754 8.15576C134.754 4.65352 104.588 1.81439 67.377 1.81439V2.87128Z" fill="white" />
             </svg>
           </div>
           {/* Room Tour label */}
-          <span className="font-dm-sans font-semibold text-[#fbf7ee] leading-none" style={{ fontSize: 14 }}>Room Tour</span>
+          <span className="font-dm-sans font-semibold text-[#fbf7ee] leading-none" style={{ fontSize: 'clamp(9px, 1vw, 14px)' }}>Room Tour</span>
         </div>
       </Link>
 
