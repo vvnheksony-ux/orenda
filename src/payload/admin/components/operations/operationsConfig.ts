@@ -1,4 +1,7 @@
-export type OperationTableSlug = 'appointments' | 'inquiries' | 'purchases' | 'profiles' | 'feedback' | 'testimonials'
+import type { Config } from '@/../payload-types'
+
+export type OperationTableSlug = 'appointments' | 'inquiries' | 'purchases' | 'patients' | 'profiles' | 'feedback' | 'testimonials'
+export type PayloadCollectionSlug = keyof Config['collections']
 
 export type OperationRecord = {
   id: string
@@ -9,12 +12,13 @@ export type OperationRecord = {
 
 export type ReferenceResolver = {
   recordField: string
-  collection: string
+  collection: PayloadCollectionSlug
   titleField: string
 }
 
 export type OperationConfig = {
   slug: OperationTableSlug
+  tableName?: string
   title: string
   singularTitle: string
   group: string
@@ -31,6 +35,35 @@ export type ReferenceOptionMap = Record<string, Array<{ id: string; name: string
 export type OperationViewMode = 'create' | 'edit' | 'list' | 'view'
 
 export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
+  patients: {
+    slug: 'patients',
+    tableName: 'profiles',
+    title: 'Patients',
+    singularTitle: 'Patient',
+    group: 'Access Control',
+    description: 'Patient accounts from Supabase public.profiles.',
+    columns: [
+      { key: 'display_name', label: 'Name' },
+      { key: 'email_user', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'user_type', label: 'Type' },
+      { key: 'gender', label: 'Gender' },
+      { key: 'language', label: 'Language' },
+      { key: 'created_at', label: 'Created' },
+    ],
+    editableFields: [
+      { key: 'display_name', label: 'Name' },
+      { key: 'photo_url', label: 'Photo URL' },
+      { key: 'email_user', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'user_type', label: 'User Type' },
+      { key: 'gender', label: 'Gender' },
+      { key: 'language', label: 'Language' },
+      { key: 'onesignal_player_id', label: 'OneSignal Player ID' },
+      { key: 'date_of_birth', label: 'Date of Birth', type: 'date' },
+    ],
+    statusOptions: [],
+  },
   profiles: {
     slug: 'profiles',
     title: 'Users',
@@ -67,6 +100,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
     description: 'Public appointment requests from Supabase public.appointments.',
     columns: [
       { key: 'patient_name', label: 'Patient' },
+      { key: 'patient_id', label: 'Patient ID' },
       { key: 'doctor_payload_id_resolved', label: 'Doctor' },
       { key: 'branch_payload_id_resolved', label: 'Branch' },
       { key: 'department_payload_id_resolved', label: 'Department' },
@@ -78,6 +112,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
       { key: 'patient_name', label: 'Patient Name' },
       { key: 'patient_phone', label: 'Patient Phone' },
       { key: 'patient_email', label: 'Patient Email' },
+      { key: 'patient_id', label: 'Patient ID' },
       { key: 'preferred_date', label: 'Preferred Date', type: 'date' },
       { key: 'preferred_time', label: 'Preferred Time' },
       { key: 'slot_start', label: 'Slot Start', type: 'datetime' },
@@ -225,6 +260,10 @@ export function getOperationConfig(slug: string | undefined) {
 export function getOperationHref(slug: OperationTableSlug, mode?: Exclude<OperationViewMode, 'list'>, id?: string) {
   const suffix = mode && id ? `/${mode}/${id}` : mode === 'create' ? '/create' : ''
   return `/admin/operations/${slug}${suffix}`
+}
+
+export function getOperationTableName(config: OperationConfig) {
+  return config.tableName || config.slug
 }
 
 export function statusColor(value: string): string {

@@ -7,9 +7,11 @@ import { createServiceClient } from '@/utils/supabase/server'
 
 import OperationsDetail from './OperationsDetail'
 import OperationsTable from './OperationsTable'
-import { getOperationConfig, getOperationHref, parseOperationSegments, type OperationConfig, type OperationRecord, type ReferenceOptionMap } from './operationsConfig'
+import { getOperationConfig, getOperationHref, getOperationTableName, parseOperationSegments, type OperationConfig, type OperationRecord, type PayloadCollectionSlug, type ReferenceOptionMap } from './operationsConfig'
 
 export const dynamic = 'force-dynamic'
+
+type AdminLocale = 'en' | 'km' | 'zh'
 
 export default async function OperationsAdminView(props: AdminViewServerProps) {
   const segments = Array.isArray(props.params?.segments) ? props.params.segments : []
@@ -17,22 +19,22 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
   const config = getOperationConfig(table)
   const supabase = await createServiceClient()
   const { locale, permissions, req } = props.initPageResult ?? {}
-  const user = props.user
   const templateProps = {
     ...props,
     locale: props.locale ?? locale,
     permissions: props.permissions ?? permissions,
-    req: props.req ?? req,
+    req,
     user: props.user,
     visibleEntities: props.visibleEntities ?? getAllVisibleEntities(props),
   }
 
   const payload = props.payload ?? (req as { payload?: Payload } | undefined)?.payload
+  const localeCode = normalizeLocale(locale)
 
   const listUrl = config.listHref ?? getOperationHref(config.slug)
 
   if (viewMode === 'create') {
-    const referenceOptions = await fetchReferenceOptions(payload, config, locale || 'en')
+    const referenceOptions = await fetchReferenceOptions(payload, config, localeCode)
     const createNav: StepNavItem[] = [
       { label: config.group },
       { label: config.singularTitle, url: listUrl },
@@ -49,14 +51,14 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
   if (viewMode !== 'list' && id) {
     const { data, error } = await supabase
       .schema('public')
-      .from(config.slug)
+      .from(getOperationTableName(config))
       .select('*')
       .eq('id', id)
       .maybeSingle()
 
     const record = (data || null) as OperationRecord | null
-    const enriched = record ? await enrichRecord(payload, config, record, locale || 'en') : null
-    const referenceOptions = await fetchReferenceOptions(payload, config, locale || 'en')
+    const enriched = record ? await enrichRecord(payload, config, record, localeCode) : null
+    const referenceOptions = await fetchReferenceOptions(payload, config, localeCode)
     const shortId = id.slice(0, 8)
     const detailNav: StepNavItem[] = [
       { label: config.group },
@@ -75,12 +77,12 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
 
   const { data, error } = await supabase
     .schema('public')
-    .from(config.slug)
+    .from(getOperationTableName(config))
     .select('*')
     .order('created_at', { ascending: false })
 
   const records = (data || []) as OperationRecord[]
-  const enriched = await enrichRecords(payload, config, records, locale || 'en')
+  const enriched = await enrichRecords(payload, config, records, localeCode)
   const listNav: StepNavItem[] = [
     { label: config.group },
     { label: config.title },
@@ -118,7 +120,7 @@ async function enrichRecords(
   payload: Payload | undefined,
   config: OperationConfig,
   records: OperationRecord[],
-  locale: string,
+  locale: AdminLocale,
 ): Promise<OperationRecord[]> {
   if (!payload || !config.referenceResolvers?.length || !records.length) return records
 
@@ -143,7 +145,7 @@ async function enrichRecord(
   payload: Payload | undefined,
   config: OperationConfig,
   record: OperationRecord,
-  locale: string,
+  locale: AdminLocale,
 ): Promise<OperationRecord | null> {
   if (!record) return null
   const enriched = await enrichRecords(payload, config, [record], locale)
@@ -154,9 +156,9 @@ async function resolveReferences(
   payload: Payload,
   config: OperationConfig,
   records: OperationRecord[],
-  locale: string,
+  locale: AdminLocale,
 ): Promise<Record<string, Record<string, string>>> {
-  const idsByCollection = new Map<string, Set<string>>()
+  const idsByCollection = new Map<PayloadCollectionSlug, Set<string>>()
 
   for (const resolver of config.referenceResolvers!) {
     if (!idsByCollection.has(resolver.collection)) {
@@ -191,7 +193,7 @@ async function resolveReferences(
       const map: Record<string, string> = {}
 
       for (const doc of docs) {
-        map[doc.id] = doc[titleField] ?? doc.id
+        map[String(doc.id)] = getDocStringValue(doc, titleField) || String(doc.id)
       }
 
       result[collection] = map
@@ -206,7 +208,7 @@ async function resolveReferences(
 async function fetchReferenceOptions(
   payload: Payload | undefined,
   config: OperationConfig,
-  locale: string,
+  locale: AdminLocale,
 ): Promise<ReferenceOptionMap> {
   if (!payload || !config.referenceResolvers?.length) return {}
 
@@ -221,7 +223,7 @@ async function fetchReferenceOptions(
         locale,
       })
       options[resolver.recordField] = docs
-        .map((doc) => ({ id: String(doc.id), name: doc[resolver.titleField] ?? String(doc.id) }))
+        .map((doc) => ({ id: String(doc.id), name: getDocStringValue(doc, resolver.titleField) || String(doc.id) }))
         .sort((a, b) => a.name.localeCompare(b.name))
     } catch {
       options[resolver.recordField] = []
@@ -231,25 +233,29 @@ async function fetchReferenceOptions(
   return options
 }
 
-function isHidden(hidden: boolean | ((args: { user: unknown }) => boolean) | undefined, user: unknown): boolean {
-  if (typeof hidden === 'function') {
-    try {
-      return hidden({ user })
-    } catch {
-      return true
-    }
-  }
-  return !!hidden
+function normalizeLocale(value: unknown): AdminLocale {
+  return value === 'km' || value === 'zh' ? value : 'en'
+}
+
+function getDocStringValue(doc: unknown, key: string): string | undefined {
+  const value = (doc as Record<string, unknown>)[key]
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : undefined
 }
 
 function getAllVisibleEntities(props: AdminViewServerProps): VisibleEntities {
-  const user = props.initPageResult?.user ?? props.user
+  const user = props.user
   return {
     collections: props.payload.config.collections
-      .filter(({ admin }) => !isHidden(admin?.hidden, user))
+      .filter(({ admin }) => {
+        if (typeof admin?.hidden === 'function') return user ? !admin.hidden({ user: user as Parameters<typeof admin.hidden>[0]['user'] }) : false
+        return !admin?.hidden
+      })
       .map(({ slug }) => slug),
     globals: props.payload.config.globals
-      .filter(({ admin }) => !isHidden(admin?.hidden, user))
+      .filter(({ admin }) => {
+        if (typeof admin?.hidden === 'function') return user ? !admin.hidden({ user: user as Parameters<typeof admin.hidden>[0]['user'] }) : false
+        return !admin?.hidden
+      })
       .map(({ slug }) => slug),
   }
 }

@@ -53,8 +53,48 @@ export default function OriendaAdminStyle({ children }: { children: React.ReactN
         .upload-relationship-details__details {
           display: none !important;
         }
+        .upload--has-many__draggable-rows {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: wrap !important;
+          align-items: flex-start !important;
+          gap: 1rem !important;
+          margin-bottom: 1rem !important;
+        }
+        .upload--has-many__dragItem {
+          position: relative !important;
+          width: fit-content !important;
+        }
+        .upload--has-many__dragItem .icon--drag-handle {
+          position: absolute !important;
+          top: 50% !important;
+          right: -1.75rem !important;
+          z-index: 3 !important;
+          transform: translateY(-50%) !important;
+          color: #8c8982 !important;
+          background: rgba(255, 255, 255, 0.92) !important;
+          border-radius: 999px !important;
+          box-shadow: 0 8px 18px rgba(43, 40, 35, 0.16) !important;
+        }
+        .upload--has-many__dragItem .upload-field-card,
+        .upload-field-card {
+          position: relative !important;
+          align-items: stretch !important;
+          background: transparent !important;
+          border: 0 !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          width: fit-content !important;
+          min-width: 0 !important;
+        }
+        .upload-relationship-details {
+          position: relative !important;
+          align-items: stretch !important;
+          width: fit-content !important;
+        }
         .upload-relationship-details__imageAndDetails {
           gap: 0 !important;
+          position: relative !important;
         }
         .upload-relationship-details__imageAndDetails .upload-relationship-details__thumbnail.thumbnail {
           max-width: 20rem !important;
@@ -64,19 +104,48 @@ export default function OriendaAdminStyle({ children }: { children: React.ReactN
           max-height: 20rem !important;
           height: 20rem !important;
           cursor: pointer !important;
+          border-radius: 0.75rem !important;
+          background: transparent !important;
+          box-shadow: 0 10px 30px rgba(43, 40, 35, 0.12) !important;
         }
         .upload-relationship-details__imageAndDetails .upload-relationship-details__thumbnail.thumbnail img {
-          object-fit: contain !important;
+          object-fit: cover !important;
           width: 100% !important;
           height: 100% !important;
           max-width: 100% !important;
           max-height: 100% !important;
           cursor: pointer !important;
         }
-        .upload-field-card {
-          width: fit-content !important;
-          min-width: 20rem !important;
-          max-width: 100% !important;
+        .upload-relationship-details__actions {
+          position: absolute !important;
+          top: 0.75rem !important;
+          right: 0.75rem !important;
+          z-index: 2 !important;
+          display: flex !important;
+          gap: 0.5rem !important;
+        }
+        .upload-relationship-details__actions .btn {
+          margin: 0 !important;
+          width: 2.25rem !important;
+          height: 2.25rem !important;
+          min-width: 2.25rem !important;
+          padding: 0 !important;
+          border: 0 !important;
+          border-radius: 999px !important;
+          background: rgba(255, 255, 255, 0.92) !important;
+          color: #2b2823 !important;
+          box-shadow: 0 8px 18px rgba(43, 40, 35, 0.22) !important;
+          backdrop-filter: blur(8px) !important;
+        }
+        .upload-relationship-details__actions .btn:hover {
+          background: #fff !important;
+          color: #b89148 !important;
+        }
+        .upload-relationship-details__actions .btn__content {
+          justify-content: center !important;
+        }
+        .upload-relationship-details__actions .btn__label {
+          display: none !important;
         }
         .collection-edit .render-fields,
         .global-edit .render-fields {
