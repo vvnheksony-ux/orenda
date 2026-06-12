@@ -4,7 +4,9 @@ import { Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 
-export default function UserDeleteButton({ user }: { user: any }) {
+import type { CombinedUser } from '@/lib/admin/users'
+
+export default function UserDeleteButton({ user }: { user: CombinedUser }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 

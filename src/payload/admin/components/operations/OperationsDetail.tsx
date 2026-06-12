@@ -20,6 +20,9 @@ export default function OperationsDetail({ config, error, mode, record, referenc
   const router = useRouter()
   const [form, setForm] = useState<Record<string, string>>(() => getInitialForm(config, mode === 'create' ? null : record))
   const [message, setMessage] = useState<string | null>(null)
+  const [patientIdModalOpen, setPatientIdModalOpen] = useState(false)
+  const [confirmPatientId, setConfirmPatientId] = useState('')
+  const [confirmPatientIdError, setConfirmPatientIdError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   if (error && mode !== 'create') return <OperationsShell title={config.title} error={error} />
@@ -72,14 +75,32 @@ export default function OperationsDetail({ config, error, mode, record, referenc
 
   function markConfirmed() {
     const status = config.slug === 'inquiries' ? 'resolved' : config.slug === 'profiles' ? 'active' : config.slug === 'feedback' ? 'approved' : 'confirmed'
+    if (config.slug === 'appointments') {
+      const existingPatientId = typeof currentRecord?.patient_id === 'string' && currentRecord.patient_id !== '00000000' ? currentRecord.patient_id : ''
+      setConfirmPatientId(existingPatientId)
+      setConfirmPatientIdError(null)
+      setPatientIdModalOpen(true)
+      return
+    }
     updateStatus(status)
   }
 
-  function updateStatus(status: string) {
+  function confirmAppointment() {
+    const patientId = confirmPatientId.trim()
+    if (!patientId) {
+      setConfirmPatientIdError('Patient ID is required to confirm this appointment.')
+      return
+    }
+    setConfirmPatientIdError(null)
+    setPatientIdModalOpen(false)
+    updateStatus('confirmed', { patient_id: patientId })
+  }
+
+  function updateStatus(status: string, data?: Record<string, string>) {
     setMessage(null)
     startTransition(async () => {
       const response = await fetch(`/api/admin/operations/${config.slug}/${currentRecord!.id}`, {
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(data ? { data: { status, ...data } } : { status }),
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         method: 'PATCH',
@@ -108,7 +129,56 @@ export default function OperationsDetail({ config, error, mode, record, referenc
       ) : record ? (
         <ViewDetails config={config} isPending={isPending} markConfirmed={markConfirmed} record={record} />
       ) : null}
+
+      {patientIdModalOpen ? (
+        <PatientIdModal
+          disabled={isPending}
+          error={confirmPatientIdError}
+          patientId={confirmPatientId}
+          onCancel={() => {
+            setConfirmPatientIdError(null)
+            setPatientIdModalOpen(false)
+          }}
+          onChange={(value) => {
+            setConfirmPatientId(value)
+            setConfirmPatientIdError(null)
+          }}
+          onConfirm={confirmAppointment}
+        />
+      ) : null}
     </main>
+  )
+}
+
+function PatientIdModal({ disabled, error, onCancel, onChange, onConfirm, patientId }: { disabled: boolean; error: string | null; onCancel: () => void; onChange: (value: string) => void; onConfirm: () => void; patientId: string }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <section className="w-full max-w-md rounded-2xl border border-[#e7dfd5] bg-white p-6 shadow-[0_18px_48px_rgb(50_39_24_/_20%)]">
+        <h2 className="m-0 text-2xl font-bold text-[#2b2823]">Confirm Appointment</h2>
+        <p className="mb-5 mt-2 text-sm leading-6 text-[#716b60]">Enter the hospital patient ID before saving this appointment as confirmed.</p>
+        <label className="flex flex-col gap-2">
+          <span className="text-sm font-bold text-[#716b60]">Patient ID</span>
+          <input
+            autoFocus
+            className="rounded-xl border border-[#e7dfd5] px-4 py-3 text-base"
+            disabled={disabled}
+            onChange={(event) => onChange(event.target.value)}
+            placeholder="Enter patient ID"
+            type="text"
+            value={patientId}
+          />
+          {error ? <span className="text-sm font-medium text-red-700">{error}</span> : null}
+        </label>
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <button className="rounded-xl border-none bg-[#ebe7e1] px-5 py-3 font-bold text-[#2b2823]" disabled={disabled} onClick={onCancel} type="button">
+            Cancel
+          </button>
+          <button className="rounded-xl border-none bg-[#22a95a] px-5 py-3 font-bold text-white" disabled={disabled} onClick={onConfirm} type="button">
+            Save & Confirm
+          </button>
+        </div>
+      </section>
+    </div>
   )
 }
 
@@ -120,7 +190,7 @@ function ViewDetails({ config, isPending, markConfirmed, record }: { config: Ope
           <div>
             <div className="flex flex-wrap items-center gap-4">
               <h2 className="m-0 text-3xl font-bold text-[#2b2823]">{config.singularTitle} #{shortId(record.id)}</h2>
-              <span className={`rounded-full px-4 py-2 text-sm capitalize ${statusColor(record.status || 'unknown')}`}>{record.status || 'unknown'}</span>
+              {config.statusOptions.length ? <span className={`rounded-full px-4 py-2 text-sm capitalize ${statusColor(record.status || 'unknown')}`}>{record.status || 'unknown'}</span> : null}
             </div>
             <p className="mb-0 mt-4 text-lg text-[#716b60]">Created on {formatDate(record.created_at)}</p>
           </div>
@@ -146,7 +216,7 @@ function ViewDetails({ config, isPending, markConfirmed, record }: { config: Ope
         </div>
       </section>
 
-      <ContentCard title={config.slug === 'appointments' ? 'Reason for Visit' : config.slug === 'purchases' ? 'Note' : config.slug === 'profiles' ? 'Additional Info' : 'Inquiry Message'}>
+      <ContentCard title={config.slug === 'appointments' ? 'Reason for Visit' : config.slug === 'purchases' ? 'Note' : config.slug === 'profiles' || config.slug === 'patients' ? 'Additional Info' : 'Inquiry Message'}>
         {String(record.message || record.bio || record.address || 'No additional information.')}
       </ContentCard>
 
@@ -155,7 +225,7 @@ function ViewDetails({ config, isPending, markConfirmed, record }: { config: Ope
       </ContentCard>
 
       <div className="flex flex-wrap gap-3">
-        {config.slug === 'feedback' && record?.status === 'approved' ? (
+        {!config.statusOptions.length ? null : config.slug === 'feedback' && record?.status === 'approved' ? (
           <div className="rounded-xl bg-[#dcf7e9] px-8 py-4 font-bold text-[#065f46]">
             Approved ✓
           </div>
@@ -278,22 +348,8 @@ function getDetailItems(config: OperationConfig, record: OperationRecord) {
       { icon: Package, label: 'Services & Branch', value: resolvedValue(record, 'department_payload_id'), subValue: resolvedValue(record, 'branch_payload_id') },
       { icon: ClipboardList, label: 'Doctor & Source', value: resolvedValue(record, 'doctor_payload_id'), subValue: record.source || undefined },
       { icon: UserRound, label: 'Patient', value: record.patient_name, subValue: record.patient_email || undefined },
+      { icon: ClipboardList, label: 'Patient ID', value: record.patient_id || '-' },
       { icon: Phone, label: 'Contact Phone', value: record.patient_phone },
-    ]
-  }
-
-  if (config.slug === 'feedback') {
-    const fullName = [record.first_name, record.last_name].filter(Boolean).join(' ') || '-'
-    return [
-      { icon: UserRound, label: 'Name', value: fullName, subValue: record.email || undefined },
-      { icon: Phone, label: 'Phone', value: record.phone || '-' },
-      { icon: ClipboardList, label: 'Nationality', value: record.nationality || '-' },
-      { icon: CalendarDays, label: 'Date of Birth', value: record.date_of_birth || '-' },
-      { icon: ClipboardList, label: 'Role', value: record.role || '-' },
-      { icon: ClipboardList, label: 'Clinic Visited', value: record.clinic_visited || '-' },
-      { icon: ClipboardList, label: 'Feedback Type', value: record.feedback_type || '-' },
-      { icon: MessageSquare, label: 'Comment', value: record.comment || '-' },
-      { icon: Mail, label: 'Locale', value: record.locale || undefined },
     ]
   }
 
@@ -306,12 +362,14 @@ function getDetailItems(config: OperationConfig, record: OperationRecord) {
     ]
   }
 
-  if (config.slug === 'profiles') {
+  if (config.slug === 'profiles' || config.slug === 'patients') {
     return [
-      { icon: UserRound, label: 'Name', value: record.name || record.full_name || record.display_name, subValue: record.email || record.phone || undefined },
-      { icon: Mail, label: 'Email', value: record.email },
+      { icon: UserRound, label: 'Name', value: record.name || record.full_name || record.display_name, subValue: record.email || record.email_user || record.phone || undefined },
+      { icon: Mail, label: 'Email', value: record.email || record.email_user },
       { icon: Phone, label: 'Phone', value: record.phone },
       { icon: ClipboardList, label: 'Role', value: record.role || record.user_type || 'Customer' },
+      { icon: ClipboardList, label: 'Gender', value: record.gender || '-' },
+      { icon: ClipboardList, label: 'Language', value: record.language || '-' },
       { icon: CalendarDays, label: 'Date of Birth', value: record.date_of_birth && typeof record.date_of_birth === 'string' ? formatDate(record.date_of_birth) : '-' },
     ]
   }
@@ -348,10 +406,6 @@ function formatTimeRange(start: OperationRecord[string], end: OperationRecord[st
 
 function formatLabel(value: string) {
   return value.replace(/-/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
-}
-
-function valueWithFallback(value: OperationRecord[string], fallback: string) {
-  return value == null || value === '' ? fallback : String(value)
 }
 
 function resolvedValue(record: OperationRecord, fieldKey: string): string {

@@ -4,11 +4,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { createServiceClient } from '@/utils/supabase/server'
 
-const allowedTables = ['appointments', 'inquiries', 'purchases', 'profiles', 'feedback', 'testimonials', 'contact_messages'] as const
+const allowedTables = ['appointments', 'inquiries', 'purchases', 'patients', 'profiles', 'feedback', 'testimonials', 'contact_messages'] as const
 const allowedStatusByTable: Record<(typeof allowedTables)[number], string[]> = {
   appointments: ['pending', 'confirmed', 'cancelled'],
   inquiries: ['unread', 'in-progress', 'resolved', 'closed'],
   purchases: ['pending', 'contacted', 'confirmed', 'cancelled'],
+  patients: [],
   profiles: ['active', 'inactive', 'suspended'],
   feedback: ['pending', 'approved', 'rejected'],
   testimonials: [],
@@ -19,6 +20,7 @@ const editableFieldsByTable: Record<(typeof allowedTables)[number], string[]> = 
     'patient_name',
     'patient_phone',
     'patient_email',
+    'patient_id',
     'preferred_date',
     'preferred_time',
     'slot_start',
@@ -55,6 +57,17 @@ const editableFieldsByTable: Record<(typeof allowedTables)[number], string[]> = 
     'role',
     'user_type',
     'status',
+    'date_of_birth',
+  ],
+  patients: [
+    'display_name',
+    'photo_url',
+    'email_user',
+    'phone',
+    'user_type',
+    'gender',
+    'language',
+    'onesignal_player_id',
     'date_of_birth',
   ],
   feedback: [
@@ -123,7 +136,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
   const supabase = await createServiceClient()
   const { data, error } = await supabase
     .schema('public')
-    .from(table)
+    .from(getDatabaseTable(table))
     .insert(insertData)
     .select('id')
     .single()
@@ -134,6 +147,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
 }
 
 function normalizeFieldValue(key: string, value: unknown) {
+  if (key === 'patient_id' && value === '') return '00000000'
   if (value === '') return null
   if (typeof value !== 'string') return null
   if (key.endsWith('_payload_id')) return Number(value)
@@ -142,6 +156,10 @@ function normalizeFieldValue(key: string, value: unknown) {
 
 function isAllowedTable(value: string): value is (typeof allowedTables)[number] {
   return allowedTables.includes(value as (typeof allowedTables)[number])
+}
+
+function getDatabaseTable(table: (typeof allowedTables)[number]) {
+  return table === 'patients' ? 'profiles' : table
 }
 
 async function requirePayloadAdmin(req: NextRequest) {
