@@ -56,7 +56,7 @@ export default function Pagination({ currentPage, totalPages, totalRecords, onPa
   )
 }
 
-export const PAGE_SIZE = 20
+export const PAGE_SIZE = 10
 
 function getPageNumbers(currentPage: number, totalPages: number): (number | 'ellipsis')[] {
   const pages: (number | 'ellipsis')[] = []
