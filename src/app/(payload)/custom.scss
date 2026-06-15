@@ -135,6 +135,22 @@
     margin-top: 1rem !important;
   }
 
+  .orienda-list-table-wrap {
+    overflow: hidden !important;
+  }
+
+  .orienda-list-table-scroll {
+    display: block !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    width: 100% !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .collection-list__tables {
+    margin-bottom: 0 !important;
+  }
+
   /* 2. THE TABLE GRID STRUCTURE */
   .orienda-list-table,
   table.table,
