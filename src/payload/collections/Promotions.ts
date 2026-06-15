@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
+import { quillRichTextAdmin } from '../fields/quillRichText'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 const webhookHooks = createWebhookHooks('promotions')
@@ -8,7 +9,7 @@ const webhookHooks = createWebhookHooks('promotions')
 export const Promotions: CollectionConfig = {
   slug: 'promotions',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
   },
   versions: {
@@ -32,6 +33,7 @@ export const Promotions: CollectionConfig = {
     {
       name: 'description',
       type: 'richText',
+      admin: quillRichTextAdmin,
       localized: true,
     },
     {

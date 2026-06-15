@@ -4,7 +4,8 @@ import { isAdminOrEditor } from '../access'
 export const SocialLinks: GlobalConfig = {
   slug: 'socialLinks',
   admin: {
-    group: 'Settings',
+    hidden: true,
+    group: 'Systems',
   },
   access: {
     read: () => true,

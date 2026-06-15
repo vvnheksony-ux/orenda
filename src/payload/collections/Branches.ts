@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
+import { quillRichTextAdmin } from '../fields/quillRichText'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 
@@ -9,7 +10,7 @@ const webhookHooks = createWebhookHooks('branches')
 export const Branches: CollectionConfig = {
   slug: 'branches',
   admin: {
-    group: 'Content',
+    group: 'Hospital',
     useAsTitle: 'name',
   },
   versions: {
@@ -33,6 +34,7 @@ export const Branches: CollectionConfig = {
     {
       name: 'description',
       type: 'richText',
+      admin: quillRichTextAdmin,
       localized: true,
     },
     {

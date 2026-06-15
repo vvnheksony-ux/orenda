@@ -637,8 +637,6 @@ export interface Announcement {
   thumbnail?: (number | null) | Media;
   excerpt?: string | null;
   author?: string | null;
-  legacyNewsId?: number | null;
-  legacySlug?: string | null;
   slug: string;
   priority?: ('low' | 'medium' | 'high' | 'urgent') | null;
   startDate?: string | null;
@@ -679,8 +677,6 @@ export interface HealthTip {
   thumbnail?: (number | null) | Media;
   excerpt?: string | null;
   author?: string | null;
-  legacyNewsId?: number | null;
-  legacySlug?: string | null;
   slug: string;
   healthTipCategory?: ('nutrition' | 'exercise' | 'mentalHealth' | 'preventiveCare' | 'chronicDisease') | null;
   /**
@@ -724,8 +720,6 @@ export interface Career {
   thumbnail?: (number | null) | Media;
   excerpt?: string | null;
   author?: string | null;
-  legacyNewsId?: number | null;
-  legacySlug?: string | null;
   slug: string;
   position: string;
   careerDepartment?: (number | null) | Department;
@@ -795,8 +789,6 @@ export interface DoctorTalk {
   thumbnail?: (number | null) | Media;
   excerpt?: string | null;
   author?: string | null;
-  legacyNewsId?: number | null;
-  legacySlug?: string | null;
   slug: string;
   featuredDoctor: number | Doctor;
   talkTopic: string;
@@ -843,19 +835,7 @@ export interface InsuranceUpdate {
   thumbnail?: (number | null) | Media;
   excerpt?: string | null;
   author?: string | null;
-  legacyNewsId?: number | null;
-  legacySlug?: string | null;
   slug: string;
-  /**
-   * Optional for legacy migrated records; fill when available.
-   */
-  insuranceProvider?: string | null;
-  insurancePlanTypes?:
-    | {
-        planType: string;
-        id?: string | null;
-      }[]
-    | null;
   coverageDetails?: {
     root: {
       type: string;
@@ -876,12 +856,6 @@ export interface InsuranceUpdate {
   insuranceContactEmail?: string | null;
   effectiveDate?: string | null;
   expirationDate?: string | null;
-  requiredDocuments?:
-    | {
-        document: string;
-        id?: string | null;
-      }[]
-    | null;
   status?: ('draft' | 'published' | 'archived') | null;
   publishedAt?: string | null;
   updatedAt: string;
@@ -906,8 +880,6 @@ export interface ContentSearchIndex {
   thumbnail?: (number | null) | Media;
   status?: string | null;
   publishedAt?: string | null;
-  legacyNewsId?: number | null;
-  legacySlug?: string | null;
   metadata?:
     | {
         [k: string]: unknown;
@@ -957,6 +929,7 @@ export interface Faq {
 export interface TourScene {
   id: number;
   sceneNumber: number;
+  branch?: (number | null) | Branch;
   title: string;
   description?: string | null;
   thumbnailImage?: (number | null) | Media;
@@ -1556,8 +1529,6 @@ export interface AnnouncementsSelect<T extends boolean = true> {
   thumbnail?: T;
   excerpt?: T;
   author?: T;
-  legacyNewsId?: T;
-  legacySlug?: T;
   slug?: T;
   priority?: T;
   startDate?: T;
@@ -1580,8 +1551,6 @@ export interface HealthTipsSelect<T extends boolean = true> {
   thumbnail?: T;
   excerpt?: T;
   author?: T;
-  legacyNewsId?: T;
-  legacySlug?: T;
   slug?: T;
   healthTipCategory?: T;
   readingTime?: T;
@@ -1607,8 +1576,6 @@ export interface CareersSelect<T extends boolean = true> {
   thumbnail?: T;
   excerpt?: T;
   author?: T;
-  legacyNewsId?: T;
-  legacySlug?: T;
   slug?: T;
   position?: T;
   careerDepartment?: T;
@@ -1635,8 +1602,6 @@ export interface DoctorTalksSelect<T extends boolean = true> {
   thumbnail?: T;
   excerpt?: T;
   author?: T;
-  legacyNewsId?: T;
-  legacySlug?: T;
   slug?: T;
   featuredDoctor?: T;
   talkTopic?: T;
@@ -1662,28 +1627,13 @@ export interface InsuranceUpdatesSelect<T extends boolean = true> {
   thumbnail?: T;
   excerpt?: T;
   author?: T;
-  legacyNewsId?: T;
-  legacySlug?: T;
   slug?: T;
-  insuranceProvider?: T;
-  insurancePlanTypes?:
-    | T
-    | {
-        planType?: T;
-        id?: T;
-      };
   coverageDetails?: T;
   insuranceContactPerson?: T;
   insuranceContactPhone?: T;
   insuranceContactEmail?: T;
   effectiveDate?: T;
   expirationDate?: T;
-  requiredDocuments?:
-    | T
-    | {
-        document?: T;
-        id?: T;
-      };
   status?: T;
   publishedAt?: T;
   updatedAt?: T;
@@ -1707,8 +1657,6 @@ export interface ContentSearchIndexSelect<T extends boolean = true> {
   thumbnail?: T;
   status?: T;
   publishedAt?: T;
-  legacyNewsId?: T;
-  legacySlug?: T;
   metadata?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1751,6 +1699,7 @@ export interface FaqsSelect<T extends boolean = true> {
  */
 export interface TourScenesSelect<T extends boolean = true> {
   sceneNumber?: T;
+  branch?: T;
   title?: T;
   description?: T;
   thumbnailImage?: T;

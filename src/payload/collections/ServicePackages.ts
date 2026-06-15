@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
+import { quillRichTextAdmin } from '../fields/quillRichText'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 const webhookHooks = createWebhookHooks('servicePackages')
@@ -8,8 +9,13 @@ const webhookHooks = createWebhookHooks('servicePackages')
 export const ServicePackages: CollectionConfig = {
   slug: 'service-packages',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
+    components: {
+      edit: {
+        beforeDocumentControls: ['@/payload/admin/components/CustomEditHeader'],
+      },
+    },
   },
   versions: {
     maxPerDoc: 20,
@@ -68,6 +74,7 @@ export const ServicePackages: CollectionConfig = {
     {
       name: 'description',
       type: 'richText',
+      admin: quillRichTextAdmin,
       localized: true,
     },
     {

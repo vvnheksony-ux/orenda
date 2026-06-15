@@ -19,7 +19,7 @@ const indexHooks = createSearchIndexHooks({
 export const HealthTips: CollectionConfig = {
   slug: 'health-tips',
   admin: {
-    group: 'Content',
+    group: 'Website Content',
     useAsTitle: 'title',
     defaultColumns: ['title', 'healthTipCategory', 'status', 'publishedAt'],
   },

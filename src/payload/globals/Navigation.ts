@@ -4,7 +4,8 @@ import { isAdminOrEditor } from '../access'
 export const Navigation: GlobalConfig = {
   slug: 'navigation',
   admin: {
-    group: 'Settings',
+    hidden: true,
+    group: 'Systems',
   },
   access: {
     read: () => true,

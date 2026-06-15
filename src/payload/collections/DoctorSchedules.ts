@@ -8,9 +8,10 @@ const webhookHooks = createWebhookHooks('doctorSchedules')
 export const DoctorSchedules: CollectionConfig = {
   slug: 'doctor-schedules',
   admin: {
-    group: 'Content',
+    group: 'Hospital',
     useAsTitle: 'label',
     defaultColumns: ['doctor', 'department', 'dayOfWeek', 'startTime', 'endTime', 'active'],
+    hidden: true,
   },
   versions: {
     maxPerDoc: 20,

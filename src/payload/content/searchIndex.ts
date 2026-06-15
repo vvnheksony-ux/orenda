@@ -22,8 +22,6 @@ type SearchableDoc = {
   thumbnail?: number | { id?: number | string } | null
   status?: string | null
   publishedAt?: string | null
-  legacyNewsId?: number | null
-  legacySlug?: string | null
   [key: string]: unknown
 }
 
@@ -63,8 +61,6 @@ type SearchIndexRow = {
   thumbnail: number | null | undefined
   status: string | null | undefined
   publishedAt: string | null | undefined
-  legacyNewsId: number | null | undefined
-  legacySlug: string | null | undefined
   metadata: Record<string, unknown>
 }
 
@@ -164,8 +160,6 @@ async function buildIndexRows(payload: Payload, config: SearchIndexConfig, docId
       thumbnail: normalizeMediaId(localizedDoc.thumbnail),
       status: localizedDoc.status,
       publishedAt: localizedDoc.publishedAt,
-      legacyNewsId: localizedDoc.legacyNewsId,
-      legacySlug: localizedDoc.legacySlug,
       metadata: config.getMetadata?.(localizedDoc) ?? {},
     }]
   })
@@ -226,22 +220,6 @@ export function baseContentFields(): Field[] {
     {
       name: 'author',
       type: 'text',
-    },
-    {
-      name: 'legacyNewsId',
-      type: 'number',
-      admin: {
-        readOnly: true,
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'legacySlug',
-      type: 'text',
-      admin: {
-        readOnly: true,
-        position: 'sidebar',
-      },
     },
   ]
 }
