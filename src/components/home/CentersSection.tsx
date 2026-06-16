@@ -24,13 +24,6 @@ export default function CentersSection() {
     fetch(`/api/departments?locale=${locale}&branch=${selectedBranch.id}`)
       .then(r => r.json())
       .then(d => {
-        // Display images for Centers section — cycle through real facility photos
-        const DISPLAY_IMAGES = [
-          '/images/figma-centers-main.jpg',
-          '/images/figma-facility-1.jpg',
-          '/images/figma-facility-main.jpg',
-          '/images/figma-facility-small.jpg',
-        ]
         const ADMIN_KEYWORDS = ['director', 'administration', 'admin', 'manager', 'executive', 'officer', 'coordinator']
         const depts = (d?.docs || []).filter((dept: any) => {
           if (!dept.icon?.trim()) return false
@@ -38,11 +31,11 @@ export default function CentersSection() {
           return !ADMIN_KEYWORDS.some(k => lower.includes(k))
         })
         if (depts.length > 0) {
-          setSpecialties(depts.slice(0, 4).map((dept: any, i: number) => ({
+          setSpecialties(depts.slice(0, 4).map((dept: any) => ({
             key:     dept.slug || String(dept.id),
             name:    dept.name,
-            thumb:   dept.icon,                          // real dept icon as thumbnail
-            display: DISPLAY_IMAGES[i % DISPLAY_IMAGES.length], // proper facility photo
+            thumb:   dept.icon,
+            display: dept.icon,
           })))
         }
       })
@@ -56,7 +49,7 @@ export default function CentersSection() {
 
   if (loading) return (
     <section className="w-full" style={{ backgroundColor: '#fbf7ee' }}>
-      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[40px] items-center">
+      <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[40px] items-center">
         <div className="flex flex-col gap-[12px] items-center">
           <div className="h-[36px] lg:h-[48px] w-[280px] rounded-lg bg-[#e8d9b8] animate-pulse" />
           <div className="h-[20px] w-[220px] rounded bg-[#e8d9b8] animate-pulse" />
@@ -66,8 +59,8 @@ export default function CentersSection() {
             {[0,1,2].map(i => <div key={i} className="rounded-full bg-[#e8d9b8] animate-pulse size-[144px]" />)}
           </div>
           <div className="w-[450px] aspect-square rounded-xl bg-[#e8d9b8] animate-pulse shrink-0" />
-          <div className="grid grid-cols-2 grid-rows-2 gap-[20px] flex-1 h-[674px]">
-            {[0,1,2,3].map(i => <div key={i} className="rounded-[12px] bg-[#e8d9b8] animate-pulse" />)}
+          <div className="grid w-[280px] xl:w-[420px] shrink-0 grid-cols-2 gap-[16px] xl:gap-[20px] content-start">
+            {[0,1,2,3].map(i => <div key={i} className="aspect-square rounded-[12px] bg-[#e8d9b8] animate-pulse" />)}
           </div>
         </div>
         <div className="lg:hidden w-full aspect-square rounded-xl bg-[#e8d9b8] animate-pulse" />
@@ -85,7 +78,7 @@ export default function CentersSection() {
 
   return (
     <section className="w-full" style={{ backgroundColor: '#fbf7ee' }}>
-      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[40px] items-center">
+      <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[40px] items-center">
 
       {/* Header */}
       <div className="flex flex-col gap-[12px] lg:gap-[16px] items-center">
@@ -156,7 +149,7 @@ export default function CentersSection() {
 
       {/* ── Desktop layout ── */}
       <div className="hidden lg:flex flex-col gap-[40px] items-center w-full">
-      <div className="flex gap-[24px] xl:gap-[52px] items-center w-full">
+      <div className="flex gap-6 xl:gap-12 items-center justify-between w-full">
 
         {/* LEFT: chevron up + 3 stat bubbles + chevron down */}
         <div className="flex flex-col gap-[24px] xl:gap-[40px] items-center shrink-0">
@@ -182,7 +175,7 @@ export default function CentersSection() {
         </div>
 
         {/* CENTER: large specialty illustration + name */}
-        <div className="flex flex-col gap-[24px] xl:gap-[40px] items-center justify-center shrink-0 w-[280px] xl:w-[450px]">
+        <div className="flex flex-col gap-[20px] xl:gap-[40px] items-center justify-center shrink-0 w-[min(28vw,320px)] xl:w-[min(32vw,500px)] min-w-[260px] xl:min-w-[320px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={active.key}
@@ -192,7 +185,7 @@ export default function CentersSection() {
               transition={{ duration: 0.25 }}
               className="relative w-full aspect-square shrink-0"
             >
-              <Image src={active.display} alt={active.name} fill className="object-cover" sizes="450px" unoptimized />
+              <Image src={active.display} alt={active.name} fill className="object-cover" sizes="(max-width: 1279px) 28vw, 32vw" unoptimized />
             </motion.div>
           </AnimatePresence>
 
@@ -203,7 +196,7 @@ export default function CentersSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
-              className="font-cormorant font-bold text-[24px] xl:text-[32px] text-[#3b2d17] leading-none capitalize"
+              className="font-cormorant font-bold text-[24px] xl:text-[34px] text-[#3b2d17] leading-none capitalize text-center"
             >
               {active.name}
             </motion.p>
@@ -211,20 +204,20 @@ export default function CentersSection() {
         </div>
 
         {/* RIGHT: 2×2 specialty selector grid */}
-        <div className="grid grid-cols-2 grid-rows-2 gap-[12px] xl:gap-[20px] flex-1 min-w-0 h-[480px] xl:h-[674px]">
+        <div className="grid w-[min(32vw,360px)] xl:w-[min(36vw,520px)] min-w-[280px] xl:min-w-[360px] shrink-0 grid-cols-2 gap-[12px] xl:gap-[24px] content-start">
           {SPECIALTIES.map((s, i) => (
             <button
               key={s.key}
               onClick={() => setIdx(i)}
-              className="flex flex-col gap-[12px] xl:gap-[16px] items-center justify-center rounded-[12px] shadow-[0px_4px_12px_3px_rgba(89,69,34,0.2)] hover:opacity-90 transition-opacity overflow-hidden"
-              style={{ background: i === idx ? 'rgba(245,236,212,0.35)' : 'rgba(245,236,212,0.15)' }}
+              className="flex aspect-square flex-col items-center justify-center gap-3 xl:gap-6 rounded-xl p-4 xl:p-8 overflow-hidden transition-shadow shadow-[0px_4px_12px_3px_rgba(89,69,34,0.20)] hover:shadow-[0px_6px_16px_4px_rgba(89,69,34,0.28)]"
+              style={{ background: i === idx ? 'rgba(245,236,212,0.35)' : 'rgba(245,236,212,0.20)' }}
             >
               {s.thumb && (
-                <div className="relative w-[110px] h-[110px] xl:w-[190px] xl:h-[190px] shrink-0 rounded-full overflow-hidden bg-[#f5ecd4]">
-                  <Image src={s.thumb} alt={s.name} fill className="object-contain mix-blend-multiply" sizes="190px" unoptimized />
+                <div className="relative size-20 xl:size-32 overflow-hidden shrink-0">
+                  <Image src={s.thumb} alt={s.name} fill className="object-contain" sizes="(max-width: 1279px) 80px, 128px" unoptimized />
                 </div>
               )}
-              <p className="font-cormorant font-bold text-[22px] xl:text-[32px] text-[#3b2d17] leading-none capitalize text-center px-4">
+              <p className="font-cormorant font-bold text-[18px] xl:text-[28px] text-[#2A2620] leading-[1.05] capitalize text-center text-balance">
                 {s.name}
               </p>
             </button>

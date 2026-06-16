@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
+import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import { useState, useEffect } from 'react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { Link } from '@/i18n/routing'
@@ -35,37 +35,20 @@ function DeptCard({ dept, variant }: { dept: Department; variant: 'pink' | 'gold
   return (
     <Link
       href={`/departments/${dept.slug || dept.id}` as any}
-      className="bg-white flex flex-col gap-[24px] items-center overflow-hidden p-[24px] rounded-[16px] shrink-0 w-[300px] hover:shadow-lg transition-shadow cursor-pointer"
-      style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}
+      className="group flex aspect-square w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-[16px] border border-white bg-[rgba(245,236,212,0.20)] px-4 py-5 text-center shadow-[0px_4px_12px_3px_rgba(89,69,34,0.20),inset_0px_2px_8px_rgba(89,69,34,0.08)] transition-shadow hover:shadow-[0px_6px_16px_4px_rgba(89,69,34,0.28),inset_0px_2px_8px_rgba(89,69,34,0.08)] sm:gap-5 sm:px-5 sm:py-6 lg:gap-6 lg:px-6 lg:py-8"
     >
-      <div
-        className="relative rounded-full overflow-hidden shrink-0 size-[120px]"
-        style={{
-          background: isPink
-            ? 'linear-gradient(180deg, rgba(255,244,249,0.4) 0%, rgba(242,135,180,0.4) 100%)'
-            : '#fbf7ee',
-          boxShadow: isPink
-            ? '0px 4px 30px 12px rgba(242,135,180,0.2)'
-            : '0px 4px 30px 12px rgba(184,145,72,0.2)',
-        }}
-      >
-        <Image src={icon} alt={dept.name} fill className="object-contain mix-blend-multiply" sizes="120px" unoptimized />
+      <div className="relative size-[92px] shrink-0 transition-transform duration-300 group-hover:scale-105 sm:size-[108px] lg:size-[128px] xl:size-[140px]">
+        <Image src={icon} alt={dept.name} fill className="object-contain" sizes="140px" unoptimized />
       </div>
-      <div className="flex flex-col gap-[24px] items-center w-full">
-        <p className={`font-cormorant font-medium text-[24px] text-center capitalize leading-none whitespace-nowrap ${isPink ? 'text-[#4f1b31]' : 'text-[#3b2d17]'}`}>
-          {dept.name}
-        </p>
-        <div className={`flex items-center h-[32px] px-[12px] py-[8px] border-[1.5px] rounded-[12px] gap-[4px] ${isPink ? 'border-[#f6a3c6]' : 'border-[#b89148]'}`}>
-          <span className="font-dm-sans text-[16px] text-[#5c4924] px-[8px]">Learn More</span>
-          <ArrowRight size={16} className="text-[#5c4924]" />
-        </div>
-      </div>
+      <p className={`font-cormorant text-[20px] font-bold leading-[1.05] break-words text-balance sm:text-[22px] lg:text-[24px] ${isPink ? 'text-[#4f1b31]' : 'text-[#2A2620]'}`}>
+        {dept.name}
+      </p>
     </Link>
   )
 }
 
 function SkeletonCard() {
-  return <div className="rounded-[16px] bg-[#f0ebe0] animate-pulse shrink-0 w-[300px] h-[248px]" />
+  return <div className="aspect-square w-full rounded-[16px] bg-[rgba(245,236,212,0.2)] animate-pulse" />
 }
 
 export default function DepartmentsPage() {
@@ -105,48 +88,33 @@ export default function DepartmentsPage() {
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full">
-        <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[80px] items-center pb-[120px] px-4 sm:px-8 lg:px-[80px] pt-[100px] lg:pt-[212px]">
+        <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
 
           {/* Hero slider */}
-          <div className="flex gap-[16px] h-[472px] items-center justify-center w-full">
-            <button className="shrink-0 text-[#594522] opacity-60 hover:opacity-100 transition-opacity">
-              <ChevronLeft size={40} />
-            </button>
-            <div className="bg-white flex h-[472px] items-center overflow-hidden rounded-[16px] flex-1 max-w-[1352px]">
-              <div className="flex flex-col gap-[40px] items-start pl-[58px] shrink-0 w-[618px]">
-                <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">Orienda International Hospital</h1>
-                <div className="font-dm-sans font-light text-[24px] text-[#594522] leading-[1.4]">
-                  <p className="mb-[12px]">We dedicated to providing safe and reliable medical services.</p>
-                  <p>Schedule an appointment to experience world-class healthcare.</p>
-                </div>
-                <Link href="/about" className="flex items-center h-[48px] px-[20px] py-[14px] border-[1.5px] border-[#b89148] rounded-[12px] gap-[4px]">
-                  <span className="font-dm-sans text-[18px] text-[#5c4924] px-[8px]">Learn More</span>
-                  <ArrowRight size={20} className="text-[#5c4924]" />
-                </Link>
-              </div>
-              <div className="relative h-[448px] flex-1 overflow-hidden mr-[12px] rounded-[16px]">
-                <Image src="/images/about/about-hero-3.jpg" alt="Orienda International Hospital" fill className="object-cover" sizes="700px" priority />
-              </div>
-            </div>
-            <button className="shrink-0 text-[#594522] opacity-60 hover:opacity-100 transition-opacity">
-              <ChevronRight size={40} />
-            </button>
-          </div>
+          <PromotionStyleHero
+            imageSrc="/images/about/about-hero-3.jpg"
+            imageAlt="Orienda International Hospital"
+            title="Orienda International Hospital"
+            lines={[
+              'We dedicated to providing safe and reliable medical services.',
+              'Schedule an appointment to experience world-class healthcare.',
+            ]}
+          />
 
           {/* Gold info banner */}
-          <div className="w-full max-w-[1352px] h-[200px] rounded-[16px] overflow-hidden flex items-center justify-center" style={{ background: 'rgba(184,145,72,0.8)', boxShadow: '0px 4px 24px 3px rgba(184,145,72,0.2)' }}>
-            <div className="flex items-center justify-center w-full h-full">
+          <div className="w-full max-w-[1352px] rounded-[16px] overflow-hidden flex items-center justify-center px-4 py-6 lg:p-0" style={{ background: 'rgba(184,145,72,0.8)', boxShadow: '0px 4px 24px 3px rgba(184,145,72,0.2)' }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 items-stretch justify-center w-full h-full">
               {BANNER_ITEMS.map((item, i) => (
-                <div key={i} className={`flex flex-col gap-[16px] items-center justify-center h-full flex-1 ${i < BANNER_ITEMS.length - 1 ? 'border-r-2 border-[#f5ecd4]' : ''}`}>
+                <div key={i} className={`flex flex-col gap-[16px] items-center justify-center h-full px-4 py-5 ${i < BANNER_ITEMS.length - 1 ? 'md:border-r-2 md:border-b-0 border-b border-[#f5ecd4]' : ''}`}>
                   <div className="relative size-[97px]">
                     <Image src={item.icon} alt={item.title} fill className="object-contain" sizes="97px" />
                   </div>
                   <div className="flex flex-col gap-[8px] items-center text-center">
-                    <p className="font-dm-sans font-medium text-[24px] text-[#fbf7ee] leading-none capitalize">{item.title}</p>
-                    <p className="font-dm-sans text-[16px] text-[#f5ecd4] leading-none capitalize">{item.desc}</p>
+                      <p className="font-dm-sans font-medium text-[20px] lg:text-[24px] text-[#fbf7ee] leading-none capitalize">{item.title}</p>
+                      <p className="font-dm-sans text-[14px] lg:text-[16px] text-[#f5ecd4] leading-snug capitalize">{item.desc}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
 
@@ -158,7 +126,7 @@ export default function DepartmentsPage() {
             </div>
 
             {loading ? (
-              <div className="flex flex-wrap gap-[40px] justify-center w-full">
+              <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
                 {Array(6).fill(0).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : (
@@ -173,7 +141,7 @@ export default function DepartmentsPage() {
                       <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">Women &amp; Children</h3>
                       <p className="font-dm-sans text-[16px] text-[#594522]">A selected team of experts committed to your health</p>
                     </div>
-                    <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
+                    <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
                       {womens.map(d => <DeptCard key={d.id} dept={d} variant="pink" />)}
                     </div>
                   </div>
@@ -185,7 +153,7 @@ export default function DepartmentsPage() {
                       <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">General Hospital</h3>
                       <p className="font-dm-sans text-[18px] text-[#594522]">A selected team of experts committed to your health</p>
                     </div>
-                    <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
+                    <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
                       {general.map(d => <DeptCard key={d.id} dept={d} variant="gold" />)}
                     </div>
                   </div>

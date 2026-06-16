@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { ChevronRight, ChevronLeft, Phone } from 'lucide-react'
+import { Phone } from 'lucide-react'
 import { DatePicker, CustomSelect } from '@/components/shared/FormControls'
 
 const INQUIRY_TYPES = ['General Inquiry', 'Appointment Request', 'Medical Record', 'Billing', 'Feedback', 'Other']
@@ -38,6 +38,16 @@ export default function InquiryPage() {
     if (!form.firstName) { setError('First name is required.'); return }
     if (!form.email && !form.phone) { setError('Please provide an email or phone number.'); return }
     if (!consents[0]) { setError('Please accept the Terms of Service and Privacy Notice.'); return }
+    const message = [
+      form.condition   && `Condition/Treatment: ${form.condition}`,
+      form.hospitalName && `Hospital: ${form.hospitalName}`,
+      form.question    && `Question: ${form.question}`,
+      form.dob         && `Date of Birth: ${form.dob}`,
+      form.gender      && `Gender: ${form.gender}`,
+      form.nationality && `Nationality: ${form.nationality}`,
+      form.country     && `Country: ${form.country}`,
+    ].filter(Boolean).join('\n')
+    if (!message) { setError('Please provide your inquiry details.'); return }
     setStatus('loading'); setError('')
 
     try {
@@ -53,15 +63,7 @@ export default function InquiryPage() {
           email: form.email || null,
           phone: form.phone || null,
           subject: form.inquiryType || 'General Inquiry',
-          message: [
-            form.condition   && `Condition/Treatment: ${form.condition}`,
-            form.hospitalName && `Hospital: ${form.hospitalName}`,
-            form.question    && `Question: ${form.question}`,
-            form.dob         && `Date of Birth: ${form.dob}`,
-            form.gender      && `Gender: ${form.gender}`,
-            form.nationality && `Nationality: ${form.nationality}`,
-            form.country     && `Country: ${form.country}`,
-          ].filter(Boolean).join('\n'),
+          message,
           language: 'en',
         }),
       })
@@ -106,55 +108,32 @@ export default function InquiryPage() {
   return (
     <SiteLayout>
       <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
-        <div className="max-w-[1352px] mx-auto px-5 xl:px-0 flex flex-col gap-20">
+        <div className="content-shell flex flex-col gap-20">
 
           {/* ── Hero banner ── */}
-          <div className="relative bg-white rounded-[16px] overflow-hidden h-[320px] md:h-[400px] xl:h-[472px] shadow-[0px_4px_16px_rgba(122,95,44,0.08)]">
-            {/* Left: hospital image */}
-            <div className="absolute left-0 top-0 bottom-0 w-[42%] overflow-hidden">
-              <Image
-                src="/images/inquiry-hero.jpg"
-                alt="Orienda International Hospital"
-                fill
-                className="object-cover object-center"
-                sizes="562px"
-                priority
-              />
-            </div>
-
-            {/* Left chevron */}
-            <button className="absolute left-3 top-1/2 -translate-y-1/2 size-10 flex items-center justify-center rounded-full hover:bg-gold-50 transition-colors z-10">
-              <ChevronLeft size={24} className="text-gold-700" />
-            </button>
-            <button className="absolute right-3 top-1/2 -translate-y-1/2 size-10 flex items-center justify-center rounded-full hover:bg-gold-50 transition-colors z-10">
-              <ChevronRight size={24} className="text-gold-700" />
-            </button>
-
-            {/* Right: content */}
-            <div className="absolute left-[44%] top-0 bottom-0 right-0 flex flex-col justify-between p-10 xl:p-[80px] xl:pb-10">
-              <div className="flex flex-col gap-6 xl:gap-10">
-                <h1 className="font-cormorant font-bold text-[28px] xl:text-[48px] text-gold-900 leading-none">
-                  Orienda International Hospital
-                </h1>
-                <div className="font-dm-sans font-light text-[14px] xl:text-[24px] text-gold-800 flex flex-col gap-3 leading-normal">
-                  <p>We dedicated to providing safe and reliable medical services.</p>
-                  <p>Schedule and appointment to experience world-class healthcare.</p>
-                </div>
-              </div>
+          <PromotionStyleHero
+            imageSrc="/images/inquiry-hero.jpg"
+            imageAlt="Orienda International Hospital"
+            title="Orienda International Hospital"
+            lines={[
+              'We dedicated to providing safe and reliable medical services.',
+              'Schedule and appointment to experience world-class healthcare.',
+            ]}
+            cta={
               <a
                 href="tel:016593789"
-                className="self-start flex items-center gap-2 px-5 py-3 rounded-[12px] font-dm-sans text-[16px] xl:text-[18px] text-white hover:opacity-90 transition-opacity"
+                className="self-start flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2 lg:px-5 lg:py-3 rounded-[10px] lg:rounded-[12px] font-dm-sans text-[11px] sm:text-[13px] xl:text-[18px] text-white hover:opacity-90 transition-opacity"
                 style={{ background: '#b89148' }}
               >
                 <Phone size={20} />
                 Contact Now
               </a>
-            </div>
-          </div>
+            }
+          />
 
           {/* ── Inquiry Form ── */}
           <div
-            className="rounded-[16px] p-8 xl:p-10 shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]"
+            className="rounded-[16px] p-5 sm:p-8 xl:p-10 shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]"
             style={{ background: '#fbf7ee' }}
           >
             <form onSubmit={submit} className="flex flex-col gap-16">
@@ -274,4 +253,3 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
     </div>
   )
 }
-

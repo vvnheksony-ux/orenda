@@ -13,34 +13,34 @@ type Doctor = { id: number; name: string; specialty: string; image_url: string |
 
 function DoctorCard({ doc }: { doc: Doctor }) {
   return (
-    <div className="bg-[#fbf7ee] flex flex-col gap-[40px] h-[400px] items-center justify-center overflow-clip relative rounded-[16px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] w-[300px] shrink-0">
+    <div className="relative flex h-[260px] w-full max-w-[168px] flex-col items-center justify-center gap-[18px] overflow-clip rounded-[16px] bg-[#fbf7ee] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] sm:h-[330px] sm:max-w-[240px] sm:gap-[24px] lg:h-[400px] lg:max-w-[300px] lg:gap-[40px]">
       {/* Gold gradient header */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 top-0 w-full opacity-64 h-[206px] pointer-events-none"
+        className="pointer-events-none absolute left-1/2 top-0 h-[110px] w-full -translate-x-1/2 opacity-64 sm:h-[165px] lg:h-[206px]"
         style={{ backgroundImage: 'linear-gradient(133.36deg,rgba(234,214,164,0.6) 0%,rgba(206,175,112,0.827) 25%,rgba(184,145,72,0.8) 49.52%,rgba(210,181,120,0.792) 75.96%,rgba(234,214,164,0.6) 100%)' }}
       />
       {/* Circle photo */}
-      <div className="relative z-10 rounded-full overflow-hidden bg-[#fbf7ee] shadow-[0px_4px_30px_12px_rgba(184,145,72,0.2)] shrink-0 size-[146px]">
+      <div className="relative z-10 size-[84px] shrink-0 overflow-hidden rounded-full bg-[#fbf7ee] shadow-[0px_4px_30px_12px_rgba(184,145,72,0.2)] sm:size-[118px] lg:size-[146px]">
         <Image
           src={doc.image_url || '/images/doctor-1.jpg'}
           alt={doc.name}
           fill
           className="object-cover object-top"
-          sizes="146px"
+          sizes="(max-width: 640px) 84px, (max-width: 1024px) 118px, 146px"
           unoptimized
         />
       </div>
       {/* Info */}
-      <div className="flex flex-col items-center gap-[16px] px-[16px] z-10 shrink-0">
-        <div className="flex flex-col gap-[12px] items-center text-center">
-          <p className="font-cormorant font-bold text-[22px] text-[#3b2d17] leading-tight capitalize w-[217px]">{doc.name}</p>
-          <p className="font-dm-sans text-[15px] text-[#3b2d17] leading-tight w-[186px] text-center">{doc.specialty}</p>
+      <div className="z-10 flex shrink-0 flex-col items-center gap-[10px] px-[10px] sm:gap-[14px] sm:px-[16px]">
+        <div className="flex flex-col items-center gap-[6px] text-center sm:gap-[10px]">
+          <p className="w-full max-w-[140px] font-cormorant text-[16px] font-bold leading-tight capitalize text-[#3b2d17] sm:max-w-[180px] sm:text-[20px] lg:max-w-[217px] lg:text-[22px]">{doc.name}</p>
+          <p className="w-full max-w-[132px] text-center font-dm-sans text-[11px] leading-tight text-[#3b2d17] sm:max-w-[160px] sm:text-[13px] lg:max-w-[186px] lg:text-[15px]">{doc.specialty}</p>
         </div>
         <Link
           href={`/doctors/${doc.slug || doc.id}` as any}
-          className="bg-[#b89148] h-[32px] flex items-center justify-center px-[12px] rounded-[12px] shadow-[0px_2px_6px_6px_rgba(0,0,0,0.05)] w-[145px]"
+          className="flex h-[28px] w-[110px] items-center justify-center rounded-[10px] bg-[#b89148] px-[12px] shadow-[0px_2px_6px_6px_rgba(0,0,0,0.05)] sm:h-[30px] sm:w-[130px] lg:h-[32px] lg:w-[145px]"
         >
-          <span className="font-dm-sans text-[12px] text-[#fbf7ee] text-center">View Profile</span>
+          <span className="text-center font-dm-sans text-[11px] text-[#fbf7ee] sm:text-[12px]">View Profile</span>
         </Link>
       </div>
     </div>
@@ -79,7 +79,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full min-h-screen">
-        <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-8 lg:px-[80px] pt-[100px] lg:pt-[140px] pb-[120px] flex flex-col gap-[67px]">
+        <div className="page-shell pt-[100px] lg:pt-[140px] pb-[120px] flex flex-col gap-[67px]">
 
           {/* Back nav */}
           <Link
@@ -177,7 +177,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
                   </div>
 
                   {/* Doctor cards grid */}
-                  <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
+                  <div className="grid w-full grid-cols-2 justify-items-center gap-[12px] sm:gap-[20px] lg:grid-cols-4 lg:gap-[40px]">
                     {doctors.map(doc => (
                       <DoctorCard key={doc.id} doc={doc} />
                     ))}

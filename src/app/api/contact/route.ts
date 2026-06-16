@@ -3,12 +3,35 @@ import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
 
+function readTrimmedString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function readOptionalString(value: unknown) {
+  const text = readTrimmedString(value)
+  return text || null
+}
+
+function readOptionalInteger(value: unknown) {
+  if (value === undefined || value === null || value === '') return null
+  const num = typeof value === 'number' ? value : Number(value)
+  return Number.isInteger(num) && num > 0 ? num : null
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const body = await req.json() as Record<string, unknown>
+    const name = readTrimmedString(body.name)
+    const email = readOptionalString(body.email)
+    const phone = readOptionalString(body.phone)
+    const branchPayloadId = readOptionalInteger(body.branch_id)
 
-    if (!body.name || (!body.email && !body.phone)) {
+    if (!name || (!email && !phone)) {
       return NextResponse.json({ error: 'Name and contact info required' }, { status: 400 })
+    }
+
+    if (body.branch_id !== undefined && body.branch_id !== null && body.branch_id !== '' && branchPayloadId === null) {
+      return NextResponse.json({ error: 'Invalid branch selection.' }, { status: 400 })
     }
 
     const supabase = createClient(
@@ -17,12 +40,12 @@ export async function POST(req: NextRequest) {
     )
 
     const { error } = await supabase.from('contact_messages').insert({
-      name:      body.name,
-      email:     body.email    || null,
-      phone:     body.phone    || null,
-      message:   body.message  || null,
-      branch_payload_id: body.branch_id ? Number(body.branch_id) : null,
-      locale:    body.locale   || 'en',
+      name,
+      email,
+      phone,
+      message: readOptionalString(body.message),
+      branch_payload_id: branchPayloadId,
+      locale: readTrimmedString(body.locale) || 'en',
     })
 
     if (error) {
@@ -31,8 +54,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true }, { status: 201 })
-  } catch (err: any) {
-    console.error('contact route error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (error) {
+    console.error('contact route error:', error)
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unexpected error' }, { status: 500 })
   }
 }

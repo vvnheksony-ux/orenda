@@ -66,6 +66,7 @@ export default function PurchasePage({ params }: { params: Promise<{ promoId: st
     e.preventDefault()
     if (!form.name) { setError('Patient name is required.'); return }
     if (!form.phone && !form.email) { setError('Please provide a phone or email.'); return }
+    if (!promo?.id) { setError('Promotion details are still loading. Please try again in a moment.'); return }
     setStatus('loading'); setError('')
 
     try {
@@ -82,7 +83,7 @@ export default function PurchasePage({ params }: { params: Promise<{ promoId: st
           patient_email:        form.email || null,
           // promotion_id is UUID for mobile app — leave null on web
           // promotion_payload_id is the Payload integer ID for web
-          promotion_payload_id: promo?.id ? parseInt(promo.id) : null,
+          promotion_payload_id: parseInt(promo.id),
           promotion_title:      promo?.title || promoId,
           branch_payload_id:    selectedBranch?.id ? parseInt(selectedBranch.id) : null,
           message:              form.message || null,
@@ -149,7 +150,7 @@ export default function PurchasePage({ params }: { params: Promise<{ promoId: st
   return (
     <SiteLayout>
       <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
-        <div className="max-w-[1352px] mx-auto px-5 xl:px-0 flex flex-col gap-10">
+        <div className="content-shell flex flex-col gap-10">
 
           {/* Back */}
           <Link href={`/promotions/${promoId}` as any} className="inline-flex items-center gap-1 font-dm-sans text-[14px] text-gold-700 hover:text-gold-900 transition-colors">

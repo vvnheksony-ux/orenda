@@ -24,7 +24,7 @@ export type OperationConfig = {
   group: string
   description: string
   columns: { key: string; label: string }[]
-  editableFields: { key: string; label: string; type?: 'date' | 'datetime' | 'textarea' | 'text' }[]
+  editableFields: { key: string; label: string; type?: 'date' | 'datetime' | 'textarea' | 'text' | 'boolean' }[]
   statusOptions: string[]
   referenceResolvers?: ReferenceResolver[]
   listHref?: string
@@ -220,7 +220,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
       { key: 'role', label: 'Role' },
       { key: 'clinic_visited', label: 'Clinic Visited' },
       { key: 'feedback_type', label: 'Feedback Type' },
-      { key: 'contact_required', label: 'Contact Required' },
+      { key: 'contact_required', label: 'Contact Required', type: 'boolean' },
       { key: 'comment', label: 'Comment', type: 'textarea' },
       { key: 'locale', label: 'Locale' },
       { key: 'status', label: 'Status' },

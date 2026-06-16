@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import CookieConsent from '@/components/shared/CookieConsent'
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker'
+import OneSignalInit from '@/components/shared/OneSignalInit'
 import { BranchProvider } from '@/lib/branch-context'
 import FloatingChat from '@/components/chat/FloatingChat'
 
@@ -55,6 +56,7 @@ export default async function RootLayout({
           <AuthProvider>
             <BranchProvider locale={locale}>
               <AnalyticsTracker />
+              <OneSignalInit />
               {children}
               <FloatingChat />
               <CookieConsent />

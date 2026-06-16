@@ -63,17 +63,16 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
             {/* Back arrow */}
             <div className="relative z-10 px-4 sm:px-8 lg:px-[80px] pt-[100px] lg:pt-[160px] pb-[12px]">
               <Link href="/doctors"
-                className="inline-flex items-center gap-[10px] font-dm-sans text-[18px] text-[#3b2d17] opacity-70 hover:opacity-100 transition-opacity px-3 py-2">
+                className="inline-flex items-center gap-[10px] font-dm-sans text-[16px] lg:text-[18px] text-[#3b2d17] opacity-70 hover:opacity-100 transition-opacity px-3 py-2">
                 <ArrowLeft size={28} />
                 <span>Back</span>
               </Link>
             </div>
 
             {/* Gold header banner */}
-            <div className="relative w-full bg-[#ead6a4]" style={{ height: 221 }}>
+            <div className="relative w-full bg-[#ead6a4] lg:h-[221px]">
               {/* Doctor card floating — center aligned with px-4 sm:px-8 lg:px-[80px] */}
-              <div className="absolute left-1/2 -translate-x-1/2 flex gap-[239px] items-center px-4 sm:px-8 lg:px-[80px] py-[40px] w-full"
-                style={{ top: -54, height: 330 }}>
+              <div className="relative lg:absolute left-1/2 lg:-translate-x-1/2 top-0 lg:-top-[54px] flex flex-col sm:flex-row gap-6 lg:gap-[239px] items-center sm:items-start lg:items-center px-4 sm:px-8 lg:px-[80px] py-8 lg:py-[40px] w-full">
                 {/* Photo */}
                 <div className="bg-white rounded-[24px] shrink-0 overflow-hidden relative"
                   style={{ width: 250, height: 250, boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
@@ -88,18 +87,18 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
                 </div>
 
                 {/* Name + specialty */}
-                <div className="flex flex-col gap-[16px] items-start justify-center capitalize overflow-hidden text-[#2a2620]">
-                  <p className="font-cormorant font-medium text-[48px] leading-none whitespace-nowrap">{doctor.name}</p>
-                  <p className="font-dm-sans font-normal text-[32px] leading-normal">{doctor.specialty}</p>
+                <div className="flex flex-col gap-[16px] items-center sm:items-start justify-center capitalize overflow-hidden text-[#2a2620] text-center sm:text-left min-w-0">
+                  <p className="font-cormorant font-medium text-[34px] sm:text-[40px] lg:text-[48px] leading-none break-words">{doctor.name}</p>
+                  <p className="font-dm-sans font-normal text-[22px] sm:text-[26px] lg:text-[32px] leading-normal break-words">{doctor.specialty}</p>
                 </div>
               </div>
             </div>
 
             {/* Content */}
-            <div className="flex gap-[40px] items-start px-[120px] py-[80px]">
+            <div className="flex flex-col lg:flex-row gap-[32px] lg:gap-[40px] items-start px-5 sm:px-8 lg:px-[120px] py-24 lg:py-[80px]">
 
               {/* Left 60% */}
-              <div className="flex flex-col gap-[40px] items-end text-[#2a2620]" style={{ flex: '0 0 58%' }}>
+              <div className="flex flex-col gap-[32px] lg:gap-[40px] items-end text-[#2a2620] w-full lg:w-auto" style={{ flex: '0 0 58%' }}>
 
                 {/* Education */}
                 {doctor.education?.length > 0 && (
@@ -143,31 +142,31 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
                 {/* Details */}
                 <div className="flex flex-col gap-[16px] items-start w-full">
                   {doctor.position_title && (
-                    <div className="flex gap-[16px]">
+                    <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px]">
                       <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Position:</span>
                       <span className="font-dm-sans text-[16px] text-[#2a2620]">{doctor.position_title}</span>
                     </div>
                   )}
                   {doctor.nationality && (
-                    <div className="flex gap-[16px]">
+                    <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px]">
                       <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Nationality:</span>
                       <span className="font-dm-sans text-[16px] text-[#2a2620]">{doctor.nationality}</span>
                     </div>
                   )}
                   {doctor.employment_type && (
-                    <div className="flex gap-[16px]">
+                    <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px]">
                       <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Employment:</span>
                       <span className="font-dm-sans text-[16px] text-[#2a2620]">{doctor.employment_type}</span>
                     </div>
                   )}
                   {doctor.email && (
-                    <div className="flex gap-[16px]">
+                    <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px] break-all">
                       <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Email:</span>
                       <a href={`mailto:${doctor.email}`} className="font-dm-sans text-[16px] text-[#b89148] hover:underline">{doctor.email}</a>
                     </div>
                   )}
                   {doctor.phone && (
-                    <div className="flex gap-[16px]">
+                    <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px]">
                       <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Phone:</span>
                       <a href={`tel:${doctor.phone}`} className="font-dm-sans text-[16px] text-[#b89148] hover:underline">{doctor.phone}</a>
                     </div>
@@ -185,7 +184,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
 
               {/* Right: sidebar */}
               {/* Right 40% */}
-              <div className="flex flex-col gap-[26px] items-start" style={{ flex: '0 0 38%' }}>
+              <div className="flex flex-col gap-[26px] items-start w-full lg:w-auto" style={{ flex: '0 0 38%' }}>
 
                 {/* Language card */}
                 {doctor.languages?.length > 0 && (

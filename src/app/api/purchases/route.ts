@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/utils/supabase/server'
 
-async function sendTelegram(body: Record<string, any>) {
+function readTrimmedString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function readOptionalString(value: unknown) {
+  const text = readTrimmedString(value)
+  return text || null
+}
+
+function readOptionalInteger(value: unknown) {
+  if (value === undefined || value === null || value === '') return null
+  const num = typeof value === 'number' ? value : Number(value)
+  return Number.isInteger(num) && num > 0 ? num : null
+}
+
+async function sendTelegram(body: Record<string, unknown>) {
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID
   if (!token || !chatId) return
@@ -24,8 +39,8 @@ async function sendTelegram(body: Record<string, any>) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'HTML' }),
     })
-  } catch (e) {
-    console.error('Telegram notify failed:', e)
+  } catch (error) {
+    console.error('Telegram notify failed:', error)
   }
 }
 
@@ -34,26 +49,32 @@ export async function POST(req: NextRequest) {
     const anonClient = await createClient()
     const { data: { user } } = await anonClient.auth.getUser()
 
-    const body = await req.json()
+    const body = await req.json() as Record<string, unknown>
+    const patientName = readTrimmedString(body.patient_name)
+    const patientPhone = readOptionalString(body.patient_phone)
+    const patientEmail = readOptionalString(body.patient_email)
+    const promotionPayloadId = readOptionalInteger(body.promotion_payload_id)
 
     // Validate required fields
-    if (!body.patient_name) {
+    if (!patientName) {
       return NextResponse.json({ error: 'Patient name is required.' }, { status: 400 })
     }
-    if (!body.patient_phone && !body.patient_email) {
+    if (!patientPhone && !patientEmail) {
       return NextResponse.json({ error: 'Phone or email is required.' }, { status: 400 })
     }
+    if (!promotionPayloadId) {
+      return NextResponse.json({ error: 'Promotion reference is required.' }, { status: 400 })
+    }
 
-    const payload: Record<string, any> = {
-      patient_name:          body.patient_name,
-      patient_phone:         body.patient_phone         || null,
-      patient_email:         body.patient_email         || null,
-      promotion_id:          null,                                   // UUID — mobile app only
-      promotion_payload_id:  body.promotion_payload_id  || null,  // Payload integer ID (web)
-      promotion_title:       body.promotion_title        || null,
-      branch_payload_id:     body.branch_payload_id     || null,
-      message:               body.message               || null,
-      language:              body.language              || 'en',
+    const payload: Record<string, unknown> = {
+      patient_name:          patientName,
+      patient_phone:         patientPhone,
+      patient_email:         patientEmail,
+      promotion_payload_id:  promotionPayloadId,
+      promotion_title:       readOptionalString(body.promotion_title),
+      branch_payload_id:     readOptionalInteger(body.branch_payload_id),
+      message:               readOptionalString(body.message),
+      language:              readTrimmedString(body.language) || 'en',
       status:                'pending',
       source:                'website',
     }
@@ -71,8 +92,8 @@ export async function POST(req: NextRequest) {
     await sendTelegram(payload)
 
     return NextResponse.json({ ok: true }, { status: 201 })
-  } catch (err: any) {
-    console.error('Purchase unexpected error:', err)
+  } catch (error) {
+    console.error('Purchase unexpected error:', error)
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 })
   }
 }

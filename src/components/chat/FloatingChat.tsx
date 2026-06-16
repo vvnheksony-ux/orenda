@@ -16,6 +16,7 @@ type Message = {
 
 type Session = {
   id: string
+  dbId?: string
   date: string
   preview: string
   messages: Message[]
@@ -86,6 +87,22 @@ function removeSession(id: string, userId?: string) {
     localStorage.setItem(storageKey(userId), JSON.stringify(loadSessions(userId).filter(s => s.id !== id)))
   } catch {}
 }
+
+async function loadServerSessions(): Promise<Session[]> {
+  const response = await fetch('/api/ai-chat')
+  if (!response.ok) throw new Error('Failed to load chat history')
+  const data = await response.json()
+  return data.docs || []
+}
+
+async function removeServerSession(sessionId: string) {
+  const response = await fetch('/api/ai-chat', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId }),
+  })
+  if (!response.ok) throw new Error('Failed to delete chat history')
+}
 function formatDate(iso: string) {
   const d = new Date(iso)
   const diff = Math.floor((Date.now() - d.getTime()) / 86400000)
@@ -119,10 +136,25 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const sendMessageRef = useRef<((text: string) => Promise<void>) | null>(null)
 
+  const refreshSessions = useCallback(async () => {
+    if (!user?.id) {
+      setSessions(loadSessions())
+      return
+    }
+
+    try {
+      setSessions(await loadServerSessions())
+    } catch {
+      setSessions([])
+    }
+  }, [user?.id])
+
   const userCount = messages.filter(m => m.role === 'user').length
   const canSend = !isTyping && !!inputValue.trim() && Date.now() - lastSentAt >= COOLDOWN_MS && userCount < MAX_MESSAGES
 
-  useEffect(() => { setSessions(loadSessions(user?.id)) }, [user?.id])
+  useEffect(() => {
+    void refreshSessions()
+  }, [refreshSessions])
 
   useEffect(() => {
     if (isOpen && view === 'chat') messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -130,14 +162,18 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
 
   const saveCurrentSession = useCallback(() => {
     if (userCount === 0) return
+    if (user?.id) {
+      void refreshSessions()
+      return
+    }
     persistSession({
       id: sessionId,
       date: new Date().toISOString(),
       preview: messages.find(m => m.role === 'user')?.content ?? '',
       messages,
-    }, user?.id)
-    setSessions(loadSessions(user?.id))
-  }, [messages, userCount, sessionId, user?.id])
+    })
+    setSessions(loadSessions())
+  }, [messages, refreshSessions, sessionId, user?.id, userCount])
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isTyping || Date.now() - lastSentAt < COOLDOWN_MS || userCount >= MAX_MESSAGES) return
@@ -183,8 +219,7 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
   }
 
   const openHistory = () => {
-    if (!user) { setLoginOpen(true); return }
-    setSessions(loadSessions(user.id))
+    void refreshSessions()
     setView('history')
   }
 
@@ -236,13 +271,14 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
               {view === 'chat' && (
                 <button
                   onClick={openHistory}
-                  title="History"
+                  title="View history"
                   className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
                 ><ArrowLeft size={13} /></button>
               )}
               {view === 'history' && (
                 <button
                   onClick={() => setView('chat')}
+                  title="Back to chat"
                   className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
                 ><ArrowLeft size={13} /></button>
               )}
@@ -258,11 +294,9 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
               </div>
             </div>
             <div className="flex items-center gap-[6px]">
-              {view === 'chat' && (
-                <button onClick={handleNewChat} title="New chat"
-                  className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
-                ><Plus size={13} /></button>
-              )}
+              <button onClick={handleNewChat} title="New chat"
+                className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+              ><Plus size={13} /></button>
               <button onClick={() => setIsExpanded(v => !v)} title={isExpanded ? 'Shrink' : 'Expand'}
                 className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
               >{isExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}</button>
@@ -300,7 +334,14 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
                           </p>
                         </button>
                         <button
-                          onClick={() => { removeSession(s.id, user?.id); setSessions(loadSessions(user?.id)) }}
+                          onClick={() => {
+                            if (user?.id && s.dbId) {
+                              void removeServerSession(s.dbId).then(() => refreshSessions()).catch(() => {})
+                              return
+                            }
+                            removeSession(s.id)
+                            setSessions(loadSessions())
+                          }}
                           className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-red-50 transition-colors text-[#7a5f2c]/40 hover:text-red-400 shrink-0"
                         ><X size={11} /></button>
                       </div>
@@ -384,10 +425,21 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
                   </p>
                 )}
                 {!user && (
-                  <p className="font-dm-sans text-[10px] text-center text-[#7a5f2c]/50 mb-1.5">
-                    <button onClick={() => setLoginOpen(true)} className="underline hover:text-[#b89148] transition-colors">Sign in</button>
-                    {' '}to save your conversation
-                  </p>
+                  <div
+                    className="mb-2 flex items-center justify-between gap-3 rounded-[12px] px-3 py-2"
+                    style={{ background: 'rgba(245,236,212,0.55)', border: '1px solid rgba(184,145,72,0.16)' }}
+                  >
+                    <p className="font-dm-sans text-[11px] leading-[1.45] text-[#7a5f2c]">
+                      Sign in to save this chat to your account and keep your history across visits.
+                    </p>
+                    <button
+                      onClick={() => setLoginOpen(true)}
+                      className="shrink-0 rounded-full px-3 py-1.5 font-dm-sans text-[11px] font-medium text-white hover:opacity-90 transition-opacity"
+                      style={{ background: 'rgba(184,145,72,0.95)' }}
+                    >
+                      Sign In
+                    </button>
+                  </div>
                 )}
                 <div className="flex items-center gap-2"
                   style={{ background: 'rgba(249,249,249,0.50)', borderRadius: 71, padding: '10px 6px 10px 18px', boxShadow: '0 1px 8px rgba(59,45,23,0.10)' }}
@@ -416,8 +468,8 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
       <LoginModal
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
-        onSuccess={() => { setLoginOpen(false); setSessions(loadSessions(user?.id)); setView('history') }}
-        message="Sign in to view your chat history"
+        onSuccess={() => { setLoginOpen(false); setView('history') }}
+        message="Sign in to save this chat to your account and keep your history across visits."
       />
 
       {/* Trigger pill */}

@@ -121,7 +121,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
   }
 
   const editableFields = editableFieldsByTable[table]
-  const insertData: Record<string, string | number | null> = {}
+  const insertData: Record<string, string | number | boolean | null> = {}
 
   for (const [key, value] of Object.entries(body.data)) {
     if (!editableFields.includes(key)) continue
@@ -149,8 +149,16 @@ export async function POST(req: NextRequest, context: RouteContext) {
 function normalizeFieldValue(key: string, value: unknown) {
   if (key === 'patient_id' && value === '') return '00000000'
   if (value === '') return null
+  if (key === 'contact_required') {
+    if (value === true || value === 'true') return true
+    if (value === false || value === 'false') return false
+    return null
+  }
   if (typeof value !== 'string') return null
-  if (key.endsWith('_payload_id')) return Number(value)
+  if (key.endsWith('_payload_id') || key === 'promotion_id' || key === 'branch_id') {
+    const num = Number(value)
+    return Number.isFinite(num) ? num : null
+  }
   return value
 }
 
