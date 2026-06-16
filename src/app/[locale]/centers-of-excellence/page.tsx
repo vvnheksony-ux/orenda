@@ -49,13 +49,13 @@ export default function CentersOfExcellencePage() {
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full">
-        <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[96px] items-center pb-[120px] px-4 sm:px-8 lg:px-[80px] pt-[100px] lg:pt-[212px]">
+        <div className="page-shell flex flex-col gap-[72px] lg:gap-[96px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
 
           {/* ── Hero ── */}
           <div className="flex flex-col gap-[56px] w-full">
 
             {/* Breadcrumb + Title + Image row */}
-            <div className="flex items-start justify-between w-full gap-[48px]">
+            <div className="flex flex-col lg:flex-row items-start justify-between w-full gap-8 lg:gap-[48px]">
               <div className="flex flex-col gap-[24px] flex-1 min-w-0">
                 {/* Breadcrumb */}
                 <Link href="/departments" className="flex items-center gap-[12px] text-[#594522] hover:opacity-70 transition-opacity w-fit">
@@ -64,24 +64,24 @@ export default function CentersOfExcellencePage() {
                 </Link>
 
                 {/* Title */}
-                <h1 className="font-cormorant font-bold text-[64px] text-[#3b2d17] leading-none">
+                <h1 className="font-cormorant font-bold text-[42px] sm:text-[52px] lg:text-[64px] text-[#3b2d17] leading-none">
                   Neurosurgery
                 </h1>
 
                 {/* Description */}
-                <p className="font-dm-sans text-[20px] text-[#3b2d17] leading-relaxed max-w-[640px]">
+                <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#3b2d17] leading-relaxed max-w-[640px]">
                   Our Neurosurgery Center of Excellence combines world-class surgical expertise with groundbreaking technology to treat complex conditions of the brain, spine, and nervous system. Here, advanced precision meets compassionate healing to help you reclaim your quality of life.
                 </p>
               </div>
 
               {/* Brain illustration */}
-              <div className="relative shrink-0 w-[480px] h-[420px] rounded-[24px] overflow-hidden">
+              <div className="relative shrink-0 w-full lg:w-[480px] h-[260px] sm:h-[340px] lg:h-[420px] rounded-[24px] overflow-hidden">
                 <Image
                   src="/images/centers/neurosurgery.jpg"
                   alt="Neurosurgery"
                   fill
                   className="object-cover"
-                  sizes="480px"
+                  sizes="(max-width: 1024px) 100vw, 480px"
                   priority
                 />
               </div>
@@ -89,11 +89,11 @@ export default function CentersOfExcellencePage() {
 
             {/* Stats + CTA */}
             <div className="flex flex-col gap-[40px] items-start">
-              <div className="flex gap-[24px] items-stretch">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px] lg:gap-[24px] items-stretch w-full">
                 {stats.map(s => (
                   <div
                     key={s.label}
-                    className="flex flex-col gap-[12px] items-center justify-center w-[200px] h-[160px] rounded-xl bg-[#F9F5EE] shadow-[inset_0px_3px_16px_rgba(184,145,72,0.10),0px_4px_16px_4px_rgba(0,0,0,0.08)] hover:shadow-[inset_0px_3px_24px_rgba(184,145,72,0.14),0px_8px_24px_6px_rgba(0,0,0,0.12)] hover:bg-[#F4EEDF] transition-all duration-300 group"
+                    className="flex flex-col gap-[12px] items-center justify-center w-full sm:min-h-[160px] rounded-xl bg-[#F9F5EE] shadow-[inset_0px_3px_16px_rgba(184,145,72,0.10),0px_4px_16px_4px_rgba(0,0,0,0.08)] hover:shadow-[inset_0px_3px_24px_rgba(184,145,72,0.14),0px_8px_24px_6px_rgba(0,0,0,0.12)] hover:bg-[#F4EEDF] transition-all duration-300 group px-4 py-6"
                   >
                     <p className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none group-hover:scale-105 transition-transform duration-300">
                       {s.value}
@@ -104,7 +104,7 @@ export default function CentersOfExcellencePage() {
               </div>
               <BookAppointmentButton
                 label="Book Appointment"
-                className="flex items-center justify-center px-[32px] py-[16px] rounded-[12px] bg-[#b89148] hover:bg-[#9a7a3c] transition-colors font-dm-sans font-semibold text-[20px] text-[#fbf7ee]"
+                className="flex items-center justify-center px-[24px] lg:px-[32px] py-[16px] rounded-[12px] bg-[#b89148] hover:bg-[#9a7a3c] transition-colors font-dm-sans font-semibold text-[18px] lg:text-[20px] text-[#fbf7ee]"
               />
             </div>
           </div>
@@ -112,12 +112,12 @@ export default function CentersOfExcellencePage() {
           {/* ── Patient Testimonials ── */}
           <div className="flex flex-col gap-[52px] items-center w-full">
             <div className="flex flex-col gap-[12px] text-center">
-              <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">Patient Testimonials</h2>
-              <p className="font-dm-sans text-[20px] text-[#594522]">Hear from those we&apos;ve had the privilege to care for.</p>
+              <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none">Patient Testimonials</h2>
+              <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">Hear from those we&apos;ve had the privilege to care for.</p>
             </div>
 
             {/* 2-column staggered grid */}
-            <div className="grid grid-cols-2 gap-[24px] w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px] w-full">
               {/* Left column — 3 cards */}
               <div className="flex flex-col gap-[24px]">
                 {testimonials.slice(0, 3).map((t, i) => (
@@ -136,14 +136,14 @@ export default function CentersOfExcellencePage() {
           {/* ── Meet Our Specialist ── */}
           <div className="flex flex-col gap-[48px] items-center w-full">
             <div className="flex flex-col gap-[12px] text-center">
-              <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">Meet Our Specialist</h2>
-              <p className="font-dm-sans text-[20px] text-[#594522]">Meet Our Specialists in This Department</p>
+              <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none">Meet Our Specialist</h2>
+              <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">Meet Our Specialists in This Department</p>
             </div>
 
-            <div className="flex gap-[28px] items-stretch justify-center flex-wrap w-full">
+            <div className="grid w-full grid-cols-2 justify-items-center gap-[12px] sm:gap-[20px] lg:grid-cols-4 lg:gap-[28px]">
               {doctorsLoading
                 ? Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="w-[300px] h-[400px] rounded-[16px] bg-[#F9F5EE] animate-pulse shadow-[inset_0px_3px_16px_rgba(184,145,72,0.10),0px_4px_16px_4px_rgba(0,0,0,0.08)]" />
+                    <div key={i} className="aspect-[3/4] w-full max-w-[168px] sm:max-w-[240px] lg:max-w-[300px] rounded-[16px] bg-[#F9F5EE] animate-pulse shadow-[inset_0px_3px_16px_rgba(184,145,72,0.10),0px_4px_16px_4px_rgba(0,0,0,0.08)]" />
                   ))
                 : doctors.length > 0
                 ? doctors.map(doc => <DoctorCard key={doc.id} doctor={doc} />)
@@ -180,25 +180,25 @@ function TestimonialCard({ text, author }: { text: string; author: string }) {
 function DoctorCard({ doctor }: { doctor: Doctor }) {
   return (
     <div
-      className="relative flex flex-col gap-0 items-center overflow-hidden rounded-[16px] w-[300px] shrink-0 bg-[#F9F5EE]"
+      className="relative flex w-full max-w-[168px] flex-col items-center overflow-hidden rounded-[16px] bg-[#F9F5EE] sm:max-w-[240px] lg:max-w-[300px]"
       style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.15)' }}
     >
       {/* Gold gradient header band */}
       <div
-        className="w-full h-[180px] shrink-0"
+        className="h-[110px] w-full shrink-0 sm:h-[150px] lg:h-[180px]"
         style={{ background: 'linear-gradient(133deg, rgba(234,214,164,0.6) 0%, rgba(184,145,72,0.85) 50%, rgba(234,214,164,0.6) 100%)' }}
       />
 
       {/* Doctor avatar — overlapping the band */}
       <div
-        className="absolute top-[46px] rounded-full overflow-hidden size-[148px] border-[4px] border-[#fbf7ee]"
+        className="absolute top-[28px] size-[84px] rounded-full overflow-hidden border-[3px] border-[#fbf7ee] sm:top-[34px] sm:size-[120px] sm:border-[4px] lg:top-[46px] lg:size-[148px]"
         style={{ boxShadow: '0px 4px 20px rgba(184,145,72,0.25)' }}
       >
         {doctor.image_url ? (
-          <Image src={doctor.image_url} alt={doctor.name} fill className="object-cover" sizes="148px" unoptimized />
+          <Image src={doctor.image_url} alt={doctor.name} fill className="object-cover" sizes="(max-width: 640px) 84px, (max-width: 1024px) 120px, 148px" unoptimized />
         ) : (
           <div className="w-full h-full bg-[#e8d9b8] flex items-center justify-center">
-            <span className="font-cormorant text-[48px] text-[#b89148] font-bold">
+            <span className="font-cormorant text-[30px] font-bold text-[#b89148] sm:text-[40px] lg:text-[48px]">
               {doctor.name.charAt(0)}
             </span>
           </div>
@@ -206,17 +206,17 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
       </div>
 
       {/* Info section */}
-      <div className="flex flex-col gap-[16px] items-center text-center px-[20px] pt-[88px] pb-[28px] w-full">
-        <div className="flex flex-col gap-[8px] items-center">
-          <p className="font-cormorant font-bold text-[22px] text-[#3b2d17] leading-snug capitalize">{doctor.name}</p>
-          <p className="font-dm-sans text-[14px] text-[#7a5f2c] leading-snug capitalize">{doctor.specialty}</p>
+      <div className="flex w-full flex-col items-center gap-[12px] px-[10px] pb-[16px] pt-[48px] text-center sm:gap-[16px] sm:px-[16px] sm:pb-[24px] sm:pt-[72px] lg:px-[20px] lg:pb-[28px] lg:pt-[88px]">
+        <div className="flex flex-col gap-[6px] items-center sm:gap-[8px]">
+          <p className="font-cormorant font-bold text-[16px] text-[#3b2d17] leading-snug capitalize sm:text-[20px] lg:text-[22px]">{doctor.name}</p>
+          <p className="font-dm-sans text-[11px] text-[#7a5f2c] leading-snug capitalize sm:text-[13px] lg:text-[14px]">{doctor.specialty}</p>
         </div>
         <Link
           href={`/doctors/${doctor.id}` as any}
-          className="flex items-center justify-center bg-[#b89148] hover:bg-[#9a7a3c] transition-colors h-[36px] px-[20px] rounded-[10px] w-full max-w-[160px]"
+          className="flex h-[30px] w-full max-w-[112px] items-center justify-center rounded-[9px] bg-[#b89148] px-[12px] transition-colors hover:bg-[#9a7a3c] sm:h-[34px] sm:max-w-[140px] sm:px-[18px] lg:h-[36px] lg:max-w-[160px] lg:px-[20px]"
           style={{ boxShadow: '0px 2px 8px rgba(184,145,72,0.3)' }}
         >
-          <span className="font-dm-sans text-[13px] text-[#fbf7ee]">View Profile</span>
+          <span className="font-dm-sans text-[11px] text-[#fbf7ee] sm:text-[12px] lg:text-[13px]">View Profile</span>
         </Link>
       </div>
     </div>

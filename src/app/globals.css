@@ -48,6 +48,43 @@ body {
   font-family: var(--dm-sans-font), 'DM Sans', sans-serif;
 }
 
+.page-shell {
+  width: 100%;
+  max-width: 1512px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.content-shell {
+  width: 100%;
+  max-width: 1352px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.narrow-shell {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 640px) {
+  .page-shell,
+  .content-shell,
+  .narrow-shell {
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-shell,
+  .content-shell,
+  .narrow-shell {
+    padding-inline: 5rem;
+  }
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

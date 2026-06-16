@@ -6,8 +6,8 @@ import { X, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLocale, useTranslations } from 'next-intl'
 import { useAuth } from '@/lib/auth-context'
-import { useRouter } from '@/i18n/routing'
 import { useBranch } from '@/lib/branch-context'
+import LoginModal from '@/components/shared/LoginModal'
 
 interface Props {
   open: boolean
@@ -150,7 +150,6 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const locale = useLocale()
   const t = useTranslations('BookAppointmentModal')
   const { user, loading: authLoading } = useAuth()
-  const router = useRouter()
   const { selectedBranch } = useBranch()
   const [dateChoice, setDateChoice] = useState<'earliest' | 'choose'>('earliest')
   const [form, setForm] = useState(() => {
@@ -325,9 +324,22 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
   const reqCls = (missing: boolean) => missing && submitted ? ' !border-red-400' : ''
 
+  if (open && !authLoading && !user) {
+    return (
+      <LoginModal
+        open={true}
+        onClose={onClose}
+        onSuccess={() => {}}
+        redirectTo={typeof window !== 'undefined' ? window.location.pathname : '/'}
+        initialView="login"
+      />
+    )
+  }
+
   return (
-    <AnimatePresence>
-      {open && (
+    <>
+      <AnimatePresence>
+        {open && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -361,35 +373,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
               <X size={16} className="text-[#3b2d17]" />
             </button>
 
-            {/* Auth gate */}
-            {!authLoading && !user ? (
-              <div className="flex flex-col items-center gap-[24px] py-[40px] text-center">
-                <div className="w-16 h-16 rounded-full bg-[#f5ecd4] flex items-center justify-center">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b89148" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                  </svg>
-                </div>
-                <div className="flex flex-col gap-[8px]">
-                  <h2 className="font-cormorant font-bold text-[32px] sm:text-[40px] text-[#3b2d17] leading-none">Sign In Required</h2>
-                  <p className="font-dm-sans text-[16px] text-[#594522] max-w-[400px]">Please sign in or create an account to book an appointment.</p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-[12px] w-full max-w-[400px]">
-                  <button
-                    onClick={() => { onClose(); router.push(`/login?next=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/')}`) }}
-                    className="flex-1 h-[52px] rounded-[12px] font-dm-sans text-[16px] text-white transition-opacity hover:opacity-90"
-                    style={{ background: 'rgba(184,145,72,0.85)' }}
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => { onClose(); router.push('/register') }}
-                    className="flex-1 h-[52px] rounded-[12px] font-dm-sans text-[16px] text-[#3b2d17] border border-[#b89148] transition-colors hover:bg-[#b89148]/10"
-                  >
-                    Create Account
-                  </button>
-                </div>
-              </div>
-            ) : status === 'success' ? (
+            {status === 'success' ? (
               <div className="flex flex-col items-center gap-[24px] py-[40px]">
                 <div className="w-16 h-16 rounded-full bg-[#b89148] flex items-center justify-center">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -652,7 +636,9 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
           </motion.div>
           </div>
         </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+
+    </>
   )
 }

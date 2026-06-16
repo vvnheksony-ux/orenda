@@ -61,20 +61,36 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
   const firstParas = paragraphs.slice(0, FIRST_SPLIT)
   const restParas = paragraphs.slice(FIRST_SPLIT)
 
-  // Extra images skip first (thumbnail already shown as hero). Pair into rows of 2.
-  const extraImgs = (article?.images ?? []).slice(1)
-  type ImagePair = { imgs: string[]; startIdx: number }
-  const imagePairs: ImagePair[] = []
-  for (let i = 0; i < extraImgs.length; i += 2) {
-    imagePairs.push({ imgs: extraImgs.slice(i, i + 2), startIdx: i })
-  }
-
   const heroSrc = article?.thumbnail ?? article?.images?.[0] ?? null
+  const bodyContentClass = 'w-full'
+
+  // If a dedicated thumbnail exists, render every Payload gallery image as-is.
+  // Only skip the first image when it is being used as the hero fallback.
+  const extraImgs = article?.thumbnail
+    ? (article.images ?? [])
+    : (article?.images ?? []).slice(heroSrc ? 1 : 0)
+  const MIDDLE_TEXT_TARGET_CHARS = 1000
+  const middleParas: string[] = []
+  let middleCharCount = 0
+  for (const para of restParas) {
+    if (middleParas.length > 0 && middleCharCount >= MIDDLE_TEXT_TARGET_CHARS) break
+    middleParas.push(para)
+    middleCharCount += para.length
+  }
+  const finalParas = restParas.slice(middleParas.length)
+  const topGalleryImgs = extraImgs.length === 1 ? [] : extraImgs.slice(0, 2)
+  const featuredGalleryImg = extraImgs.length === 1 ? extraImgs[0] : extraImgs[2] ?? null
+  const trailingGalleryImgs = extraImgs.length > 3 ? extraImgs.slice(3) : []
+  type ImagePair = { imgs: string[]; startIdx: number }
+  const trailingImagePairs: ImagePair[] = []
+  for (let i = 0; i < trailingGalleryImgs.length; i += 2) {
+    trailingImagePairs.push({ imgs: trailingGalleryImgs.slice(i, i + 2), startIdx: i + 3 })
+  }
 
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] w-full pb-[120px] pt-[100px] lg:pt-[212px]">
-        <div className="max-w-[1512px] mx-auto px-4 sm:px-8 lg:px-[80px] flex flex-col gap-[80px]">
+        <div className="page-shell flex flex-col gap-[80px]">
 
           {/* Skeleton */}
           {loading && (
@@ -137,7 +153,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
 
                   {/* First text + sidebar */}
                   {(firstParas.length > 0 || article.excerpt) && (
-                    <div className="flex gap-[40px] items-start w-full">
+                    <div className={`${bodyContentClass} flex flex-col lg:flex-row gap-[40px] items-start`}>
                       <div className="flex-1 min-w-0">
                         {article.excerpt && paragraphs.length <= 1 ? (
                           <p className="font-dm-sans text-[18px] text-[#2a2620] leading-[1.8]">{article.excerpt}</p>
@@ -172,32 +188,77 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
                     </div>
                   )}
 
-                  {/* Image rows — 2 per row */}
-                  {imagePairs.length > 0 && (
-                    <div className="flex flex-col gap-[8px] w-full">
-                      {imagePairs.map(({ imgs, startIdx }) => (
-                        <div key={startIdx} className="flex gap-[8px] w-full" style={{ height: 460 }}>
-                          {imgs.map((src, j) => (
-                            <div
-                              key={j}
-                              className="flex-1 relative overflow-hidden rounded-[10px] cursor-zoom-in group"
-                              onClick={() => setLightboxIdx(startIdx + j)}
-                            >
-                              <Image src={src} alt="" fill className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" sizes="50vw" unoptimized />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
-                            </div>
-                          ))}
-                          {imgs.length === 1 && <div className="flex-1" />}
-                        </div>
+                  {/* Gallery layout */}
+                  {topGalleryImgs.length > 0 && (
+                    <div className={bodyContentClass}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-[12px]">
+                        {topGalleryImgs.map((src, idx) => (
+                          <div
+                            key={`${src}-${idx}`}
+                            className="relative overflow-hidden rounded-[12px] cursor-zoom-in group h-[280px] md:h-[420px]"
+                            onClick={() => setLightboxIdx(idx)}
+                          >
+                            <Image src={src} alt="" fill className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" sizes="(max-width: 768px) 100vw, 50vw" unoptimized />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mid-body text */}
+                  {middleParas.length > 0 && (
+                    <div className={bodyContentClass}>
+                      {middleParas.map((p, i) => (
+                        <p key={i} className="font-dm-sans text-[18px] text-[#2a2620] leading-[1.8] mb-[32px] last:mb-0">{p}</p>
                       ))}
                     </div>
                   )}
 
+                  {/* Featured follow-up image */}
+                  {featuredGalleryImg && (
+                    <div className={bodyContentClass}>
+                      <div
+                        className="relative overflow-hidden rounded-[12px] cursor-zoom-in group h-[300px] md:h-[520px]"
+                        onClick={() => setLightboxIdx(extraImgs.length === 1 ? 0 : 2)}
+                      >
+                        <Image src={featuredGalleryImg} alt="" fill className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" sizes="(max-width: 1024px) 100vw, 980px" unoptimized />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Remaining paragraphs */}
-                  {restParas.length > 0 && (
-                    <div className="w-full">
-                      {restParas.map((p, i) => (
+                  {finalParas.length > 0 && (
+                    <div className={bodyContentClass}>
+                      {finalParas.map((p, i) => (
                         <p key={i} className="font-dm-sans text-[18px] text-[#2a2620] leading-[1.8] mb-[32px] last:mb-0">{p}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Remaining gallery rows */}
+                  {trailingImagePairs.length > 0 && (
+                    <div className={`flex flex-col gap-[12px] ${bodyContentClass}`}>
+                      {trailingImagePairs.map(({ imgs, startIdx }) => (
+                        <div
+                          key={startIdx}
+                          className={imgs.length === 1
+                            ? 'grid grid-cols-1 md:grid-cols-2 gap-[12px] w-full md:w-[calc(50%-6px)] mx-auto'
+                            : 'grid grid-cols-1 md:grid-cols-2 gap-[12px] w-full'}
+                        >
+                          {imgs.map((src, j) => (
+                            <div
+                              key={`${src}-${j}`}
+                              className="relative overflow-hidden rounded-[12px] cursor-zoom-in group h-[280px] md:h-[420px]"
+                              onClick={() => setLightboxIdx(startIdx + j)}
+                            >
+                              <Image src={src} alt="" fill className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" sizes="(max-width: 768px) 100vw, 50vw" unoptimized />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+                            </div>
+                          ))}
+                          {imgs.length === 1 && <div className="hidden md:block" />}
+                        </div>
                       ))}
                     </div>
                   )}

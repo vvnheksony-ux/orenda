@@ -207,6 +207,12 @@ function EditForm({ config, disabled, form, isNew, onChange, onSave, record, ref
                   <option key={opt.id} value={opt.id}>{opt.name}</option>
                 ))}
               </select>
+            ) : field.type === 'boolean' ? (
+              <select className="rounded-xl border border-[#e7dfd5] px-4 py-3 text-base" disabled={disabled} onChange={(event) => onChange(field.key, event.target.value)} value={form[field.key] || ''}>
+                <option value="">Select {field.label}</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
             ) : field.type === 'textarea' ? (
               <textarea className="min-h-36 rounded-xl border border-[#e7dfd5] px-4 py-3 text-base" disabled={disabled} onChange={(event) => onChange(field.key, event.target.value)} value={form[field.key] || ''} />
             ) : (

@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/utils/supabase/server'
 
+function readTrimmedString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function readOptionalString(value: unknown) {
+  const text = readTrimmedString(value)
+  return text || null
+}
+
+function readOptionalInteger(value: unknown) {
+  if (value === undefined || value === null || value === '') return null
+  const num = typeof value === 'number' ? value : Number(value)
+  return Number.isInteger(num) && num > 0 ? num : null
+}
+
 function appointmentSourceLabel(body: Record<string, unknown>) {
   const value = body.book_from ?? body.booking_source ?? body.source ?? body.appointment_source
   if (!value) return null
@@ -13,19 +28,22 @@ function appointmentSourceLabel(body: Record<string, unknown>) {
   return String(value)
 }
 
-function appointmentInsertBody(body: Record<string, unknown>) {
-  const {
-    book_from: _bookFrom,
-    booking_source: _bookingSource,
-    appointment_source: _appointmentSource,
-    department_id: _departmentId,
-    service_payload_id: _servicePayloadId,
-    ...insertBody
-  } = body
-
+function appointmentInsertBody(body: Record<string, unknown>, userId: string) {
   return {
-    ...insertBody,
-    source: body.source ?? body.book_from ?? body.booking_source ?? body.appointment_source ?? 'website',
+    user_id: userId,
+    patient_name: readTrimmedString(body.patient_name),
+    patient_phone: readTrimmedString(body.patient_phone),
+    patient_email: readOptionalString(body.patient_email),
+    doctor_payload_id: readOptionalInteger(body.doctor_payload_id),
+    department_payload_id: readOptionalInteger(body.department_payload_id),
+    branch_payload_id: readOptionalInteger(body.branch_payload_id),
+    department_id: readOptionalString(body.department_id),
+    preferred_date: readTrimmedString(body.preferred_date),
+    preferred_time: readTrimmedString(body.preferred_time),
+    message: readOptionalString(body.message),
+    language: readTrimmedString(body.language) || 'en',
+    status: 'pending',
+    source: readTrimmedString(body.source ?? body.book_from ?? body.booking_source ?? body.appointment_source) || 'website',
   }
 }
 
@@ -78,7 +96,7 @@ async function sendTelegram(body: Record<string, unknown>) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const anonClient = await createClient()
   const { data: { user } } = await anonClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -105,7 +123,6 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json() as Record<string, unknown>
-  body.user_id = user.id
 
   const missing = missingRequiredFields(body)
   if (missing.length > 0) {
@@ -115,11 +132,17 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  for (const field of ['doctor_payload_id', 'department_payload_id', 'branch_payload_id'] as const) {
+    if (body[field] !== undefined && body[field] !== null && body[field] !== '' && readOptionalInteger(body[field]) === null) {
+      return NextResponse.json({ error: `Invalid ${field}` }, { status: 400 })
+    }
+  }
+
   // Service role client — bypasses RLS so unauthenticated submissions work
   const serviceClient = await createServiceClient()
   const { error } = await serviceClient
     .from('appointments')
-    .insert([appointmentInsertBody(body)])
+    .insert([appointmentInsertBody(body, user.id)])
 
   if (error) {
     console.error('Error saving appointment:', error.message, error.details, error.hint)

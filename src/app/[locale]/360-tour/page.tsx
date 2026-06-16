@@ -25,11 +25,11 @@ function SceneCard({ scene }: { scene: TourScene }) {
   return (
     <Link
       href={`/360-tour/${scene.sceneNumber}` as any}
-      className="bg-white flex flex-1 flex-col items-center min-w-[300px] overflow-hidden rounded-3xl group"
+      className="bg-white flex flex-1 flex-col items-center min-w-0 overflow-hidden rounded-3xl group w-full"
       style={{ boxShadow: '0px 4px 30px 12px rgba(138,124,88,0.12)' }}
     >
       {/* Image */}
-      <div className="relative h-96 w-full bg-zinc-100 shrink-0 overflow-hidden">
+      <div className="relative h-[280px] sm:h-96 w-full bg-zinc-100 shrink-0 overflow-hidden">
         <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
         <div className="absolute top-[14px] left-[14px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
           style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
@@ -38,13 +38,13 @@ function SceneCard({ scene }: { scene: TourScene }) {
         </div>
       </div>
       {/* Footer */}
-      <div className="flex items-end justify-between p-10 w-full gap-4">
-        <div className="flex flex-col justify-center items-start gap-3">
-          <p className="font-cormorant font-bold text-5xl text-[#3b2d17] leading-[48px]">{scene.title}</p>
-          <p className="font-dm-sans text-xl text-[#594522] leading-5">{scene.description.split('\n')[0].slice(0, 50)}</p>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between p-5 sm:p-8 lg:p-10 w-full gap-4">
+        <div className="flex flex-col justify-center items-start gap-3 min-w-0">
+          <p className="font-cormorant font-bold text-[32px] sm:text-[40px] lg:text-5xl text-[#3b2d17] leading-tight lg:leading-[48px] break-words">{scene.title}</p>
+          <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-xl text-[#594522] leading-6 sm:leading-5">{scene.description.split('\n')[0].slice(0, 50)}</p>
         </div>
         <div className="h-12 px-5 py-3.5 rounded-xl outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] flex justify-center items-center gap-1 shrink-0 group-hover:bg-[#b89148] transition-colors">
-          <span className="font-dm-sans text-lg text-[#5c4924] px-2 group-hover:text-white transition-colors">Learn More</span>
+          <span className="font-dm-sans text-[16px] lg:text-lg text-[#5c4924] px-2 group-hover:text-white transition-colors">Learn More</span>
           <ArrowRight size={20} className="text-[#5c4924] group-hover:text-white transition-colors" />
         </div>
       </div>
@@ -57,11 +57,11 @@ function SceneCardFull({ scene }: { scene: TourScene }) {
   return (
     <Link
       href={`/360-tour/${scene.sceneNumber}` as any}
-      className="bg-white flex w-full overflow-hidden rounded-3xl group"
-      style={{ boxShadow: '0px 4px 30px 12px rgba(138,124,88,0.12)', height: 536 }}
+      className="bg-white flex flex-col md:flex-row w-full overflow-hidden rounded-3xl group"
+      style={{ boxShadow: '0px 4px 30px 12px rgba(138,124,88,0.12)' }}
     >
       {/* Left: 360° frozen view ~65% width */}
-      <div className="relative shrink-0 overflow-hidden rounded-3xl" style={{ width: '65%', height: '100%' }}>
+      <div className="relative shrink-0 overflow-hidden rounded-3xl w-full md:w-[65%] h-[280px] sm:h-[360px] md:h-[536px]">
         <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
         <div className="absolute top-[16px] left-[16px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
           style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
@@ -70,14 +70,14 @@ function SceneCardFull({ scene }: { scene: TourScene }) {
         </div>
       </div>
       {/* Right: info panel */}
-      <div className="flex flex-col justify-between p-10 flex-1">
+      <div className="flex flex-col justify-between p-5 sm:p-8 lg:p-10 flex-1 gap-6">
         <div className="flex flex-col gap-4">
           <p className="font-dm-sans text-[14px] text-[#b89148] tracking-[2px] uppercase">Featured Scene</p>
-          <p className="font-cormorant font-bold text-5xl text-[#3b2d17] leading-[48px]">{scene.title}</p>
-          <p className="font-dm-sans text-xl text-[#594522] leading-relaxed line-clamp-4">{scene.description}</p>
+          <p className="font-cormorant font-bold text-[32px] sm:text-[40px] lg:text-5xl text-[#3b2d17] leading-tight lg:leading-[48px] break-words">{scene.title}</p>
+          <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-xl text-[#594522] leading-relaxed line-clamp-4">{scene.description}</p>
         </div>
         <div className="h-12 px-5 py-3.5 rounded-xl outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] flex justify-center items-center gap-1 w-fit group-hover:bg-[#b89148] transition-colors">
-          <span className="font-dm-sans text-lg text-[#5c4924] px-2 group-hover:text-white transition-colors">Learn More</span>
+          <span className="font-dm-sans text-[16px] lg:text-lg text-[#5c4924] px-2 group-hover:text-white transition-colors">Learn More</span>
           <ArrowRight size={20} className="text-[#5c4924] group-hover:text-white transition-colors" />
         </div>
       </div>
@@ -88,16 +88,16 @@ function SceneCardFull({ scene }: { scene: TourScene }) {
 function Skeleton() {
   return (
     <div className="flex flex-col gap-[40px] w-full">
-      <div className="flex gap-[40px] w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px] lg:gap-[40px] w-full">
         <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
         <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
       </div>
-      <div className="flex gap-[40px] w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px] lg:gap-[40px] w-full">
         <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
         <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
       </div>
       <div className="w-full h-[536px] rounded-[16px] bg-[#f0ebe0] animate-pulse" />
-      <div className="flex gap-[40px] w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px] lg:gap-[40px] w-full">
         <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
         <div className="flex-1 h-[530px] rounded-[24px] bg-[#f0ebe0] animate-pulse" />
       </div>
@@ -136,8 +136,8 @@ export default function ThreeSixtyTourPage() {
               <p className="font-dm-sans text-[18px] text-[#594522]">360° tour scenes will appear here once uploaded.</p>
             </div>
           ) : (
-            <div className="relative w-full overflow-hidden rounded-[28px]"
-              style={{ height: 700, boxShadow: '0 8px 60px 8px rgba(184,145,72,0.18)', border: '1px solid rgba(184,145,72,0.28)' }}
+            <div className="relative w-full overflow-hidden rounded-[28px] h-[360px] sm:h-[520px] lg:h-[700px]"
+              style={{ boxShadow: '0 8px 60px 8px rgba(184,145,72,0.18)', border: '1px solid rgba(184,145,72,0.28)' }}
               onDoubleClick={() => setHeroLocked(false)}
             >
               <ThreeSixtyViewer src={hero} height="100%" width="100%" interactive={!heroLocked} />
@@ -147,11 +147,11 @@ export default function ThreeSixtyTourPage() {
                   <p className="font-dm-sans text-[16px] text-white/70 tracking-wide">Double-click to explore</p>
                 </div>
               )}
-              <div className="absolute bottom-0 inset-x-0 pointer-events-none flex flex-col gap-[8px] px-[48px] pb-[40px]"
-                style={{ background: 'linear-gradient(0deg, rgba(10,8,4,0.80) 0%, transparent 55%)' }}>
-                <p className="font-dm-sans text-[13px] text-[#e8cc88] tracking-[3px] uppercase">Scene 1 · Drag to explore</p>
-                <p className="font-cormorant font-bold text-white text-[42px] leading-none">{scene1.title}</p>
-              </div>
+                <div className="absolute bottom-0 inset-x-0 pointer-events-none flex flex-col gap-[8px] px-5 sm:px-8 lg:px-[48px] pb-5 sm:pb-8 lg:pb-[40px]"
+                  style={{ background: 'linear-gradient(0deg, rgba(10,8,4,0.80) 0%, transparent 55%)' }}>
+                  <p className="font-dm-sans text-[13px] text-[#e8cc88] tracking-[3px] uppercase">Scene 1 · Drag to explore</p>
+                  <p className="font-cormorant font-bold text-white text-[28px] sm:text-[36px] lg:text-[42px] leading-none break-words">{scene1.title}</p>
+                </div>
               <Link
                 href={`/360-tour/${scene1.sceneNumber}` as any}
                 className="absolute top-[20px] right-[20px] z-20 flex items-center gap-[8px] px-[18px] py-[10px] rounded-[10px] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#c8a25a] transition-colors"
@@ -166,21 +166,21 @@ export default function ThreeSixtyTourPage() {
         {/* Grid section */}
         <div className="flex flex-col gap-[40px] items-center pb-[120px] px-4 sm:px-8 lg:px-[80px] pt-[80px]">
           <div className="flex flex-col gap-[12px] text-center w-full">
-            <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">Visit Our Rooms</h2>
-            <p className="font-dm-sans text-[20px] text-[#594522] w-full">See full 360 degree views of our rooms</p>
+            <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none w-full">Visit Our Rooms</h2>
+            <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522] w-full">See full 360 degree views of our rooms</p>
           </div>
 
           {loading ? <Skeleton /> : grid ? (
             <div className="flex flex-col gap-[40px] w-full">
               {grid.rowsBefore.map((pair, i) => (
-                <div key={i} className="flex gap-[40px] w-full">
+                <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-[24px] lg:gap-[40px] w-full">
                   {pair.map(s => <SceneCard key={s.id} scene={s} />)}
                   {pair.length === 1 && <div className="flex-1" />}
                 </div>
               ))}
               <SceneCardFull scene={grid.center} />
               {grid.rowsAfter.map((pair, i) => (
-                <div key={`a${i}`} className="flex gap-[40px] w-full">
+                <div key={`a${i}`} className="grid grid-cols-1 md:grid-cols-2 gap-[24px] lg:gap-[40px] w-full">
                   {pair.map(s => <SceneCard key={s.id} scene={s} />)}
                   {pair.length === 1 && <div className="flex-1" />}
                 </div>

@@ -126,7 +126,7 @@ function getUpdateData(table: (typeof allowedTables)[number], body: { data?: Rec
   if (!body?.data || typeof body.data !== 'object') return null
 
   const editableFields = editableFieldsByTable[table]
-  const updateData: Record<string, string | number | null> = {}
+  const updateData: Record<string, string | number | boolean | null> = {}
 
   for (const [key, value] of Object.entries(body.data)) {
     if (!editableFields.includes(key)) continue
@@ -139,8 +139,16 @@ function getUpdateData(table: (typeof allowedTables)[number], body: { data?: Rec
 
 function normalizeFieldValue(key: string, value: unknown) {
   if (value === '') return null
+  if (key === 'contact_required') {
+    if (value === true || value === 'true') return true
+    if (value === false || value === 'false') return false
+    return null
+  }
   if (typeof value !== 'string') return null
-  if (key.endsWith('_payload_id')) return Number(value)
+  if (key.endsWith('_payload_id') || key === 'promotion_id' || key === 'branch_id') {
+    const num = Number(value)
+    return Number.isFinite(num) ? num : null
+  }
   return value
 }
 

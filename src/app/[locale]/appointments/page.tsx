@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from '@/i18n/routing'
 import { CalendarDays, Clock, Building2 } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
+import LoginModal from '@/components/shared/LoginModal'
 import { useAuth } from '@/lib/auth-context'
 
 interface Appointment {
@@ -34,19 +34,34 @@ function StatusBadge({ date }: { date?: string }) {
 
 export default function AppointmentsPage() {
   const { user, loading: authLoading } = useAuth()
-  const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (authLoading) return
-    if (!user) { router.push('/login?next=/appointments'); return }
+    if (!user) return
     fetch('/api/appointments')
       .then(r => r.json())
       .then(d => setAppointments(d.docs ?? []))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [user, authLoading, router])
+  }, [user, authLoading])
+
+  if (!authLoading && !user) {
+    return (
+      <SiteLayout>
+        <div className="min-h-screen bg-[#fbf7ee]" />
+        <LoginModal
+          open={true}
+          onClose={() => window.location.href = '/'}
+          onSuccess={() => window.location.href = '/appointments'}
+          redirectTo="/appointments"
+          initialView="login"
+          message="Sign in to view your appointments and book new ones."
+        />
+      </SiteLayout>
+    )
+  }
 
   if (authLoading || loading) {
     return (
@@ -61,7 +76,7 @@ export default function AppointmentsPage() {
   return (
     <SiteLayout>
       <div className="bg-[#fbf7ee] min-h-screen">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 lg:px-[80px] pt-[140px] pb-[120px]">
+        <div className="narrow-shell pt-[140px] pb-[120px]">
 
           {/* Header */}
           <div className="flex items-start justify-between mb-[48px] flex-wrap gap-4">
