@@ -2,6 +2,8 @@ import { AdminTablePage } from '@/components/admin/AdminManagementPage'
 import config from '@payload-config'
 import { getPayload } from 'payload'
 
+export const dynamic = 'force-dynamic'
+
 function mapAuditAction(action: string): string {
   const map: Record<string, string> = {
     created: 'Created',
