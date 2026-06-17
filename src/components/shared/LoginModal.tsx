@@ -105,16 +105,14 @@ function LoginModalContent({
   }
 
   const syncProfile = async (userId: string, values: { email?: string | null; phone?: string | null }) => {
-    try {
-      await supabase.from('profiles').upsert(
-        {
-          id: userId,
-          email_user: values.email ?? null,
-          phone: values.phone ?? null,
-        },
-        { onConflict: 'id' }
-      )
-    } catch {}
+    // Only write fields that actually have a value — never overwrite an existing
+    // profile's phone/email with null (that would wipe data set in complete-profile).
+    const patch: Record<string, string> & { id: string } = { id: userId }
+    if (values.email) patch.email_user = values.email
+    if (values.phone) patch.phone = values.phone
+    if (Object.keys(patch).length === 1) return // nothing but id → skip (row already exists via trigger)
+    const { error } = await supabase.from('profiles').upsert(patch, { onConflict: 'id' })
+    if (error) console.error('syncProfile upsert failed:', error.message)
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -192,8 +190,10 @@ function LoginModalContent({
     setErrorMsg('')
 
     const { error } = await supabase.auth.signInWithOtp({
+      // Phone OTP is a unified sign-in/sign-up: any number works whether the
+      // account exists or not (verifying the code creates it if new).
       phone,
-      options: { shouldCreateUser: view === 'register' },
+      options: { shouldCreateUser: true },
     })
 
     if (error) {

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from '@/i18n/routing'
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronLeft, Building2, Phone } from 'lucide-react'
+import { ChevronDown, ChevronLeft, Building2, LogIn, LogOut, Phone, UserRound } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAnalytics } from '@/lib/use-analytics'
 import { LocaleCode } from '@/payload/constants'
@@ -13,6 +13,8 @@ import { Link } from '@/i18n/routing'
 import { useScrollLock } from '@/lib/useScrollLock'
 import { useBranch } from '@/lib/branch-context'
 import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
+import { useAuth } from '@/lib/auth-context'
+import { setProfileComplete } from '@/lib/profile-status'
 
 type NavChild = { key: string; href: string }
 type NavItem  = { key: string; href: string; children?: NavChild[] }
@@ -68,11 +70,13 @@ export default function Navbar() {
   const router     = useRouter()
   const { trackLanguageSwitch, trackCallClick } = useAnalytics()
   const { branches, selectedBranch, switchBranch } = useBranch()
+  const { user, loading: authLoading, signOut } = useAuth()
 
   const [mobileOpen,        setMobileOpen]        = useState(false)
   const [langOpen,          setLangOpen]          = useState(false)
   const [mobileLangOpen,    setMobileLangOpen]    = useState(false)
   const [phoneOpen,         setPhoneOpen]         = useState(false)
+  const [accountOpen,       setAccountOpen]       = useState(false)
   const [branchOpen,        setBranchOpen]        = useState(false)
   const [bookOpen,          setBookOpen]          = useState(false)
   const [hoveredKey,        setHoveredKey]        = useState<string | null>(null)
@@ -83,6 +87,7 @@ export default function Navbar() {
 
   const langRef   = useRef<HTMLDivElement>(null)
   const phoneRef  = useRef<HTMLDivElement>(null)
+  const accountRef = useRef<HTMLDivElement>(null)
   const branchRef = useRef<HTMLDivElement>(null)
 
   const currentLang = LANGUAGES.find(l => l.code === locale) ?? LANGUAGES[0]
@@ -95,6 +100,7 @@ export default function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (langRef.current   && !langRef.current.contains(e.target as Node))   setLangOpen(false)
       if (phoneRef.current  && !phoneRef.current.contains(e.target as Node))  setPhoneOpen(false)
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountOpen(false)
       if (branchRef.current && !branchRef.current.contains(e.target as Node)) setBranchOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -102,6 +108,14 @@ export default function Navbar() {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
+
+  const handleSignOut = async () => {
+    await signOut()
+    setProfileComplete(null)
+    setAccountOpen(false)
+    setMobileOpen(false)
+    router.push('/')
+  }
 
   return (
     <header className="absolute top-0 left-0 right-0 z-50 bg-transparent pointer-events-none">
@@ -270,6 +284,58 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
 
+            {/* Account */}
+            <div className="relative shrink-0" ref={accountRef}>
+              {authLoading ? (
+                <div className="w-[48px] h-[48px] rounded-full bg-[#F5ECD4]/40 border border-white/50" />
+              ) : user ? (
+                <>
+                  <button
+                    onClick={() => setAccountOpen(!accountOpen)}
+                    className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-[#B89148]/85 border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#B89148] transition-all duration-200"
+                    aria-label={t('profile')}
+                  >
+                    <UserRound className="w-[22px] h-[22px] text-white" strokeWidth={1.8} />
+                  </button>
+                  <AnimatePresence>
+                    {accountOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-[14px] shadow-[0_8px_32px_rgba(122,95,44,0.15)] border border-gold-100 overflow-hidden min-w-[160px] flex flex-col py-2 z-50"
+                      >
+                        <Link
+                          href="/profile"
+                          onClick={() => setAccountOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-gold-50 transition-colors font-dm-sans text-[13px] text-gold-900"
+                        >
+                          <UserRound size={15} className="text-[#b89148]" />
+                          {t('profile')}
+                        </Link>
+                        <button
+                          onClick={handleSignOut}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-gold-50 transition-colors font-dm-sans text-[13px] text-gold-900 text-left"
+                        >
+                          <LogOut size={15} className="text-[#b89148]" />
+                          {t('signOut')}
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              ) : (
+                <Link
+                  href="/login?next=/profile"
+                  className="flex items-center justify-center h-[48px] px-[16px] rounded-[16px] bg-[#F5ECD4]/40 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 gap-2"
+                >
+                  <LogIn size={17} className="text-[#3b2d17]" />
+                  <span className="font-dm-sans text-[14px] text-[#3b2d17] whitespace-nowrap">{t('signIn')}</span>
+                </Link>
+              )}
+            </div>
+
           </div>
 
           {/* Right: Book Appointment + Phone */}
@@ -430,7 +496,7 @@ export default function Navbar() {
                 })}
               </nav>
 
-              {/* Bottom: Book Appt + Language */}
+              {/* Bottom: Book Appt + Account + Language */}
               <div className="px-4 pb-8 pt-3 flex flex-col gap-3 border-t border-[#ead6a4]/40">
                 <button
                   onClick={() => { setMobileOpen(false); setBookOpen(true) }}
@@ -438,6 +504,34 @@ export default function Navbar() {
                 >
                   {t('bookAppointment')}
                 </button>
+                {authLoading ? null : user ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href="/profile"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#f5ecd4]/50 transition-colors"
+                    >
+                      <UserRound size={16} />
+                      {t('profile')}
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#f5ecd4]/50 transition-colors"
+                    >
+                      <LogOut size={16} />
+                      {t('signOut')}
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login?next=/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#f5ecd4]/50 transition-colors"
+                  >
+                    <LogIn size={16} />
+                    {t('signIn')}
+                  </Link>
+                )}
                 <div className="relative">
                   <button
                     onClick={() => setMobileLangOpen(!mobileLangOpen)}
