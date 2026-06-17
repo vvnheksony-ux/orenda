@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useState, useEffect, use } from 'react'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
+import { useScrollLock } from '@/lib/useScrollLock'
 import { ArrowRight, Phone, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 
@@ -22,6 +23,9 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
   const [relatedIsNews, setRelatedIsNews] = useState(false)
   const [loading, setLoading] = useState(true)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+
+  // Lock background scroll while the image lightbox is open.
+  useScrollLock(lightboxIdx !== null)
 
   useEffect(() => {
     Promise.all([

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
@@ -58,6 +58,37 @@ function LoginModalContent({
   const [errorMsg, setErrorMsg] = useState('')
   const [noticeMsg, setNoticeMsg] = useState(registered ? 'Account created! Check your email to confirm, then sign in.' : '')
   const [showResend, setShowResend] = useState(false)
+
+  // Lock background scroll while the modal is mounted (it only renders when open).
+  useEffect(() => {
+    const scrollY = window.scrollY
+    const scrollbarW = window.innerWidth - document.documentElement.clientWidth
+    const htmlEl = document.documentElement
+    const bodyEl = document.body
+    const prev = {
+      htmlOverflow: htmlEl.style.overflow,
+      bodyOverflow: bodyEl.style.overflow,
+      bodyPosition: bodyEl.style.position,
+      bodyTop: bodyEl.style.top,
+      bodyWidth: bodyEl.style.width,
+      bodyPaddingRight: bodyEl.style.paddingRight,
+    }
+    htmlEl.style.overflow = 'hidden'
+    bodyEl.style.overflow = 'hidden'
+    bodyEl.style.position = 'fixed'
+    bodyEl.style.top = `-${scrollY}px`
+    bodyEl.style.width = '100%'
+    if (scrollbarW > 0) bodyEl.style.paddingRight = `${scrollbarW}px`
+    return () => {
+      htmlEl.style.overflow = prev.htmlOverflow
+      bodyEl.style.overflow = prev.bodyOverflow
+      bodyEl.style.position = prev.bodyPosition
+      bodyEl.style.top = prev.bodyTop
+      bodyEl.style.width = prev.bodyWidth
+      bodyEl.style.paddingRight = prev.bodyPaddingRight
+      window.scrollTo(0, scrollY)
+    }
+  }, [])
 
   const resetFlow = () => {
     setMode('options')
@@ -128,6 +159,21 @@ function LoginModalContent({
 
     if (error) {
       setErrorMsg(friendlyError(error.message))
+      // Account exists → send them to the Login tab (email kept) to sign in.
+      if (error.message.toLowerCase().includes('already registered')) {
+        setPassword('')
+        setConfirmPassword('')
+        setView('login')
+        setMode('email')
+      }
+    } else if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      // Supabase returns a user with NO identities when the email is already
+      // registered (it obfuscates to avoid leaking which emails exist).
+      setPassword('')
+      setConfirmPassword('')
+      setView('login')
+      setMode('email')
+      setErrorMsg('This account already exists. Please sign in instead.')
     } else {
       if (data.user) await syncProfile(data.user.id, { email, phone: phoneSignup || null })
       setPassword('')

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import SiteLayout from '@/components/layout/SiteLayout'
 import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
 import { Link } from '@/i18n/routing'
+import { useScrollLock } from '@/lib/useScrollLock'
 import { useLocale } from 'next-intl'
 import { fetchTourScenes, tourCache, type TourScene } from '@/lib/tour-cache'
 
@@ -55,6 +56,8 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
     tourCache[locale]?.find(s => String(s.sceneNumber) === roomId) ?? null
   )
   const [expanded, setExpanded] = useState(false)
+  // Lock background scroll while the fullscreen viewer is open.
+  useScrollLock(expanded)
   const [loading, setLoading] = useState(() => !tourCache[locale]?.length)
   const [locked, setLocked] = useState(true)
   const [doctors, setDoctors] = useState<Doctor[]>([])

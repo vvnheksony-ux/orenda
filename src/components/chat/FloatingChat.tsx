@@ -88,6 +88,31 @@ function removeSession(id: string, userId?: string) {
   } catch {}
 }
 
+const ACTIVE_SID_KEY = 'orienda_active_sid'
+function newId(): string {
+  try {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  } catch {}
+  return `${Date.now()}-${Math.round(performance.now())}`
+}
+// Stable id for the current conversation, persisted so AI memory survives a reload
+function getActiveSessionId(): string {
+  if (typeof window === 'undefined') return newId()
+  try {
+    const existing = localStorage.getItem(ACTIVE_SID_KEY)
+    if (existing) return existing
+    const id = newId()
+    localStorage.setItem(ACTIVE_SID_KEY, id)
+    return id
+  } catch {
+    return newId()
+  }
+}
+function setActiveSessionId(id: string) {
+  if (typeof window === 'undefined') return
+  try { localStorage.setItem(ACTIVE_SID_KEY, id) } catch {}
+}
+
 async function loadServerSessions(): Promise<Session[]> {
   const response = await fetch('/api/ai-chat')
   if (!response.ok) throw new Error('Failed to load chat history')
@@ -132,7 +157,7 @@ export default function FloatingChat() {
   const [faqExpanded, setFaqExpanded] = useState(false)
   const [activeActions, setActiveActions] = useState(() => QUICK_ACTIONS.map((_, i) => i))
   const [sessions, setSessions] = useState<Session[]>([])
-const [sessionId, setSessionId] = useState(() => Date.now().toString())
+const [sessionId, setSessionId] = useState(() => getActiveSessionId())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const sendMessageRef = useRef<((text: string) => Promise<void>) | null>(null)
 
@@ -227,7 +252,9 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
     saveCurrentSession()
     setMessages([INIT_MSG()])
     setInputValue('')
-    setSessionId(Date.now().toString())
+    const id = newId()
+    setActiveSessionId(id)
+    setSessionId(id)
     setActiveActions(QUICK_ACTIONS.map((_, i) => i))
     setView('chat')
   }, [saveCurrentSession])
@@ -324,7 +351,7 @@ const [sessionId, setSessionId] = useState(() => Date.now().toString())
                     return (
                       <div key={s.id} className="flex items-center gap-2">
                         <button
-                          onClick={() => { setMessages(s.messages); setSessionId(s.id); setView('chat') }}
+                          onClick={() => { setMessages(s.messages); setActiveSessionId(s.id); setSessionId(s.id); setView('chat') }}
                           className="flex-1 text-left rounded-[10px] px-3 py-[10px] hover:bg-[#f5ecd4] transition-colors"
                           style={{ border: '1px solid rgba(184,145,72,0.15)' }}
                         >

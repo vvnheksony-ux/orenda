@@ -40,6 +40,14 @@ export const TourScenes: CollectionConfig = {
       },
     },
     {
+      name: 'roomGroup',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        description: 'Optional. Scenes with the same group are shown together as sub-rooms (e.g. "OPD"). Leave blank for a standalone room.',
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       required: true,

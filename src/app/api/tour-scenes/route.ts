@@ -11,7 +11,7 @@ export async function GET(req: Request) {
 
     const { rows: scenes } = await pool.query(`
       SELECT
-        ts.id, ts.scene_number,
+        ts.id, ts.scene_number, ts.room_group,
         COALESCE(tsl.title, entsl.title)             AS title,
         COALESCE(tsl.description, entsl.description) AS description,
         m.filename AS thumb_filename, m.prefix AS thumb_prefix
@@ -65,6 +65,7 @@ export async function GET(req: Request) {
         sceneNumber:  Number(s.scene_number),
         title:        s.title ?? '',
         description:  s.description ?? '',
+        roomGroup:    s.room_group ?? null,
         thumbnailUrl: panorama,
         panoramaUrl:  panorama,
         hotspots:     hotspotMap[s.id] ?? [],

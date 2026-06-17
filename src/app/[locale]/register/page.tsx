@@ -6,7 +6,7 @@ import LoginModal from '@/components/shared/LoginModal'
 
 function RegisterRouteModal() {
   const params = useSearchParams()
-  const nextUrl = params.get('next') || params.get('redirect') || '/'
+  const nextUrl = params.get('next') || params.get('redirect') || '/complete-profile'
 
   const leaveRoute = () => {
     if (window.history.length > 1) window.history.back()

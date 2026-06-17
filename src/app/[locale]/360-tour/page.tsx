@@ -20,6 +20,26 @@ function buildGrid(scenes: TourScene[]) {
   return { rowsBefore: rows.slice(0, splitAt), rowsAfter: rows.slice(splitAt), center }
 }
 
+// Group scenes by roomGroup into sub-room sections. Scenes without a group
+// fall into an "Other Rooms" section. Returns [] when nothing is grouped.
+function buildGroups(scenes: TourScene[]) {
+  const sorted = [...scenes].sort((a, b) => a.sceneNumber - b.sceneNumber)
+  const map = new Map<string, TourScene[]>()
+  const ungrouped: TourScene[] = []
+  for (const s of sorted) {
+    const g = (s.roomGroup ?? '').trim()
+    if (g) {
+      if (!map.has(g)) map.set(g, [])
+      map.get(g)!.push(s)
+    } else {
+      ungrouped.push(s)
+    }
+  }
+  const sections = Array.from(map.entries()).map(([name, list]) => ({ name, scenes: list }))
+  if (ungrouped.length) sections.push({ name: 'Other Rooms', scenes: ungrouped })
+  return sections
+}
+
 function SceneCard({ scene }: { scene: TourScene }) {
   const src = scene.thumbnailUrl || scene.panoramaUrl || '/images/360-page-banner.jpg'
   return (
@@ -119,6 +139,8 @@ export default function ThreeSixtyTourPage() {
   }, [locale])
 
   const scene1 = scenes.find(s => s.sceneNumber === 1) ?? scenes[0]
+  const hasGroups = scenes.some(s => (s.roomGroup ?? '').trim())
+  const groupSections = hasGroups ? buildGroups(scenes) : []
   const grid = scenes.length ? buildGrid(scenes) : null
   const hero = scene1?.panoramaUrl || scene1?.thumbnailUrl || '/images/360-page-banner.jpg'
 
@@ -170,7 +192,23 @@ export default function ThreeSixtyTourPage() {
             <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522] w-full">See full 360 degree views of our rooms</p>
           </div>
 
-          {loading ? <Skeleton /> : grid ? (
+          {loading ? <Skeleton /> : hasGroups ? (
+            /* Grouped view: each room group shown as a sub-room section */
+            <div className="flex flex-col gap-[64px] w-full">
+              {groupSections.map(({ name, scenes: groupScenes }) => (
+                <div key={name} className="flex flex-col gap-[24px] w-full">
+                  <div className="flex items-center gap-[16px] w-full">
+                    <h3 className="font-cormorant font-bold text-[28px] sm:text-[34px] text-[#3b2d17] whitespace-nowrap">{name}</h3>
+                    <div className="h-px flex-1 bg-[#e0d4b8]" />
+                    <span className="font-dm-sans text-[14px] text-[#b89148] whitespace-nowrap">{groupScenes.length} room{groupScenes.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px] lg:gap-[40px] w-full">
+                    {groupScenes.map(s => <SceneCard key={s.id} scene={s} />)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : grid ? (
             <div className="flex flex-col gap-[40px] w-full">
               {grid.rowsBefore.map((pair, i) => (
                 <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-[24px] lg:gap-[40px] w-full">

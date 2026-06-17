@@ -3,6 +3,7 @@ export interface TourScene {
   sceneNumber: number
   title: string
   description: string
+  roomGroup?: string | null
   thumbnailUrl: string | null
   panoramaUrl: string | null
 }

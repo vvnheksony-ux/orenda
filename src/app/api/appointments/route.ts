@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/utils/supabase/server'
+import { getRawPool } from '@/lib/db'
 
 function readTrimmedString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
@@ -37,7 +38,6 @@ function appointmentInsertBody(body: Record<string, unknown>, userId: string) {
     doctor_payload_id: readOptionalInteger(body.doctor_payload_id),
     department_payload_id: readOptionalInteger(body.department_payload_id),
     branch_payload_id: readOptionalInteger(body.branch_payload_id),
-    department_id: readOptionalString(body.department_id),
     preferred_date: readTrimmedString(body.preferred_date),
     preferred_time: readTrimmedString(body.preferred_time),
     message: readOptionalString(body.message),
@@ -96,21 +96,42 @@ async function sendTelegram(body: Record<string, unknown>) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const anonClient = await createClient()
   const { data: { user } } = await anonClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const serviceClient = await createServiceClient()
-  const { data, error } = await serviceClient
-    .from('appointments')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(50)
+  const locale = new URL(req.url).searchParams.get('locale') || 'en'
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ docs: data ?? [] })
+  try {
+    const pool = getRawPool()
+    // Join the Payload reference tables to return human-readable names
+    // (doctor / department / branch) alongside the appointment.
+    const { rows } = await pool.query(
+      `select
+         a.id, a.patient_name, a.patient_phone, a.patient_email,
+         a.preferred_date, a.preferred_time, a.message, a.status,
+         a.source, a.created_at,
+         a.doctor_payload_id, a.department_payload_id, a.branch_payload_id,
+         coalesce(dl.name, den.name)   as doctor_name,
+         coalesce(depl.name, depen.name) as department_name,
+         coalesce(bl.name, ben.name)   as branch_name
+       from public.appointments a
+       left join payload.doctors_locales dl     on dl._parent_id = a.doctor_payload_id and dl._locale = $2
+       left join payload.doctors_locales den    on den._parent_id = a.doctor_payload_id and den._locale = 'en'
+       left join payload.departments_locales depl  on depl._parent_id = a.department_payload_id and depl._locale = $2
+       left join payload.departments_locales depen on depen._parent_id = a.department_payload_id and depen._locale = 'en'
+       left join payload.branches_locales bl    on bl._parent_id = a.branch_payload_id and bl._locale = $2
+       left join payload.branches_locales ben   on ben._parent_id = a.branch_payload_id and ben._locale = 'en'
+       where a.user_id::text = $1
+       order by a.created_at desc
+       limit 50`,
+      [user.id, locale],
+    )
+    return NextResponse.json({ docs: rows })
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {

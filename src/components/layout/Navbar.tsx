@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { useAnalytics } from '@/lib/use-analytics'
 import { LocaleCode } from '@/payload/constants'
 import { Link } from '@/i18n/routing'
+import { useScrollLock } from '@/lib/useScrollLock'
 import { useBranch } from '@/lib/branch-context'
 import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
 
@@ -76,6 +77,9 @@ export default function Navbar() {
   const [bookOpen,          setBookOpen]          = useState(false)
   const [hoveredKey,        setHoveredKey]        = useState<string | null>(null)
   const [mobileExpandedKey, setMobileExpandedKey] = useState<string | null>(null)
+
+  // Lock background scroll while the mobile menu is open.
+  useScrollLock(mobileOpen)
 
   const langRef   = useRef<HTMLDivElement>(null)
   const phoneRef  = useRef<HTMLDivElement>(null)

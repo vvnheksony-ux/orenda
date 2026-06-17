@@ -123,9 +123,44 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
   }
 
   const supabase = await createServiceClient()
+
+  // When an appointment is being confirmed, read its prior status + patient
+  // first, so we can push a notification once — only on the change to confirmed.
+  const willConfirmAppointment = table === 'appointments' && updateData.status === 'confirmed'
+  let appt: { status: string | null; user_id: string | null; preferred_date: string | null } | null = null
+  if (willConfirmAppointment) {
+    const { data } = await supabase
+      .schema('public')
+      .from('appointments')
+      .select('status, user_id, preferred_date')
+      .eq('id', id)
+      .single()
+    appt = (data as unknown as { status: string | null; user_id: string | null; preferred_date: string | null } | null) ?? null
+  }
+
   const { error } = await supabase.schema('public').from(getDatabaseTable(table)).update(updateData).eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Notify the patient who booked, once, when their appointment is confirmed.
+  if (willConfirmAppointment && appt?.user_id && appt.status !== 'confirmed') {
+    const base = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
+    // Deep-link to this specific appointment so the page auto-opens its detail modal.
+    const url = base ? `${base}/appointments?id=${id}` : null
+    const when = appt.preferred_date ? ` for ${appt.preferred_date}` : ''
+    const { error: notifyError } = await supabase.schema('public').from('notifications').insert({
+      audience: 'patient',
+      category: 'appointment',
+      feature: 'appointments',
+      source_type: 'appointment',
+      source_id: id,
+      title: '✅ Appointment Confirmed',
+      body: `Your appointment${when} has been confirmed. Tap to view the details.`,
+      data: { collection: 'appointments', appointment_id: id, url },
+      user_id: [appt.user_id],
+    })
+    if (notifyError) console.error('appointment confirm notify failed:', notifyError.message)
+  }
 
   return NextResponse.json({ ok: true })
 }

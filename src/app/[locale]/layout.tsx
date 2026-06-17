@@ -7,6 +7,7 @@ import { getMessages } from 'next-intl/server'
 import CookieConsent from '@/components/shared/CookieConsent'
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker'
 import OneSignalInit from '@/components/shared/OneSignalInit'
+import ProfileGate from '@/components/shared/ProfileGate'
 import { BranchProvider } from '@/lib/branch-context'
 import FloatingChat from '@/components/chat/FloatingChat'
 
@@ -57,6 +58,7 @@ export default async function RootLayout({
             <BranchProvider locale={locale}>
               <AnalyticsTracker />
               <OneSignalInit />
+              <ProfileGate />
               {children}
               <FloatingChat />
               <CookieConsent />

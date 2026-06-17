@@ -4,8 +4,14 @@ import { statusFields } from '../fields/status'
 import { quillRichTextAdmin } from '../fields/quillRichText'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
+import { createNotificationHook } from '../hooks/notifyOnPublish'
 
 const webhookHooks = createWebhookHooks('news')
+const notifyHook = createNotificationHook('news', {
+  category: 'news',
+  titlePrefix: '📰 ',
+  buildPath: (doc) => (doc.slug ? `/news/${doc.slug}` : '/news'),
+})
 
 export const News: CollectionConfig = {
   slug: 'news',
@@ -60,7 +66,7 @@ export const News: CollectionConfig = {
     ...statusFields(),
   ],
   hooks: {
-    afterChange: [webhookHooks.onChange],
+    afterChange: [webhookHooks.onChange, notifyHook],
     afterDelete: [webhookHooks.onDelete],
   },
 }
