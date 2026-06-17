@@ -1,6 +1,8 @@
 import { AdminCardPage } from '@/components/admin/AdminManagementPage'
 import { getPayloadClient } from '@/lib/payload'
 
+export const dynamic = 'force-dynamic'
+
 export default async function InsurancePage() {
   let items: any[] = []
   try {
