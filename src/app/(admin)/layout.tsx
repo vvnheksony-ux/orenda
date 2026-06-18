@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import '../globals.css'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminLayout({
   children,
 }: Readonly<{

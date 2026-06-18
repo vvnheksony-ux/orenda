@@ -37,6 +37,19 @@ function friendlyError(message: string) {
   return message
 }
 
+function normalizeCambodiaPhone(value: string) {
+  const digits = value.replace(/\D/g, '')
+  const normalized = (() => {
+    if (digits.startsWith('00855')) return `+${digits.slice(2)}`
+    if (digits.startsWith('855')) return `+${digits}`
+    if (digits.startsWith('0')) return `+855${digits.slice(1)}`
+    if (digits.length >= 8 && digits.length <= 9) return `+855${digits}`
+    return ''
+  })()
+
+  return /^\+855\d{8,9}$/.test(normalized) ? normalized : null
+}
+
 function LoginModalContent({
   onClose,
   onSuccess,
@@ -186,13 +199,20 @@ function LoginModalContent({
 
   const handleSendPhoneOtp = async (e: React.FormEvent) => {
     e.preventDefault()
+    const normalizedPhone = normalizeCambodiaPhone(phone)
+    if (!normalizedPhone) {
+      setErrorMsg('Please enter a valid Cambodian phone number.')
+      return
+    }
+
+    setPhone(normalizedPhone)
     setLoading(true)
     setErrorMsg('')
 
     const { error } = await supabase.auth.signInWithOtp({
       // Phone OTP is a unified sign-in/sign-up: any number works whether the
       // account exists or not (verifying the code creates it if new).
-      phone,
+      phone: normalizedPhone,
       options: { shouldCreateUser: true },
     })
 
@@ -200,7 +220,7 @@ function LoginModalContent({
       setErrorMsg(friendlyError(error.message))
     } else {
       setPhoneStep('otp')
-      setNoticeMsg(`Verification code sent to ${phone}.`)
+      setNoticeMsg(`Verification code sent to ${normalizedPhone}.`)
     }
 
     setLoading(false)
@@ -208,15 +228,22 @@ function LoginModalContent({
 
   const handleVerifyPhoneOtp = async (e: React.FormEvent) => {
     e.preventDefault()
+    const normalizedPhone = normalizeCambodiaPhone(phone)
+    if (!normalizedPhone) {
+      setErrorMsg('Please enter a valid Cambodian phone number.')
+      return
+    }
+
+    setPhone(normalizedPhone)
     setLoading(true)
     setErrorMsg('')
 
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token: otp, type: 'sms' })
+    const { data, error } = await supabase.auth.verifyOtp({ phone: normalizedPhone, token: otp, type: 'sms' })
 
     if (error) {
       setErrorMsg(friendlyError(error.message))
     } else if (data.user) {
-      await syncProfile(data.user.id, { email: data.user.email, phone })
+      await syncProfile(data.user.id, { email: data.user.email, phone: normalizedPhone })
       onSuccess?.()
       onClose()
     }

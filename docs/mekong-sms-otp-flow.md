@@ -361,6 +361,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 Notes:
 
 - Vercel stores env values directly, so enter the Mekong password as the real raw value in the Vercel dashboard.
+- `MEKONG_API_URL` is required. Production must use the production endpoint provided by MekongSMS, not the sandbox URL.
 - The `\$` escape is only needed in local `.env` files when the value contains `$`.
 - Redeploy after changing Vercel env vars.
 - Verify the deployed route before changing Supabase:

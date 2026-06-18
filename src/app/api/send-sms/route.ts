@@ -14,7 +14,7 @@ import crypto from 'node:crypto'
 //   MEKONG_USERNAME       provided by MekongSMS
 //   MEKONG_PASSWORD       plaintext (hashed to MD5 here)
 //   MEKONG_SENDER         sender ID, max 11 chars (sandbox: "MKN UAT")
-//   MEKONG_API_URL        optional; defaults to the sandbox endpoint
+//   MEKONG_API_URL        MekongSMS endpoint for the target environment
 //   SEND_SMS_HOOK_SECRET  the "v1,whsec_..." secret Supabase shows for the hook
 //                         (enables signature verification — recommended)
 
@@ -23,7 +23,7 @@ export const runtime = 'nodejs'
 const MEKONG_USERNAME = process.env.MEKONG_USERNAME ?? ''
 const MEKONG_PASSWORD = process.env.MEKONG_PASSWORD ?? ''
 const MEKONG_SENDER = (process.env.MEKONG_SENDER ?? 'Orienda').slice(0, 11)
-const MEKONG_API_URL = process.env.MEKONG_API_URL ?? 'https://sandbox.mekongsms.com/api/postsms.aspx'
+const MEKONG_API_URL = process.env.MEKONG_API_URL ?? ''
 const HOOK_SECRET = process.env.SEND_SMS_HOOK_SECRET ?? ''
 const MEKONG_TIMEOUT_MS = 8000
 
