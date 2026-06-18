@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { getRawPool } from '@/lib/db'
 
 export async function GET() {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not allowed in production' }, { status: 403 })
+  }
+
   const pool = getRawPool()
   const { rows } = await pool.query(`SELECT id, filename, prefix FROM payload.media ORDER BY id`)
   return NextResponse.json(rows)

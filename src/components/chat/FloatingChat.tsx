@@ -59,6 +59,9 @@ const MAX_SESSIONS = 30
 const MAX_MESSAGES = 20
 const COOLDOWN_MS = 3000
 
+// Shared style for the round icon-buttons in the chat header
+const ICON_BTN = 'w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]'
+
 const timeNow = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 const INIT_MSG = (): Message => ({
   id: '1', role: 'ai',
@@ -157,7 +160,7 @@ export default function FloatingChat() {
   const [faqExpanded, setFaqExpanded] = useState(false)
   const [activeActions, setActiveActions] = useState(() => QUICK_ACTIONS.map((_, i) => i))
   const [sessions, setSessions] = useState<Session[]>([])
-const [sessionId, setSessionId] = useState(() => getActiveSessionId())
+  const [sessionId, setSessionId] = useState(() => getActiveSessionId())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const sendMessageRef = useRef<((text: string) => Promise<void>) | null>(null)
 
@@ -218,7 +221,8 @@ const [sessionId, setSessionId] = useState(() => getActiveSessionId())
     } catch {
       setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', content: 'Sorry, I could not reach the server. Please try again.', timestamp: timeNow() }])
     } finally {
-      setIsTyping(false) }
+      setIsTyping(false)
+    }
   }
 
   sendMessageRef.current = sendMessage
@@ -299,14 +303,14 @@ const [sessionId, setSessionId] = useState(() => getActiveSessionId())
                 <button
                   onClick={openHistory}
                   title="View history"
-                  className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+                  className={ICON_BTN}
                 ><ArrowLeft size={13} /></button>
               )}
               {view === 'history' && (
                 <button
                   onClick={() => setView('chat')}
                   title="Back to chat"
-                  className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+                  className={ICON_BTN}
                 ><ArrowLeft size={13} /></button>
               )}
               <div className="flex flex-col gap-[3px]">
@@ -322,13 +326,13 @@ const [sessionId, setSessionId] = useState(() => getActiveSessionId())
             </div>
             <div className="flex items-center gap-[6px]">
               <button onClick={handleNewChat} title="New chat"
-                className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+                className={ICON_BTN}
               ><Plus size={13} /></button>
               <button onClick={() => setIsExpanded(v => !v)} title={isExpanded ? 'Shrink' : 'Expand'}
-                className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+                className={ICON_BTN}
               >{isExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}</button>
               <button onClick={handleClose}
-                className="w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]"
+                className={ICON_BTN}
               ><X size={13} /></button>
             </div>
           </div>

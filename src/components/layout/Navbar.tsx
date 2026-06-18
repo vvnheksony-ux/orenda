@@ -327,7 +327,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <Link
-                  href="/login?next=/profile"
+                  href="/login"
                   className="flex items-center justify-center h-[48px] px-[16px] rounded-[16px] bg-[#F5ECD4]/40 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 gap-2"
                 >
                   <LogIn size={17} className="text-[#3b2d17]" />
@@ -524,7 +524,7 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <Link
-                    href="/login?next=/profile"
+                    href="/login"
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#f5ecd4]/50 transition-colors"
                   >
