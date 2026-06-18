@@ -12,6 +12,36 @@ import {
 
 export const runtime = 'nodejs'
 
+const SANDBOX_PASSWORD_MD5 = 'bf6524313b0a2e52dc8ee7a1efc2d45a'
+
+export async function GET() {
+  const password = process.env.MEKONG_PASSWORD ?? ''
+  const passwordMd5 = await import('node:crypto').then(({ default: crypto }) =>
+    crypto.createHash('md5').update(password).digest('hex')
+  )
+  const apiUrl = process.env.MEKONG_API_URL ?? ''
+  const apiHost = (() => {
+    try {
+      return apiUrl ? new URL(apiUrl).hostname : ''
+    } catch {
+      return 'invalid-url'
+    }
+  })()
+
+  const missing = getMissingMekongConfig()
+  return NextResponse.json({
+    ok: true,
+    configured: missing.length === 0,
+    missing,
+    provider: 'mekongsms',
+    apiHost,
+    sender: process.env.MEKONG_SENDER ?? '',
+    passwordLength: password.length,
+    passwordHasBackslash: password.includes('\\'),
+    passwordHashMatchesSandbox: passwordMd5 === SANDBOX_PASSWORD_MD5,
+  })
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null)
   const phone = normalizeCambodiaPhone(String(body?.phone ?? ''))
@@ -61,7 +91,13 @@ export async function POST(req: NextRequest) {
     await sendMekongSms(phone, `Your Orienda verification code is ${code}. Do not share it with anyone.`)
   } catch (err) {
     console.error('mekong-otp send failed:', err)
-    return NextResponse.json({ error: 'Could not send SMS. Please try again.' }, { status: 502 })
+    return NextResponse.json(
+      {
+        error: 'Could not send SMS. Please try again.',
+        providerError: err instanceof Error ? err.message : 'Unknown MekongSMS error',
+      },
+      { status: 502 }
+    )
   }
 
   return NextResponse.json({
