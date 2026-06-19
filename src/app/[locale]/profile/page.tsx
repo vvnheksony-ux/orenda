@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CalendarDays, Check, Clock, LogOut, Mail, MapPin, Phone, Save, Stethoscope } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, CalendarDays, Check, ChevronRight, Clock, FileText, LogOut, Mail, MapPin, Phone, Save, Stethoscope, User, X } from 'lucide-react'
 import { Link, useRouter } from '@/i18n/routing'
 import { useAuth } from '@/lib/auth-context'
 import { setProfileComplete } from '@/lib/profile-status'
@@ -50,6 +51,8 @@ export default function ProfilePage() {
   const [error, setError] = useState('')
   const [appointments, setAppointments] = useState<any[]>([])
   const [apptLoading, setApptLoading] = useState(true)
+  const [selectedAppt, setSelectedAppt] = useState<any | null>(null)
+  const [redirecting, setRedirecting] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -132,7 +135,9 @@ export default function ProfilePage() {
 
     setProfileComplete(true)
     setSaved(true)
-    setTimeout(() => router.push('/'), 900)
+    // Show a loading screen for ~3s so everything settles, then go home.
+    setRedirecting(true)
+    setTimeout(() => router.push('/'), 3000)
   }
 
   const handleSignOut = async () => {
@@ -164,6 +169,18 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-[#fbf7ee] pt-[120px] pb-[80px] px-4">
+      {redirecting && (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center bg-[#fbf7ee]">
+          <div className="flex flex-col items-center gap-5">
+            <div className="relative w-[64px] h-[64px] animate-pulse">
+              <Image src="/images/logo-emblem.png" alt="Orienda" fill sizes="64px" className="object-contain" priority />
+            </div>
+            <div className="w-9 h-9 border-[3px] border-[#b89148] border-t-transparent rounded-full animate-spin" />
+            <p className="font-dm-sans text-[14px] text-[#6b5836]">Saving your profile…</p>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-[1040px] mx-auto">
         <button
           type="button"
@@ -338,7 +355,7 @@ export default function ProfilePage() {
           ) : (
             <div className="flex flex-col gap-4">
               {appointments.map((a) => (
-                <div key={a.id} className="border border-[#f0e6cc] rounded-[14px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div key={a.id} onClick={() => setSelectedAppt(a)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') setSelectedAppt(a) }} className="border border-[#f0e6cc] rounded-[14px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 cursor-pointer hover:border-[#dcbd72] hover:shadow-[0_4px_16px_rgba(184,145,72,0.10)] transition-all">
                   <div className="flex flex-col gap-2 min-w-0">
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                       <span className="flex items-center gap-1.5 font-dm-sans text-[14px] font-medium text-[#3b2d17]">
@@ -365,15 +382,69 @@ export default function ProfilePage() {
                     </div>
                     {a.message && <p className="font-dm-sans text-[13px] text-[#9a8a6a] italic truncate">&ldquo;{a.message}&rdquo;</p>}
                   </div>
-                  <span className={`px-3 py-1 rounded-full font-dm-sans text-[12px] font-medium capitalize shrink-0 self-start sm:self-center ${STATUS_STYLES[a.status] || 'bg-[#fbf7ee] text-[#6b5836] border border-[#f0e6cc]'}`}>
-                    {a.status || 'pending'}
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                    <span className={`px-3 py-1 rounded-full font-dm-sans text-[12px] font-medium capitalize ${STATUS_STYLES[a.status] || 'bg-[#fbf7ee] text-[#6b5836] border border-[#f0e6cc]'}`}>
+                      {a.status || 'pending'}
+                    </span>
+                    <ChevronRight size={18} className="text-[#b89148]" />
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </section>
       </div>
+
+      {/* Appointment detail modal */}
+      {selectedAppt && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center px-4" onClick={() => setSelectedAppt(null)}>
+          <div className="absolute inset-0 bg-black/50" />
+          <div
+            className="relative bg-[#fbf7ee] rounded-[22px] shadow-[0_8px_40px_rgba(89,69,34,0.25)] p-6 sm:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedAppt(null)}
+              className="absolute top-5 right-5 text-[#b89148] hover:text-[#3b2d17] transition-colors"
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex flex-col gap-1 mb-4">
+              <p className="font-dm-sans text-[12px] tracking-[2px] uppercase text-[#b89148]">Appointment</p>
+              <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none">Details</h3>
+            </div>
+
+            <span className={`inline-block px-3 py-1 rounded-full font-dm-sans text-[12px] font-medium capitalize mb-4 ${STATUS_STYLES[selectedAppt.status] || 'bg-[#fbf7ee] text-[#6b5836] border border-[#f0e6cc]'}`}>
+              {selectedAppt.status || 'pending'}
+            </span>
+
+            <div className="flex flex-col">
+              {[
+                { label: 'Date', value: formatApptDate(selectedAppt.preferred_date), icon: <CalendarDays size={16} /> },
+                { label: 'Time', value: selectedAppt.preferred_time, icon: <Clock size={16} /> },
+                { label: 'Doctor', value: selectedAppt.doctor_name, icon: <Stethoscope size={16} /> },
+                { label: 'Department', value: selectedAppt.department_name, icon: <FileText size={16} /> },
+                { label: 'Branch', value: selectedAppt.branch_name, icon: <MapPin size={16} /> },
+                { label: 'Patient', value: selectedAppt.patient_name, icon: <User size={16} /> },
+                { label: 'Phone', value: selectedAppt.patient_phone, icon: <Phone size={16} /> },
+                { label: 'Email', value: selectedAppt.patient_email, icon: <Mail size={16} /> },
+                { label: 'Note', value: selectedAppt.message, icon: <FileText size={16} /> },
+                { label: 'Booked on', value: selectedAppt.created_at ? new Date(selectedAppt.created_at).toLocaleString('en-US', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '', icon: <CalendarDays size={16} /> },
+              ].filter((r) => r.value).map((r) => (
+                <div key={r.label} className="flex items-start gap-3 py-3 border-b border-[#f0e6cc] last:border-0">
+                  <span className="text-[#b89148] mt-0.5 shrink-0">{r.icon}</span>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="font-dm-sans text-[12px] text-[#9a8a6a]">{r.label}</span>
+                    <span className="font-dm-sans text-[14px] text-[#3b2d17] break-words">{r.value}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
