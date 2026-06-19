@@ -116,10 +116,10 @@ export default function Navbar() {
   return (
     <header className="absolute top-0 left-0 right-0 z-50 bg-transparent pointer-events-none">
 
-      {/* ── Desktop (≥ 1400px) ── */}
-      <div className="hidden xl:block pointer-events-auto transition-all duration-300">
-        <div className="w-full max-w-[1512px] mx-auto px-6 2xl:px-[46px] py-7">
-        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 2xl:gap-6 w-full">
+      {/* ── Desktop (≥ 1536px) ── */}
+      <div className="hidden 2xl:block pointer-events-auto transition-all duration-300">
+        <div className="w-full max-w-[1720px] mx-auto px-8 2xl:px-10 py-7">
+        <div className="grid grid-cols-[120px_max-content_minmax(0,1fr)] items-center gap-5 2xl:gap-6 w-full">
 
           {/* Logo */}
           <div className="flex items-center min-w-0">
@@ -129,11 +129,11 @@ export default function Navbar() {
           </div>
 
           {/* Center: Nav pill + Branch + Lang */}
-          <div className="flex items-center min-w-0 justify-center gap-[8px] 2xl:gap-[10px]">
+          <div className="flex items-center gap-[8px] 2xl:gap-[10px]">
 
             {/* Nav pill */}
-            <div className="min-w-0 flex-1 flex items-center p-[2px] rounded-[24px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] bg-[#FBF7EE]/40 backdrop-blur-md overflow-hidden">
-              <nav className="flex items-center min-w-0 w-full justify-center">
+            <div className="flex items-center p-[2px] rounded-[24px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] bg-[#FBF7EE]/40 backdrop-blur-md">
+              <nav className="flex items-center px-[10px] 2xl:px-[12px] overflow-visible">
                 {NAV_ITEMS.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                   const hasChildren = !!item.children?.length
@@ -147,10 +147,10 @@ export default function Navbar() {
                     >
                       <Link
                         href={item.href}
-                        className="flex items-center justify-center py-[20px] 2xl:py-[32px] pl-[8px] 2xl:pl-[22px] pr-[4px] 2xl:pr-[14px] rounded-[22px] gap-[6px] 2xl:gap-[8px] hover:bg-white/50 transition-colors"
+                        className="flex items-center justify-center py-[20px] 2xl:py-[32px] px-[10px] 2xl:px-[14px] rounded-[22px] gap-[6px] 2xl:gap-[8px] hover:bg-white/50 transition-colors shrink-0"
                       >
                         <span className={cn(
-                          'text-[13px] 2xl:text-[17px] font-inter leading-none whitespace-nowrap',
+                          'text-[14px] 2xl:text-[17px] font-inter leading-none whitespace-nowrap',
                           isActive ? 'text-[#3B2D17] font-semibold' : 'text-[#2A2620] font-normal'
                         )}>
                           {t(item.key)}
@@ -373,8 +373,8 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── Mobile trigger (< xl) ── */}
-      <div className="xl:hidden w-full max-w-[1512px] mx-auto px-5 py-4 pointer-events-auto">
+      {/* ── Mobile / tablet trigger (< 1536px) ── */}
+      <div className="2xl:hidden w-full max-w-[1512px] mx-auto px-5 py-4 pointer-events-auto">
         <button
           onClick={() => setMobileOpen(true)}
           className="flex items-center gap-[12px] bg-[#fbf7ee]/50 backdrop-blur-md rounded-[28px] px-[20px] py-[6px]"
@@ -396,14 +396,14 @@ export default function Navbar() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setMobileOpen(false)}
-              className="xl:hidden fixed inset-0 bg-black/30 backdrop-blur-[2px] z-[45] pointer-events-auto"
+              className="2xl:hidden fixed inset-0 bg-black/30 backdrop-blur-[2px] z-[45] pointer-events-auto"
             />
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.25, ease: 'easeInOut' }}
-              className="xl:hidden fixed top-0 left-0 h-full bg-[#fbf7ee] z-[50] flex flex-col pointer-events-auto shadow-[4px_0_40px_rgba(59,45,23,0.12)]"
+              className="2xl:hidden fixed top-0 left-0 h-full bg-[#fbf7ee] z-[50] flex flex-col pointer-events-auto shadow-[4px_0_40px_rgba(59,45,23,0.12)]"
               style={{ width: 280 }}
             >
               {/* Drawer header */}
