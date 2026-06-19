@@ -107,6 +107,7 @@ export default function ProfilePage() {
 
     setProfileComplete(true)
     setSaved(true)
+    setTimeout(() => router.push('/'), 900)
   }
 
   const handleSignOut = async () => {

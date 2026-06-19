@@ -157,6 +157,9 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const locale = useLocale()
   const t = useTranslations('BookAppointmentModal')
   const { user, loading: authLoading } = useAuth()
+  // After a successful in-modal login, keep the booking modal open so it
+  // re-renders into the form instead of closing.
+  const justLoggedIn = useRef(false)
   const { selectedBranch } = useBranch()
   const [dateChoice, setDateChoice] = useState<'earliest' | 'choose'>('earliest')
   const [form, setForm] = useState(() => {
@@ -337,8 +340,8 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
     return (
       <LoginModal
         open={true}
-        onClose={onClose}
-        onSuccess={() => {}}
+        onClose={() => { if (justLoggedIn.current) { justLoggedIn.current = false; return } onClose() }}
+        onSuccess={() => { justLoggedIn.current = true }}
         redirectTo={typeof window !== 'undefined' ? window.location.pathname : '/'}
         initialView="login"
       />
