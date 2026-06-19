@@ -57,11 +57,12 @@ function getEarliestAppointment(now = new Date()) {
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const DAY_NAMES = ['S','M','T','W','T','F','S']
 
-function CustomSelect({ value, onChange, options, placeholder }: {
+function CustomSelect({ value, onChange, options, placeholder, disabled }: {
   value: string
   onChange: (v: string) => void
   options: Array<{ value: string; label: string; group?: string }>
   placeholder?: string
+  disabled?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
@@ -129,14 +130,20 @@ function CustomSelect({ value, onChange, options, placeholder }: {
       <button
         ref={btnRef}
         type="button"
-        onClick={() => setOpen(v => !v)}
-        className="w-full border border-[#7a5f2c] rounded-[12px] px-[12px] py-[12px] font-dm-sans text-[16px] bg-white outline-none flex items-center justify-between focus:border-[#b89148] transition-colors"
-      >
-        <span className={selected ? 'text-[#3b2d17]' : 'text-[rgba(59,45,23,0.3)]'}>
-          {selected?.label ?? placeholder ?? ''}
-        </span>
-        <ChevronDown size={20} className={`text-[#3b2d17] shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-      </button>
+      onClick={() => {
+        if (disabled) return
+        setOpen(v => !v)
+      }}
+      disabled={disabled}
+      className={`w-full border border-[#7a5f2c] rounded-[12px] px-[12px] py-[12px] font-dm-sans text-[16px] bg-white outline-none flex items-center justify-between focus:border-[#b89148] transition-colors ${
+        disabled ? 'cursor-not-allowed bg-[#f5f0e5] text-[rgba(59,45,23,0.45)]' : ''
+      }`}
+    >
+      <span className={selected ? 'text-[#3b2d17]' : 'text-[rgba(59,45,23,0.3)]'}>
+        {selected?.label ?? placeholder ?? ''}
+      </span>
+      <ChevronDown size={20} className={`shrink-0 transition-transform duration-200 ${disabled ? 'text-[rgba(59,45,23,0.35)]' : 'text-[#3b2d17]'} ${open ? 'rotate-180' : ''}`} />
+    </button>
       {typeof document !== 'undefined' && dropdown && createPortal(dropdown, document.body)}
     </div>
   )
@@ -283,6 +290,8 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const filteredDoctors = form.department_payload_id
     ? doctors.filter(d => d.department_payload_id === form.department_payload_id)
     : doctors
+  const serviceLocked = Boolean(form.department_payload_id) && services.length === 0
+  const requiredReady = Boolean(form.patient_name.trim() && form.patient_phone.trim())
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -462,8 +471,15 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                       <CustomSelect
                         value={form.service_payload_id}
                         onChange={v => set('service_payload_id', v)}
-                        placeholder="Select service"
+                        placeholder={
+                          !form.department_payload_id
+                            ? 'Select service'
+                            : serviceLocked
+                              ? 'No services available for this clinic'
+                              : 'Select service'
+                        }
                         options={services.map(s => ({ value: s.id, label: s.title }))}
+                        disabled={serviceLocked}
                       />
                     </div>
                     <div className="flex flex-1 flex-col gap-[8px]">
@@ -626,7 +642,10 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                     type="submit"
                     disabled={status === 'loading'}
                     className="w-full h-[64px] rounded-[12px] font-dm-sans text-[16px] text-[#f9f9f9] disabled:opacity-60 transition-opacity hover:opacity-90"
-                    style={{ background: 'rgba(184,145,72,0.7)', boxShadow: '0px 0px 12px 4px rgba(184,145,72,0.15)' }}
+                    style={{
+                      background: requiredReady ? '#b89148' : 'rgba(184,145,72,0.7)',
+                      boxShadow: requiredReady ? '0px 0px 12px 4px rgba(184,145,72,0.22)' : '0px 0px 12px 4px rgba(184,145,72,0.15)',
+                    }}
                   >
                     {status === 'loading' ? 'Booking...' : 'Book Appointment'}
                   </button>

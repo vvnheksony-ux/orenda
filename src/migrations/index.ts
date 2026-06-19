@@ -12,6 +12,7 @@ import * as migration_20260611_150000 from './20260611_150000_rename_health_tips
 import * as migration_20260616_000000 from './20260616_000000_add_tour_scene_room_group';
 import * as migration_20260618_000000 from './20260618_000000_add_mekong_otp_challenges';
 import * as migration_20260619_000000 from './20260619_000000_lock_public_rls';
+import * as migration_20260619_010000 from './20260619_010000_add_telegram_subscribers';
 
 export const migrations = [
   {
@@ -83,5 +84,10 @@ export const migrations = [
     up: migration_20260619_000000.up,
     down: migration_20260619_000000.down,
     name: '20260619_000000_lock_public_rls'
+  },
+  {
+    up: migration_20260619_010000.up,
+    down: migration_20260619_010000.down,
+    name: '20260619_010000_add_telegram_subscribers'
   },
 ];

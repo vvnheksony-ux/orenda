@@ -8,12 +8,13 @@ import { getProfileComplete, setProfileComplete } from '@/lib/profile-status'
 
 const supabase = createClient()
 
-// The only page a logged-in, not-yet-onboarded user may see.
-const ONBOARDING = '/profile'
+// The dedicated onboarding screen for patients who need to complete profile data.
+const ONBOARDING = '/complete-profile'
 
-// Hard gate: a logged-in user with an incomplete profile (missing name/phone)
-// cannot access ANY page until they finish onboarding. Every route bounces
-// them to /profile, and a full-screen cover prevents content flashing.
+// Profile completion is only required for booking/history flows, not for
+// browsing the website after sign-in.
+const REQUIRES_COMPLETE_PROFILE = ['/appointments']
+
 export default function ProfileGate() {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -40,8 +41,14 @@ export default function ProfileGate() {
     }
 
     const onOnboarding = pathname.startsWith(ONBOARDING)
+    const onProfilePage = pathname.startsWith('/profile')
+    const requiresCompleteProfile = REQUIRES_COMPLETE_PROFILE.some((route) =>
+      pathname === route || pathname.startsWith(`${route}/`)
+    )
     const enforce = () => {
-      if (getProfileComplete() === false && !onOnboarding) router.replace(ONBOARDING)
+      if (getProfileComplete() === false && requiresCompleteProfile && !onOnboarding && !onProfilePage) {
+        router.replace(ONBOARDING)
+      }
     }
 
     if (getProfileComplete() === null) {
@@ -62,13 +69,17 @@ export default function ProfileGate() {
     }
   }, [user, loading, pathname, router])
 
-  // Cover the screen for any logged-in user whose profile is not yet CONFIRMED
-  // complete (incomplete, or still being checked) — except on the onboarding page.
-  // Covering during the check prevents site content from flashing before the redirect.
+  const requiresCompleteProfile = REQUIRES_COMPLETE_PROFILE.some((route) =>
+    pathname === route || pathname.startsWith(`${route}/`)
+  )
+
+  // Cover the screen only on routes that actually require a completed profile.
   const blocking =
     !loading &&
     !!user &&
+    requiresCompleteProfile &&
     !pathname.startsWith(ONBOARDING) &&
+    !pathname.startsWith('/profile') &&
     getProfileComplete() !== true
 
   if (blocking) {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X } from 'lucide-react'
+import { Eye, EyeOff, X } from 'lucide-react'
 import { Link } from '@/i18n/routing'
 import { createClient } from '@/utils/supabase/client'
 
@@ -71,6 +71,9 @@ function LoginModalContent({
   const [errorMsg, setErrorMsg] = useState('')
   const [noticeMsg, setNoticeMsg] = useState(registered ? 'Account created! Check your email to confirm, then sign in.' : '')
   const [showResend, setShowResend] = useState(false)
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   // Lock background scroll while the modal is mounted (it only renders when open).
   useEffect(() => {
@@ -284,6 +287,7 @@ function LoginModalContent({
 
   const title = view === 'login' ? 'Sign In' : 'Create Account'
   const subtitle = view === 'login' ? 'Access your Orienda account with email, Google, or phone.' : 'Create your Orienda account with email, Google, or phone.'
+  const passwordInputCls = `${inputCls} pr-12`
 
   return (
     <motion.div
@@ -389,7 +393,17 @@ function LoginModalContent({
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[13px] font-semibold text-gold-900 font-dm-sans">Password</label>
-                  <input type="password" placeholder="Your password" value={password} onChange={e => setPassword(e.target.value)} required className={inputCls} />
+                  <div className="relative">
+                    <input type={showLoginPassword ? 'text' : 'password'} placeholder="Your password" value={password} onChange={e => setPassword(e.target.value)} required className={passwordInputCls} />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-500 hover:text-gold-800 transition-colors"
+                      aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
                 <Link href="/forgot-password" className="text-right font-dm-sans text-[12px] text-gold-600 hover:text-gold-800 transition-colors">
                   Forgot password?
@@ -408,11 +422,31 @@ function LoginModalContent({
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[13px] font-semibold text-gold-900 font-dm-sans">Password</label>
-                  <input type="password" placeholder="Minimum 6 characters" value={password} onChange={e => setPassword(e.target.value)} required className={inputCls} />
+                  <div className="relative">
+                    <input type={showRegisterPassword ? 'text' : 'password'} placeholder="Minimum 6 characters" value={password} onChange={e => setPassword(e.target.value)} required className={passwordInputCls} />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegisterPassword(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-500 hover:text-gold-800 transition-colors"
+                      aria-label={showRegisterPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showRegisterPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[13px] font-semibold text-gold-900 font-dm-sans">Confirm Password</label>
-                  <input type="password" placeholder="Repeat password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className={inputCls} />
+                  <div className="relative">
+                    <input type={showConfirmPassword ? 'text' : 'password'} placeholder="Repeat password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className={passwordInputCls} />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-500 hover:text-gold-800 transition-colors"
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[13px] font-semibold text-gold-900 font-dm-sans">Phone Number <span className="font-normal text-gold-500">(optional)</span></label>

@@ -59,10 +59,6 @@ const LANGUAGES = [
   { code: 'zh', label: '中文',    flag: '/images/zh-flag.svg' },
 ]
 
-// Breakpoint where desktop nav switches to mobile drawer
-const DESKTOP_BREAKPOINT = 'xl'
-const MOBILE_BREAKPOINT  = 'xl'
-
 export default function Navbar() {
   const t          = useTranslations('Navbar')
   const locale     = useLocale()
@@ -122,7 +118,8 @@ export default function Navbar() {
 
       {/* ── Desktop (≥ 1400px) ── */}
       <div className="hidden xl:block pointer-events-auto transition-all duration-300">
-        <div className="flex items-center justify-between w-full px-6 2xl:px-[46px] py-7">
+        <div className="w-full max-w-[1512px] mx-auto px-6 2xl:px-[46px] py-7">
+        <div className="flex items-center justify-between w-full">
 
           {/* Logo */}
           <div className="flex items-center flex-1 min-w-0">
@@ -373,10 +370,11 @@ export default function Navbar() {
           </div>
 
         </div>
+        </div>
       </div>
 
       {/* ── Mobile trigger (< xl) ── */}
-      <div className="xl:hidden flex items-center px-5 py-4 pointer-events-auto">
+      <div className="xl:hidden w-full max-w-[1512px] mx-auto px-5 py-4 pointer-events-auto">
         <button
           onClick={() => setMobileOpen(true)}
           className="flex items-center gap-[12px] bg-[#fbf7ee]/50 backdrop-blur-md rounded-[28px] px-[20px] py-[6px]"

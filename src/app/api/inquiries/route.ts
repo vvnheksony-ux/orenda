@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/utils/supabase/server'
+import { sendTelegramHtmlMessage } from '@/lib/telegram'
 
 function readTrimmedString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
@@ -11,10 +12,6 @@ function readOptionalString(value: unknown) {
 }
 
 async function sendTelegram(data: Record<string, unknown>) {
-  const token  = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID
-  if (!token || !chatId) return
-
   const lines = [
     '📩 <b>New Contact Inquiry</b>',
     '',
@@ -26,11 +23,7 @@ async function sendTelegram(data: Record<string, unknown>) {
   ].filter(Boolean).join('\n')
 
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'HTML' }),
-    })
+    await sendTelegramHtmlMessage(lines)
   } catch (error) {
     console.error('Telegram notify failed:', error)
   }
