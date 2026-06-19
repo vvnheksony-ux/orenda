@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getPayloadClient } from '@/lib/payload'
-import { mediaUrl } from '@/lib/payload-api'
+import { getRawPool, mediaStorageUrl } from '@/lib/db'
 
 export const runtime = 'nodejs'
 
@@ -10,32 +9,39 @@ export async function GET(req: Request) {
   const limit = parseInt(searchParams.get('limit') || '50', 10)
 
   try {
-    const payload = await getPayloadClient()
-    const data = await payload.find({
-      collection: 'insurance-updates',
-      locale: locale as any,
-      depth: 1,
-      limit,
-      overrideAccess: false,
-      sort: '-publishedAt',
-    } as any)
+    const pool = getRawPool()
+    const { rows } = await pool.query(`
+      SELECT
+        iu.id, iu.slug, iu.status, iu.published_at, iu.updated_at,
+        iu.effective_date, iu.expiration_date,
+        COALESCE(l.title, enl.title)     AS title,
+        COALESCE(l.excerpt, enl.excerpt) AS excerpt,
+        m.filename AS thumb_filename, m.prefix AS thumb_prefix
+      FROM payload.insurance_updates iu
+      LEFT JOIN payload.insurance_updates_locales l   ON l._parent_id = iu.id AND l._locale = $1
+      LEFT JOIN payload.insurance_updates_locales enl ON enl._parent_id = iu.id AND enl._locale = 'en'
+      LEFT JOIN payload.media m ON m.id = iu.thumbnail_id
+      WHERE iu.status = 'published'
+      ORDER BY iu.published_at DESC NULLS LAST
+      LIMIT $2
+    `, [locale, limit])
 
-    const docs = data.docs.map((doc: any) => ({
-      id: String(doc.id),
-      title: doc.title ?? '',
-      slug: doc.slug ?? '',
-      excerpt: doc.excerpt ?? '',
-      insuranceProvider: doc.insuranceProvider ?? '',
-      thumbnail: mediaUrl(doc.thumbnail) ?? null,
-      effectiveDate: doc.effectiveDate ?? null,
-      expirationDate: doc.expirationDate ?? null,
-      status: doc._status ?? 'draft',
-      publishedAt: doc.publishedAt ?? doc.updatedAt ?? '',
-      updatedAt: doc.updatedAt ?? '',
+    const docs = rows.map((row: any) => ({
+      id:                String(row.id),
+      title:             row.title ?? '',
+      slug:              row.slug ?? '',
+      excerpt:           row.excerpt ?? '',
+      insuranceProvider: '',
+      thumbnail:         mediaStorageUrl(row.thumb_filename, row.thumb_prefix),
+      effectiveDate:     row.effective_date ?? null,
+      expirationDate:    row.expiration_date ?? null,
+      status:            row.status ?? 'draft',
+      publishedAt:       row.published_at ?? row.updated_at ?? '',
+      updatedAt:         row.updated_at ?? '',
     }))
 
     return NextResponse.json(
-      { docs, totalDocs: data.totalDocs },
+      { docs, totalDocs: docs.length },
       { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
     )
   } catch (err: any) {

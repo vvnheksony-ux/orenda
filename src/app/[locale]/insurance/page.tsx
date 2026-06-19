@@ -2,26 +2,30 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = { title: 'Insurance' }
 
 import Image from 'next/image'
+import { headers } from 'next/headers'
 import SiteLayout from '@/components/layout/SiteLayout'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
-import { getPayloadClient } from '@/lib/payload'
-import { mediaUrl } from '@/lib/payload-api'
 
 async function getInsuranceUpdates(locale: string) {
+  // Fetch via the raw-pool API route (the working DB path) instead of Payload's
+  // direct connection, which times out on serverless.
   try {
-    const payload = await getPayloadClient()
-    const data = await payload.find({
-      collection: 'insurance-updates',
-      locale: locale as any,
-      depth: 1,
-      limit: 50,
-      overrideAccess: false,
-      sort: '-publishedAt',
-    } as any)
-    return data.docs.map((doc: any) => ({
+    const headerStore = await headers()
+    const forwardedProto = headerStore.get('x-forwarded-proto')
+    const forwardedHost = headerStore.get('x-forwarded-host')
+    const host = forwardedHost ?? headerStore.get('host')
+    const base = host
+      ? `${forwardedProto ?? 'https'}://${host}`
+      : process.env.NEXT_PUBLIC_SITE_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
+    const res = await fetch(`${base}/api/insurance-updates?locale=${locale}`, { cache: 'no-store' })
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.docs ?? []).map((doc: any) => ({
       id: String(doc.id),
       name: doc.insuranceProvider || doc.title || '',
-      logo: mediaUrl(doc.thumbnail) ?? null,
+      logo: doc.thumbnail ?? null,
     }))
   } catch {
     return []
