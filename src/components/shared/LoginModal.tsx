@@ -74,6 +74,8 @@ function LoginModalContent({
   const [showLoginPassword, setShowLoginPassword] = useState(false)
   const [showRegisterPassword, setShowRegisterPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  // Which auth method is being opened, so its button can show a spinner.
+  const [pendingMethod, setPendingMethod] = useState<'email' | 'phone' | 'google' | null>(null)
 
   // Lock background scroll while the modal is mounted (it only renders when open).
   useEffect(() => {
@@ -112,6 +114,7 @@ function LoginModalContent({
     setOtp('')
     setErrorMsg('')
     setShowResend(false)
+    setPendingMethod(null)
   }
 
   const switchView = (nextView: View) => {
@@ -278,8 +281,22 @@ function LoginModalContent({
     setLoading(false)
   }
 
-  const handleGoogle = async () => {
+  // Show a brief spinner on the chosen method button before revealing its form,
+  // so every option gives immediate, professional feedback on click.
+  const chooseMethod = (next: 'email' | 'phone') => {
+    if (pendingMethod) return
     setErrorMsg('')
+    setPendingMethod(next)
+    setTimeout(() => {
+      setMode(next)
+      setPendingMethod(null)
+    }, 300)
+  }
+
+  const handleGoogle = async () => {
+    if (pendingMethod) return
+    setErrorMsg('')
+    setPendingMethod('google')
     const callbackUrl = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(redirectTo)}`
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -288,7 +305,11 @@ function LoginModalContent({
         queryParams: { prompt: 'select_account' },
       },
     })
-    if (error) setErrorMsg(friendlyError(error.message))
+    // On success the browser redirects to Google, so the spinner stays visible.
+    if (error) {
+      setErrorMsg(friendlyError(error.message))
+      setPendingMethod(null)
+    }
   }
 
   const title = view === 'login' ? 'Sign In' : 'Create Account'
@@ -360,14 +381,18 @@ function LoginModalContent({
 
             {mode === 'options' && (
               <div className="flex flex-col gap-3">
-                <button onClick={() => setMode('email')} type="button" className={optionBtnCls}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
-                  {view === 'login' ? 'Continue with Email' : 'Sign up with Email'}
+                <button onClick={() => chooseMethod('email')} disabled={!!pendingMethod} type="button" className={`${optionBtnCls} disabled:opacity-60`}>
+                  {pendingMethod === 'email'
+                    ? <span className="inline-block w-[18px] h-[18px] border-2 border-gold-400 border-t-transparent rounded-full animate-spin" />
+                    : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>}
+                  {pendingMethod === 'email' ? 'Loading...' : view === 'login' ? 'Continue with Email' : 'Sign up with Email'}
                 </button>
 
-                <button onClick={() => setMode('phone')} type="button" className={optionBtnCls}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
-                  {view === 'login' ? 'Continue with Phone' : 'Sign up with Phone'}
+                <button onClick={() => chooseMethod('phone')} disabled={!!pendingMethod} type="button" className={`${optionBtnCls} disabled:opacity-60`}>
+                  {pendingMethod === 'phone'
+                    ? <span className="inline-block w-[18px] h-[18px] border-2 border-gold-400 border-t-transparent rounded-full animate-spin" />
+                    : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>}
+                  {pendingMethod === 'phone' ? 'Loading...' : view === 'login' ? 'Continue with Phone' : 'Sign up with Phone'}
                 </button>
 
                 <div className="flex items-center gap-3">
@@ -376,9 +401,11 @@ function LoginModalContent({
                   <div className="flex-1 h-px bg-gold-200" />
                 </div>
 
-                <button onClick={handleGoogle} type="button" className="w-full py-3 px-4 rounded-[12px] border border-gold-200 font-dm-sans text-[15px] font-medium text-gold-900 flex items-center justify-center gap-3 hover:bg-white transition-colors bg-white">
-                  <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" /></svg>
-                  {view === 'login' ? 'Continue with Google' : 'Sign up with Google'}
+                <button onClick={handleGoogle} disabled={!!pendingMethod} type="button" className="w-full py-3 px-4 rounded-[12px] border border-gold-200 font-dm-sans text-[15px] font-medium text-gold-900 flex items-center justify-center gap-3 hover:bg-white transition-colors bg-white disabled:opacity-60">
+                  {pendingMethod === 'google'
+                    ? <span className="inline-block w-[18px] h-[18px] border-2 border-gold-400 border-t-transparent rounded-full animate-spin" />
+                    : <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" /></svg>}
+                  {pendingMethod === 'google' ? 'Connecting...' : view === 'login' ? 'Continue with Google' : 'Sign up with Google'}
                 </button>
 
                 {view === 'login' && (
