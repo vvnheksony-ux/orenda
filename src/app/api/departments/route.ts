@@ -34,7 +34,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.departments_locales endll
         ON endll._parent_id = d.id AND endll._locale = 'en'
       LEFT JOIN payload.media m ON m.id = d.icon_id
-      WHERE d.status = 'published'
+      WHERE d._status = 'published'
       ${extra.join(' ')}
       ORDER BY d."order"
       LIMIT $${params.length}

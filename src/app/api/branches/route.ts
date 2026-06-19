@@ -20,7 +20,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.branches_locales bl    ON bl._parent_id = b.id AND bl._locale = $1
       LEFT JOIN payload.branches_locales enbl  ON enbl._parent_id = b.id AND enbl._locale = 'en'
       LEFT JOIN payload.media m ON m.id = b.image_id
-      WHERE b.status = 'published'
+      WHERE b._status = 'published'
       ORDER BY b."order"
       LIMIT 20
     `, [locale])

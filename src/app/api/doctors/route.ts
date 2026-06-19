@@ -28,7 +28,7 @@ export async function GET(req: Request) {
         LEFT JOIN payload.doctors_locales dl    ON dl._parent_id = doc.id AND dl._locale = $1
         LEFT JOIN payload.doctors_locales endll ON endll._parent_id = doc.id AND endll._locale = 'en'
         LEFT JOIN payload.media m ON m.id = doc.photo_id
-        WHERE doc.status = 'published' AND doc.id = $2
+        WHERE doc._status = 'published' AND doc.id = $2
         LIMIT 1
       `, [locale, Number(id)])
 
@@ -70,7 +70,7 @@ export async function GET(req: Request) {
     if (branchId) {
       params.push(Number(branchId))
       branchFilter = `AND doc.department_id IN (
-        SELECT id FROM payload.departments WHERE branch_id = $${params.length} AND status = 'published'
+        SELECT id FROM payload.departments WHERE branch_id = $${params.length} AND _status = 'published'
       )`
     }
 
@@ -87,7 +87,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.media m ON m.id = doc.photo_id
       LEFT JOIN payload.departments_locales dept_l
         ON dept_l._parent_id = doc.department_id AND dept_l._locale = 'en'
-      WHERE doc.status = 'published'
+      WHERE doc._status = 'published'
       ${branchFilter}
       ORDER BY doc."order"
       LIMIT 100

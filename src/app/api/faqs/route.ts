@@ -20,7 +20,7 @@ export async function GET(req: Request) {
       FROM payload.faqs f
       LEFT JOIN payload.faqs_locales fl    ON fl._parent_id = f.id AND fl._locale = $1
       LEFT JOIN payload.faqs_locales enfl  ON enfl._parent_id = f.id AND enfl._locale = 'en'
-      WHERE f.status = 'published'
+      WHERE f._status = 'published'
       ORDER BY f."order"
       LIMIT $2
     `, [locale, limit])

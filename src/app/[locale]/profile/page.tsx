@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CalendarDays, Check, LogOut, Mail, Phone, Save, UserRound } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Check, LogOut, Mail, Phone, Save } from 'lucide-react'
 import { useRouter } from '@/i18n/routing'
 import { useAuth } from '@/lib/auth-context'
 import { setProfileComplete } from '@/lib/profile-status'
@@ -64,7 +64,7 @@ export default function ProfilePage() {
           language: data?.language ?? 'en',
         })
         setLoading(false)
-      })
+      }, () => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
   }, [authLoading, router, user])
@@ -123,101 +123,167 @@ export default function ProfilePage() {
     )
   }
 
+  const initials = (form.display_name || form.email || 'U')
+    .trim()
+    .split(/\s+/)
+    .map(part => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
+  const completionFields = [form.display_name, form.phone, form.email, form.date_of_birth, form.gender]
+  const completeness = Math.round(
+    (completionFields.filter(value => value && value.trim()).length / completionFields.length) * 100,
+  )
+
   return (
-    <main className="min-h-screen bg-[#fbf7ee] pt-[120px] pb-[64px] px-4">
-      <div className="w-full max-w-[920px] mx-auto">
-        <div className="flex flex-col gap-4 mb-8">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="inline-flex w-fit items-center gap-2 rounded-[12px] border border-[#dcbd72] bg-white/70 px-4 py-2 font-dm-sans text-[14px] text-[#6b5836] hover:bg-white transition-colors"
-          >
-            <ArrowLeft size={17} />
-            Back
-          </button>
-          <div className="w-14 h-14 rounded-full bg-[#b89148] flex items-center justify-center shadow-[0_8px_24px_rgba(184,145,72,0.24)]">
-            <UserRound size={26} className="text-white" />
-          </div>
-          <div>
-            <p className="font-dm-sans text-[12px] tracking-[2px] uppercase text-[#b89148]">Orienda International Hospital</p>
-            <h1 className="font-cormorant font-bold text-[42px] leading-none text-[#3b2d17]">Profile</h1>
-          </div>
-        </div>
+    <main className="min-h-screen bg-[#fbf7ee] pt-[120px] pb-[80px] px-4">
+      <div className="w-full max-w-[1040px] mx-auto">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="inline-flex w-fit items-center gap-2 rounded-[12px] border border-[#dcbd72] bg-white/70 px-4 py-2 font-dm-sans text-[14px] text-[#6b5836] hover:bg-white transition-colors"
+        >
+          <ArrowLeft size={17} />
+          Back
+        </button>
 
-        <form onSubmit={handleSave} className="bg-white rounded-[18px] p-6 sm:p-8 flex flex-col gap-6 shadow-[0_10px_40px_rgba(184,145,72,0.14)]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="flex flex-col gap-2">
-              <label className={labelCls}>Full name <span className="text-[#b89148]">*</span></label>
-              <input className={fieldCls} value={form.display_name} onChange={event => set('display_name', event.target.value)} />
+        <div className="grid grid-cols-1 lg:grid-cols-[330px_1fr] gap-6 mt-6 items-start">
+
+          {/* Summary card */}
+          <aside className="bg-white rounded-[20px] p-7 shadow-[0_10px_40px_rgba(184,145,72,0.14)] flex flex-col items-center text-center gap-4 lg:sticky lg:top-[120px]">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#d8b765] to-[#b89148] flex items-center justify-center text-white font-cormorant font-bold text-[36px] shadow-[0_8px_24px_rgba(184,145,72,0.3)]">
+              {initials}
+            </div>
+            <div className="min-w-0 w-full">
+              <h2 className="font-cormorant font-bold text-[26px] text-[#3b2d17] leading-tight truncate">{form.display_name || 'Your name'}</h2>
+              <p className="font-dm-sans text-[13px] text-[#6b5836] mt-1 truncate">{form.email || 'No email added'}</p>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className={labelCls}>Phone <span className="text-[#b89148]">*</span></label>
-              <div className="relative">
-                <Phone size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b89148]" />
-                <input className={`${fieldCls} pl-11`} type="tel" value={form.phone} onChange={event => set('phone', event.target.value)} />
+            <div className="w-full flex flex-col gap-2 mt-1">
+              <div className="flex items-center gap-2 font-dm-sans text-[13px] text-[#6b5836] bg-[#fbf7ee] rounded-[10px] px-3 py-2.5">
+                <Phone size={15} className="text-[#b89148] shrink-0" />
+                <span className="truncate">{form.phone || 'No phone added'}</span>
+              </div>
+              <div className="flex items-center gap-2 font-dm-sans text-[13px] text-[#6b5836] bg-[#fbf7ee] rounded-[10px] px-3 py-2.5">
+                <CalendarDays size={15} className="text-[#b89148] shrink-0" />
+                <span className="truncate">{form.date_of_birth || 'No date of birth'}</span>
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className={labelCls}>Email</label>
-              <div className="relative">
-                <Mail size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b89148]" />
-                <input className={`${fieldCls} pl-11`} type="email" value={form.email} onChange={event => set('email', event.target.value)} />
+            <div className="w-full mt-1">
+              <div className="flex items-center justify-between font-dm-sans text-[12px] text-[#6b5836] mb-1.5">
+                <span>Profile completeness</span>
+                <span className="font-semibold text-[#b89148]">{completeness}%</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-[#f0e6cc] overflow-hidden">
+                <div className="h-full bg-[#b89148] rounded-full transition-all duration-500" style={{ width: `${completeness}%` }} />
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className={labelCls}>Date of birth</label>
-              <div className="relative">
-                <CalendarDays size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b89148]" />
-                <input className={`${fieldCls} pl-11`} type="date" value={form.date_of_birth} onChange={event => set('date_of_birth', event.target.value)} />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className={labelCls}>Gender</label>
-              <select className={fieldCls} value={form.gender} onChange={event => set('gender', event.target.value)}>
-                <option value="">Prefer not to say</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className={labelCls}>Preferred language</label>
-              <select className={fieldCls} value={form.language} onChange={event => set('language', event.target.value)}>
-                <option value="en">English</option>
-                <option value="km">ខ្មែរ (Khmer)</option>
-                <option value="zh">中文 (Chinese)</option>
-              </select>
-            </div>
-          </div>
-
-          {error && (
-            <p className="font-dm-sans text-[13px] text-[#991b1b] bg-[#fee2e2] rounded-[10px] px-3 py-2">{error}</p>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
             <button
               type="button"
               onClick={handleSignOut}
-              className="inline-flex items-center justify-center gap-2 h-[46px] px-5 rounded-[12px] border border-[#dcbd72] text-[#6b5836] font-dm-sans text-[14px] hover:bg-[#fbf7ee] transition-colors"
+              className="mt-2 w-full inline-flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] text-[#6b5836] font-dm-sans text-[14px] hover:bg-[#fbf7ee] transition-colors"
             >
               <LogOut size={17} />
               Sign out
             </button>
-            <button
-              type="submit"
-              disabled={saving || saved}
-              className="inline-flex items-center justify-center gap-2 h-[46px] px-6 rounded-[12px] bg-[#b89148] hover:bg-[#9a7630] disabled:opacity-70 text-white font-dm-sans font-semibold text-[15px] transition-colors"
-            >
-              {saved ? <Check size={18} /> : <Save size={18} />}
-              {saved ? 'Saved' : saving ? 'Saving...' : 'Save profile'}
-            </button>
-          </div>
-        </form>
+          </aside>
+
+          {/* Edit form */}
+          <form onSubmit={handleSave} className="bg-white rounded-[20px] p-6 sm:p-8 flex flex-col gap-7 shadow-[0_10px_40px_rgba(184,145,72,0.14)]">
+            <div className="flex flex-col gap-1">
+              <p className="font-dm-sans text-[12px] tracking-[2px] uppercase text-[#b89148]">Orienda International Hospital</p>
+              <h1 className="font-cormorant font-bold text-[34px] leading-none text-[#3b2d17]">My Profile</h1>
+              <p className="font-dm-sans text-[14px] text-[#6b5836] mt-1">Keep your details up to date for faster appointments.</p>
+            </div>
+
+            {/* Personal */}
+            <section className="flex flex-col gap-4">
+              <h3 className="font-dm-sans text-[13px] font-bold uppercase tracking-[1px] text-[#9a7838]">Personal information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-2">
+                  <label className={labelCls}>Full name <span className="text-[#b89148]">*</span></label>
+                  <input className={fieldCls} value={form.display_name} onChange={event => set('display_name', event.target.value)} />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className={labelCls}>Date of birth</label>
+                  <div className="relative">
+                    <CalendarDays size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b89148]" />
+                    <input className={`${fieldCls} pl-11`} type="date" value={form.date_of_birth} onChange={event => set('date_of_birth', event.target.value)} />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="h-px bg-[#f0e6cc]" />
+
+            {/* Contact */}
+            <section className="flex flex-col gap-4">
+              <h3 className="font-dm-sans text-[13px] font-bold uppercase tracking-[1px] text-[#9a7838]">Contact details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-2">
+                  <label className={labelCls}>Phone <span className="text-[#b89148]">*</span></label>
+                  <div className="relative">
+                    <Phone size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b89148]" />
+                    <input className={`${fieldCls} pl-11`} type="tel" value={form.phone} onChange={event => set('phone', event.target.value)} />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className={labelCls}>Email</label>
+                  <div className="relative">
+                    <Mail size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#b89148]" />
+                    <input className={`${fieldCls} pl-11`} type="email" value={form.email} onChange={event => set('email', event.target.value)} />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="h-px bg-[#f0e6cc]" />
+
+            {/* Preferences */}
+            <section className="flex flex-col gap-4">
+              <h3 className="font-dm-sans text-[13px] font-bold uppercase tracking-[1px] text-[#9a7838]">Preferences</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-2">
+                  <label className={labelCls}>Gender</label>
+                  <select className={fieldCls} value={form.gender} onChange={event => set('gender', event.target.value)}>
+                    <option value="">Prefer not to say</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className={labelCls}>Preferred language</label>
+                  <select className={fieldCls} value={form.language} onChange={event => set('language', event.target.value)}>
+                    <option value="en">English</option>
+                    <option value="km">ខ្មែរ (Khmer)</option>
+                    <option value="zh">中文 (Chinese)</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            {error && (
+              <p className="font-dm-sans text-[13px] text-[#991b1b] bg-[#fee2e2] rounded-[10px] px-3 py-2">{error}</p>
+            )}
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="submit"
+                disabled={saving || saved}
+                className="inline-flex items-center justify-center gap-2 h-[48px] px-7 rounded-[12px] bg-[#b89148] hover:bg-[#9a7630] disabled:opacity-70 text-white font-dm-sans font-semibold text-[15px] transition-colors"
+              >
+                {saving
+                  ? <span className="inline-block w-[18px] h-[18px] border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+                  : saved ? <Check size={18} /> : <Save size={18} />}
+                {saved ? 'Saved' : saving ? 'Saving...' : 'Save profile'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </main>
   )

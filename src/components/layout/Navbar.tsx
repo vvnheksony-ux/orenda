@@ -85,6 +85,7 @@ export default function Navbar() {
   const phoneRef  = useRef<HTMLDivElement>(null)
   const accountRef = useRef<HTMLDivElement>(null)
   const branchRef = useRef<HTMLDivElement>(null)
+  const mobileBranchRef = useRef<HTMLDivElement>(null)
 
   const currentLang = LANGUAGES.find(l => l.code === locale) ?? LANGUAGES[0]
 
@@ -97,7 +98,12 @@ export default function Navbar() {
       if (langRef.current   && !langRef.current.contains(e.target as Node))   setLangOpen(false)
       if (phoneRef.current  && !phoneRef.current.contains(e.target as Node))  setPhoneOpen(false)
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountOpen(false)
-      if (branchRef.current && !branchRef.current.contains(e.target as Node)) setBranchOpen(false)
+      // Branch dropdown is shared between the desktop bar and the mobile drawer;
+      // only close it when the click is outside BOTH triggers, otherwise the
+      // mobile dropdown unmounts on mousedown before a selection can register.
+      const insideDesktopBranch = branchRef.current?.contains(e.target as Node)
+      const insideMobileBranch = mobileBranchRef.current?.contains(e.target as Node)
+      if (!insideDesktopBranch && !insideMobileBranch) setBranchOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
@@ -420,7 +426,7 @@ export default function Navbar() {
               </div>
 
               {/* Branch selector */}
-              <div className="flex flex-col gap-2 px-4 py-4 border-b border-[#ead6a4]/40">
+              <div ref={mobileBranchRef} className="flex flex-col gap-2 px-4 py-4 border-b border-[#ead6a4]/40">
                 <button
                   onClick={() => setBranchOpen(!branchOpen)}
                   className="flex items-center gap-2 bg-[#f5ecd4]/60 rounded-[12px] px-3 py-2.5"
