@@ -67,7 +67,6 @@ function LoginModalContent({
   const [phone, setPhone] = useState('')
   const [phoneSignup, setPhoneSignup] = useState('')
   const [otp, setOtp] = useState('')
-  const [otpChallengeId, setOtpChallengeId] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [noticeMsg, setNoticeMsg] = useState(registered ? 'Account created! Check your email to confirm, then sign in.' : '')
@@ -108,7 +107,6 @@ function LoginModalContent({
     setMode('options')
     setPhoneStep('phone')
     setOtp('')
-    setOtpChallengeId('')
     setErrorMsg('')
     setShowResend(false)
   }
@@ -210,18 +208,18 @@ function LoginModalContent({
     setPhone(normalizedPhone)
     setLoading(true)
     setErrorMsg('')
+    setNoticeMsg('')
 
-    const res = await fetch('/api/auth/mekong-otp/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: normalizedPhone }),
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: normalizedPhone,
+      options: {
+        shouldCreateUser: true,
+      },
     })
-    const result = await res.json().catch(() => null) as { challengeId?: string; error?: string } | null
 
-    if (!res.ok || !result?.challengeId) {
-      setErrorMsg(friendlyError(result?.error ?? 'Could not send SMS. Please try again.'))
+    if (error) {
+      setErrorMsg(friendlyError(error.message))
     } else {
-      setOtpChallengeId(result.challengeId)
       setPhoneStep('otp')
       setNoticeMsg(`Verification code sent to ${normalizedPhone}.`)
     }
@@ -240,25 +238,22 @@ function LoginModalContent({
     setPhone(normalizedPhone)
     setLoading(true)
     setErrorMsg('')
+    setNoticeMsg('')
 
-    const res = await fetch('/api/auth/mekong-otp/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: normalizedPhone, token: otp, challengeId: otpChallengeId }),
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone: normalizedPhone,
+      token: otp.replace(/\D/g, ''),
+      type: 'sms',
     })
-    const result = await res.json().catch(() => null) as { email?: string; tokenHash?: string; error?: string } | null
 
-    if (!res.ok || !result?.tokenHash) {
-      setErrorMsg(friendlyError(result?.error ?? 'Invalid verification code.'))
+    if (error) {
+      setErrorMsg(friendlyError(error.message))
       setLoading(false)
       return
     }
 
-    const { data, error } = await supabase.auth.verifyOtp({ token_hash: result.tokenHash, type: 'email' })
-    if (error) {
-      setErrorMsg(friendlyError(error.message))
-    } else if (data.user) {
-      await syncProfile(data.user.id, { email: result.email ?? data.user.email, phone: normalizedPhone })
+    if (data.user) {
+      await syncProfile(data.user.id, { email: data.user.email, phone: normalizedPhone })
       onSuccess?.()
       onClose()
     }
