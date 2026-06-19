@@ -91,6 +91,24 @@ function LoginModalContent({
   // Lock background scroll while the modal is mounted (shared, ref-counted).
   useScrollLock(true)
 
+  // Survive a page refresh during phone sign-up: if a code was just sent,
+  // restore the OTP entry screen (consumed once so it doesn't linger).
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('pendingPhoneOtp')
+      sessionStorage.removeItem('pendingPhoneOtp')
+      if (saved) {
+        const { phone: p, ts } = JSON.parse(saved)
+        if (p && Date.now() - ts < 10 * 60 * 1000) {
+          setPhone(p)
+          setMode('phone')
+          setPhoneStep('otp')
+          setResendIn(Math.max(0, 60 - Math.floor((Date.now() - ts) / 1000)))
+        }
+      }
+    } catch {}
+  }, [])
+
   const resetFlow = () => {
     setMode('options')
     setPhoneStep('phone')
@@ -99,6 +117,7 @@ function LoginModalContent({
     setErrorMsg('')
     setShowResend(false)
     setPendingMethod(null)
+    try { sessionStorage.removeItem('pendingPhoneOtp') } catch {}
   }
 
   const switchView = (nextView: View) => {
@@ -224,6 +243,7 @@ function LoginModalContent({
       setOtpDigits(['', '', '', '', '', ''])
       setResendIn(60)
       setNoticeMsg('')
+      try { sessionStorage.setItem('pendingPhoneOtp', JSON.stringify({ phone: normalizedPhone, ts: Date.now() })) } catch {}
     }
 
     setLoading(false)
@@ -256,6 +276,7 @@ function LoginModalContent({
     }
 
     if (data.user) {
+      try { sessionStorage.removeItem('pendingPhoneOtp') } catch {}
       await syncProfile(data.user.id, { email: data.user.email, phone: normalizedPhone })
       onSuccess?.()
       onClose()
