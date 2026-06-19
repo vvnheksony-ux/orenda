@@ -6,6 +6,7 @@ import SiteLayout from '@/components/layout/SiteLayout'
 import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
 import LoginModal from '@/components/shared/LoginModal'
 import { useAuth } from '@/lib/auth-context'
+import { useScrollLock } from '@/lib/useScrollLock'
 
 interface Appointment {
   id: string
@@ -106,36 +107,7 @@ export default function AppointmentsPage() {
   }, [selected])
 
   // Lock background scroll while the detail modal is open.
-  useEffect(() => {
-    if (!selected) return
-    const scrollY = window.scrollY
-    const scrollbarW = window.innerWidth - document.documentElement.clientWidth
-    const htmlEl = document.documentElement
-    const bodyEl = document.body
-    const prev = {
-      htmlOverflow: htmlEl.style.overflow,
-      bodyOverflow: bodyEl.style.overflow,
-      bodyPosition: bodyEl.style.position,
-      bodyTop: bodyEl.style.top,
-      bodyWidth: bodyEl.style.width,
-      bodyPaddingRight: bodyEl.style.paddingRight,
-    }
-    htmlEl.style.overflow = 'hidden'
-    bodyEl.style.overflow = 'hidden'
-    bodyEl.style.position = 'fixed'
-    bodyEl.style.top = `-${scrollY}px`
-    bodyEl.style.width = '100%'
-    if (scrollbarW > 0) bodyEl.style.paddingRight = `${scrollbarW}px`
-    return () => {
-      htmlEl.style.overflow = prev.htmlOverflow
-      bodyEl.style.overflow = prev.bodyOverflow
-      bodyEl.style.position = prev.bodyPosition
-      bodyEl.style.top = prev.bodyTop
-      bodyEl.style.width = prev.bodyWidth
-      bodyEl.style.paddingRight = prev.bodyPaddingRight
-      window.scrollTo(0, scrollY)
-    }
-  }, [selected])
+  useScrollLock(!!selected)
 
   if (!authLoading && !user) {
     return (

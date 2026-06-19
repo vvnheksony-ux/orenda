@@ -35,6 +35,7 @@ function toDoc(row: any, full: boolean) {
     title:       row.title ?? '',
     slug:        row.slug ?? '',
     excerpt:     row.excerpt ?? '',
+    author:      row.author ?? '',
     publishedAt: row.published_at ?? row.created_at ?? '',
     thumbnail:   mediaStorageUrl(row.thumb_filename, row.thumb_prefix),
     category:    row.health_tip_category ?? '',
