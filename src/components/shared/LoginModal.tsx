@@ -35,7 +35,13 @@ function friendlyError(message: string) {
   if (normalized.includes('rate limit') || normalized.includes('too many')) return 'Too many attempts. Please wait a few minutes.'
   if (normalized.includes('user already registered')) return 'This account already exists. Please sign in instead.'
   if (normalized.includes('password should be at least')) return 'Password must be at least 6 characters.'
+  if (normalized.includes('token has expired') || normalized.includes('expired') || normalized.includes('invalid otp') || (normalized.includes('token') && normalized.includes('invalid'))) return 'That code is invalid or has expired. Please request a new one.'
+  if (normalized.includes('failed to fetch') || normalized.includes('network')) return 'Network error. Please check your connection and try again.'
   return message
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 }
 
 function normalizeCambodiaPhone(value: string) {
@@ -114,6 +120,8 @@ function LoginModalContent({
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isValidEmail(email)) { setErrorMsg('Please enter a valid email address.'); return }
+    if (!password) { setErrorMsg('Please enter your password.'); return }
     setLoading(true)
     setErrorMsg('')
     setShowResend(false)
@@ -135,6 +143,8 @@ function LoginModalContent({
 
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isValidEmail(email)) { setErrorMsg('Please enter a valid email address.'); return }
+    if (password.length < 6) { setErrorMsg('Password must be at least 6 characters.'); return }
     if (password !== confirmPassword) {
       setErrorMsg('Passwords do not match.')
       return

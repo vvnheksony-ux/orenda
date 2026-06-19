@@ -8,6 +8,7 @@ import CookieConsent from '@/components/shared/CookieConsent'
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker'
 import OneSignalInit from '@/components/shared/OneSignalInit'
 import ProfileGate from '@/components/shared/ProfileGate'
+import AuthErrorToast from '@/components/shared/AuthErrorToast'
 import { BranchProvider } from '@/lib/branch-context'
 import FloatingChat from '@/components/chat/FloatingChat'
 
@@ -59,6 +60,7 @@ export default async function RootLayout({
               <AnalyticsTracker />
               <OneSignalInit />
               <ProfileGate />
+              <AuthErrorToast />
               {children}
               <FloatingChat />
               <CookieConsent />
