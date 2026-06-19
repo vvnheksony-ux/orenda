@@ -15,7 +15,7 @@ interface Department {
   icon: string | null
 }
 
-const WOMENS_KEYWORDS = ['obstetric','ob','gynecolog','gynaecolog','pediatric','paediatric','women','child','neonatal','maternity']
+const WOMENS_KEYWORDS = ['obstetric','gynecolog','gynaecolog','pediatric','paediatric','women','child','neonat','maternity']
 
 function isWomens(dept: Department) {
   const lower = dept.name.toLowerCase()
@@ -66,7 +66,7 @@ export default function DepartmentsPage() {
         if (d?.docs?.length) {
           setDepts(
             d.docs
-              .filter((dept: any) => dept.order > 0)
+              .filter((dept: any) => dept.name)
               .map((dept: any) => ({
                 id:   String(dept.id),
                 name: dept.name,
