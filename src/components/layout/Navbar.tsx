@@ -75,6 +75,7 @@ export default function Navbar() {
   const [accountOpen,       setAccountOpen]       = useState(false)
   const [branchOpen,        setBranchOpen]        = useState(false)
   const [bookOpen,          setBookOpen]          = useState(false)
+  const [switchingBranch,   setSwitchingBranch]   = useState(false)
   const [hoveredKey,        setHoveredKey]        = useState<string | null>(null)
   const [mobileExpandedKey, setMobileExpandedKey] = useState<string | null>(null)
 
@@ -92,6 +93,18 @@ export default function Navbar() {
   const branchLabel = selectedBranch
     ? selectedBranch.name.replace(/Orienda\s+(Internation(al)?\s+Hospital\s*)/i, '').trim() || selectedBranch.name
     : 'Branch'
+
+  // Switching branch changes branch-specific content site-wide, so show a brief
+  // loading screen and send the user home where the new branch data loads.
+  const handleSwitchBranch = (b: { id: string; name: string; slug: string }) => {
+    if (selectedBranch?.id === b.id) { setBranchOpen(false); setMobileOpen(false); return }
+    switchBranch(b)
+    setBranchOpen(false)
+    setMobileOpen(false)
+    setSwitchingBranch(true)
+    router.push('/')
+    setTimeout(() => setSwitchingBranch(false), 2200)
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -120,6 +133,18 @@ export default function Navbar() {
   }
 
   return (
+    <>
+    {switchingBranch && (
+      <div className="fixed inset-0 z-[500] flex items-center justify-center bg-[#fbf7ee] pointer-events-auto">
+        <div className="flex flex-col items-center gap-5">
+          <div className="relative w-[64px] h-[64px] animate-pulse">
+            <Image src="/images/logo-emblem.png" alt="Orienda" fill sizes="64px" className="object-contain" priority />
+          </div>
+          <div className="w-9 h-9 border-[3px] border-[#b89148] border-t-transparent rounded-full animate-spin" />
+          <p className="font-dm-sans text-[14px] text-[#6b5836]">Switching branch…</p>
+        </div>
+      </div>
+    )}
     <header className="absolute top-0 left-0 right-0 z-50 bg-transparent pointer-events-none">
 
       {/* ── Desktop (≥ 1536px) ── */}
@@ -231,7 +256,7 @@ export default function Navbar() {
                     {branches.map(b => (
                       <button
                         key={b.id}
-                        onClick={() => { switchBranch(b); setBranchOpen(false) }}
+                        onClick={() => handleSwitchBranch(b)}
                         className={cn(
                           'flex items-center gap-3 px-4 py-3 hover:bg-gold-50 transition-colors w-full text-left',
                           selectedBranch?.id === b.id ? 'bg-gold-50/50' : ''
@@ -440,7 +465,7 @@ export default function Navbar() {
                     {branches.map(b => (
                       <button
                         key={b.id}
-                        onClick={() => { switchBranch(b); setBranchOpen(false); setMobileOpen(false) }}
+                        onClick={() => handleSwitchBranch(b)}
                         className={cn('flex items-center gap-2 px-4 py-3 text-left hover:bg-gold-50 transition-colors', selectedBranch?.id === b.id ? 'bg-gold-50/50' : '')}
                       >
                         <Building2 size={13} className="text-[#b89148] shrink-0" />
@@ -579,5 +604,6 @@ export default function Navbar() {
       </AnimatePresence>
 
     </header>
+    </>
   )
 }
