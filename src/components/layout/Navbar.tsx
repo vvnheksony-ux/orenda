@@ -23,7 +23,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     key: 'about', href: '/about',
     children: [
-      { key: 'faq',     href: '/faq'     },
+      { key: 'faq',     href: '/#faq'    },
       { key: 'inquiry', href: '/inquiry' },
       { key: 'expect',  href: '/expect'  },
     ],

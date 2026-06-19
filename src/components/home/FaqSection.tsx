@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
 import { ChevronUp } from 'lucide-react'
-import { Link } from '@/i18n/routing'
 
 export default function FaqSection() {
   const t = useTranslations('FaqSection')
@@ -25,7 +24,7 @@ export default function FaqSection() {
   }, [locale])
 
   return (
-    <section className="w-full bg-[#fbf7ee]">
+    <section id="faq" className="w-full bg-[#fbf7ee] scroll-mt-[120px]">
       <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col lg:flex-row gap-[40px] items-start relative">
 
         {/* Mobile-only: title + subtitle above accordion */}
@@ -111,11 +110,6 @@ export default function FaqSection() {
               </button>
             )
           })}
-
-          {/* See More — mobile only */}
-          <Link href="/faq" className="lg:hidden self-center px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
-            {t('seeMore')}
-          </Link>
         </div>
 
       </div>

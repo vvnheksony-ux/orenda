@@ -12,7 +12,6 @@ const STATIC_ROUTES = [
   '/news',
   '/contact',
   '/insurance',
-  '/faq',
   '/360-tour',
   '/expect',
   '/emergency',
