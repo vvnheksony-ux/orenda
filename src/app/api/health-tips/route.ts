@@ -61,7 +61,7 @@ export async function GET(req: Request) {
     }
 
     const docs = rows.map((r: any) => toDoc(r, false))
-    return NextResponse.json({ docs, totalDocs: docs.length })
+    return NextResponse.json({ docs, totalDocs: docs.length }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('health-tips:', err.message)
     return NextResponse.json({ docs: [], totalDocs: 0 })

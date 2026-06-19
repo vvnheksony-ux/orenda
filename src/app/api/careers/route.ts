@@ -58,7 +58,7 @@ export async function GET(req: Request) {
       if (!rows[0]) return NextResponse.json(null, { status: 404 })
       return NextResponse.json(toDoc(rows[0]))
     }
-    return NextResponse.json({ docs: rows.map(toDoc), totalDocs: rows.length })
+    return NextResponse.json({ docs: rows.map(toDoc), totalDocs: rows.length }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('careers:', err.message)
     return NextResponse.json({ docs: [], totalDocs: 0 })
