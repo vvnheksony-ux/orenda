@@ -160,7 +160,7 @@ export default function PromotionsPage() {
                 : packages.length === 0
                 ? <p className="font-dm-sans text-[16px] text-gold-800 py-6">No packages available at this time.</p>
                 : packages.map((pkg, pkgIdx) => (
-                <div key={pkg.title} className="bg-white rounded-[16px] overflow-hidden shadow-[0px_4px_16px_rgba(122,95,44,0.08)] flex flex-col md:flex-row h-auto md:h-[217px] relative">
+                <Link key={pkg.title} href={`/promotions/packages/${pkg.slug}` as any} className="bg-white rounded-[16px] overflow-hidden shadow-[0px_4px_16px_rgba(122,95,44,0.08)] flex flex-col md:flex-row h-auto md:h-[217px] relative hover:shadow-[0px_4px_24px_rgba(122,95,44,0.16)] transition-shadow">
 
                   {/* Image */}
                   <div className="relative shrink-0 w-full md:w-[353px] h-[200px] md:h-full overflow-hidden">
@@ -185,7 +185,7 @@ export default function PromotionsPage() {
                     </div>
                     <ChevronRight size={24} className="shrink-0 text-gold-700" />
                   </div>
-                </div>
+                </Link>
               ))
               }
             </div>
