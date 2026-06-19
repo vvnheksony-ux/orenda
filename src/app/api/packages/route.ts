@@ -23,7 +23,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.service_packages_locales enspl
         ON enspl._parent_id = sp.id AND enspl._locale = 'en'
       LEFT JOIN payload.media m ON m.id = sp.image_id
-      WHERE sp.status = 'published'
+      WHERE sp._status = 'published'
       ORDER BY sp."order"
       LIMIT 20
     `, [locale])

@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.media m ON m.id = dt.thumbnail_id
       LEFT JOIN payload.doctors_locales doc_l
         ON doc_l._parent_id = dt.featured_doctor_id AND doc_l._locale = 'en'
-      WHERE dt.status = 'published'
+      WHERE dt._status = 'published'
       ${slugFilter}
       ORDER BY dt.event_date DESC NULLS LAST
       LIMIT $${params.length}

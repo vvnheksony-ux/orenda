@@ -21,7 +21,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.insurance_updates_locales l   ON l._parent_id = iu.id AND l._locale = $1
       LEFT JOIN payload.insurance_updates_locales enl ON enl._parent_id = iu.id AND enl._locale = 'en'
       LEFT JOIN payload.media m ON m.id = iu.thumbnail_id
-      WHERE iu.status = 'published'
+      WHERE iu._status = 'published'
       ORDER BY iu.published_at DESC NULLS LAST
       LIMIT $2
     `, [locale, limit])

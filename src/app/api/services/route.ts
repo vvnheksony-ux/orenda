@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.media m ON m.id = s.icon_id
       LEFT JOIN payload.departments_locales dept_l
         ON dept_l._parent_id = s.department_id AND dept_l._locale = 'en'
-      WHERE s.status = 'published'
+      WHERE s._status = 'published'
       ${deptFilter}
       ORDER BY title
       LIMIT 100

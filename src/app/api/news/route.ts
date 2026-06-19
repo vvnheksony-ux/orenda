@@ -16,7 +16,7 @@ async function rawNewsList(locale: string, limit: number) {
     LEFT JOIN payload.news_locales nl  ON nl._parent_id = n.id AND nl._locale = $1
     LEFT JOIN payload.news_locales enl ON enl._parent_id = n.id AND enl._locale = 'en'
     LEFT JOIN payload.media m ON m.id = n.thumbnail_id
-    WHERE n.status = 'published'
+    WHERE n._status = 'published'
     ORDER BY n.published_at DESC NULLS LAST
     LIMIT $2
   `, [locale, limit])
@@ -77,7 +77,7 @@ export async function GET(req: Request) {
         LEFT JOIN payload.news_locales nl  ON nl._parent_id = n.id AND nl._locale = $1
         LEFT JOIN payload.news_locales enl ON enl._parent_id = n.id AND enl._locale = 'en'
         LEFT JOIN payload.media m ON m.id = n.thumbnail_id
-        WHERE n.status = 'published' AND n.slug = $2
+        WHERE n._status = 'published' AND n.slug = $2
         LIMIT 1
       `, [locale, slug])
 
