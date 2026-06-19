@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Eye, EyeOff, X } from 'lucide-react'
@@ -66,7 +66,10 @@ function LoginModalContent({
   const [confirmPassword, setConfirmPassword] = useState('')
   const [phone, setPhone] = useState('')
   const [phoneSignup, setPhoneSignup] = useState('')
-  const [otp, setOtp] = useState('')
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', ''])
+  const otp = otpDigits.join('')
+  const otpRefs = useRef<Array<HTMLInputElement | null>>([])
+  const [resendIn, setResendIn] = useState(0)
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [noticeMsg, setNoticeMsg] = useState(registered ? 'Account created! Check your email to confirm, then sign in.' : '')
@@ -111,7 +114,8 @@ function LoginModalContent({
   const resetFlow = () => {
     setMode('options')
     setPhoneStep('phone')
-    setOtp('')
+    setOtpDigits(['', '', '', '', '', ''])
+    setResendIn(0)
     setErrorMsg('')
     setShowResend(false)
     setPendingMethod(null)
@@ -233,14 +237,17 @@ function LoginModalContent({
       setErrorMsg(friendlyError(error.message))
     } else {
       setPhoneStep('otp')
-      setNoticeMsg(`Verification code sent to ${normalizedPhone}.`)
+      setOtpDigits(['', '', '', '', '', ''])
+      setResendIn(60)
+      setNoticeMsg('')
     }
 
     setLoading(false)
   }
 
-  const handleVerifyPhoneOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const submitOtp = async (code: string) => {
+    const token = code.replace(/\D/g, '')
+    if (token.length < 6 || loading) return
     const normalizedPhone = normalizeCambodiaPhone(phone)
     if (!normalizedPhone) {
       setErrorMsg('Please enter a valid Cambodian phone number.')
@@ -254,7 +261,7 @@ function LoginModalContent({
 
     const { data, error } = await supabase.auth.verifyOtp({
       phone: normalizedPhone,
-      token: otp.replace(/\D/g, ''),
+      token,
       type: 'sms',
     })
 
@@ -272,6 +279,87 @@ function LoginModalContent({
 
     setLoading(false)
   }
+
+  const handleVerifyPhoneOtp = (e: React.FormEvent) => {
+    e.preventDefault()
+    submitOtp(otp)
+  }
+
+  const handleOtpChange = (index: number, raw: string) => {
+    const digits = raw.replace(/\D/g, '')
+    if (!digits) {
+      setOtpDigits(prev => { const next = [...prev]; next[index] = ''; return next })
+      return
+    }
+    setOtpDigits(prev => {
+      const next = [...prev]
+      let i = index
+      for (const ch of digits) { if (i > 5) break; next[i] = ch; i++ }
+      requestAnimationFrame(() => otpRefs.current[Math.min(i, 5)]?.focus())
+      if (next.every(d => d !== '')) requestAnimationFrame(() => submitOtp(next.join('')))
+      return next
+    })
+  }
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus()
+    }
+  }
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    const text = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    if (!text) return
+    e.preventDefault()
+    const next = ['', '', '', '', '', '']
+    for (let i = 0; i < text.length; i++) next[i] = text[i]
+    setOtpDigits(next)
+    requestAnimationFrame(() => otpRefs.current[Math.min(text.length, 5)]?.focus())
+    if (text.length === 6) submitOtp(text)
+  }
+
+  const handleResendPhone = async () => {
+    if (resendIn > 0 || loading) return
+    const normalizedPhone = normalizeCambodiaPhone(phone)
+    if (!normalizedPhone) return
+    setLoading(true)
+    setErrorMsg('')
+    const { error } = await supabase.auth.signInWithOtp({ phone: normalizedPhone, options: { shouldCreateUser: true } })
+    if (error) setErrorMsg(friendlyError(error.message))
+    else {
+      setNoticeMsg('')
+      setResendIn(60)
+      setOtpDigits(['', '', '', '', '', ''])
+      requestAnimationFrame(() => otpRefs.current[0]?.focus())
+    }
+    setLoading(false)
+  }
+
+  // Resend countdown while on the OTP step.
+  useEffect(() => {
+    if (mode !== 'phone' || phoneStep !== 'otp' || resendIn <= 0) return
+    const t = setTimeout(() => setResendIn(s => Math.max(0, s - 1)), 1000)
+    return () => clearTimeout(t)
+  }, [mode, phoneStep, resendIn])
+
+  // Auto-detect the SMS code via the WebOTP API where supported (mobile Chrome).
+  useEffect(() => {
+    if (mode !== 'phone' || phoneStep !== 'otp') return
+    if (typeof window === 'undefined' || !('OTPCredential' in window)) return
+    const ac = new AbortController()
+    navigator.credentials
+      // @ts-expect-error - OTP transport is not yet in the TS lib types
+      .get({ otp: { transport: ['sms'] }, signal: ac.signal })
+      .then((cred: any) => {
+        const code = String(cred?.code ?? '').replace(/\D/g, '').slice(0, 6)
+        if (code.length === 6) {
+          setOtpDigits(code.split(''))
+          submitOtp(code)
+        }
+      })
+      .catch(() => {})
+    return () => ac.abort()
+  }, [mode, phoneStep])
 
   const handleResend = async () => {
     setLoading(true)
@@ -506,14 +594,43 @@ function LoginModalContent({
             )}
 
             {mode === 'phone' && phoneStep === 'otp' && (
-              <form onSubmit={handleVerifyPhoneOtp} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-semibold text-gold-900 font-dm-sans">6-Digit Code</label>
-                  <input type="text" placeholder="Enter 6-digit code" value={otp} onChange={e => setOtp(e.target.value)} required className={`${inputCls} text-center tracking-[0.5em] text-lg font-bold`} />
+              <form onSubmit={handleVerifyPhoneOtp} className="flex flex-col gap-5">
+                <div className="flex flex-col gap-1 text-center">
+                  <p className="font-dm-sans text-[14px] text-gold-700">Sent to {phone}</p>
+                  <p className="font-dm-sans text-[13px] text-emerald-600">Auto-detecting from SMS…</p>
                 </div>
-                <button disabled={loading} type="submit" className={primaryBtnCls} style={{ background: '#b89148' }}>
+
+                <div className="flex justify-center gap-2 sm:gap-3" onPaste={handleOtpPaste}>
+                  {otpDigits.map((digit, i) => (
+                    <input
+                      key={i}
+                      ref={el => { otpRefs.current[i] = el }}
+                      inputMode="numeric"
+                      autoComplete={i === 0 ? 'one-time-code' : 'off'}
+                      maxLength={1}
+                      autoFocus={i === 0}
+                      value={digit}
+                      onChange={e => handleOtpChange(i, e.target.value)}
+                      onKeyDown={e => handleOtpKeyDown(i, e)}
+                      className="w-12 h-14 sm:w-[52px] sm:h-[60px] rounded-[14px] border-2 border-gold-300 bg-[#f5ecd4]/40 text-center font-dm-sans font-bold text-[24px] text-[#b89148] outline-none focus:border-[#b89148] focus:bg-white transition-colors"
+                    />
+                  ))}
+                </div>
+
+                <button disabled={loading || otp.replace(/\D/g, '').length < 6} type="submit" className={primaryBtnCls} style={{ background: '#b89148' }}>
+                  {loading && <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin mr-2 align-[-2px]" />}
                   {loading ? 'Verifying...' : view === 'login' ? 'Verify & Sign In' : 'Verify & Create Account'}
                 </button>
+
+                <p className="text-center font-dm-sans text-[13px] text-gold-600">
+                  {resendIn > 0 ? (
+                    <>Resend code in {Math.floor(resendIn / 60)}:{String(resendIn % 60).padStart(2, '0')}</>
+                  ) : (
+                    <button type="button" onClick={handleResendPhone} disabled={loading} className="font-medium text-[#b89148] hover:underline disabled:opacity-50">
+                      Resend code
+                    </button>
+                  )}
+                </p>
               </form>
             )}
 
