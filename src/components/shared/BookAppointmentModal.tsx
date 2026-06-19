@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useLocale, useTranslations } from 'next-intl'
 import { useAuth } from '@/lib/auth-context'
 import { useBranch } from '@/lib/branch-context'
+import { useScrollLock } from '@/lib/useScrollLock'
 import LoginModal from '@/components/shared/LoginModal'
 
 interface Props {
@@ -214,35 +215,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
       .catch(() => {})
   }, [locale, form.department_payload_id])
 
-  useEffect(() => {
-    if (!open) return
-    const scrollY      = window.scrollY
-    const scrollbarW   = window.innerWidth - document.documentElement.clientWidth
-    const htmlEl       = document.documentElement
-    const bodyEl       = document.body
-    const prevHtmlOverflow   = htmlEl.style.overflow
-    const prevBodyOverflow   = bodyEl.style.overflow
-    const prevBodyPosition   = bodyEl.style.position
-    const prevBodyTop        = bodyEl.style.top
-    const prevBodyWidth      = bodyEl.style.width
-    const prevBodyPaddingRight = bodyEl.style.paddingRight
-    htmlEl.style.overflow      = 'hidden'
-    bodyEl.style.overflow      = 'hidden'
-    bodyEl.style.position      = 'fixed'
-    bodyEl.style.top           = `-${scrollY}px`
-    bodyEl.style.width         = '100%'
-    // Compensate scrollbar disappearing so layout doesn't shift
-    if (scrollbarW > 0) bodyEl.style.paddingRight = `${scrollbarW}px`
-    return () => {
-      htmlEl.style.overflow    = prevHtmlOverflow
-      bodyEl.style.overflow    = prevBodyOverflow
-      bodyEl.style.position    = prevBodyPosition
-      bodyEl.style.top         = prevBodyTop
-      bodyEl.style.width       = prevBodyWidth
-      bodyEl.style.paddingRight = prevBodyPaddingRight
-      window.scrollTo(0, scrollY)
-    }
-  }, [open])
+  useScrollLock(open)
 
   const today = localDateString()
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))

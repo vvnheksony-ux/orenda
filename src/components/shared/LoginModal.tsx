@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Eye, EyeOff, X } from 'lucide-react'
 import { Link } from '@/i18n/routing'
 import { createClient } from '@/utils/supabase/client'
+import { useScrollLock } from '@/lib/useScrollLock'
 
 const supabase = createClient()
 
@@ -81,36 +82,8 @@ function LoginModalContent({
   // Which auth method is being opened, so its button can show a spinner.
   const [pendingMethod, setPendingMethod] = useState<'email' | 'phone' | 'google' | null>(null)
 
-  // Lock background scroll while the modal is mounted (it only renders when open).
-  useEffect(() => {
-    const scrollY = window.scrollY
-    const scrollbarW = window.innerWidth - document.documentElement.clientWidth
-    const htmlEl = document.documentElement
-    const bodyEl = document.body
-    const prev = {
-      htmlOverflow: htmlEl.style.overflow,
-      bodyOverflow: bodyEl.style.overflow,
-      bodyPosition: bodyEl.style.position,
-      bodyTop: bodyEl.style.top,
-      bodyWidth: bodyEl.style.width,
-      bodyPaddingRight: bodyEl.style.paddingRight,
-    }
-    htmlEl.style.overflow = 'hidden'
-    bodyEl.style.overflow = 'hidden'
-    bodyEl.style.position = 'fixed'
-    bodyEl.style.top = `-${scrollY}px`
-    bodyEl.style.width = '100%'
-    if (scrollbarW > 0) bodyEl.style.paddingRight = `${scrollbarW}px`
-    return () => {
-      htmlEl.style.overflow = prev.htmlOverflow
-      bodyEl.style.overflow = prev.bodyOverflow
-      bodyEl.style.position = prev.bodyPosition
-      bodyEl.style.top = prev.bodyTop
-      bodyEl.style.width = prev.bodyWidth
-      bodyEl.style.paddingRight = prev.bodyPaddingRight
-      window.scrollTo(0, scrollY)
-    }
-  }, [])
+  // Lock background scroll while the modal is mounted (shared, ref-counted).
+  useScrollLock(true)
 
   const resetFlow = () => {
     setMode('options')
