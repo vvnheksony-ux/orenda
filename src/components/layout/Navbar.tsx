@@ -119,21 +119,21 @@ export default function Navbar() {
       {/* ── Desktop (≥ 1400px) ── */}
       <div className="hidden xl:block pointer-events-auto transition-all duration-300">
         <div className="w-full max-w-[1512px] mx-auto px-6 2xl:px-[46px] py-7">
-        <div className="flex items-center justify-between w-full">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 2xl:gap-6 w-full">
 
           {/* Logo */}
-          <div className="flex items-center flex-1 min-w-0">
+          <div className="flex items-center min-w-0">
             <Link href="/" className="relative shrink-0 w-[64px] h-[84px] transition-all duration-300">
               <Image src="/images/logo-emblem.png" alt="Orienda International Hospital" fill sizes="64px" className="object-contain" priority />
             </Link>
           </div>
 
           {/* Center: Nav pill + Branch + Lang */}
-          <div className="flex items-center justify-center shrink-0 gap-[10px]">
+          <div className="flex items-center min-w-0 justify-center gap-[8px] 2xl:gap-[10px]">
 
             {/* Nav pill */}
-            <div className="flex items-center p-[2px] rounded-[24px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] bg-[#FBF7EE]/40 backdrop-blur-md">
-              <nav className="flex items-center">
+            <div className="min-w-0 flex-1 flex items-center p-[2px] rounded-[24px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] bg-[#FBF7EE]/40 backdrop-blur-md overflow-hidden">
+              <nav className="flex items-center min-w-0 w-full justify-center">
                 {NAV_ITEMS.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                   const hasChildren = !!item.children?.length
@@ -147,10 +147,10 @@ export default function Navbar() {
                     >
                       <Link
                         href={item.href}
-                        className="flex items-center justify-center py-[22px] 2xl:py-[32px] pl-[10px] 2xl:pl-[22px] pr-[6px] 2xl:pr-[14px] rounded-[22px] gap-[8px] hover:bg-white/50 transition-colors"
+                        className="flex items-center justify-center py-[20px] 2xl:py-[32px] pl-[8px] 2xl:pl-[22px] pr-[4px] 2xl:pr-[14px] rounded-[22px] gap-[6px] 2xl:gap-[8px] hover:bg-white/50 transition-colors"
                       >
                         <span className={cn(
-                          'text-[15px] 2xl:text-[17px] font-inter leading-none whitespace-nowrap',
+                          'text-[13px] 2xl:text-[17px] font-inter leading-none whitespace-nowrap',
                           isActive ? 'text-[#3B2D17] font-semibold' : 'text-[#2A2620] font-normal'
                         )}>
                           {t(item.key)}
@@ -206,11 +206,11 @@ export default function Navbar() {
               <button
                 onClick={() => setBranchOpen(!branchOpen)}
                 className={cn(
-                  'flex items-center justify-center py-[11px] px-[14px] 2xl:py-[13px] 2xl:px-[18px] gap-[8px] 2xl:gap-[10px] rounded-[16px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 bg-[#F5ECD4]/40 backdrop-blur-md'
+                  'flex items-center justify-center py-[10px] px-[12px] 2xl:py-[13px] 2xl:px-[18px] gap-[6px] 2xl:gap-[10px] rounded-[16px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 bg-[#F5ECD4]/40 backdrop-blur-md shrink-0'
                 )}
               >
-                <Building2 className="w-[22px] h-[22px] 2xl:w-[24px] 2xl:h-[24px] text-[#3B2D17] shrink-0" strokeWidth={1.5} />
-                <span className="font-dm-sans text-[16px] 2xl:text-[18px] text-[#3B2D17] font-normal leading-none max-w-[80px] truncate">{branchLabel}</span>
+                <Building2 className="w-[20px] h-[20px] 2xl:w-[24px] 2xl:h-[24px] text-[#3B2D17] shrink-0" strokeWidth={1.5} />
+                <span className="font-dm-sans text-[14px] 2xl:text-[18px] text-[#3B2D17] font-normal leading-none max-w-[64px] 2xl:max-w-[80px] truncate">{branchLabel}</span>
                 <ChevronDown className="w-[14px] h-[14px] text-[#3B2D17] shrink-0" strokeWidth={2} />
               </button>
               <AnimatePresence>
@@ -336,18 +336,18 @@ export default function Navbar() {
           </div>
 
           {/* Right: Book Appointment + Phone */}
-          <div className="relative flex items-center justify-end flex-1 min-w-0 gap-[10px]" ref={phoneRef}>
+          <div className="relative flex items-center justify-end min-w-0 gap-[8px] 2xl:gap-[10px]" ref={phoneRef}>
             <button
               onClick={() => { trackCallClick('navbar'); setBookOpen(true) }}
-              className="flex items-center justify-center h-[50px] 2xl:h-[56px] px-[16px] 2xl:px-[28px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200"
+              className="flex items-center justify-center h-[48px] 2xl:h-[56px] px-[14px] 2xl:px-[28px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200 shrink-0"
             >
-              <span className="font-dm-sans text-[14px] 2xl:text-[15px] font-normal text-[#F9F9F9] whitespace-nowrap">{t('bookAppointment')}</span>
+              <span className="font-dm-sans text-[13px] 2xl:text-[15px] font-normal text-[#F9F9F9] whitespace-nowrap">{t('bookAppointment')}</span>
             </button>
             <BookAppointmentModal open={bookOpen} onClose={() => setBookOpen(false)} />
 
             <button
               onClick={() => setPhoneOpen(!phoneOpen)}
-              className="flex items-center justify-center h-[50px] w-[50px] 2xl:h-[56px] 2xl:w-[56px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200 shrink-0"
+              className="flex items-center justify-center h-[48px] w-[48px] 2xl:h-[56px] 2xl:w-[56px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200 shrink-0"
             >
               <Phone className="w-[20px] h-[20px] text-[#F9F9F9]" strokeWidth={2} />
             </button>

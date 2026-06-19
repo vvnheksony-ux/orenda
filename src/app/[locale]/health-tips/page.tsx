@@ -4,9 +4,8 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
-import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { ChevronRight, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 
 interface HealthTip {
   id: string
@@ -36,6 +35,25 @@ const POPULAR = [
   { rank: 5, title: 'Mindfulness Practice', desc: 'Spending 10 minutes on mindfulness or meditation reduces stress and improves clarity.' },
 ]
 
+const HERO_SLIDES = [
+  {
+    image: '/images/about/about-hero-3.jpg',
+    title: 'Orienda International Hospital',
+    lines: [
+      'We dedicated to providing safe and reliable medical services.',
+      'Schedule and appointment to experience world-class healthcare.',
+    ],
+  },
+  {
+    image: '/images/about/about-hero-2.jpg',
+    title: 'Orienda International Hospital',
+    lines: [
+      'We dedicated to providing safe and reliable medical services.',
+      'Schedule and appointment to experience world-class healthcare.',
+    ],
+  },
+] as const
+
 function formatDate(iso: string) {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -48,9 +66,9 @@ export default function HealthTipsPage() {
   const [category, setCategory] = useState('')
   const [search, setSearch] = useState('')
   const [showAllCategories, setShowAllCategories] = useState(false)
+  const [heroIndex, setHeroIndex] = useState(0)
 
   useEffect(() => {
-    setLoading(true)
     const params = new URLSearchParams({ locale, limit: '20' })
     if (category) params.set('category', category)
     fetch(`/api/health-tips?${params}`)
@@ -65,28 +83,75 @@ export default function HealthTipsPage() {
   )
 
   const visibleCategories = showAllCategories ? CATEGORIES : CATEGORIES.slice(0, 6)
+  const activeHero = HERO_SLIDES[heroIndex]
 
   return (
     <SiteLayout>
       <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
-        <div className="page-shell">
+        <div className="page-shell flex flex-col gap-[32px] lg:gap-[40px]">
 
           {/* Hero banner */}
-          <PromotionStyleHero
-            imageSrc="/images/about/about-hero-3.jpg"
-            imageAlt="Orienda International Hospital"
-            title="Orienda International Hospital"
-            lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule and appointment to experience world-class healthcare.',
-            ]}
-          />
+          <div className="relative w-full">
+            <button
+              type="button"
+              aria-label="Previous slide"
+              onClick={() => setHeroIndex(current => (current - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+              className="absolute left-[-20px] top-1/2 z-10 hidden -translate-y-1/2 text-[#b89148] xl:flex"
+            >
+              <ChevronLeft size={28} strokeWidth={1.5} />
+            </button>
+
+            <div className="overflow-hidden rounded-[24px] bg-white p-[16px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.10)] lg:p-[20px]">
+              <div className="flex flex-col-reverse gap-[20px] lg:flex-row lg:items-stretch lg:gap-[24px]">
+                <div className="flex flex-1 flex-col justify-center px-[12px] py-[8px] lg:max-w-[46%] lg:px-[24px]">
+                  <div className="flex flex-col gap-[18px] lg:gap-[28px]">
+                    <h1 className="font-cormorant text-[36px] font-bold leading-[0.95] text-[#3b2d17] lg:text-[56px]">
+                      {activeHero.title}
+                    </h1>
+                    <div className="flex flex-col gap-[14px] font-dm-sans text-[16px] leading-[1.35] text-[#594522] lg:text-[20px]">
+                      <p>{activeHero.lines[0]}</p>
+                      <p>{activeHero.lines[1]}</p>
+                    </div>
+                    <div className="flex items-center gap-[12px] pt-[8px]">
+                      <Link
+                        href="/about"
+                        className="inline-flex h-[40px] items-center gap-[8px] rounded-[12px] border border-[#b89148] px-[18px] font-dm-sans text-[14px] text-[#5c4924] transition-colors hover:bg-[#fbf7ee] lg:h-[52px] lg:px-[24px]"
+                      >
+                        Learn More
+                        <ChevronRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative h-[240px] overflow-hidden rounded-[18px] sm:h-[320px] lg:h-[390px] lg:flex-1">
+                  <Image
+                    src={activeHero.image}
+                    alt={activeHero.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 55vw"
+                    priority
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              aria-label="Next slide"
+              onClick={() => setHeroIndex(current => (current + 1) % HERO_SLIDES.length)}
+              className="absolute right-[-20px] top-1/2 z-10 hidden -translate-y-1/2 text-[#b89148] xl:flex"
+            >
+              <ChevronRight size={28} strokeWidth={1.5} />
+            </button>
+          </div>
 
           {/* Two-column layout */}
           <div className="flex flex-col lg:flex-row gap-[32px] lg:gap-[40px] items-start">
 
             {/* Left sidebar: 332px */}
-            <div className="shrink-0 w-full lg:w-[332px] flex flex-col gap-[24px] lg:gap-[40px]">
+            <div className="shrink-0 w-full lg:w-[332px] flex flex-col gap-[24px] lg:gap-[28px]">
 
               {/* Search */}
               <div className="bg-white flex items-center gap-[12px] h-[42px] px-[12px] py-[8px] rounded-[12px] shadow-[0px_4px_15px_rgba(220,189,114,0.12)]">
@@ -107,7 +172,7 @@ export default function HealthTipsPage() {
                     onClick={() => setCategory(cat.value === category ? '' : cat.value)}
                     className={`w-full flex items-center gap-[12px] p-[24px] font-dm-sans text-[16px] text-[#3b2d17] text-left transition-colors ${
                       i < CATEGORIES.length - 2 ? 'border-b border-[#ead6a4]/50' : ''
-                    } ${cat.value === category ? 'bg-[rgba(184,145,72,0.15)]' : 'hover:bg-[#fbf7ee]'}`}
+                    } ${cat.value === category ? 'bg-[rgba(184,145,72,0.12)]' : 'hover:bg-[#fbf7ee]'}`}
                   >
                     {cat.label}
                   </button>
@@ -116,7 +181,7 @@ export default function HealthTipsPage() {
                   onClick={() => setShowAllCategories(!showAllCategories)}
                   className="w-full flex items-center justify-between p-[24px] bg-[rgba(184,145,72,0.6)] font-dm-sans text-[16px] text-[#3b2d17]"
                 >
-                  <span>See More</span>
+                  <span>{showAllCategories ? 'Show Less' : 'See More'}</span>
                   <ChevronRight size={16} className={`transition-transform ${showAllCategories ? 'rotate-90' : ''}`} />
                 </button>
               </div>
@@ -178,8 +243,8 @@ export default function HealthTipsPage() {
                           <div className="w-full h-full bg-[#ead6a4]/30" />
                         )}
                       </div>
-                      <div className="flex flex-col gap-[23px] p-[24px] items-end">
-                        <div className="flex flex-col gap-[12px] items-start w-full">
+                      <div className="flex flex-col justify-between gap-[16px] p-[24px] flex-1">
+                        <div className="flex flex-col gap-[12px]">
                           <p className="font-dm-sans font-light text-[10px] text-[rgba(59,45,23,0.7)]">
                             {formatDate(tip.publishedAt)}
                           </p>
@@ -189,7 +254,7 @@ export default function HealthTipsPage() {
                         </div>
                         <Link
                           href={`/health-tips/${tip.slug}` as '/'}
-                          className="flex items-center gap-1 px-[12px] py-[8px] h-[32px] rounded-[12px] border border-[#b89148] font-dm-sans text-[12px] text-[#594522] hover:bg-[#fbf7ee] transition-colors shrink-0"
+                          className="flex items-center gap-1 px-[12px] py-[8px] h-[32px] rounded-[12px] border border-[#b89148] font-dm-sans text-[12px] text-[#594522] hover:bg-[#fbf7ee] transition-colors shrink-0 self-end"
                         >
                           Read More
                           <ChevronRight size={14} />

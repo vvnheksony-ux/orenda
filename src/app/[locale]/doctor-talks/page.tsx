@@ -3,9 +3,9 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
-import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
+import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { ChevronRight, Search, Play } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, Play } from 'lucide-react'
 
 interface DoctorTalk {
   id: string
@@ -20,6 +20,29 @@ interface DoctorTalk {
   featuredDoctor: { name: string } | null
 }
 
+interface DepartmentOption {
+  name?: string
+}
+
+const HERO_SLIDES = [
+  {
+    image: '/images/about/about-hero-3.jpg',
+    title: 'Orienda International Hospital',
+    lines: [
+      'We dedicated to providing safe and reliable medical services.',
+      'Schedule and appointment to experience world-class healthcare.',
+    ],
+  },
+  {
+    image: '/images/about/about-hero-2.jpg',
+    title: 'Orienda International Hospital',
+    lines: [
+      'We dedicated to providing safe and reliable medical services.',
+      'Schedule and appointment to experience world-class healthcare.',
+    ],
+  },
+] as const
+
 
 function formatDate(iso: string) {
   if (!iso) return ''
@@ -33,9 +56,9 @@ export default function DoctorTalksPage() {
   const [search, setSearch] = useState('')
   const [showMore, setShowMore] = useState(false)
   const [categories, setCategories] = useState<string[]>([])
+  const [heroIndex, setHeroIndex] = useState(0)
 
   useEffect(() => {
-    setLoading(true)
     fetch(`/api/doctor-talks?locale=${locale}&limit=20`)
       .then(r => r.json())
       .then(d => { if (d?.docs) setTalks(d.docs) })
@@ -43,7 +66,7 @@ export default function DoctorTalksPage() {
       .finally(() => setLoading(false))
     fetch(`/api/departments?locale=${locale}&limit=20`)
       .then(r => r.json())
-      .then(d => setCategories((d.docs || []).map((dept: any) => dept.name).filter(Boolean)))
+      .then(d => setCategories((d.docs || []).map((dept: DepartmentOption) => dept.name).filter(Boolean)))
       .catch(() => {})
   }, [locale])
 
@@ -51,22 +74,69 @@ export default function DoctorTalksPage() {
     !search || t.title.toLowerCase().includes(search.toLowerCase()) ||
     t.talkTopic.toLowerCase().includes(search.toLowerCase())
   )
+  const activeHero = HERO_SLIDES[heroIndex]
 
   return (
     <SiteLayout>
       <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
-        <div className="page-shell">
+        <div className="page-shell flex flex-col gap-[32px] lg:gap-[40px]">
 
           {/* Hero banner */}
-          <PromotionStyleHero
-            imageSrc="/images/about/about-hero-3.jpg"
-            imageAlt="Orienda International Hospital"
-            title="Orienda International Hospital"
-            lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule and appointment to experience world-class healthcare.',
-            ]}
-          />
+          <div className="relative w-full">
+            <button
+              type="button"
+              aria-label="Previous slide"
+              onClick={() => setHeroIndex(current => (current - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+              className="absolute left-[-18px] top-1/2 z-10 hidden -translate-y-1/2 text-[#b89148] xl:flex"
+            >
+              <ChevronLeft size={28} strokeWidth={1.5} />
+            </button>
+
+            <div className="overflow-hidden rounded-[24px] bg-white p-[16px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.10)] lg:p-[20px]">
+              <div className="flex flex-col-reverse gap-[20px] lg:flex-row lg:items-stretch lg:gap-[24px]">
+                <div className="flex flex-1 flex-col justify-center px-[12px] py-[8px] lg:max-w-[46%] lg:px-[24px]">
+                  <div className="flex flex-col gap-[18px] lg:gap-[24px]">
+                    <h1 className="font-cormorant text-[36px] font-bold leading-[0.95] text-[#3b2d17] lg:text-[56px]">
+                      {activeHero.title}
+                    </h1>
+                    <div className="flex flex-col gap-[14px] font-dm-sans text-[16px] leading-[1.35] text-[#594522] lg:text-[20px]">
+                      <p>{activeHero.lines[0]}</p>
+                      <p>{activeHero.lines[1]}</p>
+                    </div>
+                    <div className="pt-[6px]">
+                      <Link
+                        href="/about"
+                        className="inline-flex h-[40px] items-center gap-[8px] rounded-[12px] border border-[#b89148] px-[18px] font-dm-sans text-[14px] text-[#5c4924] transition-colors hover:bg-[#fbf7ee] lg:h-[52px] lg:px-[24px]"
+                      >
+                        Learn More
+                        <ChevronRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative h-[240px] overflow-hidden rounded-[18px] sm:h-[320px] lg:h-[390px] lg:flex-1">
+                  <Image
+                    src={activeHero.image}
+                    alt={activeHero.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 55vw"
+                    priority
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              aria-label="Next slide"
+              onClick={() => setHeroIndex(current => (current + 1) % HERO_SLIDES.length)}
+              className="absolute right-[-18px] top-1/2 z-10 hidden -translate-y-1/2 text-[#b89148] xl:flex"
+            >
+              <ChevronRight size={28} strokeWidth={1.5} />
+            </button>
+          </div>
 
           {/* Two-column layout */}
           <div className="flex flex-col lg:flex-row gap-[32px] lg:gap-[40px] items-start">
@@ -89,14 +159,15 @@ export default function DoctorTalksPage() {
               {categories.length > 0 && (
                 <div className="bg-white rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] overflow-hidden">
                   {(showMore ? categories : categories.slice(0, 5)).map((cat, i, arr) => (
-                    <div
+                    <button
                       key={cat}
+                      type="button"
                       className={`w-full flex items-center gap-[12px] p-[24px] font-dm-sans text-[16px] text-[#3b2d17] text-left ${
                         i < arr.length - 1 ? 'border-b border-[#ead6a4]/50' : ''
                       } hover:bg-[#fbf7ee] cursor-pointer`}
                     >
                       {cat}
-                    </div>
+                    </button>
                   ))}
                   {categories.length > 5 && (
                     <button
@@ -178,16 +249,16 @@ export default function DoctorTalksPage() {
                             href={watchUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors"
+                            className="absolute inset-0 flex items-center justify-center bg-black/12 group-hover:bg-black/20 transition-colors"
                           >
-                            <div className="size-[56px] rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                              <Play size={24} className="text-[#b89148] ml-1" fill="#b89148" />
+                            <div className="flex h-[72px] w-[116px] items-center justify-center rounded-[18px] bg-[#ff3b30] shadow-[0px_18px_32px_rgba(255,59,48,0.22)]">
+                              <Play size={34} className="ml-1 text-white" fill="white" />
                             </div>
                           </a>
                         </div>
 
                         {/* Card footer: date+title left, Watch right */}
-                        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-[16px] sm:gap-[23px] p-[24px]">
+                        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-[16px] sm:gap-[23px] p-[18px_22px_20px]">
                           <div className="flex flex-col gap-[12px] flex-1 min-w-0">
                             <p className="font-dm-sans font-light text-[10px] text-[rgba(59,45,23,0.7)]">
                               {formatDate(talk.eventDate)}

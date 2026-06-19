@@ -39,8 +39,8 @@ export default function SideHeroCarousel({ slides }: SideHeroCarouselProps) {
 
   return (
     <div className="w-full overflow-hidden rounded-[24px] bg-white p-4 shadow-[0px_4px_30px_12px_rgba(220,189,114,0.10)] sm:p-5 lg:rounded-[28px] lg:p-8 xl:p-9">
-      <div className="flex items-stretch gap-3 sm:gap-5 lg:gap-10 xl:gap-12">
-        <div className="relative h-[220px] w-[44%] shrink-0 overflow-hidden rounded-[20px] bg-[#f4efe5] sm:h-[300px] sm:w-[43%] lg:h-[472px] lg:w-[42%] xl:w-[41%]">
+      <div className="flex flex-col items-stretch gap-5 sm:gap-6 lg:flex-row lg:gap-10 xl:gap-12">
+        <div className="relative h-[240px] w-full shrink-0 overflow-hidden rounded-[20px] bg-[#f4efe5] sm:h-[320px] lg:h-[472px] lg:w-[42%] xl:w-[41%]">
           {slides.map((slide, index) => (
             <div
               key={`${slide.src}-${index}`}
@@ -59,26 +59,33 @@ export default function SideHeroCarousel({ slides }: SideHeroCarouselProps) {
           ))}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 px-0.5 py-1 sm:gap-4 sm:px-1 lg:gap-7 lg:pr-4 xl:pr-8">
-          <h1 className="font-cormorant text-[18px] font-bold leading-[1.05] text-[#3b2d17] sm:text-[28px] lg:text-[52px] xl:text-[56px]">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-3 px-0.5 py-1 sm:gap-4 sm:px-1 lg:gap-7 lg:pr-4 xl:pr-8">
+          <div className="flex items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#ead6a4] bg-[#fbf7ee] px-3 py-1.5 font-dm-sans text-[11px] font-medium uppercase tracking-[0.18em] text-[#8d6f38] sm:text-[12px]">
+              <span>Featured Story</span>
+              {hasMultipleSlides && <span className="text-[#b89148]">{String(activeIndex + 1).padStart(2, '0')}/{String(slides.length).padStart(2, '0')}</span>}
+            </div>
+          </div>
+
+          <h1 className="max-w-[12ch] font-cormorant text-[28px] font-bold leading-[0.95] text-[#3b2d17] sm:text-[40px] lg:text-[52px] xl:text-[56px]">
             {activeSlide.title}
           </h1>
 
-          <div className="flex flex-col gap-2 font-dm-sans text-[11px] font-light leading-[1.4] text-[#594522] sm:gap-3 sm:text-[16px] lg:gap-4 lg:text-[22px] xl:text-[24px]">
+          <div className="max-w-[34rem] flex flex-col gap-2 font-dm-sans text-[14px] font-light leading-[1.55] text-[#594522] sm:gap-3 sm:text-[16px] lg:gap-4 lg:text-[22px] xl:text-[24px]">
             <p>{activeSlide.lines[0]}</p>
             <p>{activeSlide.lines[1]}</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 pt-1 sm:gap-4 lg:gap-5">
+          <div className="flex flex-wrap items-center gap-3 pt-2 sm:gap-4 lg:gap-5">
             {activeSlide.cta}
 
             {hasMultipleSlides && (
-              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   aria-label="Previous slide"
                   onClick={showPrev}
-                  className="flex size-9 items-center justify-center rounded-full border border-[#b89148] text-[#7a5f2c] transition-colors hover:bg-[#fbf7ee] sm:size-11 lg:size-16"
+                  className="flex size-10 items-center justify-center rounded-full border border-[#c7a35b] bg-[#fffaf0] text-[#7a5f2c] transition-all hover:-translate-y-0.5 hover:bg-[#f7ecd4] sm:size-11 lg:size-16"
                 >
                   <ChevronLeft className="size-4 sm:size-5 lg:size-7" />
                 </button>
@@ -86,10 +93,21 @@ export default function SideHeroCarousel({ slides }: SideHeroCarouselProps) {
                   type="button"
                   aria-label="Next slide"
                   onClick={showNext}
-                  className="flex size-9 items-center justify-center rounded-full border border-[#b89148] text-[#7a5f2c] transition-colors hover:bg-[#fbf7ee] sm:size-11 lg:size-16"
+                  className="flex size-10 items-center justify-center rounded-full border border-[#c7a35b] bg-[#fffaf0] text-[#7a5f2c] transition-all hover:-translate-y-0.5 hover:bg-[#f7ecd4] sm:size-11 lg:size-16"
                 >
                   <ChevronRight className="size-4 sm:size-5 lg:size-7" />
                 </button>
+                <div className="ml-1 flex items-center gap-2">
+                  {slides.map((slide, index) => (
+                    <button
+                      key={`${slide.src}-dot-${index}`}
+                      type="button"
+                      aria-label={`Go to slide ${index + 1}`}
+                      onClick={() => setActiveIndex(index)}
+                      className={`h-2.5 rounded-full transition-all ${index === activeIndex ? 'w-8 bg-[#b89148]' : 'w-2.5 bg-[#decba4] hover:bg-[#cdb37b]'}`}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>
