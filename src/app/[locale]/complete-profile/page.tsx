@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from '@/i18n/routing'
-import { UserRound, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import LoginModal from '@/components/shared/LoginModal'
 import { CustomSelect } from '@/components/shared/FormControls'
 import { useAuth } from '@/lib/auth-context'
@@ -141,72 +142,104 @@ export default function CompleteProfilePage() {
   }
 
   return (
-    <Shell>
-      <div className="w-full max-w-[460px]">
-        {/* Brand + heading */}
-        <div className="flex flex-col items-center gap-[14px] mb-[26px] text-center">
-          <div className="w-16 h-16 rounded-full bg-[#b89148] flex items-center justify-center shadow-[0_6px_20px_rgba(184,145,72,0.35)]">
-            <UserRound size={30} className="text-white" />
+    <div className="min-h-screen w-full flex bg-[#fbf7ee]">
+
+      {/* Welcome / brand panel */}
+      <aside
+        className="hidden lg:flex lg:w-[44%] xl:w-[40%] relative flex-col justify-between px-12 py-14 text-white overflow-hidden"
+        style={{ background: 'linear-gradient(150deg, #cba85a 0%, #b89148 45%, #876327 100%)' }}
+      >
+        <div className="absolute -top-24 -right-20 w-72 h-72 rounded-full bg-white/10" />
+        <div className="absolute -bottom-28 -left-16 w-80 h-80 rounded-full bg-white/[0.06]" />
+
+        <div className="relative flex items-center gap-3">
+          <div className="relative w-12 h-12 rounded-full bg-white/95 overflow-hidden shrink-0">
+            <Image src="/images/logo-emblem.png" alt="Orienda" fill sizes="48px" className="object-contain p-1.5" />
           </div>
-          <div className="flex flex-col gap-[4px]">
-            <p className="font-dm-sans text-[12px] tracking-[2px] uppercase text-[#b89148]">Orienda International Hospital</p>
-            <h1 className="font-cormorant font-bold text-[34px] text-[#3b2d17] leading-none">Complete your profile</h1>
-            <p className="font-dm-sans text-[14px] text-[#6b5836]">Just a few details to finish setting up your account.</p>
-          </div>
+          <span className="font-cormorant font-bold text-[22px] leading-none">Orienda</span>
         </div>
 
-        {/* Form card */}
-        <form onSubmit={handleSave} className="bg-white rounded-[18px] p-[28px] sm:p-[32px] flex flex-col gap-[18px]" style={{ boxShadow: '0px 10px 40px rgba(184,145,72,0.16)' }}>
-          <div className="flex flex-col gap-[7px]">
-            <label className={labelCls}>Full name <span className="text-[#b89148]">*</span></label>
-            <input className={fieldCls} value={form.display_name} onChange={e => set('display_name', e.target.value)} placeholder="Your full name" required />
+        <div className="relative flex flex-col gap-7">
+          <div className="flex flex-col gap-3">
+            <h2 className="font-cormorant font-bold text-[40px] leading-[1.05] max-w-[420px]">Welcome to Orienda International Hospital</h2>
+            <p className="font-dm-sans text-[15px] text-white/85 leading-relaxed max-w-[380px]">
+              Complete your profile to unlock the full experience and receive care tailored to you.
+            </p>
+          </div>
+          <ul className="flex flex-col gap-4">
+            {['Faster appointment booking', 'Personalized care and updates', 'Secure access to your information'].map(t => (
+              <li key={t} className="flex items-center gap-3 font-dm-sans text-[15px] text-white/95">
+                <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0"><Check size={14} /></span>
+                {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className="relative font-dm-sans text-[12px] text-white/70">Your information is kept private and secure.</p>
+      </aside>
+
+      {/* Form panel */}
+      <main className="flex-1 flex items-center justify-center px-4 py-12 sm:px-8">
+        <div className="w-full max-w-[460px]">
+          <div className="flex flex-col gap-2 mb-7">
+            <p className="font-dm-sans text-[12px] tracking-[2px] uppercase text-[#b89148]">Almost there</p>
+            <h1 className="font-cormorant font-bold text-[34px] sm:text-[40px] text-[#3b2d17] leading-none">Complete your profile</h1>
+            <p className="font-dm-sans text-[14px] text-[#6b5836]">Just a few details to finish setting up your account.</p>
           </div>
 
-          <div className="flex flex-col gap-[7px]">
-            <label className={labelCls}>Phone <span className="text-[#b89148]">*</span></label>
-            <input className={fieldCls} type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="e.g. 012 345 678" required />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+          <form onSubmit={handleSave} className="flex flex-col gap-[18px]">
             <div className="flex flex-col gap-[7px]">
-              <label className={labelCls}>Date of birth</label>
-              <input className={fieldCls} type="date" value={form.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} />
+              <label className={labelCls}>Full name <span className="text-[#b89148]">*</span></label>
+              <input className={fieldCls} value={form.display_name} onChange={e => set('display_name', e.target.value)} placeholder="Your full name" required />
             </div>
+
+            <div className="flex flex-col gap-[7px]">
+              <label className={labelCls}>Phone <span className="text-[#b89148]">*</span></label>
+              <input className={fieldCls} type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="e.g. 012 345 678" required />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+              <div className="flex flex-col gap-[7px]">
+                <label className={labelCls}>Date of birth</label>
+                <input className={fieldCls} type="date" value={form.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} />
+              </div>
+              <CustomSelect
+                label="Gender"
+                labelCls={labelCls}
+                value={form.gender}
+                onChange={v => set('gender', v)}
+                options={['Male', 'Female', 'Other']}
+                placeholder="Prefer not to say"
+              />
+            </div>
+
             <CustomSelect
-              label="Gender"
+              label="Preferred language"
               labelCls={labelCls}
-              value={form.gender}
-              onChange={v => set('gender', v)}
-              options={['Male', 'Female', 'Other']}
-              placeholder="Prefer not to say"
+              value={LANG_LABELS[form.language] ?? 'English'}
+              onChange={v => set('language', LANG_CODE[v] ?? 'en')}
+              options={['English', 'ខ្មែរ (Khmer)', '中文 (Chinese)']}
             />
-          </div>
 
-          <CustomSelect
-            label="Preferred language"
-            labelCls={labelCls}
-            value={LANG_LABELS[form.language] ?? 'English'}
-            onChange={v => set('language', LANG_CODE[v] ?? 'en')}
-            options={['English', 'ខ្មែរ (Khmer)', '中文 (Chinese)']}
-          />
+            {error && (
+              <p className="font-dm-sans text-[13px] text-[#991b1b] bg-[#fee2e2] rounded-[10px] px-3 py-2">{error}</p>
+            )}
 
-          {error && (
-            <p className="font-dm-sans text-[13px] text-[#991b1b] bg-[#fee2e2] rounded-[10px] px-3 py-2">{error}</p>
-          )}
+            <button
+              type="submit"
+              disabled={saving || saved}
+              className="mt-[4px] w-full py-3.5 rounded-[12px] bg-[#b89148] hover:bg-[#9a7630] disabled:opacity-60 transition-colors text-white font-dm-sans font-bold text-[16px] flex items-center justify-center gap-2"
+            >
+              {saved ? (<><Check size={18} /> Saved</>) : saving ? 'Saving…' : 'Save & continue'}
+            </button>
 
-          <button
-            type="submit"
-            disabled={saving || saved}
-            className="mt-[4px] w-full py-3.5 rounded-[12px] bg-[#b89148] hover:bg-[#9a7630] disabled:opacity-60 transition-colors text-white font-dm-sans font-bold text-[16px] flex items-center justify-center gap-2"
-          >
-            {saved ? (<><Check size={18} /> Saved</>) : saving ? 'Saving…' : 'Save & continue'}
-          </button>
-
-          <p className="font-dm-sans text-[12px] text-[#9a8a6a] text-center">
-            <span className="text-[#b89148]">*</span> Required to book appointments.
-          </p>
-        </form>
-      </div>
-    </Shell>
+            <p className="font-dm-sans text-[12px] text-[#9a8a6a] text-center">
+              <span className="text-[#b89148]">*</span> Required to book appointments.
+            </p>
+          </form>
+        </div>
+      </main>
+    </div>
   )
 }

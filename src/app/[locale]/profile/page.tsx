@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CalendarDays, Check, LogOut, Mail, Phone, Save } from 'lucide-react'
-import { useRouter } from '@/i18n/routing'
+import { ArrowLeft, CalendarDays, Check, Clock, LogOut, Mail, MapPin, Phone, Save, Stethoscope } from 'lucide-react'
+import { Link, useRouter } from '@/i18n/routing'
 import { useAuth } from '@/lib/auth-context'
 import { setProfileComplete } from '@/lib/profile-status'
 import { createClient } from '@/utils/supabase/client'
@@ -30,6 +30,16 @@ const EMPTY: ProfileForm = {
 const fieldCls = 'w-full border border-[#dcbd72] rounded-[12px] px-4 py-3 font-dm-sans text-[15px] text-[#3b2d17] bg-white outline-none focus:border-[#b89148] transition-colors'
 const labelCls = 'font-dm-sans text-[13px] font-medium text-[#6b5836]'
 
+const STATUS_STYLES: Record<string, string> = {
+  pending:   'bg-amber-50 text-amber-700 border border-amber-200',
+  confirmed: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  completed: 'bg-blue-50 text-blue-700 border border-blue-200',
+  cancelled: 'bg-red-50 text-red-600 border border-red-200',
+}
+
+const formatApptDate = (d: string | null) =>
+  d ? new Date(d).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Earliest available'
+
 export default function ProfilePage() {
   const { user, loading: authLoading, signOut } = useAuth()
   const router = useRouter()
@@ -38,6 +48,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [appointments, setAppointments] = useState<any[]>([])
+  const [apptLoading, setApptLoading] = useState(true)
 
   useEffect(() => {
     if (authLoading) return
@@ -68,6 +80,19 @@ export default function ProfilePage() {
 
     return () => { cancelled = true }
   }, [authLoading, router, user])
+
+  // Load the signed-in user's appointment history.
+  useEffect(() => {
+    if (authLoading || !user) return
+    let cancelled = false
+    setApptLoading(true)
+    fetch('/api/appointments')
+      .then(r => (r.ok ? r.json() : { docs: [] }))
+      .then(d => { if (!cancelled) setAppointments(Array.isArray(d?.docs) ? d.docs : []) })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setApptLoading(false) })
+    return () => { cancelled = true }
+  }, [authLoading, user])
 
   const set = (key: keyof ProfileForm, value: string) => {
     setSaved(false)
@@ -285,6 +310,69 @@ export default function ProfilePage() {
             </div>
           </form>
         </div>
+
+        {/* Appointment history */}
+        <section className="mt-6 bg-white rounded-[20px] p-6 sm:p-8 shadow-[0_10px_40px_rgba(184,145,72,0.14)]">
+          <div className="flex items-center gap-2 mb-5">
+            <CalendarDays size={20} className="text-[#b89148]" />
+            <h2 className="font-cormorant font-bold text-[26px] text-[#3b2d17] leading-none">Appointment History</h2>
+          </div>
+
+          {apptLoading ? (
+            <div className="flex justify-center py-10">
+              <div className="w-8 h-8 border-[3px] border-[#b89148] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : appointments.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-12 text-center">
+              <div className="w-14 h-14 rounded-full bg-[#fbf7ee] flex items-center justify-center">
+                <CalendarDays size={26} className="text-[#dcbd72]" />
+              </div>
+              <p className="font-dm-sans text-[15px] text-[#6b5836]">You have no appointments yet.</p>
+              <Link
+                href="/appointments"
+                className="mt-1 inline-flex items-center justify-center h-[42px] px-6 rounded-[12px] bg-[#b89148] hover:bg-[#9a7630] text-white font-dm-sans text-[14px] font-medium transition-colors"
+              >
+                Book an appointment
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {appointments.map((a) => (
+                <div key={a.id} className="border border-[#f0e6cc] rounded-[14px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex flex-col gap-2 min-w-0">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                      <span className="flex items-center gap-1.5 font-dm-sans text-[14px] font-medium text-[#3b2d17]">
+                        <CalendarDays size={15} className="text-[#b89148] shrink-0" />{formatApptDate(a.preferred_date)}
+                      </span>
+                      {a.preferred_time && (
+                        <span className="flex items-center gap-1.5 font-dm-sans text-[14px] text-[#3b2d17]">
+                          <Clock size={15} className="text-[#b89148] shrink-0" />{a.preferred_time}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                      {a.doctor_name && (
+                        <span className="flex items-center gap-1.5 font-dm-sans text-[13px] text-[#6b5836]">
+                          <Stethoscope size={14} className="text-[#b89148] shrink-0" />{a.doctor_name}
+                        </span>
+                      )}
+                      {a.department_name && <span className="font-dm-sans text-[13px] text-[#6b5836]">{a.department_name}</span>}
+                      {a.branch_name && (
+                        <span className="flex items-center gap-1.5 font-dm-sans text-[13px] text-[#6b5836]">
+                          <MapPin size={14} className="text-[#b89148] shrink-0" />{a.branch_name}
+                        </span>
+                      )}
+                    </div>
+                    {a.message && <p className="font-dm-sans text-[13px] text-[#9a8a6a] italic truncate">&ldquo;{a.message}&rdquo;</p>}
+                  </div>
+                  <span className={`px-3 py-1 rounded-full font-dm-sans text-[12px] font-medium capitalize shrink-0 self-start sm:self-center ${STATUS_STYLES[a.status] || 'bg-[#fbf7ee] text-[#6b5836] border border-[#f0e6cc]'}`}>
+                    {a.status || 'pending'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </main>
   )
