@@ -188,6 +188,12 @@ function LoginModalContent({
       setView('login')
       setMode('email')
       setErrorMsg('This account already exists. Please sign in instead.')
+    } else if (data.session) {
+      // Email confirmation is disabled → the user is already signed in. Skip the
+      // separate sign-in step and continue straight through onSuccess (onboarding).
+      if (data.user) await syncProfile(data.user.id, { email, phone: phoneSignup || null })
+      onSuccess?.()
+      onClose()
     } else {
       if (data.user) await syncProfile(data.user.id, { email, phone: phoneSignup || null })
       setPassword('')
@@ -409,6 +415,7 @@ function LoginModalContent({
                   Forgot password?
                 </Link>
                 <button disabled={loading} type="submit" className={primaryBtnCls} style={{ background: '#b89148' }}>
+                  {loading && <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin mr-2 align-[-2px]" />}
                   {loading ? 'Signing in...' : 'Sign In'}
                 </button>
               </form>
@@ -453,6 +460,7 @@ function LoginModalContent({
                   <input type="tel" placeholder="+855 12 345 678" value={phoneSignup} onChange={e => setPhoneSignup(e.target.value)} className={inputCls} />
                 </div>
                 <button disabled={loading} type="submit" className={primaryBtnCls} style={{ background: '#b89148' }}>
+                  {loading && <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin mr-2 align-[-2px]" />}
                   {loading ? 'Creating account...' : 'Create Account'}
                 </button>
               </form>

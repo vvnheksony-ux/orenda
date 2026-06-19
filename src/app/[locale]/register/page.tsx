@@ -6,9 +6,10 @@ import LoginModal from '@/components/shared/LoginModal'
 
 function RegisterRouteModal() {
   const params = useSearchParams()
-  const rawNext = params.get('next') || params.get('redirect') || '/profile'
+  // New sign-ups land on the onboarding screen to complete their profile.
+  const rawNext = params.get('next') || params.get('redirect') || '/complete-profile'
   // Only allow same-origin relative paths to prevent open redirects (e.g. //evil.com).
-  const nextUrl = rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.startsWith('/\\') ? rawNext : '/profile'
+  const nextUrl = rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.startsWith('/\\') ? rawNext : '/complete-profile'
 
   const leaveRoute = () => {
     if (window.history.length > 1) window.history.back()
