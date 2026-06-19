@@ -6,7 +6,7 @@ import { headers } from 'next/headers'
 import SiteLayout from '@/components/layout/SiteLayout'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 
-async function getInsuranceUpdates(locale: string) {
+async function getInsuranceUpdates(locale: string): Promise<{ id: string; name: string; logo: string | null }[]> {
   // Fetch via the raw-pool API route (the working DB path) instead of Payload's
   // direct connection, which times out on serverless.
   try {
