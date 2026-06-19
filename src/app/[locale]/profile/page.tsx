@@ -64,7 +64,7 @@ export default function ProfilePage() {
           language: data?.language ?? 'en',
         })
         setLoading(false)
-      })
+      }, () => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
   }, [authLoading, router, user])

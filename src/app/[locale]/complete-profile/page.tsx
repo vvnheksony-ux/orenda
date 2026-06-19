@@ -75,7 +75,7 @@ export default function CompleteProfilePage() {
           })
         }
         setLoading(false)
-      })
+      }, () => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [user, authLoading, router])
 

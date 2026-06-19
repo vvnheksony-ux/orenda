@@ -69,6 +69,7 @@ function LoginModalContent({
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', ''])
   const otp = otpDigits.join('')
   const otpRefs = useRef<Array<HTMLInputElement | null>>([])
+  const methodTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [resendIn, setResendIn] = useState(0)
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
@@ -296,7 +297,6 @@ function LoginModalContent({
       let i = index
       for (const ch of digits) { if (i > 5) break; next[i] = ch; i++ }
       requestAnimationFrame(() => otpRefs.current[Math.min(i, 5)]?.focus())
-      if (next.every(d => d !== '')) requestAnimationFrame(() => submitOtp(next.join('')))
       return next
     })
   }
@@ -315,7 +315,6 @@ function LoginModalContent({
     for (let i = 0; i < text.length; i++) next[i] = text[i]
     setOtpDigits(next)
     requestAnimationFrame(() => otpRefs.current[Math.min(text.length, 5)]?.focus())
-    if (text.length === 6) submitOtp(text)
   }
 
   const handleResendPhone = async () => {
@@ -352,10 +351,8 @@ function LoginModalContent({
       .get({ otp: { transport: ['sms'] }, signal: ac.signal })
       .then((cred: any) => {
         const code = String(cred?.code ?? '').replace(/\D/g, '').slice(0, 6)
-        if (code.length === 6) {
-          setOtpDigits(code.split(''))
-          submitOtp(code)
-        }
+        // Auto-fill the boxes from the SMS, but let the user press Verify.
+        if (code.length === 6) setOtpDigits(code.split(''))
       })
       .catch(() => {})
     return () => ac.abort()
@@ -375,11 +372,15 @@ function LoginModalContent({
     if (pendingMethod) return
     setErrorMsg('')
     setPendingMethod(next)
-    setTimeout(() => {
+    if (methodTimer.current) clearTimeout(methodTimer.current)
+    methodTimer.current = setTimeout(() => {
       setMode(next)
       setPendingMethod(null)
     }, 300)
   }
+
+  // Clear the pending-method timer if the modal unmounts mid-transition.
+  useEffect(() => () => { if (methodTimer.current) clearTimeout(methodTimer.current) }, [])
 
   const handleGoogle = async () => {
     if (pendingMethod) return
