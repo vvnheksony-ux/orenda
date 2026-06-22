@@ -4,7 +4,17 @@ import { getRawPool, mediaStorageUrl } from '@/lib/db'
 export const runtime = 'nodejs'
 
 export async function GET(req: Request) {
-  const locale = new URL(req.url).searchParams.get('locale') || 'en'
+  const url = new URL(req.url)
+  const locale = url.searchParams.get('locale') || 'en'
+  const branch = url.searchParams.get('branch')
+  // tour_scenes is branch-linked (optional): show this branch's scenes + global
+  // (no-branch) scenes. A strict equality filter would hide the global ones.
+  const params: string[] = [locale]
+  let branchClause = ''
+  if (branch) {
+    params.push(branch)
+    branchClause = `AND (ts.branch_id IS NULL OR ts.branch_id = $${params.length}::int)`
+  }
 
   try {
     const pool = getRawPool()
@@ -21,10 +31,10 @@ export async function GET(req: Request) {
       LEFT JOIN payload.tour_scenes_locales entsl
         ON entsl._parent_id = ts.id AND entsl._locale = 'en'
       LEFT JOIN payload.media m ON m.id = ts.thumbnail_image_id
-      WHERE ts.status = 'published'
+      WHERE ts.status = 'published' ${branchClause}
       ORDER BY ts.scene_number
       LIMIT 15
-    `, [locale])
+    `, params)
 
     if (!scenes.length) {
       return NextResponse.json([])

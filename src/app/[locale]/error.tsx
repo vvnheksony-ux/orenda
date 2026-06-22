@@ -12,7 +12,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   }, [error])
 
   return (
-    <main className="min-h-screen bg-[#fbf7ee] flex items-center justify-center px-4 py-20">
+    <main className="min-h-screen bg-[var(--background)] flex items-center justify-center px-4 py-20">
       <div className="flex flex-col items-center gap-6 text-center max-w-md">
         <div className="relative w-[64px] h-[64px] opacity-90">
           <Image src="/images/logo-emblem.png" alt="Orienda" fill sizes="64px" className="object-contain" priority />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale } from 'next-intl'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
@@ -8,6 +9,7 @@ import { createClient } from '@/utils/supabase/client'
 const supabase = createClient()
 
 export default function ForgotPasswordPage() {
+  const locale = useLocale()
   const [email, setEmail]     = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent]       = useState(false)
@@ -17,8 +19,9 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     setLoading(true); setErrorMsg('')
 
+    // Keep the reset link in the user's language (next-intl always prefixes the locale).
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${window.location.origin}/${locale}/reset-password`,
     })
 
     if (error) {
@@ -30,7 +33,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-5 pt-[100px] lg:pt-[212px] pb-20" style={{ background: '#fbf7ee' }}>
+    <div className="min-h-screen flex items-center justify-center px-5 pt-[100px] lg:pt-[212px] pb-20" style={{ background: 'var(--background)' }}>
       <div className="w-full max-w-md">
 
         <div className="flex flex-col items-center mb-8">

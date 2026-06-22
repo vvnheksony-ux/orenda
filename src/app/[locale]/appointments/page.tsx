@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useLocale } from 'next-intl'
 import { CalendarDays, Clock, Building2, Stethoscope, MapPin, X, Phone, Mail } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
@@ -52,6 +53,7 @@ function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: strin
 }
 
 export default function AppointmentsPage() {
+  const locale = useLocale()
   const { user, loading: authLoading } = useAuth()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -112,12 +114,12 @@ export default function AppointmentsPage() {
   if (!authLoading && !user) {
     return (
       <SiteLayout>
-        <div className="min-h-screen bg-[#fbf7ee]" />
+        <div className="min-h-screen bg-[var(--background)]" />
         <LoginModal
           open={true}
-          onClose={() => window.location.href = '/'}
-          onSuccess={() => window.location.href = '/appointments'}
-          redirectTo="/appointments"
+          onClose={() => window.location.href = `/${locale}`}
+          onSuccess={() => window.location.href = `/${locale}/appointments`}
+          redirectTo={`/${locale}/appointments`}
           initialView="login"
           message="Sign in to view your appointments and book new ones."
         />
@@ -128,7 +130,7 @@ export default function AppointmentsPage() {
   if (authLoading || loading) {
     return (
       <SiteLayout>
-        <div className="min-h-screen bg-[#fbf7ee] flex items-center justify-center pt-[120px]">
+        <div className="min-h-screen bg-[var(--background)] flex items-center justify-center pt-[120px]">
           <div className="w-10 h-10 border-4 border-[#b89148] border-t-transparent rounded-full animate-spin" />
         </div>
       </SiteLayout>
@@ -137,7 +139,7 @@ export default function AppointmentsPage() {
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] min-h-screen">
+      <div className="bg-[var(--background)] min-h-screen">
         <div className="narrow-shell pt-[140px] pb-[120px]">
 
           {/* Header */}
@@ -256,7 +258,7 @@ export default function AppointmentsPage() {
                 {selected.patient_email && <DetailRow icon={<Mail size={16} />} label="Email" value={selected.patient_email} />}
               </div>
               {selected.message && (
-                <div className="bg-[#fbf7ee] rounded-[12px] p-[16px]">
+                <div className="bg-[var(--background)] rounded-[12px] p-[16px]">
                   <p className="font-dm-sans text-[12px] text-[#b89148] mb-1">Message</p>
                   <p className="font-dm-sans text-[14px] text-[#594522]">{selected.message}</p>
                 </div>

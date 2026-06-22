@@ -24,15 +24,15 @@ export default function FaqSection() {
   }, [locale])
 
   return (
-    <section id="faq" className="w-full bg-[#fbf7ee] scroll-mt-[120px]">
-      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col lg:flex-row gap-[40px] items-start relative">
+    <section id="faq" className="w-full bg-[var(--background)] scroll-mt-[120px]">
+      <div className="page-shell flex flex-col lg:flex-row gap-[40px] items-start relative">
 
         {/* Mobile-only: title + subtitle above accordion */}
         <div className="flex flex-col gap-[16px] items-center text-center w-full lg:hidden">
           <h2 className="font-cormorant font-bold text-[36px] text-[#3b2d17] leading-none">
             {t('title')}
           </h2>
-          <p className="font-dm-sans text-[18px] text-[#594522] leading-none w-[299px]">
+          <p className="font-dm-sans text-[18px] text-[#594522] leading-none max-w-[299px]">
             {t('subtitle')}
           </p>
         </div>
@@ -79,7 +79,7 @@ export default function FaqSection() {
               >
                 {/* Question row */}
                 <div className="flex items-center justify-between w-full">
-                  <p className="font-cormorant font-bold text-[18px] sm:text-[22px] lg:text-[24px] text-black leading-none">
+                  <p className="font-cormorant font-bold text-[18px] sm:text-[22px] lg:text-[24px] text-[#3b2d17] leading-none">
                     {item.q}
                   </p>
                   {/* Figma: closed = rotate-90 (→), open = rotate-180 (↓) */}
@@ -101,7 +101,7 @@ export default function FaqSection() {
                       transition={{ duration: 0.2, ease: 'easeInOut' }}
                       className="overflow-hidden w-full"
                     >
-                      <p className="font-dm-sans font-normal text-[16px] text-black leading-[1.5] pt-[24px] w-full">
+                      <p className="font-dm-sans font-normal text-[16px] text-[#3b2d17] leading-[1.5] pt-[24px] w-full">
                         {item.a}
                       </p>
                     </motion.div>

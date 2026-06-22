@@ -58,9 +58,9 @@ export default async function CareerDetailPage({
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
 
-        <div className="max-w-[1168px] mx-auto px-5 xl:px-0 mb-6">
+        <div className="narrow-shell mb-6">
           <Link
             href="/career"
             className="inline-flex items-center gap-1 font-dm-sans text-[14px] text-gold-700 hover:text-gold-900 transition-colors"
@@ -70,7 +70,7 @@ export default async function CareerDetailPage({
           </Link>
         </div>
 
-        <div className="max-w-[1168px] mx-auto px-5 xl:px-0 mb-10">
+        <div className="narrow-shell mb-10">
           <div className="relative w-full h-[320px] md:h-[460px] xl:h-[574px] rounded-[10px] overflow-hidden">
             <Image
               src={career.thumbnail || '/images/career-hero-bg.jpg'}
@@ -84,13 +84,13 @@ export default async function CareerDetailPage({
           </div>
         </div>
 
-        <div className="max-w-[1144px] mx-auto px-5 xl:px-0 flex flex-col gap-5">
+        <div className="narrow-shell flex flex-col gap-5">
 
           <h1 className="font-dm-sans font-bold text-[28px] xl:text-[36px] leading-normal" style={{ color: '#9a7838' }}>
             {title}
           </h1>
 
-          <div className="font-dm-sans text-[16px] xl:text-[20px] text-black leading-normal flex flex-col gap-4">
+          <div className="font-dm-sans text-[16px] xl:text-[20px] text-[#3b2d17] leading-normal flex flex-col gap-4">
 
             <p className="font-semibold">Job Details</p>
             <ul className="list-disc pl-8 flex flex-col gap-1">

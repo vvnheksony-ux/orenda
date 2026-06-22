@@ -84,7 +84,7 @@ export default function ProfileGate() {
 
   if (blocking) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-[#fbf7ee] flex items-center justify-center">
+      <div className="fixed inset-0 z-[9999] bg-[var(--background)] flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-[#b89148] border-t-transparent rounded-full animate-spin" />
       </div>
     )

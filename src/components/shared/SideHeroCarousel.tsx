@@ -38,81 +38,66 @@ export default function SideHeroCarousel({ slides }: SideHeroCarouselProps) {
   const showNext = () => setActiveIndex(current => (current + 1) % slides.length)
 
   return (
-    <div className="w-full overflow-hidden rounded-[24px] bg-white p-4 shadow-[0px_4px_30px_12px_rgba(220,189,114,0.10)] sm:p-5 lg:rounded-[28px] lg:p-8 xl:p-9">
-      <div className="flex flex-col items-stretch gap-5 sm:gap-6 lg:flex-row lg:gap-10 xl:gap-12">
-        <div className="relative h-[240px] w-full shrink-0 overflow-hidden rounded-[20px] bg-[#f4efe5] sm:h-[320px] lg:h-[472px] lg:w-[42%] xl:w-[41%]">
-          {slides.map((slide, index) => (
-            <div
-              key={`${slide.src}-${index}`}
-              className={`absolute inset-0 transition-opacity duration-500 ${index === activeIndex ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
-              aria-hidden={index !== activeIndex}
-            >
-              <Image
-                src={slide.src}
-                alt={slide.alt}
-                fill
-                sizes="(max-width: 1024px) 44vw, 42vw"
-                className="object-cover object-center"
-                priority={index === 0}
-              />
-            </div>
-          ))}
-        </div>
-
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-3 px-0.5 py-1 sm:gap-4 sm:px-1 lg:gap-7 lg:pr-4 xl:pr-8">
-          <div className="flex items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#ead6a4] bg-[#fbf7ee] px-3 py-1.5 font-dm-sans text-[11px] font-medium uppercase tracking-[0.18em] text-[#8d6f38] sm:text-[12px]">
-              <span>Featured Story</span>
-              {hasMultipleSlides && <span className="text-[#b89148]">{String(activeIndex + 1).padStart(2, '0')}/{String(slides.length).padStart(2, '0')}</span>}
-            </div>
-          </div>
-
-          <h1 className="max-w-[12ch] font-cormorant text-[28px] font-bold leading-[0.95] text-[#3b2d17] sm:text-[40px] lg:text-[52px] xl:text-[56px]">
-            {activeSlide.title}
-          </h1>
-
-          <div className="max-w-[34rem] flex flex-col gap-2 font-dm-sans text-[14px] font-light leading-[1.55] text-[#594522] sm:gap-3 sm:text-[16px] lg:gap-4 lg:text-[22px] xl:text-[24px]">
-            <p>{activeSlide.lines[0]}</p>
-            <p>{activeSlide.lines[1]}</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 pt-2 sm:gap-4 lg:gap-5">
-            {activeSlide.cta}
-
-            {hasMultipleSlides && (
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  aria-label="Previous slide"
-                  onClick={showPrev}
-                  className="flex size-10 items-center justify-center rounded-full border border-[#c7a35b] bg-[#fffaf0] text-[#7a5f2c] transition-all hover:-translate-y-0.5 hover:bg-[#f7ecd4] sm:size-11 lg:size-16"
-                >
-                  <ChevronLeft className="size-4 sm:size-5 lg:size-7" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Next slide"
-                  onClick={showNext}
-                  className="flex size-10 items-center justify-center rounded-full border border-[#c7a35b] bg-[#fffaf0] text-[#7a5f2c] transition-all hover:-translate-y-0.5 hover:bg-[#f7ecd4] sm:size-11 lg:size-16"
-                >
-                  <ChevronRight className="size-4 sm:size-5 lg:size-7" />
-                </button>
-                <div className="ml-1 flex items-center gap-2">
-                  {slides.map((slide, index) => (
-                    <button
-                      key={`${slide.src}-dot-${index}`}
-                      type="button"
-                      aria-label={`Go to slide ${index + 1}`}
-                      onClick={() => setActiveIndex(index)}
-                      className={`h-2.5 rounded-full transition-all ${index === activeIndex ? 'w-8 bg-[#b89148]' : 'w-2.5 bg-[#decba4] hover:bg-[#cdb37b]'}`}
-                    />
-                  ))}
-                </div>
+    <div className="relative w-full">
+      <div className="overflow-hidden rounded-2xl bg-white p-[10px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.10)]">
+        <div className="flex flex-col items-stretch gap-[10px] lg:flex-row-reverse">
+          {/* Image — nearly full-bleed (2px inset): right on desktop, top on mobile */}
+          <div className="relative h-[220px] w-full shrink-0 overflow-hidden rounded-xl bg-[#f4efe5] sm:h-[300px] lg:h-auto lg:w-[50%]">
+            {slides.map((slide, index) => (
+              <div
+                key={`${slide.src}-${index}`}
+                className={`absolute inset-0 transition-opacity duration-500 ${index === activeIndex ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+                aria-hidden={index !== activeIndex}
+              >
+                <Image
+                  src={slide.src}
+                  alt={slide.alt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover object-center"
+                  priority={index === 0}
+                />
               </div>
-            )}
+            ))}
+          </div>
+
+          {/* Text — left */}
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-5 px-6 py-8 sm:gap-7 sm:px-9 sm:py-10 lg:gap-10 lg:py-14 lg:pl-14 lg:pr-10">
+            <h1 className="font-cormorant text-[28px] font-bold leading-[1.05] text-[#3b2d17] sm:text-[40px] lg:text-[48px] lg:leading-[48px]">
+              {activeSlide.title}
+            </h1>
+
+            <div className="max-w-[38rem] flex flex-col gap-2 font-dm-sans text-[14px] font-light leading-[1.5] text-[#594522] sm:gap-3 sm:text-[16px] lg:text-[24px]">
+              <p>{activeSlide.lines[0]}</p>
+              <p>{activeSlide.lines[1]}</p>
+            </div>
+
+            <div className="pt-1">{activeSlide.cta}</div>
           </div>
         </div>
       </div>
+
+      {/* Bare chevron arrows in the side gutters */}
+      {hasMultipleSlides && (
+        <>
+          <button
+            type="button"
+            aria-label="Previous slide"
+            onClick={showPrev}
+            className="absolute left-1 top-1/2 flex -translate-y-1/2 items-center justify-center text-[#9a7b3c] transition-colors hover:text-[#6e561f] md:-left-6 lg:-left-12 xl:-left-16"
+          >
+            <ChevronLeft className="size-6 lg:size-8" strokeWidth={2.25} />
+          </button>
+          <button
+            type="button"
+            aria-label="Next slide"
+            onClick={showNext}
+            className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center justify-center text-[#9a7b3c] transition-colors hover:text-[#6e561f] md:-right-6 lg:-right-12 xl:-right-16"
+          >
+            <ChevronRight className="size-6 lg:size-8" strokeWidth={2.25} />
+          </button>
+        </>
+      )}
     </div>
   )
 }

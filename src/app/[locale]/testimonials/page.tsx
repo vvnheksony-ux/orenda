@@ -9,7 +9,7 @@ import TestimonialsCarousel from '@/components/testimonials/TestimonialsCarousel
 export default function TestimonialsPage() {
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full">
+      <div className="bg-[var(--background)] w-full">
         <div className="flex flex-col items-center pb-[120px] pt-[100px] lg:pt-[212px] w-full">
 
           <div className="page-shell flex flex-col gap-[80px] items-center">
@@ -34,7 +34,7 @@ export default function TestimonialsPage() {
                   <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522] capitalize w-full">Let Us know about your experience</p>
                 </div>
                 <div className="flex flex-col gap-[24px] items-start w-full max-w-[960px] mx-auto">
-                  <p className="font-cormorant font-semibold text-[18px] lg:text-[20px] text-black leading-tight capitalize w-full">
+                  <p className="font-cormorant font-semibold text-[18px] lg:text-[20px] text-[#3b2d17] leading-tight capitalize w-full">
                     Dear Everyone, We very much appreciate hearing from our patients, visitors, and other customers. Please use this form to provide us feedback on the following:
                   </p>
                   <ul className="list-disc pl-[24px] flex flex-col gap-[8px] w-full">

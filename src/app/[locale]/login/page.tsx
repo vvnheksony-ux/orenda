@@ -2,11 +2,19 @@
 
 import { Suspense, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useLocale } from 'next-intl'
 import LoginModal from '@/components/shared/LoginModal'
 
 function LoginRouteModal() {
   const params = useSearchParams()
-  const nextUrl = params.get('next') || params.get('redirect') || '/'
+  const locale = useLocale()
+  const rawNext = params.get('next') || params.get('redirect') || '/'
+  // Keep the post-login destination in the active locale (next-intl always
+  // prefixes paths), so users aren't bounced to the default-language page.
+  const firstSeg = rawNext.split('/')[1]
+  const nextUrl = ['en', 'km', 'zh'].includes(firstSeg)
+    ? rawNext
+    : `/${locale}${rawNext === '/' ? '' : rawNext}`
   const registered = params.get('registered') === '1'
 
   // On success we navigate to nextUrl; guard leaveRoute so the modal's onClose
@@ -21,7 +29,7 @@ function LoginRouteModal() {
 
   return (
     <>
-      <div className="min-h-screen bg-[#fbf7ee]" />
+      <div className="min-h-screen bg-[var(--background)]" />
       <LoginModal
         open={true}
         onClose={leaveRoute}

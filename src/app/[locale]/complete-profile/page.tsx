@@ -142,7 +142,7 @@ export default function CompleteProfilePage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex bg-[#fbf7ee]">
+    <div className="min-h-screen w-full flex bg-[var(--background)]">
 
       {/* Welcome / brand panel */}
       <aside

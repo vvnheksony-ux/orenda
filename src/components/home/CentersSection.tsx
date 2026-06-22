@@ -48,8 +48,8 @@ export default function CentersSection() {
   const active = SPECIALTIES[idx] ?? SPECIALTIES[0]
 
   if (loading) return (
-    <section className="w-full" style={{ backgroundColor: '#fbf7ee' }}>
-      <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[40px] items-center">
+    <section className="w-full" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="page-shell flex flex-col gap-[24px] lg:gap-[40px] items-center">
         <div className="flex flex-col gap-[12px] items-center">
           <div className="h-[36px] lg:h-[48px] w-[280px] rounded-lg bg-[#e8d9b8] animate-pulse" />
           <div className="h-[20px] w-[220px] rounded bg-[#e8d9b8] animate-pulse" />
@@ -77,8 +77,8 @@ export default function CentersSection() {
   ]
 
   return (
-    <section className="w-full" style={{ backgroundColor: '#fbf7ee' }}>
-      <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[40px] items-center">
+    <section className="w-full" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="page-shell flex flex-col gap-[24px] lg:gap-[40px] items-center">
 
       {/* Header */}
       <div className="flex flex-col gap-[12px] lg:gap-[16px] items-center">
@@ -175,7 +175,7 @@ export default function CentersSection() {
         </div>
 
         {/* CENTER: large specialty illustration + name */}
-        <div className="flex flex-col gap-[20px] xl:gap-[40px] items-center justify-center shrink-0 w-[min(28vw,320px)] xl:w-[min(32vw,500px)] min-w-[260px] xl:min-w-[320px]">
+        <div className="flex flex-col gap-[20px] xl:gap-[40px] items-center justify-center shrink-0 w-[min(24vw,280px)] xl:w-[min(26vw,400px)] min-w-[220px] xl:min-w-[280px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={active.key}
@@ -204,20 +204,20 @@ export default function CentersSection() {
         </div>
 
         {/* RIGHT: 2×2 specialty selector grid */}
-        <div className="grid w-[min(32vw,360px)] xl:w-[min(36vw,520px)] min-w-[280px] xl:min-w-[360px] shrink-0 grid-cols-2 gap-[12px] xl:gap-[24px] content-start">
+        <div className="grid w-[min(34vw,420px)] xl:w-[min(44vw,640px)] min-w-[300px] xl:min-w-[420px] shrink-0 grid-cols-2 gap-[12px] xl:gap-[24px] content-start">
           {SPECIALTIES.map((s, i) => (
             <button
               key={s.key}
               onClick={() => setIdx(i)}
-              className="flex aspect-square flex-col items-center justify-center gap-3 xl:gap-6 rounded-xl p-4 xl:p-8 overflow-hidden transition-shadow shadow-[0px_4px_12px_3px_rgba(89,69,34,0.20)] hover:shadow-[0px_6px_16px_4px_rgba(89,69,34,0.28)]"
+              className="group flex aspect-square flex-col items-center justify-center gap-3 sm:gap-6 rounded-xl border border-white px-4 py-4 sm:px-8 sm:py-8 overflow-hidden transition-shadow shadow-[0px_4px_12px_3px_rgba(89,69,34,0.20),inset_0px_2px_8px_rgba(89,69,34,0.08)] hover:shadow-[0px_6px_16px_4px_rgba(89,69,34,0.28),inset_0px_2px_8px_rgba(89,69,34,0.08)]"
               style={{ background: i === idx ? 'rgba(245,236,212,0.35)' : 'rgba(245,236,212,0.20)' }}
             >
               {s.thumb && (
-                <div className="relative size-20 xl:size-32 overflow-hidden shrink-0">
-                  <Image src={s.thumb} alt={s.name} fill className="object-contain" sizes="(max-width: 1279px) 80px, 128px" unoptimized />
+                <div className="relative size-16 sm:size-24 overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105">
+                  <Image src={s.thumb} alt={s.name} fill className="object-contain" sizes="96px" unoptimized />
                 </div>
               )}
-              <p className="font-cormorant font-bold text-[18px] xl:text-[28px] text-[#2A2620] leading-[1.05] capitalize text-center text-balance">
+              <p className="font-cormorant font-bold text-sm sm:text-xl text-[#2A2620] leading-tight capitalize text-center text-balance">
                 {s.name}
               </p>
             </button>

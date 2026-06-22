@@ -515,11 +515,11 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                         >
                           {/* Month nav */}
                           <div className="flex items-center justify-between px-4 pt-5 pb-4">
-                            <button type="button" onClick={prevMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors">
+                            <button type="button" onClick={prevMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-[#3b2d17]/5 transition-colors">
                               <span className="font-dm-sans font-bold text-[16px] text-stone-500 leading-none">‹</span>
                             </button>
                             <span className="font-dm-sans font-semibold text-[13px] text-stone-900">{MONTH_NAMES[viewMonth]} {viewYear}</span>
-                            <button type="button" onClick={nextMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors">
+                            <button type="button" onClick={nextMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-[#3b2d17]/5 transition-colors">
                               <span className="font-dm-sans font-bold text-[16px] text-stone-500 leading-none">›</span>
                             </button>
                           </div>
@@ -547,7 +547,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                                     isPast ? 'text-stone-300 cursor-not-allowed' : 'cursor-pointer',
                                     isSelected ? 'bg-[#b89148] text-white' : '',
                                     isToday && !isSelected ? 'text-orange-400' : '',
-                                    !isPast && !isSelected && !isToday ? 'text-slate-700 hover:bg-black/5' : '',
+                                    !isPast && !isSelected && !isToday ? 'text-[#594522] hover:bg-[#3b2d17]/5' : '',
                                   ].join(' ')}
                                   style={isToday && !isSelected ? { outline: '1.3px solid rgba(251,146,60,0.5)', outlineOffset: '-1.3px' } : undefined}
                                 >
@@ -589,7 +589,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                                   outlineOffset: '-1.1px',
                                 }}
                               >
-                                <span className={`font-dm-sans font-bold text-[12px] leading-3 ${isActive ? 'text-white' : 'text-slate-700'}`}>{p.label}</span>
+                                <span className={`font-dm-sans font-bold text-[12px] leading-3 ${isActive ? 'text-white' : 'text-[#594522]'}`}>{p.label}</span>
                                 <span className={`font-dm-sans font-medium text-[10px] leading-3 ${isActive ? 'text-white/80' : 'text-stone-500'}`}>{p.range}</span>
                               </button>
                             )

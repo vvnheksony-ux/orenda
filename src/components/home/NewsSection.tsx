@@ -26,15 +26,15 @@ export default function NewsSection() {
   const sideItems = news.slice(1, 5).map(n => ({ title: n.title, image: n.thumbnail || null, slug: n.slug }))
 
   if (loading) return (
-    <section className="bg-[#fbf7ee]">
-      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[80px]">
+    <section className="bg-[var(--background)]">
+      <div className="page-shell flex flex-col gap-[24px] lg:gap-[80px]">
         <div className="flex flex-col gap-[12px] items-center">
           <div className="h-[52px] lg:h-[72px] w-[200px] rounded-lg bg-[#e8d9b8] animate-pulse" />
           <div className="h-[24px] w-[260px] rounded bg-[#e8d9b8] animate-pulse" />
         </div>
         <div className="flex flex-col lg:flex-row gap-[24px] lg:gap-[37px] items-start w-full">
           <div className="w-full lg:flex-1 rounded-2xl overflow-hidden bg-[#e8d9b8] animate-pulse h-[360px] lg:h-[508px]" />
-          <div className="hidden lg:flex w-[632px] flex-col">
+          <div className="hidden lg:flex lg:w-[44%] flex-col">
             {[0,1,2,3].map(i => (
               <div key={i} className="flex gap-[22px] items-center py-[12px] border-b border-[#e8d9b8]">
                 <div className="shrink-0 w-[240px] h-[147px] bg-[#e8d9b8] animate-pulse rounded" />
@@ -48,8 +48,8 @@ export default function NewsSection() {
   )
 
   return (
-    <section className="bg-[#fbf7ee]">
-      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[24px] lg:gap-[80px]">
+    <section className="bg-[var(--background)]">
+      <div className="page-shell flex flex-col gap-[24px] lg:gap-[80px]">
 
         {/* Header */}
         <div className="flex flex-col gap-[12px] lg:gap-[16px] items-center text-center w-full">
@@ -79,7 +79,7 @@ export default function NewsSection() {
 
             {/* Content */}
             <div className="flex items-center justify-between gap-4 px-[18px] py-[28px] lg:px-[24px] lg:py-[32px] bg-white">
-              <p className="font-dm-sans font-medium text-[14px] lg:text-[16px] text-black leading-[1.5] flex-1">
+              <p className="font-dm-sans font-medium text-[14px] lg:text-[16px] text-[#3b2d17] leading-[1.5] flex-1">
                 {featured?.title ?? t('featuredTitle')}
               </p>
               <Link
@@ -93,7 +93,7 @@ export default function NewsSection() {
           </div>
 
           {/* Right: 4 stacked news items — desktop only */}
-          <div className="hidden lg:flex w-full lg:shrink-0 lg:w-[632px] flex-col items-start justify-center">
+          <div className="hidden lg:flex w-full lg:shrink-0 lg:w-[44%] flex-col items-start justify-center">
             {sideItems.map((item, i) => (
               <div
                 key={i}

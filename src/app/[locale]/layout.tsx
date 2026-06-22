@@ -54,6 +54,20 @@ export default async function RootLayout({
       className={`${cormorantGaramond.variable} ${dmSans.variable} ${inter.variable} ${greatVibes.variable} ${khmerSerif.variable} ${khmerSans.variable} ${chineseSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/*
+          Suppress OneSignal's harmless background push-registration rejections
+          (e.g. "push service not available") before any framework code runs.
+          The SDK throws these asynchronously, outside our try/catch, so they
+          become unhandled rejections that otherwise trip Next.js's dev error
+          overlay. This inline script registers its listener during HTML parse —
+          BEFORE Next's overlay handler — so stopImmediatePropagation() keeps the
+          overlay handler from ever seeing these expected, unsupported-push cases.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){window.addEventListener('unhandledrejection',function(e){var r=e&&e.reason;var m=(r&&r.message?r.message:(typeof r==='string'?r:'')).toLowerCase();var n=r&&r.name;if(n==='AbortError'||m.indexOf('push service not available')!==-1||m.indexOf('does not support web push')!==-1||m.indexOf('push notifications')!==-1){e.stopImmediatePropagation();e.preventDefault();}},true);})();`,
+          }}
+        />
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <BranchProvider locale={locale}>

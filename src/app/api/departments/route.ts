@@ -58,7 +58,8 @@ export async function GET(req: Request) {
     const docs = rows.map(toDoc)
     return NextResponse.json(
       { docs, totalDocs: docs.length },
-      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+      // Always fresh — branch-dependent data must not be served stale (no manual refresh).
+      { headers: { 'Cache-Control': 'no-store' } }
     )
   } catch (err: any) {
     console.error('departments error:', err.message)

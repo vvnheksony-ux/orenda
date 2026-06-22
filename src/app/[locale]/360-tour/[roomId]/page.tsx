@@ -8,20 +8,21 @@ import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
 import { Link } from '@/i18n/routing'
 import { useScrollLock } from '@/lib/useScrollLock'
 import { useLocale } from 'next-intl'
-import { fetchTourScenes, tourCache, type TourScene } from '@/lib/tour-cache'
+import { fetchTourScenes, type TourScene } from '@/lib/tour-cache'
+import { useBranch } from '@/lib/branch-context'
 
 type Doctor = { id: number; name: string; specialty: string; image_url: string | null; slug: string }
 
 function DoctorCard({ doc }: { doc: Doctor }) {
   return (
-    <div className="relative flex h-[260px] w-full max-w-[168px] flex-col items-center justify-center gap-[18px] overflow-clip rounded-[16px] bg-[#fbf7ee] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] sm:h-[330px] sm:max-w-[240px] sm:gap-[24px] lg:h-[400px] lg:max-w-[300px] lg:gap-[40px]">
+    <div className="relative flex h-[260px] w-full max-w-[168px] flex-col items-center justify-center gap-[18px] overflow-clip rounded-[16px] bg-[var(--background)] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] sm:h-[330px] sm:max-w-[240px] sm:gap-[24px] lg:h-[400px] lg:max-w-[300px] lg:gap-[40px]">
       {/* Gold gradient header */}
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[110px] w-full -translate-x-1/2 opacity-64 sm:h-[165px] lg:h-[206px]"
         style={{ backgroundImage: 'linear-gradient(133.36deg,rgba(234,214,164,0.6) 0%,rgba(206,175,112,0.827) 25%,rgba(184,145,72,0.8) 49.52%,rgba(210,181,120,0.792) 75.96%,rgba(234,214,164,0.6) 100%)' }}
       />
       {/* Circle photo */}
-      <div className="relative z-10 size-[84px] shrink-0 overflow-hidden rounded-full bg-[#fbf7ee] shadow-[0px_4px_30px_12px_rgba(184,145,72,0.2)] sm:size-[118px] lg:size-[146px]">
+      <div className="relative z-10 size-[84px] shrink-0 overflow-hidden rounded-full bg-[var(--background)] shadow-[0px_4px_30px_12px_rgba(184,145,72,0.2)] sm:size-[118px] lg:size-[146px]">
         <Image
           src={doc.image_url || '/images/doctor-1.jpg'}
           alt={doc.name}
@@ -51,23 +52,27 @@ function DoctorCard({ doc }: { doc: Doctor }) {
 export default function RoomDetailPage({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = use(params)
   const locale = useLocale()
+  const { selectedBranch, ready } = useBranch()
 
-  const [scene, setScene] = useState<TourScene | null>(() =>
-    tourCache[locale]?.find(s => String(s.sceneNumber) === roomId) ?? null
-  )
+  const [scene, setScene] = useState<TourScene | null>(null)
   const [expanded, setExpanded] = useState(false)
   // Lock background scroll while the fullscreen viewer is open.
   useScrollLock(expanded)
-  const [loading, setLoading] = useState(() => !tourCache[locale]?.length)
+  const [loading, setLoading] = useState(true)
   const [locked, setLocked] = useState(true)
   const [doctors, setDoctors] = useState<Doctor[]>([])
 
   useEffect(() => {
-    fetchTourScenes(locale).then(scenes => {
+    if (!ready) return
+    let active = true
+    setLoading(true)
+    fetchTourScenes(locale, selectedBranch?.id).then(scenes => {
+      if (!active) return
       const found = scenes.find(s => String(s.sceneNumber) === roomId)
       setScene(found ?? null)
-    }).catch(() => {}).finally(() => setLoading(false))
-  }, [locale, roomId])
+    }).catch(() => {}).finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [locale, roomId, selectedBranch, ready])
 
   useEffect(() => {
     fetch(`/api/doctors?locale=${locale}&limit=4`)
@@ -81,7 +86,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full min-h-screen">
+      <div className="bg-[var(--background)] w-full min-h-screen">
         <div className="page-shell pt-[100px] lg:pt-[140px] pb-[120px] flex flex-col gap-[67px]">
 
           {/* Back nav */}
@@ -155,7 +160,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
                 <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none text-center">
                   {scene.title}
                 </h1>
-                <div className="font-dm-sans text-[20px] text-black leading-[1.8] max-w-[1346px] w-full">
+                <div className="font-dm-sans text-[20px] text-[#3b2d17] leading-[1.8] max-w-[1346px] w-full">
                   {descParts.length > 0 ? (
                     descParts.map((p, i) => (
                       <p key={i} className={i < descParts.length - 1 ? 'mb-[32px]' : ''}>{p}</p>

@@ -148,7 +148,7 @@ export default function ProfilePage() {
 
   if (authLoading || loading) {
     return (
-      <main className="min-h-screen bg-[#fbf7ee] pt-[140px] flex items-center justify-center">
+      <main className="min-h-screen bg-[var(--background)] pt-[140px] flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-[#b89148] border-t-transparent rounded-full animate-spin" />
       </main>
     )
@@ -168,9 +168,9 @@ export default function ProfilePage() {
   )
 
   return (
-    <main className="min-h-screen bg-[#fbf7ee] pt-[120px] pb-[80px] px-4">
+    <main className="min-h-screen bg-[var(--background)] pt-[120px] pb-[80px] px-4">
       {redirecting && (
-        <div className="fixed inset-0 z-[400] flex items-center justify-center bg-[#fbf7ee]">
+        <div className="fixed inset-0 z-[400] flex items-center justify-center bg-[var(--background)]">
           <div className="flex flex-col items-center gap-5">
             <div className="relative w-[64px] h-[64px] animate-pulse">
               <Image src="/images/logo-emblem.png" alt="Orienda" fill sizes="64px" className="object-contain" priority />
@@ -204,11 +204,11 @@ export default function ProfilePage() {
             </div>
 
             <div className="w-full flex flex-col gap-2 mt-1">
-              <div className="flex items-center gap-2 font-dm-sans text-[13px] text-[#6b5836] bg-[#fbf7ee] rounded-[10px] px-3 py-2.5">
+              <div className="flex items-center gap-2 font-dm-sans text-[13px] text-[#6b5836] bg-[var(--background)] rounded-[10px] px-3 py-2.5">
                 <Phone size={15} className="text-[#b89148] shrink-0" />
                 <span className="truncate">{form.phone || 'No phone added'}</span>
               </div>
-              <div className="flex items-center gap-2 font-dm-sans text-[13px] text-[#6b5836] bg-[#fbf7ee] rounded-[10px] px-3 py-2.5">
+              <div className="flex items-center gap-2 font-dm-sans text-[13px] text-[#6b5836] bg-[var(--background)] rounded-[10px] px-3 py-2.5">
                 <CalendarDays size={15} className="text-[#b89148] shrink-0" />
                 <span className="truncate">{form.date_of_birth || 'No date of birth'}</span>
               </div>
@@ -227,7 +227,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={handleSignOut}
-              className="mt-2 w-full inline-flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] text-[#6b5836] font-dm-sans text-[14px] hover:bg-[#fbf7ee] transition-colors"
+              className="mt-2 w-full inline-flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] text-[#6b5836] font-dm-sans text-[14px] hover:bg-[var(--background)] transition-colors"
             >
               <LogOut size={17} />
               Sign out
@@ -341,7 +341,7 @@ export default function ProfilePage() {
             </div>
           ) : appointments.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-12 text-center">
-              <div className="w-14 h-14 rounded-full bg-[#fbf7ee] flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-[var(--background)] flex items-center justify-center">
                 <CalendarDays size={26} className="text-[#dcbd72]" />
               </div>
               <p className="font-dm-sans text-[15px] text-[#6b5836]">You have no appointments yet.</p>
@@ -383,7 +383,7 @@ export default function ProfilePage() {
                     {a.message && <p className="font-dm-sans text-[13px] text-[#9a8a6a] italic truncate">&ldquo;{a.message}&rdquo;</p>}
                   </div>
                   <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
-                    <span className={`px-3 py-1 rounded-full font-dm-sans text-[12px] font-medium capitalize ${STATUS_STYLES[a.status] || 'bg-[#fbf7ee] text-[#6b5836] border border-[#f0e6cc]'}`}>
+                    <span className={`px-3 py-1 rounded-full font-dm-sans text-[12px] font-medium capitalize ${STATUS_STYLES[a.status] || 'bg-[var(--background)] text-[#6b5836] border border-[#f0e6cc]'}`}>
                       {a.status || 'pending'}
                     </span>
                     <ChevronRight size={18} className="text-[#b89148]" />
@@ -400,7 +400,7 @@ export default function ProfilePage() {
         <div className="fixed inset-0 z-[300] flex items-center justify-center px-4" onClick={() => setSelectedAppt(null)}>
           <div className="absolute inset-0 bg-black/50" />
           <div
-            className="relative bg-[#fbf7ee] rounded-[22px] shadow-[0_8px_40px_rgba(89,69,34,0.25)] p-6 sm:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="relative bg-[var(--background)] rounded-[22px] shadow-[0_8px_40px_rgba(89,69,34,0.25)] p-6 sm:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -416,7 +416,7 @@ export default function ProfilePage() {
               <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none">Details</h3>
             </div>
 
-            <span className={`inline-block px-3 py-1 rounded-full font-dm-sans text-[12px] font-medium capitalize mb-4 ${STATUS_STYLES[selectedAppt.status] || 'bg-[#fbf7ee] text-[#6b5836] border border-[#f0e6cc]'}`}>
+            <span className={`inline-block px-3 py-1 rounded-full font-dm-sans text-[12px] font-medium capitalize mb-4 ${STATUS_STYLES[selectedAppt.status] || 'bg-[var(--background)] text-[#6b5836] border border-[#f0e6cc]'}`}>
               {selectedAppt.status || 'pending'}
             </span>
 

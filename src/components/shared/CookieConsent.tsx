@@ -49,7 +49,7 @@ export default function CookieConsent() {
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className="fixed z-[9999] inset-x-0 bottom-0 p-3 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:p-0 w-full sm:max-w-[360px]"
         >
-          <div className="bg-white/95 backdrop-blur-md rounded-[16px] p-4 shadow-[0_12px_32px_rgba(107,90,69,0.18)] border border-gold-100 flex flex-col gap-2.5 max-h-[80vh] overflow-y-auto">
+          <div className="bg-white rounded-[16px] p-4 shadow-[0_12px_32px_rgba(107,90,69,0.18)] border border-gold-100 flex flex-col gap-2.5 max-h-[80vh] overflow-y-auto">
 
             {/* Compact Header */}
             <div className="flex items-start justify-between">

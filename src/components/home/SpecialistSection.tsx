@@ -197,7 +197,7 @@ export default function SpecialistSection() {
   const next = () => setActiveIdx(i => wrapIdx(i + 1, n))
 
   if (loading) return (
-    <section className="w-full bg-[#fbf7ee] overflow-hidden">
+    <section className="w-full bg-[var(--background)] overflow-hidden">
       <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[24px] lg:gap-[60px] items-center">
         <div className="flex flex-col gap-[16px] items-center w-full text-center px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]">
           <div className="h-[36px] lg:h-[48px] w-[240px] rounded-lg bg-[#e8d9b8] animate-pulse" />
@@ -215,7 +215,7 @@ export default function SpecialistSection() {
   if (!n) return null
 
   return (
-    <section className="w-full bg-[#fbf7ee] overflow-hidden">
+    <section className="w-full bg-[var(--background)] overflow-hidden">
       <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[24px] lg:gap-[60px] items-center">
 
         <div className="flex flex-col gap-[16px] lg:gap-[20px] items-center w-full text-center px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]">
@@ -252,7 +252,7 @@ export default function SpecialistSection() {
                         backgroundImage: 'linear-gradient(133.36deg,rgba(234,214,164,0.6) 0%,rgba(206,175,112,0.827) 25%,rgba(184,145,72,0.8) 49.52%,rgba(210,181,120,0.792) 75.96%,rgba(234,214,164,0.6) 100%)',
                       }}
                     />
-                    <div className="relative z-10 rounded-full overflow-hidden bg-[#fbf7ee] shadow-[0px_3px_25px_12px_rgba(184,145,72,0.2)]" style={{ width: 120, height: 120, marginTop: 24 }}>
+                    <div className="relative z-10 rounded-full overflow-hidden bg-[var(--background)] shadow-[0px_3px_25px_12px_rgba(184,145,72,0.2)]" style={{ width: 120, height: 120, marginTop: 24 }}>
                       <Image src={doc.image} alt={doc.name} fill className="object-cover object-top" sizes="120px" unoptimized />
                     </div>
                   </div>
@@ -290,9 +290,9 @@ export default function SpecialistSection() {
 
         </motion.div>
 
-        <button className="px-[32px] py-[12px] rounded-full border border-[#b89148] text-[#5c4924] font-dm-sans text-[16px] bg-[#F5ECD4]/40 hover:bg-[#b89148]/10 transition-colors cursor-pointer">
+        <Link href="/doctors" className="px-[32px] py-[12px] rounded-full border border-[#b89148] text-[#5c4924] font-dm-sans text-[16px] bg-[#F5ECD4]/40 hover:bg-[#b89148]/10 transition-colors cursor-pointer">
           {t('seeMore')}
-        </button>
+        </Link>
 
       </div>
     </section>

@@ -93,7 +93,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full pb-[120px] pt-[100px] lg:pt-[212px]">
+      <div className="bg-[var(--background)] w-full pb-[120px] pt-[100px] lg:pt-[212px]">
         <div className="page-shell flex flex-col gap-[80px]">
 
           {/* Skeleton */}
@@ -171,7 +171,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
                       <div className="flex flex-col gap-[40px] shrink-0 w-[332px]">
                         <div className="bg-white rounded-[12px] p-[24px] flex flex-col gap-[24px]"
                           style={{ filter: 'drop-shadow(0px 4px 8px rgba(122,95,44,0.12))' }}>
-                          <p className="font-cormorant font-medium text-[24px] text-black leading-none">Location</p>
+                          <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">Location</p>
                           <p className="font-dm-sans text-[16px] text-[#2a2620] leading-[1.8]">
                             Building No. 66, Street 31cc, Stueng Mean Chey Commune, Mean Chey District, Phnom Penh.
                           </p>
@@ -179,7 +179,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
 
                         <div className="bg-white rounded-[12px] p-[24px] flex flex-col gap-[24px]"
                           style={{ filter: 'drop-shadow(0px 4px 8px rgba(122,95,44,0.12))' }}>
-                          <p className="font-cormorant font-medium text-[24px] text-black leading-none">Contact Orienda Hospital</p>
+                          <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">Contact Orienda Hospital</p>
                           <p className="font-dm-sans text-[16px] text-[#2a2620] leading-[1.8]">
                             012 322 025 / 086 999 528 / 098 941 758
                           </p>

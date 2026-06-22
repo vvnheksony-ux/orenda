@@ -9,6 +9,7 @@
   --color-gold-200: #ead6a4;
   --color-gold-50: #fbf7ee;
   --color-neutral-0: #ffffff;
+  --color-neutral-50: #faf9f6; /* PLACEHOLDER — replace with exact Figma neutral/50 hex */
   --color-neutral-800: #2a2620;
   --color-neutral-black: #050505;
   --color-star: #ffcc00;
@@ -21,7 +22,7 @@
 }
 
 :root {
-  --background: #fbf7ee;
+  --background: var(--color-neutral-50);
   --foreground: #3b2d17;
 }
 
@@ -57,7 +58,7 @@ body {
 
 .content-shell {
   width: 100%;
-  max-width: 1352px;
+  max-width: 1512px;
   margin-inline: auto;
   padding-inline: 1rem;
 }
@@ -73,11 +74,27 @@ body {
   .page-shell,
   .content-shell,
   .narrow-shell {
-    padding-inline: 2rem;
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .page-shell,
+  .content-shell,
+  .narrow-shell {
+    padding-inline: 2.5rem;
   }
 }
 
 @media (min-width: 1024px) {
+  .page-shell,
+  .content-shell,
+  .narrow-shell {
+    padding-inline: 3.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
   .page-shell,
   .content-shell,
   .narrow-shell {
@@ -93,10 +110,44 @@ body {
   display: none;
 }
 
+/* Hide the scrollbar site-wide — scrolling still works (wheel/touch/keys). */
+html {
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* old Edge/IE */
+}
+html::-webkit-scrollbar {
+  display: none;                /* Chrome / Safari / new Edge */
+}
+
+/* Glass (backdrop-blur) elements flicker their box-shadow on scroll in Chromium
+   because the blurred backdrop re-rasterizes. Promoting each to its own GPU
+   layer paints the shadow stably and stops the flash. */
+[class*="backdrop-blur"] {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
 @keyframes marquee {
   from { transform: translateX(0) }
   to { transform: translateX(-50%) }
 }
 .animate-marquee {
   animation: marquee 80s linear infinite;
+}
+
+/* Health Tips auto-scroll: cards glide left → right continuously, pause on hover. */
+@keyframes healthTipsScroll {
+  from { transform: translateX(-50%) }
+  to   { transform: translateX(0) }
+}
+.health-tips-scroll {
+  animation: healthTipsScroll 45s linear infinite;
+  will-change: transform;
+}
+.health-tips-scroll:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .health-tips-scroll { animation: none; }
 }

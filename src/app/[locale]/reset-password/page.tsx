@@ -51,7 +51,7 @@ function ResetForm() {
   const labelCls = 'text-[13px] font-bold text-gold-900 font-dm-sans uppercase tracking-wide'
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-5 pt-[100px] lg:pt-[212px] pb-20" style={{ background: '#fbf7ee' }}>
+    <div className="min-h-screen flex items-center justify-center px-5 pt-[100px] lg:pt-[212px] pb-20" style={{ background: 'var(--background)' }}>
       <div className="w-full max-w-md">
 
         <div className="flex flex-col items-center mb-8">

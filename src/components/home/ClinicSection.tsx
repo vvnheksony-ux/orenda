@@ -69,7 +69,7 @@ export default function ClinicSection() {
 
   return (
     <section className="w-full" style={{ paddingTop: 'clamp(140px, 12vw, 180px)' }}>
-      <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[32px] lg:gap-[40px] items-center">
+      <div className="page-shell flex flex-col gap-[32px] lg:gap-[40px] items-center">
 
         <div className="flex flex-col gap-[24px] items-center">
           <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-[#3d3123] leading-none text-center">
