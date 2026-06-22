@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/utils/supabase/server'
+import { sendTelegramHtmlMessage } from '@/lib/telegram'
 
-async function sendTelegram(data: Record<string, any>) {
-  const token  = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID
-  if (!token || !chatId) return
+function readTrimmedString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
+}
 
+function readOptionalString(value: unknown) {
+  const text = readTrimmedString(value)
+  return text || null
+}
+
+async function sendTelegram(data: Record<string, unknown>) {
   const lines = [
     '📩 <b>New Contact Inquiry</b>',
     '',
@@ -17,30 +23,35 @@ async function sendTelegram(data: Record<string, any>) {
   ].filter(Boolean).join('\n')
 
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'HTML' }),
-    })
-  } catch (e) {
-    console.error('Telegram notify failed:', e)
+    await sendTelegramHtmlMessage(lines)
+  } catch (error) {
+    console.error('Telegram notify failed:', error)
   }
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json()
+  const body = await req.json() as Record<string, unknown>
 
-  if (!body.name || (!body.email && !body.phone)) {
+  const name = readTrimmedString(body.name)
+  const email = readOptionalString(body.email)
+  const phone = readOptionalString(body.phone)
+  const message = readTrimmedString(body.message)
+
+  if (!name || (!email && !phone)) {
     return NextResponse.json({ error: 'Name and contact info required' }, { status: 400 })
   }
 
-  const payload: Record<string, any> = {
-    name:     body.name,
-    email:    body.email    || null,
-    phone:    body.phone    || null,
-    message:  body.message  || null,
-    subject:  body.subject  || null,
-    language: body.language || null,
+  if (!message) {
+    return NextResponse.json({ error: 'Inquiry message is required' }, { status: 400 })
+  }
+
+  const payload = {
+    name,
+    email,
+    phone,
+    message,
+    subject: readOptionalString(body.subject),
+    language: readOptionalString(body.language),
   }
 
   const serviceClient = await createServiceClient()

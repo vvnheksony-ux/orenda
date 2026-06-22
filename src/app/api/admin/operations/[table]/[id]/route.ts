@@ -4,11 +4,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { createServiceClient } from '@/utils/supabase/server'
 
-const allowedTables = ['appointments', 'inquiries', 'purchases', 'profiles', 'feedback', 'testimonials', 'contact_messages'] as const
+const allowedTables = ['appointments', 'inquiries', 'purchases', 'patients', 'profiles', 'feedback', 'testimonials', 'contact_messages'] as const
 const allowedStatusByTable: Record<(typeof allowedTables)[number], string[]> = {
   appointments: ['pending', 'confirmed', 'cancelled'],
   inquiries: ['unread', 'in-progress', 'resolved', 'closed'],
   purchases: ['pending', 'contacted', 'confirmed', 'cancelled'],
+  patients: [],
   profiles: ['active', 'inactive', 'suspended'],
   feedback: ['pending', 'approved', 'rejected'],
   testimonials: [],
@@ -19,6 +20,7 @@ const editableFieldsByTable: Record<(typeof allowedTables)[number], string[]> = 
     'patient_name',
     'patient_phone',
     'patient_email',
+    'patient_id',
     'preferred_date',
     'preferred_time',
     'slot_start',
@@ -55,6 +57,17 @@ const editableFieldsByTable: Record<(typeof allowedTables)[number], string[]> = 
     'role',
     'user_type',
     'status',
+    'date_of_birth',
+  ],
+  patients: [
+    'display_name',
+    'photo_url',
+    'email_user',
+    'phone',
+    'user_type',
+    'gender',
+    'language',
+    'onesignal_player_id',
     'date_of_birth',
   ],
   feedback: [
@@ -110,9 +123,44 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
   }
 
   const supabase = await createServiceClient()
-  const { error } = await supabase.schema('public').from(table).update(updateData).eq('id', id)
+
+  // When an appointment is being confirmed, read its prior status + patient
+  // first, so we can push a notification once — only on the change to confirmed.
+  const willConfirmAppointment = table === 'appointments' && updateData.status === 'confirmed'
+  let appt: { status: string | null; user_id: string | null; preferred_date: string | null } | null = null
+  if (willConfirmAppointment) {
+    const { data } = await supabase
+      .schema('public')
+      .from('appointments')
+      .select('status, user_id, preferred_date')
+      .eq('id', id)
+      .single()
+    appt = (data as unknown as { status: string | null; user_id: string | null; preferred_date: string | null } | null) ?? null
+  }
+
+  const { error } = await supabase.schema('public').from(getDatabaseTable(table)).update(updateData).eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Notify the patient who booked, once, when their appointment is confirmed.
+  if (willConfirmAppointment && appt?.user_id && appt.status !== 'confirmed') {
+    const base = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
+    // Deep-link to this specific appointment so the page auto-opens its detail modal.
+    const url = base ? `${base}/appointments?id=${id}` : null
+    const when = appt.preferred_date ? ` for ${appt.preferred_date}` : ''
+    const { error: notifyError } = await supabase.schema('public').from('notifications').insert({
+      audience: 'patient',
+      category: 'appointment',
+      feature: 'appointments',
+      source_type: 'appointment',
+      source_id: id,
+      title: '✅ Appointment Confirmed',
+      body: `Your appointment${when} has been confirmed. Tap to view the details.`,
+      data: { collection: 'appointments', appointment_id: id, url },
+      user_id: [appt.user_id],
+    })
+    if (notifyError) console.error('appointment confirm notify failed:', notifyError.message)
+  }
 
   return NextResponse.json({ ok: true })
 }
@@ -126,7 +174,7 @@ function getUpdateData(table: (typeof allowedTables)[number], body: { data?: Rec
   if (!body?.data || typeof body.data !== 'object') return null
 
   const editableFields = editableFieldsByTable[table]
-  const updateData: Record<string, string | number | null> = {}
+  const updateData: Record<string, string | number | boolean | null> = {}
 
   for (const [key, value] of Object.entries(body.data)) {
     if (!editableFields.includes(key)) continue
@@ -138,9 +186,18 @@ function getUpdateData(table: (typeof allowedTables)[number], body: { data?: Rec
 }
 
 function normalizeFieldValue(key: string, value: unknown) {
+  if (key === 'patient_id' && value === '') return '00000000'
   if (value === '') return null
+  if (key === 'contact_required') {
+    if (value === true || value === 'true') return true
+    if (value === false || value === 'false') return false
+    return null
+  }
   if (typeof value !== 'string') return null
-  if (key.endsWith('_payload_id')) return Number(value)
+  if (key.endsWith('_payload_id') || key === 'promotion_id' || key === 'branch_id') {
+    const num = Number(value)
+    return Number.isFinite(num) ? num : null
+  }
   return value
 }
 
@@ -152,7 +209,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
   if (!isAllowedTable(table)) return NextResponse.json({ error: 'Unknown operations table.' }, { status: 404 })
 
   const supabase = await createServiceClient()
-  const { error } = await supabase.schema('public').from(table).delete().eq('id', id)
+  const { error } = await supabase.schema('public').from(getDatabaseTable(table)).delete().eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -161,6 +218,10 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
 
 function isAllowedTable(value: string): value is (typeof allowedTables)[number] {
   return allowedTables.includes(value as (typeof allowedTables)[number])
+}
+
+function getDatabaseTable(table: (typeof allowedTables)[number]) {
+  return table === 'patients' ? 'profiles' : table
 }
 
 async function requirePayloadAdmin(req: NextRequest) {

@@ -1,8 +1,8 @@
 import Image from 'next/image'
+import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { Link } from '@/i18n/routing'
-import { payloadFetch, mediaUrl } from '@/lib/payload-api'
 import { MapPin, Clock, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const RELATED_ARTICLES = [
@@ -18,14 +18,13 @@ function formatExpiry(iso: string | null) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
-function lexicalToParagraphs(rt: any): string[] {
-  if (!rt?.root?.children) return []
-  return rt.root.children
-    .map((node: any) => {
-      if (node.children) return node.children.map((n: any) => n.text ?? '').join('').trim()
-      return ''
-    })
-    .filter(Boolean)
+interface PromoDetail {
+  id: string
+  title: string
+  slug: string
+  image: string | null
+  validTo: string | null
+  description: string
 }
 
 export default async function PromotionDetailPage({
@@ -34,25 +33,43 @@ export default async function PromotionDetailPage({
   params: Promise<{ promoId: string; locale: string }>
 }) {
   const { promoId, locale } = await params
+  const headerStore = await headers()
 
-  let promo: any = null
+  // Fetch via the raw-pool API route (the working DB path) instead of Payload's
+  // direct connection, which times out. Mirrors how the rest of the site fetches.
+  const forwardedProto = headerStore.get('x-forwarded-proto')
+  const forwardedHost = headerStore.get('x-forwarded-host')
+  const host = forwardedHost ?? headerStore.get('host')
+  const base = host
+    ? `${forwardedProto ?? 'https'}://${host}`
+    : process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
+  let promo: PromoDetail | null = null
   try {
-    const data = await payloadFetch(
-      `/payload-api/promotions?where[slug][equals]=${promoId}&locale=${locale}&depth=1&limit=1`
+    const res = await fetch(
+      `${base}/api/promotions?slug=${encodeURIComponent(promoId)}&locale=${locale}`,
+      { cache: 'no-store' }
     )
-    promo = data.docs?.[0] ?? null
+    if (res.ok) {
+      const data = await res.json() as PromoDetail | PromoDetail[] | null
+      promo = Array.isArray(data) ? (data[0] ?? null) : (data?.id ? data : null)
+    }
   } catch {}
 
   if (!promo) notFound()
 
-  const image = mediaUrl(promo.image)
-  const paragraphs = lexicalToParagraphs(promo.description)
+  const image = promo.image ?? null
+  const paragraphs = String(promo.description || '')
+    .split('\n')
+    .map((s: string) => s.trim())
+    .filter(Boolean)
   const expiry = formatExpiry(promo.validTo ?? null)
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
-        <div className="max-w-[1352px] mx-auto px-5 xl:px-0 flex flex-col gap-10">
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
+        <div className="content-shell flex flex-col gap-10">
 
           {/* Back */}
           <Link
@@ -120,7 +137,7 @@ export default async function PromotionDetailPage({
         </div>
 
         {/* Explore More */}
-        <div className="mt-20 px-5 xl:px-[80px] flex flex-col gap-10 items-center">
+        <div className="content-shell mt-20 flex flex-col gap-10 items-center">
           <div className="text-center flex flex-col gap-3">
             <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">
               Explore More

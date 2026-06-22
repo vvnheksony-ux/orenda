@@ -5,10 +5,15 @@ import { lexicalToText } from '@/lib/payload-api'
 export const runtime = 'nodejs'
 
 export async function GET(req: Request) {
-  const locale = new URL(req.url).searchParams.get('locale') || 'en'
+  const { searchParams } = new URL(req.url)
+  const locale = searchParams.get('locale') || 'en'
+  const slug = searchParams.get('slug')
 
   try {
     const pool = getRawPool()
+    const params: any[] = [locale]
+    let slugFilter = ''
+    if (slug) { params.push(slug); slugFilter = `AND sp.slug = $${params.length}` }
 
     const { rows } = await pool.query(`
       SELECT
@@ -23,23 +28,29 @@ export async function GET(req: Request) {
       LEFT JOIN payload.service_packages_locales enspl
         ON enspl._parent_id = sp.id AND enspl._locale = 'en'
       LEFT JOIN payload.media m ON m.id = sp.image_id
-      WHERE sp.status = 'published'
+      WHERE sp._status = 'published'
+      ${slugFilter}
       ORDER BY sp."order"
       LIMIT 20
-    `, [locale])
+    `, params)
 
-    const docs = rows.map((row: any) => ({
+    const toDoc = (row: any) => ({
       id:          String(row.id),
       slug:        row.slug ?? '',
       title:       row.title ?? '',
       description: lexicalToText(row.description),
       price:       row.price_label ?? '',
       image:       mediaStorageUrl(row.img_filename, row.img_prefix),
-    }))
+    })
 
-    return NextResponse.json(docs)
+    if (slug) {
+      if (!rows[0]) return NextResponse.json(null, { status: 404 })
+      return NextResponse.json(toDoc(rows[0]))
+    }
+
+    return NextResponse.json(rows.map(toDoc), { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('packages:', err.message)
-    return NextResponse.json([])
+    return NextResponse.json(slug ? null : [])
   }
 }

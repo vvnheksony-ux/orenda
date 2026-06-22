@@ -1,8 +1,9 @@
 'use client'
 
-import { Eye, Pencil, Search, Trash2 } from 'lucide-react'
+import { Eye, Pencil, Search } from 'lucide-react'
 import Link from 'next/link'
-import { useMemo, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMemo, useState } from 'react'
 
 import type { CombinedUser } from '@/lib/admin/users'
 import UserDeleteButton from './UserDeleteButton'
@@ -13,14 +14,13 @@ type UsersListViewContentProps = {
 }
 
 export default function UsersListViewContent({ users, error }: UsersListViewContentProps) {
+  const router = useRouter()
   const [search, setSearch] = useState('')
-  const [isPending, startTransition] = useTransition()
-  const [localUsers, setLocalUsers] = useState(users)
 
   const filtered = useMemo(() => {
-    if (!search) return localUsers
+    if (!search) return users
     const q = search.toLowerCase()
-    return localUsers.filter(
+    return users.filter(
       (u) =>
         u.name.toLowerCase().includes(q) ||
         u.contact.toLowerCase().includes(q) ||
@@ -28,7 +28,7 @@ export default function UsersListViewContent({ users, error }: UsersListViewCont
         u.status.toLowerCase().includes(q) ||
         u.source.toLowerCase().includes(q),
     )
-  }, [localUsers, search])
+  }, [users, search])
 
   return (
     <>
@@ -71,14 +71,23 @@ export default function UsersListViewContent({ users, error }: UsersListViewCont
             </thead>
             <tbody>
               {filtered.map((user) => {
-                const isPayload = user.source === 'Payload'
-                const isSupabase = user.source?.toLowerCase().includes('profiles')
-                const opSlug = 'profiles'
-                const viewHref = isPayload ? `/admin/collections/users/${user.id}` : (isSupabase ? `/admin/operations/${opSlug}/view/${user.id}` : null)
-                const editHref = isPayload ? `/admin/collections/users/${user.id}` : (isSupabase ? `/admin/operations/${opSlug}/edit/${user.id}` : null)
+                const viewHref = `/admin/collections/users/${user.id}`
 
                 return (
-                  <tr data-id={user.id} key={`${user.source}-${user.id}`}>
+                  <tr
+                    className="cursor-pointer"
+                    data-id={user.id}
+                    key={`${user.source}-${user.id}`}
+                    onClick={() => router.push(viewHref)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        router.push(viewHref)
+                      }
+                    }}
+                    role="link"
+                    tabIndex={0}
+                  >
                     <td>{user.name}</td>
                     <td>{user.contact}</td>
                     <td>{user.role}</td>
@@ -88,22 +97,14 @@ export default function UsersListViewContent({ users, error }: UsersListViewCont
                     <td>{user.dateOfBirth}</td>
                     <td>{user.created}</td>
                     <td className="orienda-list-table__actions-cell">
-                      <div className="orienda-list-table__actions">
-                        {viewHref ? (
-                          <>
-                            <Link aria-label="View user" className="orienda-table-action orienda-table-action--view" href={viewHref}>
-                              <Eye size={15} />
-                            </Link>
-                            {editHref && (
-                              <Link aria-label="Edit user" className="orienda-table-action orienda-table-action--edit" href={editHref}>
-                                <Pencil size={15} />
-                              </Link>
-                            )}
-                            {user.role?.toLowerCase() !== 'admin' && <UserDeleteButton user={user} />}
-                          </>
-                        ) : (
-                          <span className="text-sm text-[#8a8172]">Read only</span>
-                        )}
+                      <div className="orienda-list-table__actions" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+                        <Link aria-label="View user" className="orienda-table-action orienda-table-action--view" href={viewHref}>
+                          <Eye size={15} />
+                        </Link>
+                        <Link aria-label="Edit user" className="orienda-table-action orienda-table-action--edit" href={viewHref}>
+                          <Pencil size={15} />
+                        </Link>
+                        {user.role?.toLowerCase() !== 'admin' && <UserDeleteButton user={user} />}
                       </div>
                     </td>
                   </tr>

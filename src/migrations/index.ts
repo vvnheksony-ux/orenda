@@ -9,6 +9,10 @@ import * as migration_20260611_000000 from './20260611_000000_drop_insurance_pro
 import * as migration_20260611_120000 from './20260611_120000_add_branch_to_tour_scenes';
 import * as migration_20260611_140000 from './20260611_140000_drop_legacy_news_fields';
 import * as migration_20260611_150000 from './20260611_150000_rename_health_tips_tags_table';
+import * as migration_20260616_000000 from './20260616_000000_add_tour_scene_room_group';
+import * as migration_20260618_000000 from './20260618_000000_add_mekong_otp_challenges';
+import * as migration_20260619_000000 from './20260619_000000_lock_public_rls';
+import * as migration_20260619_010000 from './20260619_010000_add_telegram_subscribers';
 
 export const migrations = [
   {
@@ -65,5 +69,25 @@ export const migrations = [
     up: migration_20260611_150000.up,
     down: migration_20260611_150000.down,
     name: '20260611_150000'
+  },
+  {
+    up: migration_20260616_000000.up,
+    down: migration_20260616_000000.down,
+    name: '20260616_000000_add_tour_scene_room_group'
+  },
+  {
+    up: migration_20260618_000000.up,
+    down: migration_20260618_000000.down,
+    name: '20260618_000000_add_mekong_otp_challenges'
+  },
+  {
+    up: migration_20260619_000000.up,
+    down: migration_20260619_000000.down,
+    name: '20260619_000000_lock_public_rls'
+  },
+  {
+    up: migration_20260619_010000.up,
+    down: migration_20260619_010000.down,
+    name: '20260619_010000_add_telegram_subscribers'
   },
 ];

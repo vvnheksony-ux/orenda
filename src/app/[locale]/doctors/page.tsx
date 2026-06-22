@@ -20,38 +20,38 @@ interface Doctor {
 function DoctorCard({ doc }: { doc: Doctor }) {
   return (
     <div
-      className="bg-[#fbf7ee] flex flex-col gap-[40px] h-[400px] items-center justify-center overflow-hidden relative rounded-[16px] shrink-0 w-[300px]"
+      className="relative flex h-[260px] w-full max-w-[168px] flex-col items-center justify-center gap-[18px] overflow-hidden rounded-[16px] bg-[var(--background)] sm:h-[330px] sm:max-w-[240px] sm:gap-[24px] lg:h-[400px] lg:max-w-[300px] lg:gap-[32px]"
       style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }}
     >
       {/* Gold gradient header */}
       <div
-        className="absolute top-0 left-0 w-full h-[206px] opacity-[0.64] pointer-events-none"
+        className="pointer-events-none absolute left-0 top-0 h-[110px] w-full opacity-[0.64] sm:h-[165px] lg:h-[206px]"
         style={{ background: 'linear-gradient(133deg, rgba(234,214,164,0.6) 0%, rgba(206,175,112,0.827) 25%, rgba(184,145,72,0.8) 49.5%, rgba(210,181,120,0.792) 76%, rgba(234,214,164,0.6) 100%)' }}
       />
       {/* Circular photo */}
       <div
-        className="relative rounded-full overflow-hidden shrink-0 size-[146px] bg-[#fbf7ee]"
+        className="relative size-[84px] shrink-0 overflow-hidden rounded-full bg-[var(--background)] sm:size-[118px] lg:size-[146px]"
         style={{ boxShadow: '0px 4px 30px 12px rgba(184,145,72,0.2)' }}
       >
         {doc.image_url ? (
-          <Image src={doc.image_url} alt={doc.name} fill className="object-cover object-top" sizes="146px" unoptimized />
+          <Image src={doc.image_url} alt={doc.name} fill className="object-cover object-top" sizes="(max-width: 640px) 84px, (max-width: 1024px) 118px, 146px" unoptimized />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[#ead6a4]">
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="sm:w-12 sm:h-12 lg:w-14 lg:h-14">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
           </div>
         )}
       </div>
       {/* Info */}
-      <div className="flex flex-col h-[145px] items-center justify-between shrink-0">
-        <div className="flex flex-col gap-[16px] items-center text-center text-[#3b2d17] capitalize overflow-hidden">
-          <p className="font-cormorant font-medium text-[24px] w-[217px] leading-none">{doc.name}</p>
-          <p className="font-dm-sans text-[16px] w-[186px] leading-none text-[#594522]">{doc.specialty}</p>
+      <div className="flex h-[110px] shrink-0 flex-col items-center justify-between sm:h-[132px] lg:h-[145px]">
+        <div className="flex flex-col items-center gap-[8px] overflow-hidden px-2 text-center text-[#3b2d17] capitalize sm:gap-[12px] sm:px-4 lg:gap-[16px]">
+          <p className="max-w-[140px] break-words font-cormorant text-[16px] font-medium leading-none sm:max-w-[180px] sm:text-[20px] lg:max-w-[217px] lg:text-[24px]">{doc.name}</p>
+          <p className="max-w-[132px] break-words font-dm-sans text-[11px] leading-none text-[#594522] sm:max-w-[160px] sm:text-[13px] lg:max-w-[186px] lg:text-[16px]">{doc.specialty}</p>
         </div>
         <Link
           href={`/doctors/${doc.id}` as any}
-          className="bg-[#b89148] flex h-[32px] items-center justify-center overflow-hidden px-[12px] py-[8px] rounded-[12px] w-[145px] font-dm-sans text-[12px] text-[#fbf7ee] hover:bg-[#c8a25a] transition-colors"
+          className="flex h-[28px] w-[110px] items-center justify-center overflow-hidden rounded-[10px] bg-[#b89148] px-[12px] py-[8px] font-dm-sans text-[11px] text-[#fbf7ee] transition-colors hover:bg-[#c8a25a] sm:h-[30px] sm:w-[130px] sm:text-[12px] lg:h-[32px] lg:w-[145px]"
         >
           View Profile
         </Link>
@@ -105,12 +105,38 @@ export default function DoctorsPage() {
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full">
-        <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[80px] items-center pb-[120px] px-4 sm:px-8 lg:px-[80px] pt-[100px] lg:pt-[212px]">
+      <div className="bg-[var(--background)] w-full">
+        <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
 
           {/* Hero banner */}
+          <div className="flex w-full flex-col gap-[16px] sm:hidden">
+            <div
+              className="relative h-[260px] w-full overflow-hidden rounded-[16px]"
+              style={{ background: 'rgba(255,255,255,0.8)', boxShadow: '0px 4px 4px 0px rgba(0,0,0,0.25)' }}
+            >
+              <Image
+                src="/images/doctors-banner.jpg"
+                alt="Orienda Doctors"
+                fill
+                className="object-cover"
+                sizes="100vw"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(184,145,72,0.18)]" />
+            </div>
+
+            <button
+              onClick={() => trackCallClick('doctors-banner')}
+              className="ml-auto flex items-center gap-[8px] rounded-[12px] border border-[#b89148] bg-[#b89148] px-4 py-3"
+              style={{ boxShadow: '0px 0px 4.5px #cba655' }}
+            >
+              <Phone size={18} className="text-[#fbf7ee]" />
+              <span className="font-dm-sans text-[14px] leading-none text-[#fbf7ee]">Contact Now</span>
+            </button>
+          </div>
+
           <div
-            className="relative w-full h-[594px] rounded-[16px] overflow-hidden"
+            className="relative hidden w-full overflow-hidden rounded-[16px] sm:block sm:h-[420px] lg:h-[594px]"
             style={{ background: 'rgba(255,255,255,0.8)', boxShadow: '0px 4px 4px 0px rgba(0,0,0,0.25)' }}
           >
             <Image
@@ -127,11 +153,11 @@ export default function DoctorsPage() {
             <div className="absolute bottom-[24px] right-[24px]">
               <button
                 onClick={() => trackCallClick('doctors-banner')}
-                className="flex items-center gap-[10px] px-[42px] py-[24px] rounded-[12px] bg-[#b89148] backdrop-blur-[6px] border border-[#b89148]"
+                className="flex items-center gap-[10px] rounded-[12px] border border-[#b89148] bg-[#b89148] px-[42px] py-[24px] backdrop-blur-[6px]"
                 style={{ boxShadow: '0px 0px 4.5px #cba655' }}
               >
                 <Phone size={24} className="text-[#fbf7ee]" />
-                <span className="font-dm-sans text-[24px] text-[#fbf7ee] leading-none">Contact Now</span>
+                <span className="font-dm-sans text-[20px] leading-none text-[#fbf7ee] lg:text-[24px]">Contact Now</span>
               </button>
             </div>
           </div>
@@ -140,12 +166,12 @@ export default function DoctorsPage() {
           <div className="flex flex-col gap-[40px] items-center w-full">
             {/* Section header */}
             <div className="flex flex-col gap-[12px] text-center w-full">
-              <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">
-                Meet Our Doctors
-              </h1>
-              <p className="font-dm-sans text-[20px] text-[#594522] w-full">
-                A selected team of experts committed to your health
-              </p>
+                <h1 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none w-full">
+                  Meet Our Doctors
+                </h1>
+                <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522] w-full">
+                  A selected team of experts committed to your health
+                </p>
             </div>
 
             {/* Empty state */}
@@ -165,10 +191,10 @@ export default function DoctorsPage() {
                     </p>
                   </div>
                   {/* Cards */}
-                  <div className="flex flex-wrap gap-[40px] items-center justify-center w-full">
+                  <div className="grid w-full grid-cols-2 justify-items-center gap-[12px] sm:grid-cols-3 sm:gap-[20px] xl:grid-cols-4 xl:gap-[40px]">
                     {isLoading
                       ? Array(8).fill(0).map((_, i) => (
-                          <div key={i} className="bg-[#fbf7ee] rounded-[16px] h-[400px] w-[300px] animate-pulse" style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }} />
+                          <div key={i} className="aspect-[3/4] w-full max-w-[168px] rounded-[16px] bg-[var(--background)] animate-pulse sm:max-w-[240px] lg:max-w-[300px]" style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }} />
                         ))
                       : deptDoctors.map((doc, i) =>
                           doc ? <DoctorCard key={doc.id || i} doc={doc} /> : null

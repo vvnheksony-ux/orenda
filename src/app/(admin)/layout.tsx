@@ -1,25 +1,27 @@
-'use client'
-
 import { cormorantGaramond, dmSans, inter, greatVibes, khmerSerif, khmerSans, chineseSerif } from '@/lib/fonts'
-import NavigationBar from '@/components/admin/NavigationBar'
-import { usePathname, useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import AdminShell from '@/components/admin/AdminShell'
+import config from '@payload-config'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { getPayload } from 'payload'
 import '../globals.css'
 
-export default function AdminLayout({
+export const dynamic = 'force-dynamic'
+
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const isLoginPage = pathname === '/admin-panel/login'
+  const payload = await getPayload({ config })
+  const requestHeaders = await headers()
+  const { user } = await payload.auth({ headers: requestHeaders })
+  const role = user && typeof user === 'object' && 'role' in user ? user.role : null
 
-  useEffect(() => {
-    if (pathname === '/admin-panel') {
-      router.replace('/admin-panel/login')
-    }
-  }, [pathname, router])
+  if (role !== 'admin') {
+    redirect('/admin')
+  }
+
 
   return (
     <html
@@ -27,14 +29,7 @@ export default function AdminLayout({
       className={`${cormorantGaramond.variable} ${dmSans.variable} ${inter.variable} ${greatVibes.variable} ${khmerSerif.variable} ${khmerSans.variable} ${chineseSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-[#f8f7f5] font-dm-sans text-[#2d2b28]">
-        {!isLoginPage ? (
-          <div className="min-h-screen lg:flex">
-            <NavigationBar />
-            <main className="min-w-0 flex-1 lg:pl-[280px]">{children}</main>
-          </div>
-        ) : (
-          <main>{children}</main>
-        )}
+        <AdminShell>{children}</AdminShell>
       </body>
     </html>
   )

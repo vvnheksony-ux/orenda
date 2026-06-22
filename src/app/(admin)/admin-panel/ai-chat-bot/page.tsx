@@ -1,5 +1,7 @@
 import { AdminCardPage } from '@/components/admin/AdminManagementPage'
 
+export const dynamic = 'force-dynamic'
+
 const aiChatBots = [
   { title: 'AI Chat Bot title', description: 'This is AI chat bot short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'draft' },
   { title: 'AI Chat Bot title', description: 'This is AI chat bot short display descriptions...', author: 'admin@orienda.com', updated: '2 days ago', status: 'published' },

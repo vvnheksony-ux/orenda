@@ -34,7 +34,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.departments_locales endll
         ON endll._parent_id = d.id AND endll._locale = 'en'
       LEFT JOIN payload.media m ON m.id = d.icon_id
-      WHERE d.status = 'published'
+      WHERE d._status = 'published'
       ${extra.join(' ')}
       ORDER BY d."order"
       LIMIT $${params.length}
@@ -58,7 +58,8 @@ export async function GET(req: Request) {
     const docs = rows.map(toDoc)
     return NextResponse.json(
       { docs, totalDocs: docs.length },
-      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+      // Always fresh — branch-dependent data must not be served stale (no manual refresh).
+      { headers: { 'Cache-Control': 'no-store' } }
     )
   } catch (err: any) {
     console.error('departments error:', err.message)

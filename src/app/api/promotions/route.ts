@@ -30,7 +30,7 @@ export async function GET(req: Request) {
         LEFT JOIN payload.promotions_locales pl    ON pl._parent_id = p.id AND pl._locale = $1
         LEFT JOIN payload.promotions_locales enpl  ON enpl._parent_id = p.id AND enpl._locale = 'en'
         LEFT JOIN payload.media m ON m.id = p.image_id
-        WHERE p.status = 'published' ${filter}
+        WHERE p._status = 'published' ${filter}
         LIMIT 1
       `, params)
 
@@ -59,7 +59,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.promotions_locales pl    ON pl._parent_id = p.id AND pl._locale = $1
       LEFT JOIN payload.promotions_locales enpl  ON enpl._parent_id = p.id AND enpl._locale = 'en'
       LEFT JOIN payload.media m ON m.id = p.image_id
-      WHERE p.status = 'published'
+      WHERE p._status = 'published'
       ORDER BY p.published_at DESC NULLS LAST
       LIMIT $2 OFFSET $3
     `, [locale, limit, offset])
@@ -76,7 +76,7 @@ export async function GET(req: Request) {
       description: lexicalToText(row.description),
     }))
 
-    return NextResponse.json({ docs, totalDocs })
+    return NextResponse.json({ docs, totalDocs }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('promotions:', err.message)
     return NextResponse.json({ docs: [], totalDocs: 0 })

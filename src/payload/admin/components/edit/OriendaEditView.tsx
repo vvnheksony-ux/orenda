@@ -5,6 +5,7 @@ import type { StepNavItem } from '@payloadcms/ui'
 
 import { DefaultEditView, SetStepNav, useDocumentInfo } from '@payloadcms/ui'
 import { getStaticLabel } from '../list/OriendaListView'
+import CustomEditHeader from '../CustomEditHeader'
 
 export default function OriendaEditView(props: DocumentViewServerProps) {
   const { id: docId, title, collectionSlug, docConfig } = useDocumentInfo()
@@ -24,7 +25,7 @@ export default function OriendaEditView(props: DocumentViewServerProps) {
 
   return (
     <>
-      <DefaultEditView {...props} />
+      <DefaultEditView {...props} BeforeDocumentControls={<CustomEditHeader />} />
       <SetStepNav nav={nav} />
     </>
   )

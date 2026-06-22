@@ -34,7 +34,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.media m ON m.id = c.thumbnail_id
       LEFT JOIN payload.departments_locales dept_l
         ON dept_l._parent_id = c.career_department_id AND dept_l._locale = 'en'
-      WHERE c.status = 'published'
+      WHERE c._status = 'published'
       ${slugFilter}
       ORDER BY c.created_at DESC
       LIMIT $${params.length}
@@ -58,7 +58,7 @@ export async function GET(req: Request) {
       if (!rows[0]) return NextResponse.json(null, { status: 404 })
       return NextResponse.json(toDoc(rows[0]))
     }
-    return NextResponse.json({ docs: rows.map(toDoc), totalDocs: rows.length })
+    return NextResponse.json({ docs: rows.map(toDoc), totalDocs: rows.length }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('careers:', err.message)
     return NextResponse.json({ docs: [], totalDocs: 0 })

@@ -6,6 +6,7 @@ import { useBranch } from '@/lib/branch-context'
 import { animate, motion, useMotionValue } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
+import { Link } from '@/i18n/routing'
 
 function wrapIdx(i: number, n: number) { return ((i % n) + n) % n }
 
@@ -42,7 +43,7 @@ function getTargetX(diff: number, gap: number = 32) {
 }
 
 function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt, n }: {
-  doc: { name: string, specialty: string, image: string }
+  doc: { id: string, name: string, specialty: string, image: string }
   docIndex: number
   activeIdx: number
   setIdx: (i: number) => void
@@ -132,22 +133,24 @@ function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt, n }: {
             {doc.specialty}
           </p>
         </div>
-        <motion.div
-          className="bg-[#B89148] flex items-center justify-center overflow-hidden shadow-[0px_2px_6px_6px_rgba(0,0,0,0.05)] mt-[16px]"
-          style={{ width: s.btnW, height: s.btnH, borderRadius: 12 }}
-          variants={{
-            hover: { 
-              backgroundColor: '#a3803d', 
-              scale: 1.03, 
-              boxShadow: '0 4px 12px rgba(163,128,61,0.35)',
-              transition: { duration: 0.2 } 
-            }
-          }}
-        >
-          <p className="font-dm-sans text-white text-center font-medium" style={{ fontSize: s.btnFs }}>
-            {viewProfileTxt}
-          </p>
-        </motion.div>
+        <Link href={`/doctors/${doc.id}` as any} onClick={(e) => e.stopPropagation()} className="contents">
+          <motion.div
+            className="bg-[#B89148] flex items-center justify-center overflow-hidden shadow-[0px_2px_6px_6px_rgba(0,0,0,0.05)] mt-[16px] cursor-pointer"
+            style={{ width: s.btnW, height: s.btnH, borderRadius: 12 }}
+            variants={{
+              hover: {
+                backgroundColor: '#a3803d',
+                scale: 1.03,
+                boxShadow: '0 4px 12px rgba(163,128,61,0.35)',
+                transition: { duration: 0.2 }
+              }
+            }}
+          >
+            <p className="font-dm-sans text-white text-center font-medium" style={{ fontSize: s.btnFs }}>
+              {viewProfileTxt}
+            </p>
+          </motion.div>
+        </Link>
       </div>
 
       {/* Inactive overlay */}
@@ -164,7 +167,7 @@ export default function SpecialistSection() {
   const locale = useLocale()
   const { selectedBranch } = useBranch()
   const [activeIdx, setActiveIdx] = useState(2)
-  const [doctors, setDoctors] = useState<{ name: string; specialty: string; image: string }[]>([])
+  const [doctors, setDoctors] = useState<{ id: string; name: string; specialty: string; image: string }[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -176,6 +179,7 @@ export default function SpecialistSection() {
       .then((data: any[]) => {
         if (data?.length) {
           setDoctors(data.map(d => ({
+            id:        String(d.id),
             name:      d.name,
             specialty: d.specialty,
             image:     d.image_url || '/images/doctor-1.jpg',
@@ -193,7 +197,7 @@ export default function SpecialistSection() {
   const next = () => setActiveIdx(i => wrapIdx(i + 1, n))
 
   if (loading) return (
-    <section className="w-full bg-[#fbf7ee] overflow-hidden">
+    <section className="w-full bg-[var(--background)] overflow-hidden">
       <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[24px] lg:gap-[60px] items-center">
         <div className="flex flex-col gap-[16px] items-center w-full text-center px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]">
           <div className="h-[36px] lg:h-[48px] w-[240px] rounded-lg bg-[#e8d9b8] animate-pulse" />
@@ -211,7 +215,7 @@ export default function SpecialistSection() {
   if (!n) return null
 
   return (
-    <section className="w-full bg-[#fbf7ee] overflow-hidden">
+    <section className="w-full bg-[var(--background)] overflow-hidden">
       <div className="max-w-[1512px] mx-auto w-full flex flex-col gap-[24px] lg:gap-[60px] items-center">
 
         <div className="flex flex-col gap-[16px] lg:gap-[20px] items-center w-full text-center px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]">
@@ -248,7 +252,7 @@ export default function SpecialistSection() {
                         backgroundImage: 'linear-gradient(133.36deg,rgba(234,214,164,0.6) 0%,rgba(206,175,112,0.827) 25%,rgba(184,145,72,0.8) 49.52%,rgba(210,181,120,0.792) 75.96%,rgba(234,214,164,0.6) 100%)',
                       }}
                     />
-                    <div className="relative z-10 rounded-full overflow-hidden bg-[#fbf7ee] shadow-[0px_3px_25px_12px_rgba(184,145,72,0.2)]" style={{ width: 120, height: 120, marginTop: 24 }}>
+                    <div className="relative z-10 rounded-full overflow-hidden bg-[var(--background)] shadow-[0px_3px_25px_12px_rgba(184,145,72,0.2)]" style={{ width: 120, height: 120, marginTop: 24 }}>
                       <Image src={doc.image} alt={doc.name} fill className="object-cover object-top" sizes="120px" unoptimized />
                     </div>
                   </div>
@@ -258,9 +262,9 @@ export default function SpecialistSection() {
                       <p className="font-cormorant font-bold text-[18px] text-[#3b2d17] leading-tight capitalize w-full truncate">{doc.name}</p>
                       <p className="font-dm-sans text-[12px] text-[#3b2d17]/80 leading-tight w-full truncate">{doc.specialty}</p>
                     </div>
-                    <div className="bg-[#b89148] rounded-[10px] flex items-center justify-center px-[12px] py-[8px] w-full">
+                    <Link href={`/doctors/${doc.id}` as any} onClick={(e) => e.stopPropagation()} className="bg-[#b89148] rounded-[10px] flex items-center justify-center px-[12px] py-[8px] w-full">
                       <p className="font-dm-sans text-white text-center text-[12px] font-medium">{t('viewProfile')}</p>
-                    </div>
+                    </Link>
                   </div>
                 </div>
               )
@@ -286,9 +290,9 @@ export default function SpecialistSection() {
 
         </motion.div>
 
-        <button className="px-[32px] py-[12px] rounded-full border border-[#b89148] text-[#5c4924] font-dm-sans text-[16px] bg-[#F5ECD4]/40 hover:bg-[#b89148]/10 transition-colors cursor-pointer">
+        <Link href="/doctors" className="px-[32px] py-[12px] rounded-full border border-[#b89148] text-[#5c4924] font-dm-sans text-[16px] bg-[#F5ECD4]/40 hover:bg-[#b89148]/10 transition-colors cursor-pointer">
           {t('seeMore')}
-        </button>
+        </Link>
 
       </div>
     </section>

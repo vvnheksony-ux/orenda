@@ -6,6 +6,9 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import CookieConsent from '@/components/shared/CookieConsent'
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker'
+import OneSignalInit from '@/components/shared/OneSignalInit'
+import ProfileGate from '@/components/shared/ProfileGate'
+import AuthErrorToast from '@/components/shared/AuthErrorToast'
 import { BranchProvider } from '@/lib/branch-context'
 import FloatingChat from '@/components/chat/FloatingChat'
 
@@ -51,10 +54,27 @@ export default async function RootLayout({
       className={`${cormorantGaramond.variable} ${dmSans.variable} ${inter.variable} ${greatVibes.variable} ${khmerSerif.variable} ${khmerSans.variable} ${chineseSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/*
+          Suppress OneSignal's harmless background push-registration rejections
+          (e.g. "push service not available") before any framework code runs.
+          The SDK throws these asynchronously, outside our try/catch, so they
+          become unhandled rejections that otherwise trip Next.js's dev error
+          overlay. This inline script registers its listener during HTML parse —
+          BEFORE Next's overlay handler — so stopImmediatePropagation() keeps the
+          overlay handler from ever seeing these expected, unsupported-push cases.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){window.addEventListener('unhandledrejection',function(e){var r=e&&e.reason;var m=(r&&r.message?r.message:(typeof r==='string'?r:'')).toLowerCase();var n=r&&r.name;if(n==='AbortError'||m.indexOf('push service not available')!==-1||m.indexOf('does not support web push')!==-1||m.indexOf('push notifications')!==-1){e.stopImmediatePropagation();e.preventDefault();}},true);})();`,
+          }}
+        />
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <BranchProvider locale={locale}>
               <AnalyticsTracker />
+              <OneSignalInit />
+              <ProfileGate />
+              <AuthErrorToast />
               {children}
               <FloatingChat />
               <CookieConsent />

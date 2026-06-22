@@ -62,12 +62,12 @@ export function DatePicker({
   return (
     <div ref={ref} className="relative flex flex-col gap-[8px]">
       {label && (
-        <label className={labelCls || 'font-dm-sans font-medium text-[16px] text-[#3b2d17]'}>{label}</label>
+        <label className={labelCls || 'font-dm-sans font-medium text-[13px] sm:text-[15px] text-[#3b2d17]'}>{label}</label>
       )}
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] bg-white outline-none focus:border-[#b89148] transition-colors flex items-center justify-between gap-2 text-left"
+        className="w-full border border-[#dcbd72] rounded-[12px] px-3.5 py-2.5 sm:px-[16px] sm:py-[12px] font-dm-sans text-[15px] sm:text-[16px] bg-white outline-none focus:border-[#b89148] transition-colors flex items-center justify-between gap-2 text-left"
         style={{ color: displayValue ? '#3b2d17' : 'rgba(59,45,23,0.4)' }}
       >
         <span>{displayValue || placeholder}</span>
@@ -166,12 +166,12 @@ export function CustomSelect({
   return (
     <div ref={ref} className="relative flex flex-col gap-[8px]">
       {label && (
-        <label className={labelCls || 'font-dm-sans font-medium text-[16px] text-[#3b2d17]'}>{label}</label>
+        <label className={labelCls || 'font-dm-sans font-medium text-[13px] sm:text-[15px] text-[#3b2d17]'}>{label}</label>
       )}
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] bg-white outline-none transition-colors flex items-center justify-between gap-2 text-left"
+        className="w-full border border-[#dcbd72] rounded-[12px] px-3.5 py-2.5 sm:px-[16px] sm:py-[12px] font-dm-sans text-[15px] sm:text-[16px] bg-white outline-none transition-colors flex items-center justify-between gap-2 text-left"
         style={{
           color: value ? '#3b2d17' : 'rgba(59,45,23,0.4)',
           borderColor: open ? '#b89148' : '#dcbd72',

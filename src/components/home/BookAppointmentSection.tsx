@@ -12,7 +12,7 @@ export default function BookAppointmentSection() {
   const [open, setOpen] = useState(false)
 
   return (
-    <section className="w-full py-[80px] flex flex-col items-center justify-center" style={{ background: '#fbf7ee' }}>
+    <section className="w-full py-[80px] flex flex-col items-center justify-center" style={{ background: 'var(--background)' }}>
       <div className="flex flex-col gap-[40px] items-center max-w-[582px] w-full px-[40px]">
 
         <div className="flex flex-col gap-[12px] items-center text-center w-full">

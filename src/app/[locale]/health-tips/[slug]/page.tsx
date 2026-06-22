@@ -60,8 +60,8 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full pb-[120px] pt-[100px] lg:pt-[212px]">
-        <div className="max-w-[1512px] mx-auto px-4 sm:px-8 lg:px-[80px] flex flex-col gap-[80px]">
+      <div className="bg-[var(--background)] w-full pb-[120px] pt-[100px] lg:pt-[212px]">
+        <div className="page-shell flex flex-col gap-[80px]">
 
           {loading && <div className="h-[600px] rounded-[16px] bg-[#f0ebe0] animate-pulse" />}
 
@@ -91,38 +91,38 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
                   )}
                 </div>
 
-                <h1 className="font-cormorant font-semibold text-[40px] text-[#3b2d17] leading-tight w-full">
+                <h1 className="font-cormorant font-semibold text-[32px] sm:text-[36px] lg:text-[40px] text-[#3b2d17] leading-tight w-full">
                   {tip.title}
                 </h1>
 
                 <div className="w-full h-[1px] bg-[#d4b97a]" />
 
                 {tip.thumbnail && (
-                  <div className="w-full h-[500px] rounded-[16px] overflow-hidden bg-white/80 shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]">
+                  <div className="w-full h-[260px] sm:h-[360px] lg:h-[500px] rounded-[16px] overflow-hidden bg-white/80 shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]">
                     <div className="relative w-full h-full">
                       <Image src={tip.thumbnail} alt={tip.title} fill className="object-cover" sizes="100vw" unoptimized />
                     </div>
                   </div>
                 )}
 
-                <div className="flex gap-[40px] items-start w-full">
+                <div className="flex flex-col lg:flex-row gap-[32px] lg:gap-[40px] items-start w-full">
                   <div className="flex-1 min-w-0 font-dm-sans text-[18px] text-[#2a2620] leading-[1.8]">
                     {paragraphs.map((p, i) => (
                       <p key={i} className="mb-[32px] last:mb-0">{p}</p>
                     ))}
                   </div>
 
-                  <div className="flex flex-col gap-[40px] shrink-0 w-[332px]">
+                  <div className="flex flex-col gap-[24px] lg:gap-[40px] shrink-0 w-full lg:w-[332px]">
                     <div className="bg-white rounded-[12px] p-[24px] flex flex-col gap-[24px]"
                       style={{ boxShadow: '0px 4px 8px rgba(122,95,44,0.12)' }}>
-                      <p className="font-cormorant font-medium text-[24px] text-black leading-none">Location</p>
+                      <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">Location</p>
                       <p className="font-dm-sans text-[16px] text-[#2a2620] leading-[1.8]">
                         Building No. 66, Street 31cc, Stueng Mean Chey Commune, Mean Chey District, Phnom Penh.
                       </p>
                     </div>
                     <div className="bg-white rounded-[12px] p-[24px] flex flex-col gap-[24px]"
                       style={{ boxShadow: '0px 4px 8px rgba(122,95,44,0.12)' }}>
-                      <p className="font-cormorant font-medium text-[24px] text-black leading-none">Contact Orienda Hospital</p>
+                      <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">Contact Orienda Hospital</p>
                       <p className="font-dm-sans text-[16px] text-[#2a2620] leading-[1.8]">
                         012 322 025 / 086 999 528 / 098 941 758
                       </p>
@@ -143,8 +143,8 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
               {/* Explore More */}
               <div className="flex flex-col gap-[40px] items-center">
                 <div className="flex flex-col gap-[12px] text-center w-full leading-none">
-                  <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17]">Explore More</h2>
-                  <p className="font-dm-sans text-[20px] text-[#594522]">Articles for health care tips</p>
+                  <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17]">Explore More</h2>
+                  <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">Articles for health care tips</p>
                 </div>
 
                 {related.length > 0 ? (

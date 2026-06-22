@@ -930,6 +930,10 @@ export interface TourScene {
   id: number;
   sceneNumber: number;
   branch?: (number | null) | Branch;
+  /**
+   * Optional. Scenes with the same group are shown together as sub-rooms (e.g. "OPD"). Leave blank for a standalone room.
+   */
+  roomGroup?: string | null;
   title: string;
   description?: string | null;
   thumbnailImage?: (number | null) | Media;
@@ -1711,6 +1715,7 @@ export interface FaqsSelect<T extends boolean = true> {
 export interface TourScenesSelect<T extends boolean = true> {
   sceneNumber?: T;
   branch?: T;
+  roomGroup?: T;
   title?: T;
   description?: T;
   thumbnailImage?: T;

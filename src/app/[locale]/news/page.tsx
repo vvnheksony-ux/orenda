@@ -49,8 +49,8 @@ export default function NewsPage() {
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full pt-[100px] lg:pt-[212px] pb-[120px]">
-        <div className="max-w-[1512px] mx-auto px-[24px] lg:px-[80px] flex flex-col gap-[80px] items-center">
+      <div className="bg-[var(--background)] w-full pt-[100px] lg:pt-[212px] pb-[120px]">
+        <div className="page-shell flex flex-col gap-[80px] items-center">
 
           {/* Skeletons */}
           {loading && (
@@ -59,13 +59,13 @@ export default function NewsPage() {
                 <div className="h-[48px] w-[200px] rounded-[8px] bg-[#f0ebe0] animate-pulse" />
                 <div className="h-[24px] w-[140px] rounded-[8px] bg-[#f0ebe0] animate-pulse" />
               </div>
-              <div className="flex gap-[40px]">
+              <div className="flex flex-col xl:flex-row gap-[24px] lg:gap-[40px]">
                 <div className="flex-1 h-[472px] rounded-[16px] bg-[#f0ebe0] animate-pulse" />
-                <div className="w-[632px] flex flex-col gap-[40px]">
+                <div className="w-full xl:w-[632px] flex flex-col gap-[24px] lg:gap-[40px]">
                   {[1,2,3].map(i => <div key={i} className="h-[147px] rounded-[16px] bg-[#f0ebe0] animate-pulse" />)}
                 </div>
               </div>
-              <div className="flex gap-[40px]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[24px] lg:gap-[40px]">
                 {[1,2,3,4].map(i => <div key={i} className="flex-1 h-[200px] rounded-[12px] bg-[#f0ebe0] animate-pulse" />)}
               </div>
             </div>
@@ -77,18 +77,17 @@ export default function NewsPage() {
               {featured && (
                 <div className="flex flex-col gap-[40px] items-start w-full max-w-[1352px]">
                   <div className="flex flex-col gap-[12px] text-center w-full leading-none">
-                    <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17]">Latest News</h1>
-                    <p className="font-dm-sans text-[20px] text-[#594522]">Orienda&apos;s News</p>
+                    <h1 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17]">Latest News</h1>
+                    <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">Orienda&apos;s News</p>
                   </div>
 
                   <div className="flex flex-col gap-[40px] w-full">
                     {/* Featured + side rows */}
-                    <div className="flex gap-[40px] items-stretch w-full">
+                    <div className="flex flex-col xl:flex-row gap-[24px] lg:gap-[40px] items-stretch w-full">
                       {/* Large featured card */}
                       <Link
                         href={`/news/${featured.slug}` as any}
-                        className="bg-white flex-1 min-w-0 overflow-hidden relative rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] hover:shadow-lg transition-shadow"
-                        style={{ minHeight: '472px' }}
+                        className="bg-white flex-1 min-w-0 overflow-hidden relative rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] hover:shadow-lg transition-shadow min-h-[320px] lg:min-h-[472px]"
                       >
                         <div className="absolute inset-0">
                           {featured.thumbnail
@@ -96,8 +95,8 @@ export default function NewsPage() {
                             : <div className="w-full h-full bg-[#f0ebe0]" />
                           }
                         </div>
-                        <div className="absolute bottom-0 left-0 right-0 backdrop-blur-[6px] bg-[rgba(255,255,255,0.9)] p-[24px] flex flex-col gap-[12px] items-end">
-                          <p className="font-dm-sans font-medium text-[16px] text-black leading-[1.5] w-full line-clamp-2">
+                        <div className="absolute bottom-0 left-0 right-0 backdrop-blur-[6px] bg-[rgba(255,255,255,0.9)] p-4 sm:p-[24px] flex flex-col gap-[12px] items-end">
+                          <p className="font-dm-sans font-medium text-[16px] text-[#3b2d17] leading-[1.5] w-full line-clamp-2">
                             {featured.title}
                           </p>
                           <div className="border border-[#b89148] rounded-[12px] flex items-center h-[32px] px-[12px] py-[8px] gap-[4px] shrink-0">
@@ -108,20 +107,20 @@ export default function NewsPage() {
                       </Link>
 
                       {/* 3 horizontal side items */}
-                      <div className="flex flex-col gap-[40px] shrink-0 w-[632px] justify-center">
-                        {sideNews.map(item => (
-                          <Link
+                       <div className="flex flex-col gap-[24px] lg:gap-[40px] shrink-0 w-full xl:w-[632px] justify-center">
+                         {sideNews.map(item => (
+                           <Link
                             key={item.id}
                             href={`/news/${item.slug}` as any}
-                            className="bg-white flex items-center overflow-hidden rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] hover:shadow-md transition-shadow"
+                            className="bg-white flex flex-col sm:flex-row items-stretch sm:items-center overflow-hidden rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] hover:shadow-md transition-shadow"
                           >
-                            <div className="relative shrink-0 w-[240px] h-[147px] bg-[#f9f9f9]">
+                            <div className="relative shrink-0 w-full sm:w-[240px] h-[200px] sm:h-[147px] bg-[#f9f9f9]">
                               {item.thumbnail
                                 ? <Image src={item.thumbnail} alt={item.title} fill className="object-cover" sizes="240px" unoptimized />
                                 : <div className="w-full h-full bg-[#f0ebe0]" />
                               }
                             </div>
-                            <div className="flex flex-1 min-w-0 gap-[16px] items-center pl-[22px] pr-[12px] py-[12px]">
+                             <div className="flex flex-1 min-w-0 gap-[16px] items-center pl-4 sm:pl-[22px] pr-4 sm:pr-[12px] py-[12px]">
                               <p className="flex-1 min-w-0 font-dm-sans text-[16px] text-[#050505] leading-[1.5] line-clamp-3">
                                 {item.title}
                               </p>
@@ -134,8 +133,8 @@ export default function NewsPage() {
 
                     {/* 4 small image cards with overlay */}
                     {smallCards.length > 0 && (
-                      <div className="flex gap-[40px] items-center w-full">
-                        {smallCards.map(item => (
+                       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[24px] lg:gap-[40px] items-center w-full">
+                         {smallCards.map(item => (
                           <Link
                             key={item.id}
                             href={`/news/${item.slug}` as any}
@@ -164,25 +163,26 @@ export default function NewsPage() {
               {/* ── News (full list) ───────────────────────────── */}
               {news.length > 0 && (
                 <div className="flex flex-col gap-[40px] items-center w-full max-w-[1352px]">
-                  <div className="flex flex-col gap-[12px] text-center w-full leading-none">
-                    <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17]">News</h2>
-                    <p className="font-dm-sans text-[20px] text-[#594522]">Published News</p>
-                  </div>
+                   <div className="flex flex-col gap-[12px] text-center w-full leading-none">
+                     <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17]">News</h2>
+                     <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">Published News</p>
+                   </div>
 
-                  <div className="flex flex-wrap gap-[40px] justify-center">
-                    {news.map(item => (
+                  <div className="w-screen overflow-hidden py-[4px]">
+                    <div className="flex animate-marquee" style={{ width: 'max-content' }}>
+                    {[...news, ...news].map((item, i) => (
                       <Link
-                        key={item.id}
+                        key={`${item.id}-${i}`}
                         href={`/news/${item.slug}` as any}
-                        className="bg-white flex flex-col h-[386px] w-[300px] overflow-hidden rounded-[12px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] shrink-0 hover:shadow-md transition-shadow"
+                        className="bg-white flex flex-col shrink-0 w-[240px] sm:w-[300px] h-[300px] sm:h-[386px] mx-[8px] sm:mx-[20px] overflow-hidden rounded-[12px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] hover:shadow-md transition-shadow"
                       >
-                        <div className="relative h-[200px] bg-[#f9f9f9] shrink-0 overflow-hidden">
+                        <div className="relative h-[120px] sm:h-[200px] bg-[#f9f9f9] shrink-0 overflow-hidden">
                           {item.thumbnail
                             ? <Image src={item.thumbnail} alt={item.title} fill className="object-cover" sizes="300px" unoptimized />
                             : <div className="w-full h-full bg-[#f0ebe0]" />
                           }
                         </div>
-                        <div className="flex flex-col flex-1 gap-[23px] items-end pb-[24px] pt-[12px] px-[24px]">
+                        <div className="flex flex-col flex-1 gap-[12px] sm:gap-[23px] items-end pb-[16px] sm:pb-[24px] pt-[12px] px-[12px] sm:px-[24px]">
                           <div className="flex flex-col gap-[12px] items-start leading-[1.5] w-full">
                             <p className="font-dm-sans font-light text-[10px] text-[rgba(59,45,23,0.7)]">
                               {formatDate(item.publishedAt)}
@@ -199,6 +199,7 @@ export default function NewsPage() {
                         </div>
                       </Link>
                     ))}
+                    </div>
                   </div>
                 </div>
               )}

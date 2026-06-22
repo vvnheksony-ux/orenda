@@ -6,8 +6,9 @@ import { X, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLocale, useTranslations } from 'next-intl'
 import { useAuth } from '@/lib/auth-context'
-import { useRouter } from '@/i18n/routing'
 import { useBranch } from '@/lib/branch-context'
+import { useScrollLock } from '@/lib/useScrollLock'
+import LoginModal from '@/components/shared/LoginModal'
 
 interface Props {
   open: boolean
@@ -57,11 +58,12 @@ function getEarliestAppointment(now = new Date()) {
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const DAY_NAMES = ['S','M','T','W','T','F','S']
 
-function CustomSelect({ value, onChange, options, placeholder }: {
+function CustomSelect({ value, onChange, options, placeholder, disabled }: {
   value: string
   onChange: (v: string) => void
   options: Array<{ value: string; label: string; group?: string }>
   placeholder?: string
+  disabled?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
@@ -129,14 +131,20 @@ function CustomSelect({ value, onChange, options, placeholder }: {
       <button
         ref={btnRef}
         type="button"
-        onClick={() => setOpen(v => !v)}
-        className="w-full border border-[#7a5f2c] rounded-[12px] px-[12px] py-[12px] font-dm-sans text-[16px] bg-white outline-none flex items-center justify-between focus:border-[#b89148] transition-colors"
-      >
-        <span className={selected ? 'text-[#3b2d17]' : 'text-[rgba(59,45,23,0.3)]'}>
-          {selected?.label ?? placeholder ?? ''}
-        </span>
-        <ChevronDown size={20} className={`text-[#3b2d17] shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-      </button>
+      onClick={() => {
+        if (disabled) return
+        setOpen(v => !v)
+      }}
+      disabled={disabled}
+      className={`w-full border border-[#7a5f2c] rounded-[12px] px-[12px] py-[12px] font-dm-sans text-[16px] bg-white outline-none flex items-center justify-between focus:border-[#b89148] transition-colors ${
+        disabled ? 'cursor-not-allowed bg-[#f5f0e5] text-[rgba(59,45,23,0.45)]' : ''
+      }`}
+    >
+      <span className={selected ? 'text-[#3b2d17]' : 'text-[rgba(59,45,23,0.3)]'}>
+        {selected?.label ?? placeholder ?? ''}
+      </span>
+      <ChevronDown size={20} className={`shrink-0 transition-transform duration-200 ${disabled ? 'text-[rgba(59,45,23,0.35)]' : 'text-[#3b2d17]'} ${open ? 'rotate-180' : ''}`} />
+    </button>
       {typeof document !== 'undefined' && dropdown && createPortal(dropdown, document.body)}
     </div>
   )
@@ -150,7 +158,9 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const locale = useLocale()
   const t = useTranslations('BookAppointmentModal')
   const { user, loading: authLoading } = useAuth()
-  const router = useRouter()
+  // After a successful in-modal login, keep the booking modal open so it
+  // re-renders into the form instead of closing.
+  const justLoggedIn = useRef(false)
   const { selectedBranch } = useBranch()
   const [dateChoice, setDateChoice] = useState<'earliest' | 'choose'>('earliest')
   const [form, setForm] = useState(() => {
@@ -205,35 +215,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
       .catch(() => {})
   }, [locale, form.department_payload_id])
 
-  useEffect(() => {
-    if (!open) return
-    const scrollY      = window.scrollY
-    const scrollbarW   = window.innerWidth - document.documentElement.clientWidth
-    const htmlEl       = document.documentElement
-    const bodyEl       = document.body
-    const prevHtmlOverflow   = htmlEl.style.overflow
-    const prevBodyOverflow   = bodyEl.style.overflow
-    const prevBodyPosition   = bodyEl.style.position
-    const prevBodyTop        = bodyEl.style.top
-    const prevBodyWidth      = bodyEl.style.width
-    const prevBodyPaddingRight = bodyEl.style.paddingRight
-    htmlEl.style.overflow      = 'hidden'
-    bodyEl.style.overflow      = 'hidden'
-    bodyEl.style.position      = 'fixed'
-    bodyEl.style.top           = `-${scrollY}px`
-    bodyEl.style.width         = '100%'
-    // Compensate scrollbar disappearing so layout doesn't shift
-    if (scrollbarW > 0) bodyEl.style.paddingRight = `${scrollbarW}px`
-    return () => {
-      htmlEl.style.overflow    = prevHtmlOverflow
-      bodyEl.style.overflow    = prevBodyOverflow
-      bodyEl.style.position    = prevBodyPosition
-      bodyEl.style.top         = prevBodyTop
-      bodyEl.style.width       = prevBodyWidth
-      bodyEl.style.paddingRight = prevBodyPaddingRight
-      window.scrollTo(0, scrollY)
-    }
-  }, [open])
+  useScrollLock(open)
 
   const today = localDateString()
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
@@ -284,6 +266,8 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const filteredDoctors = form.department_payload_id
     ? doctors.filter(d => d.department_payload_id === form.department_payload_id)
     : doctors
+  const serviceLocked = Boolean(form.department_payload_id) && services.length === 0
+  const requiredReady = Boolean(form.patient_name.trim() && form.patient_phone.trim())
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -325,9 +309,22 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
   const reqCls = (missing: boolean) => missing && submitted ? ' !border-red-400' : ''
 
+  if (open && !authLoading && !user) {
+    return (
+      <LoginModal
+        open={true}
+        onClose={() => { if (justLoggedIn.current) { justLoggedIn.current = false; return } onClose() }}
+        onSuccess={() => { justLoggedIn.current = true }}
+        redirectTo={typeof window !== 'undefined' ? window.location.pathname : '/'}
+        initialView="login"
+      />
+    )
+  }
+
   return (
-    <AnimatePresence>
-      {open && (
+    <>
+      <AnimatePresence>
+        {open && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -361,35 +358,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
               <X size={16} className="text-[#3b2d17]" />
             </button>
 
-            {/* Auth gate */}
-            {!authLoading && !user ? (
-              <div className="flex flex-col items-center gap-[24px] py-[40px] text-center">
-                <div className="w-16 h-16 rounded-full bg-[#f5ecd4] flex items-center justify-center">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b89148" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                  </svg>
-                </div>
-                <div className="flex flex-col gap-[8px]">
-                  <h2 className="font-cormorant font-bold text-[32px] sm:text-[40px] text-[#3b2d17] leading-none">Sign In Required</h2>
-                  <p className="font-dm-sans text-[16px] text-[#594522] max-w-[400px]">Please sign in or create an account to book an appointment.</p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-[12px] w-full max-w-[400px]">
-                  <button
-                    onClick={() => { onClose(); router.push(`/login?next=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/')}`) }}
-                    className="flex-1 h-[52px] rounded-[12px] font-dm-sans text-[16px] text-white transition-opacity hover:opacity-90"
-                    style={{ background: 'rgba(184,145,72,0.85)' }}
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => { onClose(); router.push('/register') }}
-                    className="flex-1 h-[52px] rounded-[12px] font-dm-sans text-[16px] text-[#3b2d17] border border-[#b89148] transition-colors hover:bg-[#b89148]/10"
-                  >
-                    Create Account
-                  </button>
-                </div>
-              </div>
-            ) : status === 'success' ? (
+            {status === 'success' ? (
               <div className="flex flex-col items-center gap-[24px] py-[40px]">
                 <div className="w-16 h-16 rounded-full bg-[#b89148] flex items-center justify-center">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -478,8 +447,15 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                       <CustomSelect
                         value={form.service_payload_id}
                         onChange={v => set('service_payload_id', v)}
-                        placeholder="Select service"
+                        placeholder={
+                          !form.department_payload_id
+                            ? 'Select service'
+                            : serviceLocked
+                              ? 'No services available for this clinic'
+                              : 'Select service'
+                        }
                         options={services.map(s => ({ value: s.id, label: s.title }))}
+                        disabled={serviceLocked}
                       />
                     </div>
                     <div className="flex flex-1 flex-col gap-[8px]">
@@ -539,11 +515,11 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                         >
                           {/* Month nav */}
                           <div className="flex items-center justify-between px-4 pt-5 pb-4">
-                            <button type="button" onClick={prevMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors">
+                            <button type="button" onClick={prevMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-[#3b2d17]/5 transition-colors">
                               <span className="font-dm-sans font-bold text-[16px] text-stone-500 leading-none">‹</span>
                             </button>
                             <span className="font-dm-sans font-semibold text-[13px] text-stone-900">{MONTH_NAMES[viewMonth]} {viewYear}</span>
-                            <button type="button" onClick={nextMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors">
+                            <button type="button" onClick={nextMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-[#3b2d17]/5 transition-colors">
                               <span className="font-dm-sans font-bold text-[16px] text-stone-500 leading-none">›</span>
                             </button>
                           </div>
@@ -571,7 +547,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                                     isPast ? 'text-stone-300 cursor-not-allowed' : 'cursor-pointer',
                                     isSelected ? 'bg-[#b89148] text-white' : '',
                                     isToday && !isSelected ? 'text-orange-400' : '',
-                                    !isPast && !isSelected && !isToday ? 'text-slate-700 hover:bg-black/5' : '',
+                                    !isPast && !isSelected && !isToday ? 'text-[#594522] hover:bg-[#3b2d17]/5' : '',
                                   ].join(' ')}
                                   style={isToday && !isSelected ? { outline: '1.3px solid rgba(251,146,60,0.5)', outlineOffset: '-1.3px' } : undefined}
                                 >
@@ -613,7 +589,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                                   outlineOffset: '-1.1px',
                                 }}
                               >
-                                <span className={`font-dm-sans font-bold text-[12px] leading-3 ${isActive ? 'text-white' : 'text-slate-700'}`}>{p.label}</span>
+                                <span className={`font-dm-sans font-bold text-[12px] leading-3 ${isActive ? 'text-white' : 'text-[#594522]'}`}>{p.label}</span>
                                 <span className={`font-dm-sans font-medium text-[10px] leading-3 ${isActive ? 'text-white/80' : 'text-stone-500'}`}>{p.range}</span>
                               </button>
                             )
@@ -642,7 +618,10 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                     type="submit"
                     disabled={status === 'loading'}
                     className="w-full h-[64px] rounded-[12px] font-dm-sans text-[16px] text-[#f9f9f9] disabled:opacity-60 transition-opacity hover:opacity-90"
-                    style={{ background: 'rgba(184,145,72,0.7)', boxShadow: '0px 0px 12px 4px rgba(184,145,72,0.15)' }}
+                    style={{
+                      background: requiredReady ? '#b89148' : 'rgba(184,145,72,0.7)',
+                      boxShadow: requiredReady ? '0px 0px 12px 4px rgba(184,145,72,0.22)' : '0px 0px 12px 4px rgba(184,145,72,0.15)',
+                    }}
                   >
                     {status === 'loading' ? 'Booking...' : 'Book Appointment'}
                   </button>
@@ -652,7 +631,9 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
           </motion.div>
           </div>
         </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+
+    </>
   )
 }

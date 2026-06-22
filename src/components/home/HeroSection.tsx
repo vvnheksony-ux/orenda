@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { Send, Star } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -17,6 +17,20 @@ export default function HeroSection() {
   const t = useTranslations('HeroSection')
   const [query, setQuery] = useState('')
   const [hasSubmitted, setHasSubmitted] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  // Pause the background video when the hero scrolls out of view — an
+  // always-decoding autoplay video is a big source of scroll jank lower down.
+  useEffect(() => {
+    const vid = videoRef.current
+    if (!vid) return
+    const io = new IntersectionObserver(
+      ([entry]) => { entry.isIntersecting ? vid.play().catch(() => {}) : vid.pause() },
+      { threshold: 0.01 },
+    )
+    io.observe(vid)
+    return () => io.disconnect()
+  }, [])
 
   const handleSubmit = (message: string) => {
     if (!message.trim()) return
@@ -30,6 +44,7 @@ export default function HeroSection() {
 
       {/* Hero video background */}
       <video
+        ref={videoRef}
         src="/videos/hero.mp4"
         autoPlay
         muted
@@ -103,8 +118,8 @@ export default function HeroSection() {
               }}
               className="w-full h-full flex items-center justify-between rounded-[200px]"
               style={{
-                background: 'rgba(251,247,238,1)',
-                boxShadow: '0px 4px 12px rgba(89,69,34,0.18), 0 0 0 22px rgba(251,247,238,1)',
+                background: 'var(--background)',
+                boxShadow: '0px 4px 12px rgba(89,69,34,0.18), 0 0 0 22px var(--background), inset 0px 2px 10px rgba(89,69,34,0.12)',
                 paddingLeft: 'clamp(20px, 3.5vw, 52px)',
                 paddingRight: 'clamp(14px, 2vw, 28px)',
                 paddingTop: 'clamp(14px, 1.8vw, 26px)',

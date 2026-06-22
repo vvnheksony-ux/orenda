@@ -35,6 +35,7 @@ function toDoc(row: any, full: boolean) {
     title:       row.title ?? '',
     slug:        row.slug ?? '',
     excerpt:     row.excerpt ?? '',
+    author:      row.author ?? '',
     publishedAt: row.published_at ?? row.created_at ?? '',
     thumbnail:   mediaStorageUrl(row.thumb_filename, row.thumb_prefix),
     category:    row.health_tip_category ?? '',
@@ -60,7 +61,7 @@ export async function GET(req: Request) {
     }
 
     const docs = rows.map((r: any) => toDoc(r, false))
-    return NextResponse.json({ docs, totalDocs: docs.length })
+    return NextResponse.json({ docs, totalDocs: docs.length }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('health-tips:', err.message)
     return NextResponse.json({ docs: [], totalDocs: 0 })

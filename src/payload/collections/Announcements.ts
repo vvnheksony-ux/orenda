@@ -3,9 +3,11 @@ import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { publishedOnly, isAdminOrEditor } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
+import { createNotificationHook } from '../hooks/notifyOnPublish'
 import { baseContentFields, createSearchIndexHooks } from '../content/searchIndex'
 
 const webhookHooks = createWebhookHooks('announcements')
+const notifyHook = createNotificationHook('announcements', { category: 'announcement', titlePrefix: '📢 ' })
 const indexHooks = createSearchIndexHooks({
   collectionSlug: 'announcements',
   contentType: 'announcement',
@@ -84,7 +86,7 @@ export const Announcements: CollectionConfig = {
     ...statusFields(),
   ],
   hooks: {
-    afterChange: [webhookHooks.onChange, indexHooks.onChange],
+    afterChange: [webhookHooks.onChange, indexHooks.onChange, notifyHook],
     afterDelete: [webhookHooks.onDelete, indexHooks.onDelete],
   },
 }

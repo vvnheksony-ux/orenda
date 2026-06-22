@@ -9,6 +9,9 @@ import Link from 'next/link'
 
 type PayloadListDoc = {
   id: number | string
+  _status?: unknown
+  publishedAt?: unknown
+  status?: unknown
 }
 
 type OriendaListTableProps = {
@@ -98,7 +101,7 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
                 {activeColumns.map((column, colIndex) => (
                   <td className={`cell-${column.accessor.replace(/\./g, '__')}`} key={column.accessor ?? `td-${rowIndex}-${colIndex}`}>
                     <div className="orienda-list-table__cell-content">
-                      {column.renderedCells[rowIndex]}
+                      {renderCleanCell(column, doc, rowIndex)}
                     </div>
                   </td>
                 ))}
@@ -139,6 +142,28 @@ function getVisibleColumns(columns: Column[]) {
     if (column.accessor === 'select' || column.accessor === '_select') return false
     return true
   })
+}
+
+function renderCleanCell(column: Column, doc: PayloadListDoc, rowIndex: number) {
+  if (column.accessor === '_status') {
+    return <CleanPublicationStatus doc={doc} />
+  }
+
+  if (column.accessor === 'status' && (doc.status === 'draft' || doc.status === 'published')) {
+    return <CleanPublicationStatus doc={doc} />
+  }
+
+  return column.renderedCells[rowIndex]
+}
+
+function CleanPublicationStatus({ doc }: { doc: PayloadListDoc }) {
+  const isPublished = doc._status === 'published' || doc.status === 'published' || Boolean(doc.publishedAt)
+
+  return (
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isPublished ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+      {isPublished ? 'Published' : 'Draft'}
+    </span>
+  )
 }
 
 export default OriendaListView

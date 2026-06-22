@@ -60,7 +60,7 @@ export default function ContactPage() {
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] min-h-screen">
+      <div className="bg-[var(--background)] min-h-screen">
 
         {/* ── Hero ── */}
         <div className="relative w-full h-[400px] lg:h-[693px] overflow-hidden">
@@ -83,7 +83,7 @@ export default function ContactPage() {
 
           {/* Contact info card — desktop only, shown once branches load */}
           {branches.length > 0 && (
-            <div className="hidden lg:flex absolute right-[56px] top-[289px] w-[372px] bg-[#fbf7ee] rounded-[16px] flex-col gap-[16px] justify-end p-[36px]">
+            <div className="hidden lg:flex absolute right-[56px] top-[289px] w-[372px] bg-[var(--background)] rounded-[16px] flex-col gap-[16px] justify-end p-[36px]">
               {branches.slice(0, 2).map(b => b.phone ? (
                 <div key={b.id}>
                   <p className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none mb-2">{b.name}</p>
@@ -95,7 +95,7 @@ export default function ContactPage() {
         </div>
 
         {/* ── Below hero ── */}
-        <div className="flex flex-col items-center gap-[36px] py-[46px] px-5 lg:px-[80px]">
+        <div className="content-shell flex flex-col items-center gap-[36px] py-[46px]">
 
           {/* Heading */}
           <div className="text-center flex flex-col gap-[12px]">
@@ -123,7 +123,7 @@ export default function ContactPage() {
           )}
 
           {/* Two columns */}
-          <div className="flex flex-col lg:flex-row gap-[24px] w-full max-w-[1320px]">
+          <div className="flex flex-col lg:flex-row gap-[24px] w-full">
 
             {/* Form */}
             <div className="flex-1 min-w-0">
@@ -191,7 +191,7 @@ export default function ContactPage() {
                   className="flex items-center gap-[12px] group"
                 >
                   <Phone size={24} className="text-[#3b2d17] shrink-0" />
-                  <span className="font-dm-sans text-[18px] lg:text-[20px] text-black group-hover:underline">
+                  <span className="font-dm-sans text-[18px] lg:text-[20px] text-[#3b2d17] group-hover:underline">
                     {branch?.phone}
                   </span>
                 </a>

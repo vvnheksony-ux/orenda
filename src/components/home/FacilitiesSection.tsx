@@ -7,7 +7,7 @@ export default async function FacilitiesSection() {
   const t = await getTranslations('FacilitiesSection')
   return (
     <section className="w-full overflow-hidden">
-      <div className="max-w-[1512px] mx-auto flex flex-col gap-[32px] lg:gap-[46px] items-center px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[81px] pt-[48px] lg:pt-[78px] pb-[48px] lg:pb-[80px]">
+      <div className="page-shell flex flex-col gap-[32px] lg:gap-[46px] items-center pt-[48px] lg:pt-[78px] pb-[48px] lg:pb-[80px]">
 
         {/* Header */}
         <div className="flex flex-col gap-[12px] lg:gap-[16px] items-start w-full">

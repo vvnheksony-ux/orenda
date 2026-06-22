@@ -1,17 +1,21 @@
 'use client'
 
 import Image from 'next/image'
+import { createPortal } from 'react-dom'
 import { usePathname, useRouter } from '@/i18n/routing'
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ChevronLeft, Building2, Phone } from 'lucide-react'
+import { motion, AnimatePresence, type Variants } from 'framer-motion'
+import { ChevronDown, ChevronLeft, Building2, LogIn, LogOut, Phone, UserRound } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAnalytics } from '@/lib/use-analytics'
 import { LocaleCode } from '@/payload/constants'
 import { Link } from '@/i18n/routing'
+import { useScrollLock } from '@/lib/useScrollLock'
 import { useBranch } from '@/lib/branch-context'
 import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
+import { useAuth } from '@/lib/auth-context'
+import { setProfileComplete } from '@/lib/profile-status'
 
 type NavChild = { key: string; href: string }
 type NavItem  = { key: string; href: string; children?: NavChild[] }
@@ -20,7 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     key: 'about', href: '/about',
     children: [
-      { key: 'faq',     href: '/faq'     },
+      { key: 'faq',     href: '/#faq'    },
       { key: 'inquiry', href: '/inquiry' },
       { key: 'expect',  href: '/expect'  },
     ],
@@ -29,7 +33,6 @@ const NAV_ITEMS: NavItem[] = [
     key: 'doctors', href: '/doctors',
     children: [
       { key: 'departments', href: '/departments'          },
-      { key: 'clinics',     href: '/clinics'              },
       { key: 'centers',     href: '/centers-of-excellence'},
     ],
   },
@@ -56,9 +59,25 @@ const LANGUAGES = [
   { code: 'zh', label: '中文',    flag: '/images/zh-flag.svg' },
 ]
 
-// Breakpoint where desktop nav switches to mobile drawer
-const DESKTOP_BREAKPOINT = 'xl'
-const MOBILE_BREAKPOINT  = 'xl'
+// Desktop nav dropdown: panel fades/slides in, then child items cascade in one
+// by one (staggered). Variants propagate the hidden/show/exit label down the tree.
+const dropdownVariants: Variants = {
+  hidden: { opacity: 0, y: -6 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.18, ease: [0.22, 1, 0.36, 1] } },
+  exit:   { opacity: 0, y: -6, transition: { duration: 0.12, ease: 'easeIn' } },
+}
+
+const dropdownPanelVariants: Variants = {
+  hidden: {},
+  show:   { transition: { staggerChildren: 0.045, delayChildren: 0.03 } },
+  exit:   {},
+}
+
+const dropdownItemVariants: Variants = {
+  hidden: { opacity: 0, y: -8 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] } },
+  exit:   { opacity: 0, transition: { duration: 0.08 } },
+}
 
 export default function Navbar() {
   const t          = useTranslations('Navbar')
@@ -67,31 +86,63 @@ export default function Navbar() {
   const router     = useRouter()
   const { trackLanguageSwitch, trackCallClick } = useAnalytics()
   const { branches, selectedBranch, switchBranch } = useBranch()
+  const { user, loading: authLoading, signOut } = useAuth()
 
   const [mobileOpen,        setMobileOpen]        = useState(false)
   const [langOpen,          setLangOpen]          = useState(false)
   const [mobileLangOpen,    setMobileLangOpen]    = useState(false)
   const [phoneOpen,         setPhoneOpen]         = useState(false)
+  const [accountOpen,       setAccountOpen]       = useState(false)
   const [branchOpen,        setBranchOpen]        = useState(false)
   const [bookOpen,          setBookOpen]          = useState(false)
+  const [switchingBranch,   setSwitchingBranch]   = useState(false)
   const [hoveredKey,        setHoveredKey]        = useState<string | null>(null)
   const [mobileExpandedKey, setMobileExpandedKey] = useState<string | null>(null)
+  // The drawer is portaled to <body>, so guard against SSR where document is absent.
+  const [mounted,           setMounted]           = useState(false)
+  useEffect(() => setMounted(true), [])
+
+  // Lock background scroll while the mobile menu is open.
+  useScrollLock(mobileOpen)
 
   const langRef   = useRef<HTMLDivElement>(null)
   const phoneRef  = useRef<HTMLDivElement>(null)
+  const accountRef = useRef<HTMLDivElement>(null)
   const branchRef = useRef<HTMLDivElement>(null)
+  const mobileBranchRef = useRef<HTMLDivElement>(null)
 
   const currentLang = LANGUAGES.find(l => l.code === locale) ?? LANGUAGES[0]
 
-  const branchLabel = selectedBranch
-    ? selectedBranch.name.replace(/Orienda\s+(Internation(al)?\s+Hospital\s*)/i, '').trim() || selectedBranch.name
-    : 'Branch'
+  // Show "Branch 1" / "Branch 2" so users can see which branch is active.
+  // Branch names end in a Roman numeral ("...Hospital I" / "...II").
+  const branchNumeral = ({ I: 'I', II: 'II', III: 'III' } as Record<string, string>)[
+    selectedBranch?.name.trim().split(/\s+/).pop()?.toUpperCase() ?? ''
+  ]
+  const branchLabel = branchNumeral ? `Branch ${branchNumeral}` : 'Branch'
+
+  // Switching branch changes branch-specific content site-wide, so show a brief
+  // loading screen and send the user home where the new branch data loads.
+  const handleSwitchBranch = (b: { id: string; name: string; slug: string }) => {
+    if (selectedBranch?.id === b.id) { setBranchOpen(false); setMobileOpen(false); return }
+    switchBranch(b)
+    setBranchOpen(false)
+    setMobileOpen(false)
+    setSwitchingBranch(true)
+    router.push('/')
+    setTimeout(() => setSwitchingBranch(false), 2200)
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (langRef.current   && !langRef.current.contains(e.target as Node))   setLangOpen(false)
       if (phoneRef.current  && !phoneRef.current.contains(e.target as Node))  setPhoneOpen(false)
-      if (branchRef.current && !branchRef.current.contains(e.target as Node)) setBranchOpen(false)
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountOpen(false)
+      // Branch dropdown is shared between the desktop bar and the mobile drawer;
+      // only close it when the click is outside BOTH triggers, otherwise the
+      // mobile dropdown unmounts on mousedown before a selection can register.
+      const insideDesktopBranch = branchRef.current?.contains(e.target as Node)
+      const insideMobileBranch = mobileBranchRef.current?.contains(e.target as Node)
+      if (!insideDesktopBranch && !insideMobileBranch) setBranchOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
@@ -99,26 +150,47 @@ export default function Navbar() {
     }
   }, [])
 
+  const handleSignOut = async () => {
+    await signOut()
+    setProfileComplete(null)
+    setAccountOpen(false)
+    setMobileOpen(false)
+    router.push('/')
+  }
+
   return (
+    <>
+    {switchingBranch && (
+      <div className="fixed inset-0 z-[500] flex items-center justify-center bg-[#fbf7ee] pointer-events-auto">
+        <div className="flex flex-col items-center gap-5">
+          <div className="relative w-[64px] h-[64px] animate-pulse">
+            <Image src="/images/logo-emblem.png" alt="Orienda" fill sizes="64px" className="object-contain" priority />
+          </div>
+          <div className="w-9 h-9 border-[3px] border-[#b89148] border-t-transparent rounded-full animate-spin" />
+          <p className="font-dm-sans text-[14px] text-[#6b5836]">Switching branch…</p>
+        </div>
+      </div>
+    )}
     <header className="absolute top-0 left-0 right-0 z-50 bg-transparent pointer-events-none">
 
-      {/* ── Desktop (≥ 1400px) ── */}
-      <div className="hidden xl:block pointer-events-auto transition-all duration-300">
-        <div className="flex items-center justify-between w-full px-6 2xl:px-[46px] py-7">
+      {/* ── Desktop (≥ 1536px) ── */}
+      <div className="hidden min-[1500px]:block pointer-events-auto transition-all duration-300">
+        <div className="w-full max-w-[1600px] mx-auto px-8 py-6">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 w-full">
 
           {/* Logo */}
-          <div className="flex items-center flex-1 min-w-0">
-            <Link href="/" className="relative shrink-0 w-[64px] h-[84px] transition-all duration-300">
+          <div className="flex items-center min-w-0">
+            <Link href="/" className="relative shrink-0 w-[72px] h-[92px] transition-all duration-300">
               <Image src="/images/logo-emblem.png" alt="Orienda International Hospital" fill sizes="64px" className="object-contain" priority />
             </Link>
           </div>
 
           {/* Center: Nav pill + Branch + Lang */}
-          <div className="flex items-center justify-center shrink-0 gap-[10px]">
+          <div className="flex items-center gap-[6px]">
 
             {/* Nav pill */}
             <div className="flex items-center p-[2px] rounded-[24px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] bg-[#FBF7EE]/40 backdrop-blur-md">
-              <nav className="flex items-center">
+              <nav className="flex items-center px-[10px] overflow-visible">
                 {NAV_ITEMS.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                   const hasChildren = !!item.children?.length
@@ -132,16 +204,16 @@ export default function Navbar() {
                     >
                       <Link
                         href={item.href}
-                        className="flex items-center justify-center py-[22px] 2xl:py-[32px] pl-[10px] 2xl:pl-[22px] pr-[6px] 2xl:pr-[14px] rounded-[22px] gap-[8px] hover:bg-white/50 transition-colors"
+                        className="flex items-center justify-center py-[26px] px-[10px] rounded-[22px] gap-[6px] hover:bg-white/50 transition-colors shrink-0"
                       >
                         <span className={cn(
-                          'text-[15px] 2xl:text-[17px] font-inter leading-none whitespace-nowrap',
+                          'text-[14px] font-inter leading-none whitespace-nowrap',
                           isActive ? 'text-[#3B2D17] font-semibold' : 'text-[#2A2620] font-normal'
                         )}>
                           {t(item.key)}
                         </span>
                         <ChevronDown
-                          className={cn('w-[14px] h-[14px] shrink-0 text-[#7a5f2c] transition-transform duration-200', hasChildren ? 'block' : 'hidden 2xl:block', isHovered && 'rotate-180')}
+                          className={cn('w-[14px] h-[14px] shrink-0 text-[#7a5f2c] transition-transform duration-200', hasChildren ? 'block' : 'hidden', isHovered && 'rotate-180')}
                           strokeWidth={2}
                         />
                       </Link>
@@ -149,33 +221,34 @@ export default function Navbar() {
                         <AnimatePresence>
                           {isHovered && (
                             <motion.div
-                              initial={{ opacity: 0, y: 10, scale: 0.96 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 10, scale: 0.96 }}
-                              transition={{ duration: 0.18, ease: 'easeOut' }}
-                              className="absolute top-[calc(100%+6px)] left-1/2 -translate-x-1/2 z-50"
-                              style={{ filter: 'drop-shadow(0 8px 24px rgba(122,95,44,0.18))' }}
+                              variants={dropdownVariants}
+                              initial="hidden"
+                              animate="show"
+                              exit="exit"
+                              className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 z-50"
+                              style={{ filter: 'drop-shadow(0 12px 28px rgba(122,95,44,0.20))' }}
                             >
                               {/* Arrow pointer */}
-                              <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#FBF7EE]/80 border-l border-t border-white/60 rotate-45 rounded-tl-[2px]" />
-                              <div className="relative bg-[#FBF7EE]/80 backdrop-blur-xl rounded-[16px] border border-white/60 overflow-hidden min-w-[190px] flex flex-col py-[6px]">
-                                {item.children!.map((child, ci) => (
-                                  <Link
-                                    key={child.key}
-                                    href={child.href}
-                                    onClick={() => setHoveredKey(null)}
-                                    className={cn(
-                                      'flex items-center gap-[10px] px-5 py-[11px] hover:bg-white/60 transition-colors group',
-                                      ci < item.children!.length - 1 && 'border-b border-[#ead6a4]/30'
-                                    )}
-                                  >
-                                    <span className="w-[3px] h-[14px] rounded-full bg-[#b89148]/40 group-hover:bg-[#b89148] transition-colors shrink-0" />
-                                    <span className="font-dm-sans text-[13px] text-[#3b2d17] whitespace-nowrap leading-none">
-                                      {t(child.key)}
-                                    </span>
-                                  </Link>
+                              <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#FBF7EE]/90 border-l border-t border-white/70 rotate-45 rounded-tl-[2px]" />
+                              <motion.div
+                                variants={dropdownPanelVariants}
+                                className="relative bg-[#FBF7EE]/90 backdrop-blur-xl rounded-[18px] border border-white/70 min-w-[212px] flex flex-col p-[6px]"
+                              >
+                                {item.children!.map((child) => (
+                                  <motion.div key={child.key} variants={dropdownItemVariants}>
+                                    <Link
+                                      href={child.href}
+                                      onClick={() => setHoveredKey(null)}
+                                      className="group flex items-center gap-[11px] px-4 py-[10px] rounded-[12px] hover:bg-white/70 transition-colors"
+                                    >
+                                      <span className="w-[3px] h-[15px] rounded-full bg-[#b89148]/35 transition-all duration-200 group-hover:h-[18px] group-hover:bg-[#b89148] shrink-0" />
+                                      <span className="font-dm-sans text-[13px] text-[#3b2d17] whitespace-nowrap leading-none transition-transform duration-200 group-hover:translate-x-0.5">
+                                        {t(child.key)}
+                                      </span>
+                                    </Link>
+                                  </motion.div>
                                 ))}
-                              </div>
+                              </motion.div>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -191,11 +264,11 @@ export default function Navbar() {
               <button
                 onClick={() => setBranchOpen(!branchOpen)}
                 className={cn(
-                  'flex items-center justify-center py-[11px] px-[14px] 2xl:py-[13px] 2xl:px-[18px] gap-[8px] 2xl:gap-[10px] rounded-[16px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 bg-[#F5ECD4]/40 backdrop-blur-md'
+                  'flex items-center justify-center py-[14px] px-[12px] gap-[6px] rounded-[16px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 bg-[#F5ECD4]/40 backdrop-blur-md shrink-0'
                 )}
               >
-                <Building2 className="w-[22px] h-[22px] 2xl:w-[24px] 2xl:h-[24px] text-[#3B2D17] shrink-0" strokeWidth={1.5} />
-                <span className="font-dm-sans text-[16px] 2xl:text-[18px] text-[#3B2D17] font-normal leading-none max-w-[80px] truncate">{branchLabel}</span>
+                <Building2 className="w-[22px] h-[22px] text-[#3B2D17] shrink-0" strokeWidth={1.5} />
+                <span className="font-dm-sans text-[14px] text-[#3B2D17] font-normal leading-none whitespace-nowrap">{branchLabel}</span>
                 <ChevronDown className="w-[14px] h-[14px] text-[#3B2D17] shrink-0" strokeWidth={2} />
               </button>
               <AnimatePresence>
@@ -210,7 +283,7 @@ export default function Navbar() {
                     {branches.map(b => (
                       <button
                         key={b.id}
-                        onClick={() => { switchBranch(b); setBranchOpen(false) }}
+                        onClick={() => handleSwitchBranch(b)}
                         className={cn(
                           'flex items-center gap-3 px-4 py-3 hover:bg-gold-50 transition-colors w-full text-left',
                           selectedBranch?.id === b.id ? 'bg-gold-50/50' : ''
@@ -231,7 +304,7 @@ export default function Navbar() {
             <div className="relative shrink-0" ref={langRef}>
               <button
                 onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center justify-center w-[48px] h-[48px] p-[3px] rounded-full bg-[#F5ECD4]/40 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:opacity-90 transition-all duration-200"
+                className="flex items-center justify-center w-[54px] h-[54px] p-[3px] rounded-full bg-[#F5ECD4]/40 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:opacity-90 transition-all duration-200"
                 aria-label="Switch language"
               >
                 <div className="relative w-full h-full rounded-full overflow-hidden">
@@ -266,23 +339,75 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
 
+            {/* Account */}
+            <div className="relative shrink-0" ref={accountRef}>
+              {authLoading ? (
+                <div className="w-[54px] h-[54px] rounded-full bg-[#F5ECD4]/40 border border-white/50" />
+              ) : user ? (
+                <>
+                  <button
+                    onClick={() => setAccountOpen(!accountOpen)}
+                    className="flex items-center justify-center w-[54px] h-[54px] rounded-full bg-[#B89148]/85 border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#B89148] transition-all duration-200"
+                    aria-label={t('profile')}
+                  >
+                    <UserRound className="w-[24px] h-[24px] text-white" strokeWidth={1.8} />
+                  </button>
+                  <AnimatePresence>
+                    {accountOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-[calc(100%+8px)] right-0 bg-white rounded-[14px] shadow-[0_8px_32px_rgba(122,95,44,0.15)] border border-gold-100 overflow-hidden min-w-[160px] flex flex-col py-2 z-50"
+                      >
+                        <Link
+                          href="/profile"
+                          onClick={() => setAccountOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-gold-50 transition-colors font-dm-sans text-[13px] text-gold-900"
+                        >
+                          <UserRound size={15} className="text-[#b89148]" />
+                          {t('profile')}
+                        </Link>
+                        <button
+                          onClick={handleSignOut}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-gold-50 transition-colors font-dm-sans text-[13px] text-gold-900 text-left"
+                        >
+                          <LogOut size={15} className="text-[#b89148]" />
+                          {t('signOut')}
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex items-center justify-center h-[54px] px-[14px] rounded-[16px] bg-[#F5ECD4]/40 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 gap-2"
+                >
+                  <LogIn size={18} className="text-[#3b2d17]" />
+                  <span className="font-dm-sans text-[14px] text-[#3b2d17] whitespace-nowrap">{t('signIn')}</span>
+                </Link>
+              )}
+            </div>
+
           </div>
 
           {/* Right: Book Appointment + Phone */}
-          <div className="relative flex items-center justify-end flex-1 min-w-0 gap-[10px]" ref={phoneRef}>
+          <div className="relative flex items-center justify-end min-w-0 gap-[6px]" ref={phoneRef}>
             <button
               onClick={() => { trackCallClick('navbar'); setBookOpen(true) }}
-              className="flex items-center justify-center h-[50px] 2xl:h-[56px] px-[16px] 2xl:px-[28px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200"
+              className="flex items-center justify-center h-[56px] px-[16px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200 shrink-0"
             >
-              <span className="font-dm-sans text-[14px] 2xl:text-[15px] font-normal text-[#F9F9F9] whitespace-nowrap">{t('bookAppointment')}</span>
+              <span className="font-dm-sans text-[14px] font-normal text-[#F9F9F9] whitespace-nowrap">{t('bookAppointment')}</span>
             </button>
             <BookAppointmentModal open={bookOpen} onClose={() => setBookOpen(false)} />
 
             <button
               onClick={() => setPhoneOpen(!phoneOpen)}
-              className="flex items-center justify-center h-[50px] w-[50px] 2xl:h-[56px] 2xl:w-[56px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200 shrink-0"
+              className="flex items-center justify-center h-[56px] w-[56px] rounded-[14px] bg-[#B89148]/80 shadow-[0_0_12px_rgba(184,145,72,0.20)] hover:bg-[#B89148] transition-all duration-200 shrink-0"
             >
-              <Phone className="w-[20px] h-[20px] text-[#F9F9F9]" strokeWidth={2} />
+              <Phone className="w-[22px] h-[22px] text-[#F9F9F9]" strokeWidth={2} />
             </button>
 
             <AnimatePresence>
@@ -303,10 +428,11 @@ export default function Navbar() {
           </div>
 
         </div>
+        </div>
       </div>
 
-      {/* ── Mobile trigger (< xl) ── */}
-      <div className="xl:hidden flex items-center px-5 py-4 pointer-events-auto">
+      {/* ── Mobile / tablet trigger (< 1536px) ── */}
+      <div className="min-[1500px]:hidden w-full max-w-[1512px] mx-auto px-5 py-4 pointer-events-auto">
         <button
           onClick={() => setMobileOpen(true)}
           className="flex items-center gap-[12px] bg-[#fbf7ee]/50 backdrop-blur-md rounded-[28px] px-[20px] py-[6px]"
@@ -318,8 +444,10 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* ── Mobile drawer ── */}
-      <AnimatePresence>
+      {/* ── Mobile drawer (portaled to <body> to escape the header's z-50 stacking
+           context, so it sits above the cookie banner and floating chat) ── */}
+      {mounted && createPortal(
+        <AnimatePresence>
         {mobileOpen && (
           <>
             <motion.div
@@ -328,14 +456,14 @@ export default function Navbar() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setMobileOpen(false)}
-              className="xl:hidden fixed inset-0 bg-black/30 backdrop-blur-[2px] z-[45] pointer-events-auto"
+              className="min-[1500px]:hidden fixed inset-0 bg-black/30 backdrop-blur-[2px] z-[10000] pointer-events-auto"
             />
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.25, ease: 'easeInOut' }}
-              className="xl:hidden fixed top-0 left-0 h-full bg-[#fbf7ee] z-[50] flex flex-col pointer-events-auto shadow-[4px_0_40px_rgba(59,45,23,0.12)]"
+              className="min-[1500px]:hidden fixed top-0 left-0 h-full bg-[#fbf7ee] z-[10001] flex flex-col pointer-events-auto shadow-[4px_0_40px_rgba(59,45,23,0.12)]"
               style={{ width: 280 }}
             >
               {/* Drawer header */}
@@ -352,7 +480,7 @@ export default function Navbar() {
               </div>
 
               {/* Branch selector */}
-              <div className="flex flex-col gap-2 px-4 py-4 border-b border-[#ead6a4]/40">
+              <div ref={mobileBranchRef} className="flex flex-col gap-2 px-4 py-4 border-b border-[#ead6a4]/40">
                 <button
                   onClick={() => setBranchOpen(!branchOpen)}
                   className="flex items-center gap-2 bg-[#f5ecd4]/60 rounded-[12px] px-3 py-2.5"
@@ -366,7 +494,7 @@ export default function Navbar() {
                     {branches.map(b => (
                       <button
                         key={b.id}
-                        onClick={() => { switchBranch(b); setBranchOpen(false); setMobileOpen(false) }}
+                        onClick={() => handleSwitchBranch(b)}
                         className={cn('flex items-center gap-2 px-4 py-3 text-left hover:bg-gold-50 transition-colors', selectedBranch?.id === b.id ? 'bg-gold-50/50' : '')}
                       >
                         <Building2 size={13} className="text-[#b89148] shrink-0" />
@@ -426,7 +554,7 @@ export default function Navbar() {
                 })}
               </nav>
 
-              {/* Bottom: Book Appt + Language */}
+              {/* Bottom: Book Appt + Account + Language */}
               <div className="px-4 pb-8 pt-3 flex flex-col gap-3 border-t border-[#ead6a4]/40">
                 <button
                   onClick={() => { setMobileOpen(false); setBookOpen(true) }}
@@ -434,6 +562,34 @@ export default function Navbar() {
                 >
                   {t('bookAppointment')}
                 </button>
+                {authLoading ? null : user ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href="/profile"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#f5ecd4]/50 transition-colors"
+                    >
+                      <UserRound size={16} />
+                      {t('profile')}
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#f5ecd4]/50 transition-colors"
+                    >
+                      <LogOut size={16} />
+                      {t('signOut')}
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-center gap-2 h-[44px] rounded-[12px] border border-[#dcbd72] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#f5ecd4]/50 transition-colors"
+                  >
+                    <LogIn size={16} />
+                    {t('signIn')}
+                  </Link>
+                )}
                 <div className="relative">
                   <button
                     onClick={() => setMobileLangOpen(!mobileLangOpen)}
@@ -474,8 +630,11 @@ export default function Navbar() {
             </motion.div>
           </>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
     </header>
+    </>
   )
 }

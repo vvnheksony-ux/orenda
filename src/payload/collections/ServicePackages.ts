@@ -11,6 +11,11 @@ export const ServicePackages: CollectionConfig = {
   admin: {
     group: 'Website Content',
     useAsTitle: 'title',
+    components: {
+      edit: {
+        beforeDocumentControls: ['@/payload/admin/components/CustomEditHeader'],
+      },
+    },
   },
   versions: {
     maxPerDoc: 20,

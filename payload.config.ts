@@ -112,6 +112,10 @@ export default buildConfig({
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/profiles/:mode?/:id?',
         },
+        publicPatients: {
+          Component: '@/payload/admin/components/operations/OperationsAdminView',
+          path: '/operations/patients/:mode?/:id?',
+        },
         publicFeedback: {
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/feedback/:mode?/:id?',
@@ -124,7 +128,11 @@ export default buildConfig({
     },
     meta: {
       title: 'Admin Portal',
+      titleSuffix: '',
       description: 'Orienda Hospital Admin Portal',
+      icons: {
+        icon: '/logo-cropped.png',
+      },
     },
   },
   collections: [

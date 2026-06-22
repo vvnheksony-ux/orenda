@@ -4,9 +4,24 @@ import { useState } from 'react'
 import { useLocale } from 'next-intl'
 import { DatePicker, CustomSelect } from '@/components/shared/FormControls'
 
-const inputCls = 'w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors'
+const inputCls = 'w-full min-w-0 border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors'
 const labelCls = 'font-dm-sans font-medium text-[16px] text-[#3b2d17]'
 const radioCls = 'shrink-0 size-[24px] rounded-[12px] border-[1.5px] border-[#b89148] appearance-none checked:bg-[#b89148] cursor-pointer'
+
+type FeedbackFormState = {
+  date_of_birth: string
+  clinic_visited: string
+  contact_required: boolean
+  title: string
+  feedback_type: string
+  email: string
+  phone: string
+  first_name: string
+  last_name: string
+  nationality: string
+  role: string
+  comment: string
+}
 
 export default function FeedbackForm() {
   const locale = useLocale()
@@ -14,7 +29,7 @@ export default function FeedbackForm() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FeedbackFormState>({
     date_of_birth: '',
     clinic_visited: '',
     contact_required: false,
@@ -29,10 +44,22 @@ export default function FeedbackForm() {
     comment: '',
   })
 
-  const set = (field: string, value: any) => setForm(f => ({ ...f, [field]: value }))
+  const set = <K extends keyof FeedbackFormState>(field: K, value: FeedbackFormState[K]) => setForm(f => ({ ...f, [field]: value }))
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!form.feedback_type) {
+      setError('Please select a feedback type.')
+      return
+    }
+    if (!form.comment.trim()) {
+      setError('Please enter your feedback.')
+      return
+    }
+    if (form.contact_required && !form.email.trim() && !form.phone.trim()) {
+      setError('Please provide an email or phone number if you want us to contact you.')
+      return
+    }
     setSubmitting(true)
     setError('')
     try {
@@ -52,25 +79,24 @@ export default function FeedbackForm() {
 
   if (submitted) {
     return (
-      <div className="bg-[#fbf7ee] flex flex-col items-center justify-center p-[40px] rounded-[16px] w-full min-h-[200px] gap-[16px]" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
-        <p className="font-cormorant font-bold text-[32px] text-[#3b2d17]">Thank You!</p>
-        <p className="font-dm-sans text-[18px] text-[#594522]">Your feedback has been submitted successfully.</p>
+      <div className="bg-[#fbf7ee] flex flex-col items-center justify-center p-6 sm:p-[40px] rounded-[16px] w-full min-h-[200px] gap-[16px]" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
+        <p className="font-cormorant font-bold text-[28px] sm:text-[32px] text-[#3b2d17] text-center">Thank You!</p>
+        <p className="font-dm-sans text-[16px] sm:text-[18px] text-[#594522] text-center">Your feedback has been submitted successfully.</p>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-[#fbf7ee] flex flex-col items-center overflow-hidden p-[40px] rounded-[16px] w-full" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
+    <form onSubmit={handleSubmit} className="bg-[#fbf7ee] flex flex-col items-center overflow-hidden p-5 sm:p-8 lg:p-[40px] rounded-[16px] w-full" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
       <div className="flex flex-col gap-[80px] items-center w-full">
 
         <div className="flex flex-col gap-[32px] items-start w-full">
           <div className="flex flex-col gap-[8px] text-center w-full">
             <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none w-full">Submit Your Feedback</h3>
-            <p className="font-dm-sans text-[16px] text-[#594522] w-full">Book an appointment with us today</p>
+            <p className="font-dm-sans text-[16px] text-[#594522] w-full">We&apos;d love to hear about your experience with us.</p>
           </div>
 
           <div className="flex flex-col gap-[24px] w-full">
-            {/* Date of Birth */}
             <DatePicker
               label="Date of Birth"
               value={form.date_of_birth}
@@ -79,7 +105,6 @@ export default function FeedbackForm() {
               labelCls={labelCls}
             />
 
-            {/* Clinic/Area Visited */}
             <CustomSelect
               label="Clinic/Area Visited"
               value={form.clinic_visited}
@@ -89,7 +114,6 @@ export default function FeedbackForm() {
               labelCls={labelCls}
             />
 
-            {/* Response required */}
             <div className="flex flex-col gap-[16px] w-full">
               <label className={labelCls}>Would you like us to contact you about your feedback?</label>
               <div className="flex flex-col gap-[16px] px-[12px]">
@@ -102,13 +126,11 @@ export default function FeedbackForm() {
               </div>
             </div>
 
-            {/* Title */}
             <div className="flex flex-col gap-[8px] w-full">
               <label className={labelCls}>Title</label>
               <input type="text" placeholder="Dr. Navy Blue" value={form.title} onChange={e => set('title', e.target.value)} className={inputCls} />
             </div>
 
-            {/* Feedback type */}
             <div className="flex flex-col gap-[16px] w-full">
               <label className={labelCls}>Type of Feedback</label>
               <div className="flex flex-col gap-[16px] px-[12px]">
@@ -121,8 +143,7 @@ export default function FeedbackForm() {
               </div>
             </div>
 
-            {/* Email + Phone */}
-            <div className="flex gap-[24px] items-start w-full">
+            <div className="flex flex-col md:flex-row gap-[24px] items-start w-full">
               <div className="flex flex-1 flex-col gap-[8px]">
                 <label className={labelCls}>Email</label>
                 <input type="email" placeholder="Travis@gmail.com" value={form.email} onChange={e => set('email', e.target.value)} className={inputCls} />
@@ -133,8 +154,7 @@ export default function FeedbackForm() {
               </div>
             </div>
 
-            {/* First + Last Name */}
-            <div className="flex gap-[24px] items-start w-full">
+            <div className="flex flex-col md:flex-row gap-[24px] items-start w-full">
               <div className="flex flex-1 flex-col gap-[8px]">
                 <label className={labelCls}>First Name</label>
                 <input type="text" placeholder="Travis" value={form.first_name} onChange={e => set('first_name', e.target.value)} className={inputCls} />
@@ -145,7 +165,6 @@ export default function FeedbackForm() {
               </div>
             </div>
 
-            {/* Nationality */}
             <CustomSelect
               label="Nationality"
               value={form.nationality}
@@ -155,7 +174,6 @@ export default function FeedbackForm() {
               labelCls={labelCls}
             />
 
-            {/* Role */}
             <div className="flex flex-col gap-[16px] w-full">
               <label className={labelCls}>Please select your role</label>
               <div className="flex flex-col gap-[16px] px-[12px]">
@@ -168,7 +186,6 @@ export default function FeedbackForm() {
               </div>
             </div>
 
-            {/* Comment */}
             <div className="flex flex-col gap-[8px] w-full">
               <label className={labelCls}>Your Feedback</label>
               <textarea

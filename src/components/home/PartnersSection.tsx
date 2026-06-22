@@ -32,9 +32,9 @@ export default function PartnersSection() {
   if (!partners) return null
 
   return (
-    <section className="w-full bg-[#fbf7ee]">
+    <section className="w-full bg-[var(--background)]">
       {/* Header */}
-      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]">
+      <div className="page-shell">
         <div className="flex flex-col gap-[20px] items-center text-center pb-[40px]">
           <h2 className="font-cormorant font-bold text-[44px] lg:text-[64px] xl:text-[72px] text-gold-900 leading-none">
             {t('title')}

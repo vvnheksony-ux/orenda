@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       LEFT JOIN payload.media m ON m.id = dt.thumbnail_id
       LEFT JOIN payload.doctors_locales doc_l
         ON doc_l._parent_id = dt.featured_doctor_id AND doc_l._locale = 'en'
-      WHERE dt.status = 'published'
+      WHERE dt._status = 'published'
       ${slugFilter}
       ORDER BY dt.event_date DESC NULLS LAST
       LIMIT $${params.length}
@@ -64,7 +64,7 @@ export async function GET(req: Request) {
       if (!rows[0]) return NextResponse.json(null, { status: 404 })
       return NextResponse.json(toDoc(rows[0]))
     }
-    return NextResponse.json({ docs: rows.map(toDoc), totalDocs: rows.length })
+    return NextResponse.json({ docs: rows.map(toDoc), totalDocs: rows.length }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('doctor-talks:', err.message)
     return NextResponse.json({ docs: [], totalDocs: 0 })

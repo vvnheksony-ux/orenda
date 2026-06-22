@@ -1,14 +1,14 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { Link } from '@/i18n/routing'
-import { payloadFetch } from '@/lib/payload-api'
 import { ChevronLeft } from 'lucide-react'
 
-function lexicalToParagraphs(rt: any): string[] {
-  if (!rt?.root?.children) return []
-  return rt.root.children
-    .map((node: any) => node.children?.map((n: any) => n.text ?? '').join('').trim() ?? '')
+function textToParagraphs(text: string | null): string[] {
+  return String(text || '')
+    .split('\n')
+    .map((line) => line.trim())
     .filter(Boolean)
 }
 
@@ -23,29 +23,44 @@ export default async function CareerDetailPage({
   params: Promise<{ jobId: string; locale: string }>
 }) {
   const { jobId, locale } = await params
+  const headerStore = await headers()
+
+  // Fetch via the raw-pool API route (the working DB path) instead of Payload's
+  // direct connection, which times out on serverless. Mirrors the promotions page.
+  const forwardedProto = headerStore.get('x-forwarded-proto')
+  const forwardedHost = headerStore.get('x-forwarded-host')
+  const host = forwardedHost ?? headerStore.get('host')
+  const base = host
+    ? `${forwardedProto ?? 'https'}://${host}`
+    : process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
   let career: any = null
   try {
-    const data = await payloadFetch(
-      `/payload-api/careers?where[slug][equals]=${jobId}&locale=${locale}&depth=1&limit=1`
+    const res = await fetch(
+      `${base}/api/careers?slug=${encodeURIComponent(jobId)}&locale=${locale}`,
+      { cache: 'no-store' }
     )
-    career = data.docs?.[0] ?? null
+    if (res.ok) {
+      const data = await res.json()
+      career = data?.id ? data : null
+    }
   } catch {}
 
   if (!career) notFound()
 
-  const title = career.position ?? career.title ?? ''
-  const dept = typeof career.careerDepartment === 'object' ? career.careerDepartment?.name : null
-  const location = typeof career.careerLocation === 'object' ? career.careerLocation?.name : null
-  const responsibilities = lexicalToParagraphs(career.responsibilities)
-  const requirements = lexicalToParagraphs(career.careerRequirements)
+  const title = career.title ?? ''
+  const dept = career.department || null
+  const location: string | null = null
+  const responsibilities = textToParagraphs(career.responsibilities)
+  const requirements = textToParagraphs(career.requirements)
   const expiry = formatDeadline(career.applicationDeadline ?? null)
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
 
-        <div className="max-w-[1168px] mx-auto px-5 xl:px-0 mb-6">
+        <div className="narrow-shell mb-6">
           <Link
             href="/career"
             className="inline-flex items-center gap-1 font-dm-sans text-[14px] text-gold-700 hover:text-gold-900 transition-colors"
@@ -55,33 +70,33 @@ export default async function CareerDetailPage({
           </Link>
         </div>
 
-        <div className="max-w-[1168px] mx-auto px-5 xl:px-0 mb-10">
+        <div className="narrow-shell mb-10">
           <div className="relative w-full h-[320px] md:h-[460px] xl:h-[574px] rounded-[10px] overflow-hidden">
             <Image
-              src={career.thumbnail?.url || '/images/career-hero-bg.jpg'}
+              src={career.thumbnail || '/images/career-hero-bg.jpg'}
               alt={title}
               fill
               className="object-cover object-top"
               sizes="1168px"
               priority
-              unoptimized={!!career.thumbnail?.url}
+              unoptimized={!!career.thumbnail}
             />
           </div>
         </div>
 
-        <div className="max-w-[1144px] mx-auto px-5 xl:px-0 flex flex-col gap-5">
+        <div className="narrow-shell flex flex-col gap-5">
 
           <h1 className="font-dm-sans font-bold text-[28px] xl:text-[36px] leading-normal" style={{ color: '#9a7838' }}>
             {title}
           </h1>
 
-          <div className="font-dm-sans text-[16px] xl:text-[20px] text-black leading-normal flex flex-col gap-4">
+          <div className="font-dm-sans text-[16px] xl:text-[20px] text-[#3b2d17] leading-normal flex flex-col gap-4">
 
             <p className="font-semibold">Job Details</p>
             <ul className="list-disc pl-8 flex flex-col gap-1">
               {dept && <li>Department: {dept}</li>}
               {location && <li>Location: {location}</li>}
-              {career.careerEmploymentType && <li>Employment Type: {career.careerEmploymentType.replace('_', '-')}</li>}
+              {career.employmentType && <li>Employment Type: {career.employmentType.replace('_', '-')}</li>}
               {career.experienceLevel && <li>Experience Level: {career.experienceLevel}</li>}
               {career.salaryRange && <li>Salary Range: {career.salaryRange}</li>}
             </ul>
