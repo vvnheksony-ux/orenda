@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useBranch } from '@/lib/branch-context'
-import { fetchDepartments } from '@/lib/departments-cache'
+import { DepartmentListItem, fetchDepartments } from '@/lib/departments-cache'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -19,27 +19,42 @@ export default function CentersSection() {
   const [SPECIALTIES, setSpecialties] = useState<{key:string;name:string;thumb:string;display:string}[]>([])
 
   useEffect(() => {
-    if (!selectedBranch) return
+    if (!selectedBranch) {
+      setSpecialties([])
+      setLoading(false)
+      return
+    }
+
+    let active = true
     setIdx(0)
     setLoading(true)
     fetchDepartments(locale, selectedBranch.id)
       .then(docs => {
+        if (!active) return
         const ADMIN_KEYWORDS = ['director', 'administration', 'admin', 'manager', 'executive', 'officer', 'coordinator']
-        const depts = docs.filter((dept: any) => {
+        const depts = docs.filter((dept: DepartmentListItem) => {
           if (!dept.icon?.trim()) return false
           const lower = (dept.name || '').toLowerCase()
           return !ADMIN_KEYWORDS.some(k => lower.includes(k))
         })
         if (depts.length > 0) {
-          setSpecialties(depts.slice(0, 4).map((dept: any) => ({
+          setSpecialties(depts.slice(0, 4).map((dept: DepartmentListItem) => ({
             key:     dept.slug || String(dept.id),
             name:    dept.name,
-            thumb:   dept.icon,
-            display: dept.icon,
+            thumb:   dept.icon ?? '',
+            display: dept.icon ?? '',
           })))
+        } else {
+          setSpecialties([])
         }
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [locale, selectedBranch])
 
   const prev = () => setIdx(i => (i - 1 + SPECIALTIES.length) % SPECIALTIES.length)

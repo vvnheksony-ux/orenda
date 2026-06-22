@@ -1,0 +1,46 @@
+Section	Question	Why this matters	Expected answer / format	Current answer	Status	Notes
+Hosting	What hosting platform will run the production app?	Defines the deployment workflow and runtime assumptions	Vercel	Recommended: Vercel	Confirmed	Best fit for this Next.js 16 + Payload app
+Hosting	What command must be used for the production build?	This is the deployment gate that must pass before release	npx next build --webpack	npx next build --webpack	Confirmed	Verified successfully; Turbopack build hung in this environment
+Hosting	What command serves the built production app outside Vercel?	Needed for local production smoke tests	npx next start	npx next start	Confirmed	Vercel handles this automatically in production
+Hosting	Is the runtime using Node.js 20 or newer?	Prevents runtime mismatches and unsupported behavior	Yes / Node version	Need hosting to use Node 20+	Pending	Set in hosting platform runtime config if needed
+Hosting	Is npm the package manager for deploys?	Ensures the correct lockfile and install process are used	Yes	Yes	Confirmed	Repo uses package-lock.json
+Domain	What is the final production domain?	GA4, metadata, sitemap, robots, and auth callbacks depend on it	Full HTTPS origin	https://orienda.com	Pending	Use the real final domain before launch if it changes
+Domain	Is NEXT_PUBLIC_SITE_URL set to the production origin?	Used by public URLs and server-generated links	https://your-domain	Currently local in .env	Pending	Must be updated in production env vars
+Domain	Is PAYLOAD_PUBLIC_SERVER_URL set to the production origin?	Used by Payload emails and admin links	https://your-domain	Currently local in .env	Pending	Must be updated in production env vars
+Domain	Does metadataBase match the production domain?	Affects canonical metadata and social URLs	Yes	Yes: https://orienda.com	Confirmed	Defined in src/app/[locale]/layout.tsx
+Domain	Do sitemap and robots point to the production domain?	Prevents bad SEO URLs in production	Yes	Yes: https://orienda.com	Confirmed	Already hardcoded in app routes
+DNS	Who manages DNS for the production domain?	Needed before connecting domain to hosting	Cloudflare or registrar	Cloudflare or registrar	Pending	Cloudflare DNS-only in front of Vercel is acceptable
+DNS	Has the domain been added inside Vercel?	Required before DNS records can be pointed correctly	Yes / No	Not confirmed	Pending	Add both apex and www if needed
+DNS	Are the required DNS records pointed to Vercel?	Required for the site to go live	Yes / record values	Not confirmed	Pending	Use Vercel-provided A/CNAME records
+Core env	Is PAYLOAD_SECRET set to a strong production secret?	Required by Payload CMS	Yes / secret stored securely	Not confirmed	Pending	Never reuse a weak dev secret
+Core env	Is DATABASE_URL set to the production Supabase Postgres connection string?	Required for app and Payload database access	Yes / connection string	Present locally only	Pending	Store only in hosting env vars
+Core env	Is ENABLE_API_DOCS disabled in production?	Prevents exposing API docs publicly	false	false recommended	Pending	README says docs should be disabled in production
+Supabase	Is NEXT_PUBLIC_SUPABASE_URL set in production?	Required for public and server auth clients	Yes / URL	Present locally	Pending	Set in Vercel Production env vars
+Supabase	Is NEXT_PUBLIC_SUPABASE_ANON_KEY set in production?	Required for browser Supabase usage	Yes / key	Present locally	Pending	Set in Vercel Production env vars
+Supabase	Is SUPABASE_SERVICE_ROLE_KEY set in production?	Required for privileged server routes	Yes / key	Present locally	Pending	Restrict to server-only env vars
+Storage	Are all storage env vars configured for production?	Required for media upload and delivery	Yes / bucket + endpoint + keys	Present locally	Pending	S3_BUCKET S3_ACCESS_KEY_ID S3_SECRET_ACCESS_KEY S3_REGION S3_ENDPOINT
+Google Analytics	Has a GA4 property and web data stream been created?	Required before production traffic can be measured	Yes / GA4 property + stream	Yes	Confirmed	Measurement ID available
+Google Analytics	What is the GA4 Measurement ID?	Required by the frontend GA loader	G-XXXXXXXXXX	G-DPLW5RZCQQ	Confirmed	Verified in production runtime
+Google Analytics	Is NEXT_PUBLIC_GA_ID set in production env vars?	Required for the frontend to load GA in production	Yes / G- ID	Local value set	Pending	Must also be set in Vercel Production env vars
+Google Analytics	Does GA load only after cookie consent?	Important for privacy and consent compliance	Yes	Yes	Confirmed	Verified: no GA before consent, GA script + dataLayer after consent
+Google Analytics	Has GA4 Realtime been checked after a production-style run?	Confirms the property receives traffic	Yes / screenshot or manual check	Code path verified; GA4 UI check still recommended	Pending	Open GA4 Realtime after deploy and confirm active traffic
+GA4 admin import	Will Payload import GA4 reports into admin dashboards?	Determines whether extra setup is required	Yes / No	Optional	Pending	Skip if website-only GA is enough
+GA4 admin import	If yes, is GA4_PROPERTY_ID configured?	Required for Payload GA report import	Yes / numeric property id	Not configured	Pending	Only needed if enabling import job
+GA4 admin import	If yes, is GA4_SERVICE_ACCOUNT_KEY configured?	Required for Analytics Data API access	Yes / JSON service account key	Not configured	Pending	Only needed if enabling import job
+GA4 admin import	If yes, is @google-analytics/data installed?	Payload importer depends on this package	Yes / package installed	No	Pending	Needed before GA report cron can work
+Maps	Is NEXT_PUBLIC_GOOGLE_MAPS_API_KEY configured for production?	Required for map functionality	Yes / API key	Placeholder locally	Pending	Replace placeholder in production env vars
+Push notifications	Is NEXT_PUBLIC_ONESIGNAL_APP_ID configured for production if push is enabled?	Required for OneSignal client init	Yes / App ID	Present locally	Pending	Optional if push is not in scope for launch
+Push notifications	Is ONESIGNAL_API_KEY configured for production if push is enabled?	Required for server-side OneSignal operations	Yes / API key	Present locally	Pending	Optional if push is not in scope for launch
+SMS / OTP	Will Mekong SMS OTP be used in production?	Determines whether SMS secrets are launch blockers	Yes / No	Optional feature	Pending	Decide before release
+SMS / OTP	If yes, are production Mekong credentials configured instead of sandbox credentials?	Prevents broken or invalid production OTP flow	Yes / No	Currently sandbox values locally	Pending	Do not ship sandbox URL or sandbox creds to production
+SMS / OTP	If yes, is SEND_SMS_HOOK_SECRET configured securely?	Protects the SMS hook endpoint	Yes / secret stored securely	Present locally	Pending	Keep enabled in production
+Email	Is a real Payload email adapter configured for production?	Needed for real email delivery and removes console-only warning	Yes / provider selected	No	Pending	Current app warns that no email adapter is configured
+Security	Have all development and test credentials been rotated before launch?	Reduces risk from exposed/shared dev secrets	Yes / No	Not confirmed	Pending	Important before public production release
+Security	Are production secrets stored only in the hosting platform and not in git?	Prevents secret leakage	Yes / No	Should be yes	Pending	Use Vercel Production env vars
+Verification	Has npm install been run successfully in the target environment?	Ensures dependency resolution works	Yes / No	Local only	Pending	Usually handled by Vercel install step
+Verification	Has the production build completed successfully?	Hard release gate	Yes / No	Yes	Confirmed	Verified with npx next build --webpack
+Verification	Has the built app been served and smoke-tested in production mode?	Confirms runtime behavior after build	Yes / No	Yes	Confirmed	Verified with npx next start outside sandbox
+Verification	Has Google Analytics been smoke-tested in production mode?	Confirms the actual production behavior	Yes / No	Yes	Confirmed	Verified before consent and after consent
+Verification	Are production-blocked routes still blocked in production?	Prevents accidental exposure of demo/admin-only actions	Yes / No	Code guards exist	Pending	Check routes such as /api/seed-demo and /api/inspect-image after deploy
+Verification	Are API docs unavailable in production?	Prevents accidental public exposure of internal docs	Yes / No	Expected yes	Pending	Check /payload-api/docs on deployed production site
+Launch decision	Is the app ready to deploy to public production today?	Final go/no-go checkpoint	Yes / No	Not yet	Pending	Main remaining blockers are production env setup domain DNS and external service credentials

@@ -1,54 +1,58 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Cookie, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
+import { useCookieConsent } from '@/lib/cookie-utils'
+
+function DelayedBanner({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setReady(true), 1500)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  if (!ready) return null
+
+  return (
+    <motion.div
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 100, opacity: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="fixed z-[9999] inset-x-0 bottom-0 p-3 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:p-0 w-full sm:max-w-[360px]"
+    >
+      {children}
+    </motion.div>
+  )
+}
 
 export default function CookieConsent() {
   const t = useTranslations('CookieConsent')
   const { user, loading } = useAuth()
-  const [isVisible, setIsVisible] = useState(false)
+  const consent = useCookieConsent()
   const [showDetails, setShowDetails] = useState(false)
-
-  useEffect(() => {
-    if (loading) return
-    if (user) {
-      setIsVisible(false)
-      return
-    }
-
-    const consent = localStorage.getItem('cookie-consent')
-    if (!consent) {
-      const timer = setTimeout(() => setIsVisible(true), 1500)
-      return () => clearTimeout(timer)
-    }
-  }, [loading, user])
+  const isVisible = !loading && !user && consent === null
 
   const handleAccept = () => {
     localStorage.setItem('cookie-consent', 'accepted')
     window.dispatchEvent(new Event('cookie-consent-updated'))
-    setIsVisible(false)
   }
 
   const handleDecline = () => {
     localStorage.setItem('cookie-consent', 'declined')
     window.dispatchEvent(new Event('cookie-consent-updated'))
-    setIsVisible(false)
   }
 
   return (
     <AnimatePresence>
       {isVisible && (
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="fixed z-[9999] inset-x-0 bottom-0 p-3 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:p-0 w-full sm:max-w-[360px]"
-        >
+        <DelayedBanner>
           <div className="bg-white rounded-[16px] p-4 shadow-[0_12px_32px_rgba(107,90,69,0.18)] border border-gold-100 flex flex-col gap-2.5 max-h-[80vh] overflow-y-auto">
 
             {/* Compact Header */}
@@ -129,7 +133,7 @@ export default function CookieConsent() {
             </div>
 
           </div>
-        </motion.div>
+        </DelayedBanner>
       )}
     </AnimatePresence>
   )

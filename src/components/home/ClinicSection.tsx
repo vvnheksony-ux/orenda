@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useState, useEffect } from 'react'
 import { useBranch } from '@/lib/branch-context'
-import { fetchDepartments } from '@/lib/departments-cache'
+import { DepartmentListItem, fetchDepartments } from '@/lib/departments-cache'
 
 interface Clinic {
   key: string
@@ -39,19 +39,32 @@ export default function ClinicSection() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!selectedBranch) return
+    if (!selectedBranch) {
+      setClinics([])
+      setLoading(false)
+      return
+    }
+
+    let active = true
     setLoading(true)
     fetchDepartments(locale, selectedBranch.id)
       .then(docs => {
-        const withIcons = docs.filter((dept: any) => dept.icon?.trim())
-        setClinics(withIcons.map((dept: any) => ({
+        if (!active) return
+        const withIcons = docs.filter((dept: DepartmentListItem) => dept.icon?.trim())
+        setClinics(withIcons.map((dept: DepartmentListItem) => ({
           key:    dept.slug || String(dept.id),
           name:   dept.name,
-          image:  dept.icon,
+          image:  dept.icon ?? '',
           circle: false,
         })))
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [locale, selectedBranch])
 
   const row1 = clinics.slice(0, 4)
