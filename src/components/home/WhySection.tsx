@@ -56,7 +56,7 @@ export default function WhySection() {
       </div>
 
       {/* Dark blur overlay — desktop only */}
-      <div className="absolute inset-0 hidden lg:block bg-[rgba(0,0,0,0.3)]" style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }} />
+      <div className="absolute inset-0 hidden lg:block bg-[rgba(0,0,0,0.3)]" style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }} />
 
       {/* Content */}
       <div className="page-shell relative z-10 flex flex-col gap-[32px] xl:gap-[82px]">

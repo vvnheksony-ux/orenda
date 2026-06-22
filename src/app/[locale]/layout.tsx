@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import CookieConsent from '@/components/shared/CookieConsent'
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker'
+import GoogleAnalyticsLoader from '@/components/shared/GoogleAnalyticsLoader'
 import OneSignalInit from '@/components/shared/OneSignalInit'
 import ProfileGate from '@/components/shared/ProfileGate'
 import AuthErrorToast from '@/components/shared/AuthErrorToast'
@@ -71,6 +72,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <BranchProvider locale={locale}>
+              <GoogleAnalyticsLoader />
               <AnalyticsTracker />
               <OneSignalInit />
               <ProfileGate />

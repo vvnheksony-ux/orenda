@@ -13,6 +13,8 @@ interface Doctor {
   name: string
   specialty: string
   department: string
+  department_payload_id: string
+  branch_id: string
   image_url: string | null
   bio: string
   phone: string
@@ -209,7 +211,9 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
                     Choose a convenient time to meet with one of our specialists
                   </p>
                   <BookAppointmentButton
-                    defaultService={doctor.specialty}
+                    defaultDoctorId={doctor.id}
+                    defaultDepartmentId={doctor.department_payload_id}
+                    defaultBranchId={doctor.branch_id}
                     className="bg-[#b89148] flex gap-[10px] items-center justify-center px-[32px] py-[16px] rounded-[12px] w-full font-dm-sans text-[18px] text-[#fbf7ee] hover:bg-[#c8a25a] transition-colors"
                     label="📅 Book Now"
                   />

@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useState, useEffect } from 'react'
 import { useBranch } from '@/lib/branch-context'
+import { DepartmentListItem, fetchDepartments } from '@/lib/departments-cache'
 
 interface Clinic {
   key: string
@@ -20,7 +21,7 @@ function ClinicCard({ c }: { c: Clinic }) {
       className="flex flex-col items-center justify-center gap-3 sm:gap-6 aspect-square sm:aspect-auto overflow-hidden px-4 py-4 sm:px-8 sm:py-8 bg-[rgba(245,236,212,0.20)] rounded-xl border border-white shadow-[0px_4px_12px_3px_rgba(89,69,34,0.20),inset_0px_2px_8px_rgba(89,69,34,0.08)] hover:shadow-[0px_6px_16px_4px_rgba(89,69,34,0.28),inset_0px_2px_8px_rgba(89,69,34,0.08)] transition-shadow cursor-pointer group"
     >
       <div className="relative shrink-0 size-20 sm:size-32 transition-transform duration-300 group-hover:scale-105">
-        {c.image && <Image src={c.image} alt={c.name} fill className="object-contain" sizes="128px" unoptimized />}
+        {c.image && <Image src={c.image} alt={c.name} fill className="object-contain" sizes="128px" unoptimized={c.image.startsWith('/payload')} />}
       </div>
       <span className="font-cormorant font-bold text-sm sm:text-2xl leading-tight sm:leading-6 line-clamp-2 sm:line-clamp-none text-[#2A2620] text-center">
         {c.name}
@@ -38,22 +39,32 @@ export default function ClinicSection() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!selectedBranch) return
+    if (!selectedBranch) {
+      setClinics([])
+      setLoading(false)
+      return
+    }
+
+    let active = true
     setLoading(true)
-    const url = `/api/departments?locale=${locale}&branch=${selectedBranch.id}`
-    fetch(url)
-      .then(r => r.json())
-      .then(d => {
-        const withIcons = (d?.docs || []).filter((dept: any) => dept.icon?.trim())
-        setClinics(withIcons.map((dept: any) => ({
+    fetchDepartments(locale, selectedBranch.id)
+      .then(docs => {
+        if (!active) return
+        const withIcons = docs.filter((dept: DepartmentListItem) => dept.icon?.trim())
+        setClinics(withIcons.map((dept: DepartmentListItem) => ({
           key:    dept.slug || String(dept.id),
           name:   dept.name,
-          image:  dept.icon,
+          image:  dept.icon ?? '',
           circle: false,
         })))
       })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [locale, selectedBranch])
 
   const row1 = clinics.slice(0, 4)

@@ -21,9 +21,16 @@ export default function EmergencyPage() {
     e.preventDefault()
     if (!form.contact_info || !form.message) { setError('All fields required.'); return }
     setStatus('loading'); setError('')
-    const res = await fetch('/api/emergency', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-    if (!res.ok) { const d = await res.json(); setStatus('error'); setError(d.error || 'Something went wrong.'); return }
-    setStatus('success')
+    try {
+      const res = await fetch('/api/emergency', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        setStatus('error'); setError(d.error || 'Something went wrong.'); return
+      }
+      setStatus('success')
+    } catch {
+      setStatus('error'); setError('Network error. Please try again or call us directly.')
+    }
   }
 
   if (status === 'success') return (

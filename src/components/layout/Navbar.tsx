@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { createPortal } from 'react-dom'
 import { usePathname, useRouter } from '@/i18n/routing'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useTransition } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import { ChevronDown, ChevronLeft, Building2, LogIn, LogOut, Phone, UserRound } from 'lucide-react'
@@ -54,9 +54,9 @@ const NAV_ITEMS: NavItem[] = [
 ]
 
 const LANGUAGES = [
-  { code: 'en', label: 'English', flag: '/images/en-flag.svg' },
-  { code: 'km', label: 'ខ្មែរ',   flag: '/images/kh-flag.svg' },
-  { code: 'zh', label: '中文',    flag: '/images/zh-flag.svg' },
+  { code: 'en', label: 'English', flag: '/images/flags/en.svg' },
+  { code: 'km', label: 'ខ្មែរ',   flag: '/images/flags/km.svg' },
+  { code: 'zh', label: '中文',    flag: '/images/flags/zh.svg' },
 ]
 
 // Desktop nav dropdown: panel fades/slides in, then child items cascade in one
@@ -85,6 +85,7 @@ export default function Navbar() {
   const pathname   = usePathname()
   const router     = useRouter()
   const { trackLanguageSwitch, trackCallClick } = useAnalytics()
+  const [isLocaleSwitching, startLocaleSwitch] = useTransition()
   const { branches, selectedBranch, switchBranch } = useBranch()
   const { user, loading: authLoading, signOut } = useAuth()
 
@@ -323,7 +324,7 @@ export default function Navbar() {
                     {LANGUAGES.map(l => (
                       <button
                         key={l.code}
-                        onClick={() => { setLangOpen(false); trackLanguageSwitch(l.code as LocaleCode); router.replace(pathname, { locale: l.code }) }}
+                        onClick={() => { setLangOpen(false); trackLanguageSwitch(l.code as LocaleCode); startLocaleSwitch(() => router.replace(pathname, { locale: l.code })) }}
                         className={cn('flex items-center gap-3 px-4 py-2 hover:bg-gold-50 transition-colors w-full text-left', locale === l.code ? 'bg-gold-50/50' : '')}
                       >
                         <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 shadow-sm border border-black/5">
@@ -446,6 +447,14 @@ export default function Navbar() {
 
       {/* ── Mobile drawer (portaled to <body> to escape the header's z-50 stacking
            context, so it sits above the cookie banner and floating chat) ── */}
+      {/* Locale-switch loading overlay — covers the page until the new language is ready */}
+      {mounted && isLocaleSwitching && createPortal(
+        <div className="fixed inset-0 z-[10060] flex items-center justify-center bg-[#faf9f6]/80" aria-live="polite" aria-busy="true">
+          <div className="w-12 h-12 border-[3px] border-[#b89148] border-t-transparent rounded-full animate-spin" />
+        </div>,
+        document.body
+      )}
+
       {mounted && createPortal(
         <AnimatePresence>
         {mobileOpen && (
@@ -610,7 +619,7 @@ export default function Navbar() {
                         {LANGUAGES.map(l => (
                           <button
                             key={l.code}
-                            onClick={() => { setMobileLangOpen(false); setMobileOpen(false); trackLanguageSwitch(l.code as LocaleCode); router.replace(pathname, { locale: l.code }) }}
+                            onClick={() => { setMobileLangOpen(false); setMobileOpen(false); trackLanguageSwitch(l.code as LocaleCode); startLocaleSwitch(() => router.replace(pathname, { locale: l.code })) }}
                             className={cn('flex items-center gap-3 px-4 py-2 hover:bg-gold-50 transition-colors w-full text-left', locale === l.code ? 'bg-gold-50/50' : '')}
                           >
                             <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 shadow-sm border border-black/5">

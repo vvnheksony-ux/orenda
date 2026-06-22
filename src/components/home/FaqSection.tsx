@@ -52,7 +52,7 @@ export default function FaqSection() {
           {/* Layer 2: Frosted glass overlay */}
           <div
             className="absolute inset-0 z-10 border border-white/30 rounded-[24px]"
-            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
           />
 
           {/* Layer 3: FAQ text on top — locked with fixed top padding */}

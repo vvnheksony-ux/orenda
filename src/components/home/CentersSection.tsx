@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useBranch } from '@/lib/branch-context'
+import { DepartmentListItem, fetchDepartments } from '@/lib/departments-cache'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -18,29 +19,42 @@ export default function CentersSection() {
   const [SPECIALTIES, setSpecialties] = useState<{key:string;name:string;thumb:string;display:string}[]>([])
 
   useEffect(() => {
-    if (!selectedBranch) return
+    if (!selectedBranch) {
+      setSpecialties([])
+      setLoading(false)
+      return
+    }
+
+    let active = true
     setIdx(0)
     setLoading(true)
-    fetch(`/api/departments?locale=${locale}&branch=${selectedBranch.id}`)
-      .then(r => r.json())
-      .then(d => {
+    fetchDepartments(locale, selectedBranch.id)
+      .then(docs => {
+        if (!active) return
         const ADMIN_KEYWORDS = ['director', 'administration', 'admin', 'manager', 'executive', 'officer', 'coordinator']
-        const depts = (d?.docs || []).filter((dept: any) => {
+        const depts = docs.filter((dept: DepartmentListItem) => {
           if (!dept.icon?.trim()) return false
           const lower = (dept.name || '').toLowerCase()
           return !ADMIN_KEYWORDS.some(k => lower.includes(k))
         })
         if (depts.length > 0) {
-          setSpecialties(depts.slice(0, 4).map((dept: any) => ({
+          setSpecialties(depts.slice(0, 4).map((dept: DepartmentListItem) => ({
             key:     dept.slug || String(dept.id),
             name:    dept.name,
-            thumb:   dept.icon,
-            display: dept.icon,
+            thumb:   dept.icon ?? '',
+            display: dept.icon ?? '',
           })))
+        } else {
+          setSpecialties([])
         }
       })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [locale, selectedBranch])
 
   const prev = () => setIdx(i => (i - 1 + SPECIALTIES.length) % SPECIALTIES.length)
@@ -108,7 +122,7 @@ export default function CentersSection() {
               transition={{ duration: 0.25 }}
               className="relative flex-1 aspect-square rounded-xl overflow-hidden"
             >
-              <Image src={active.display} alt={active.name} fill className="object-cover" sizes="80vw" unoptimized />
+              <Image src={active.display} alt={active.name} fill className="object-cover" sizes="80vw" unoptimized={active.display?.startsWith('/payload')} />
             </motion.div>
           </AnimatePresence>
 
@@ -185,7 +199,7 @@ export default function CentersSection() {
               transition={{ duration: 0.25 }}
               className="relative w-full aspect-square shrink-0"
             >
-              <Image src={active.display} alt={active.name} fill className="object-cover" sizes="(max-width: 1279px) 28vw, 32vw" unoptimized />
+              <Image src={active.display} alt={active.name} fill className="object-cover" sizes="(max-width: 1279px) 28vw, 32vw" unoptimized={active.display?.startsWith('/payload')} />
             </motion.div>
           </AnimatePresence>
 
@@ -213,11 +227,11 @@ export default function CentersSection() {
               style={{ background: i === idx ? 'rgba(245,236,212,0.35)' : 'rgba(245,236,212,0.20)' }}
             >
               {s.thumb && (
-                <div className="relative size-16 sm:size-24 overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105">
-                  <Image src={s.thumb} alt={s.name} fill className="object-contain" sizes="96px" unoptimized />
+                <div className="relative size-24 sm:size-32 overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105">
+                  <Image src={s.thumb} alt={s.name} fill className="object-contain" sizes="128px" unoptimized={s.thumb.startsWith('/payload')} />
                 </div>
               )}
-              <p className="font-cormorant font-bold text-sm sm:text-xl text-[#2A2620] leading-tight capitalize text-center text-balance">
+              <p className="font-cormorant font-bold text-lg sm:text-3xl text-[#2A2620] leading-tight capitalize text-center text-balance">
                 {s.name}
               </p>
             </button>

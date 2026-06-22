@@ -14,6 +14,9 @@ interface Props {
   open: boolean
   onClose: () => void
   defaultService?: string
+  defaultDoctorId?: string
+  defaultDepartmentId?: string
+  defaultBranchId?: string
 }
 
 const inputCls = 'w-full border border-[#7a5f2c] rounded-[12px] px-[12px] py-[12px] font-dm-sans text-[16px] text-[#3b2d17] bg-white outline-none focus:border-[#b89148] transition-colors placeholder:text-[rgba(59,45,23,0.3)]'
@@ -53,6 +56,22 @@ function getEarliestAppointment(now = new Date()) {
   const periods = availablePeriodsForDate(today, now)
   if (periods[0]) return { date: today, time: periods[0].time }
   return { date: localDateString(addDays(now, 1)), time: TIME_PERIODS[0].time }
+}
+
+function createInitialForm(defaultService = '') {
+  const earliest = getEarliestAppointment()
+  return {
+    patient_name: '',
+    patient_phone: '',
+    patient_email: '',
+    department_id: defaultService,
+    department_payload_id: '',
+    doctor_payload_id: '',
+    service_payload_id: '',
+    preferred_date: earliest.date,
+    preferred_time: earliest.time,
+    message: '',
+  }
 }
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -154,7 +173,7 @@ type Doctor = { id: string; name: string; specialty: string; department: string;
 type Department = { id: string; name: string }
 type Service = { id: string; title: string; department?: { id: string; name: string } | null }
 
-export default function BookAppointmentModal({ open, onClose, defaultService = '' }: Props) {
+export default function BookAppointmentModal({ open, onClose, defaultService = '', defaultDoctorId = '', defaultDepartmentId = '', defaultBranchId = '' }: Props) {
   const locale = useLocale()
   const t = useTranslations('BookAppointmentModal')
   const { user, loading: authLoading } = useAuth()
@@ -162,18 +181,15 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   // re-renders into the form instead of closing.
   const justLoggedIn = useRef(false)
   const { selectedBranch } = useBranch()
+  // When opened from a doctor's profile, book against that doctor's branch
+  // (modal-only override) instead of the globally-selected branch.
+  const effectiveBranchId = defaultBranchId || selectedBranch?.id || null
   const [dateChoice, setDateChoice] = useState<'earliest' | 'choose'>('earliest')
-  const [form, setForm] = useState(() => {
-    const earliest = getEarliestAppointment()
-    return {
-      patient_name: '', patient_phone: '', patient_email: '',
-      department_id: defaultService, department_payload_id: '', doctor_payload_id: '', service_payload_id: '',
-      preferred_date: earliest.date, preferred_time: earliest.time, message: '',
-    }
-  })
+  const [form, setForm] = useState(() => createInitialForm(defaultService))
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [services, setServices] = useState<Service[]>([])
+  const [dataLoading, setDataLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -181,39 +197,93 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const [viewYear, setViewYear] = useState(() => new Date().getFullYear())
 
   useEffect(() => {
-    // Reset all selections that depend on branch when branch changes
-    setForm(f => ({ ...f, department_payload_id: '', department_id: '', service_payload_id: '', doctor_payload_id: '' }))
-    const deptUrl = selectedBranch
-      ? `/api/departments?locale=${locale}&branch=${selectedBranch.id}`
+    if (!open) return // defer the dept/doctor fetch until the modal is actually opened
+    let active = true
+    setDataLoading(true)
+
+    const deptUrl = effectiveBranchId
+      ? `/api/departments?locale=${locale}&branch=${effectiveBranchId}`
       : `/api/departments?locale=${locale}`
-    fetch(deptUrl)
-      .then(r => r.ok ? r.json() : { docs: [] })
-      .then(d => setDepartments((d.docs ?? []).map((dept: any) => ({ id: String(dept.id), name: dept.name ?? '' }))))
-      .catch(() => {})
-    const docUrl = selectedBranch
-      ? `/api/doctors?locale=${locale}&branch=${selectedBranch.id}`
+
+    const docUrl = effectiveBranchId
+      ? `/api/doctors?locale=${locale}&branch=${effectiveBranchId}`
       : `/api/doctors?locale=${locale}`
-    fetch(docUrl)
-      .then(r => r.ok ? r.json() : [])
-      .then(d => { if (Array.isArray(d)) setDoctors(d) })
-      .catch(() => {})
-  }, [locale, selectedBranch])
+    Promise.all([
+      fetch(deptUrl).then(r => r.ok ? r.json() : { docs: [] }).catch(() => ({ docs: [] })),
+      fetch(docUrl).then(r => r.ok ? r.json() : []).catch(() => []),
+    ]).then(([deptResponse, doctorResponse]) => {
+      if (!active) return
+
+      const nextDepartments: Department[] = (deptResponse.docs ?? []).map((dept: { id: string | number; name?: string }) => ({
+        id: String(dept.id),
+        name: dept.name ?? '',
+      }))
+      const nextDoctors: Doctor[] = Array.isArray(doctorResponse) ? doctorResponse : []
+
+      setDepartments(nextDepartments)
+      setDoctors(nextDoctors)
+      setForm(f => {
+        let departmentId = ''
+        let departmentPayloadId = ''
+        let doctorPayloadId = ''
+
+        if (defaultDoctorId) {
+          const doc = nextDoctors.find((doctor: Doctor) => doctor.id === defaultDoctorId)
+          if (doc) {
+            const dept = nextDepartments.find(department => department.id === doc.department_payload_id)
+            departmentId = dept?.name ?? doc.department
+            departmentPayloadId = doc.department_payload_id
+            doctorPayloadId = doc.id
+          }
+        } else if (defaultDepartmentId) {
+          const dept = nextDepartments.find(department => department.id === defaultDepartmentId)
+          if (dept) {
+            departmentId = dept.name
+            departmentPayloadId = dept.id
+          }
+        } else if (defaultService) {
+          const dept = nextDepartments.find(department => department.name === defaultService)
+          if (dept) {
+            departmentId = dept.name
+            departmentPayloadId = dept.id
+          }
+        }
+
+        return {
+          ...f,
+          department_id: departmentId,
+          department_payload_id: departmentPayloadId,
+          doctor_payload_id: doctorPayloadId,
+          service_payload_id: '',
+        }
+      })
+    }).finally(() => {
+      if (active) setDataLoading(false)
+    })
+
+    return () => {
+      active = false
+    }
+  }, [open, locale, effectiveBranchId, defaultDoctorId, defaultDepartmentId, defaultService])
 
   useEffect(() => {
-    if (!departments.length || !form.department_id || form.department_payload_id) return
-    const matched = departments.find(d => d.name === form.department_id)
-    if (matched) setForm(f => ({ ...f, department_id: matched.name, department_payload_id: matched.id }))
-  }, [departments, form.department_id, form.department_payload_id])
-
-  useEffect(() => {
+    if (!open) return
+    let active = true
     const svcUrl = form.department_payload_id
       ? `/api/services?locale=${locale}&department=${form.department_payload_id}`
       : `/api/services?locale=${locale}`
     fetch(svcUrl)
       .then(r => r.ok ? r.json() : { docs: [] })
-      .then(d => setServices((d.docs ?? []).map((s: any) => ({ id: String(s.id), title: s.title ?? '', department: s.department ?? null }))))
+      .then(d => {
+        if (!active) return
+        setServices((d.docs ?? []).map((s: any) => ({ id: String(s.id), title: s.title ?? '', department: s.department ?? null })))
+      })
       .catch(() => {})
-  }, [locale, form.department_payload_id])
+
+    return () => {
+      active = false
+    }
+  }, [open, locale, form.department_payload_id])
 
   useScrollLock(open)
 
@@ -244,7 +314,11 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
   const handleClose = () => {
     if (status === 'loading') return
-    setStatus('idle'); setError(''); setSubmitted(false)
+    setStatus('idle')
+    setError('')
+    setSubmitted(false)
+    setDateChoice('earliest')
+    setForm(createInitialForm(defaultService))
     onClose()
   }
 
@@ -290,7 +364,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
           patient_email: form.patient_email || null,
           doctor_payload_id: form.doctor_payload_id ? Number(form.doctor_payload_id) : null,
           department_payload_id: form.department_payload_id ? Number(form.department_payload_id) : null,
-          branch_payload_id: selectedBranch ? Number(selectedBranch.id) : null,
+          branch_payload_id: effectiveBranchId ? Number(effectiveBranchId) : null,
           department_id: form.department_id || null,
           preferred_date: preferred.date,
           preferred_time: preferred.time,
@@ -433,7 +507,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                     <CustomSelect
                       value={form.department_payload_id}
                       onChange={handleDepartmentChange}
-                      placeholder="Select department"
+                      placeholder={dataLoading ? 'Loading clinics…' : 'Select department'}
                       options={departments.map(d => ({ value: d.id, label: d.name }))}
                     />
                   </div>
@@ -465,7 +539,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                       <CustomSelect
                         value={form.doctor_payload_id}
                         onChange={handleDoctorChange}
-                        placeholder="Select doctor"
+                        placeholder={dataLoading ? 'Loading doctors…' : 'Select doctor'}
                         options={filteredDoctors.map(d => ({
                           value: d.id,
                           label: d.name + (d.specialty ? ` — ${d.specialty}` : ''),
