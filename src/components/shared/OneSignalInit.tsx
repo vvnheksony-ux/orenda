@@ -58,6 +58,11 @@ async function saveSubscriptionId(userId: string) {
 export default function OneSignalInit() {
   const { user } = useAuth()
 
+  // Note: the OneSignal SDK's harmless background push-registration rejections
+  // (e.g. "push service not available") are suppressed by an inline script in
+  // the root layout. It must run before Next's dev overlay registers its own
+  // unhandledrejection handler, which a React effect here cannot guarantee.
+
   // 1) Initialize the SDK exactly once.
   useEffect(() => {
     const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID

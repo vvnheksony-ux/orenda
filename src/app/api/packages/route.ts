@@ -48,7 +48,7 @@ export async function GET(req: Request) {
       return NextResponse.json(toDoc(rows[0]))
     }
 
-    return NextResponse.json(rows.map(toDoc))
+    return NextResponse.json(rows.map(toDoc), { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('packages:', err.message)
     return NextResponse.json(slug ? null : [])

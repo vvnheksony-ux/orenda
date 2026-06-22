@@ -8,17 +8,22 @@ interface BranchContextValue {
   branches: Branch[]
   selectedBranch: Branch | null
   switchBranch: (branch: Branch) => void
+  ready: boolean
 }
 
 const BranchContext = createContext<BranchContextValue>({
   branches: [],
   selectedBranch: null,
   switchBranch: () => {},
+  ready: false,
 })
 
 export function BranchProvider({ children, locale }: { children: ReactNode; locale: string }) {
   const [branches, setBranches] = useState<Branch[]>([])
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
+  // `ready` flips true once the saved/default branch is resolved, so consumers can
+  // wait and avoid firing a no-branch fetch that races the real branch fetch.
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     fetch(`/api/branches?locale=${locale}`)
@@ -35,6 +40,7 @@ export function BranchProvider({ children, locale }: { children: ReactNode; loca
         setSelectedBranch(found)
       })
       .catch(() => {})
+      .finally(() => setReady(true))
   }, [locale])
 
   const switchBranch = (branch: Branch) => {
@@ -43,7 +49,7 @@ export function BranchProvider({ children, locale }: { children: ReactNode; loca
   }
 
   return (
-    <BranchContext.Provider value={{ branches, selectedBranch, switchBranch }}>
+    <BranchContext.Provider value={{ branches, selectedBranch, switchBranch, ready }}>
       {children}
     </BranchContext.Provider>
   )

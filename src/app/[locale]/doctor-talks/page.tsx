@@ -78,7 +78,7 @@ export default function DoctorTalksPage() {
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
         <div className="page-shell flex flex-col gap-[32px] lg:gap-[40px]">
 
           {/* Hero banner */}
@@ -106,7 +106,7 @@ export default function DoctorTalksPage() {
                     <div className="pt-[6px]">
                       <Link
                         href="/about"
-                        className="inline-flex h-[40px] items-center gap-[8px] rounded-[12px] border border-[#b89148] px-[18px] font-dm-sans text-[14px] text-[#5c4924] transition-colors hover:bg-[#fbf7ee] lg:h-[52px] lg:px-[24px]"
+                        className="inline-flex h-[40px] items-center gap-[8px] rounded-[12px] border border-[#b89148] px-[18px] font-dm-sans text-[14px] text-[#5c4924] transition-colors hover:bg-[var(--background)] lg:h-[52px] lg:px-[24px]"
                       >
                         Learn More
                         <ChevronRight size={14} />
@@ -164,7 +164,7 @@ export default function DoctorTalksPage() {
                       type="button"
                       className={`w-full flex items-center gap-[12px] p-[24px] font-dm-sans text-[16px] text-[#3b2d17] text-left ${
                         i < arr.length - 1 ? 'border-b border-[#ead6a4]/50' : ''
-                      } hover:bg-[#fbf7ee] cursor-pointer`}
+                      } hover:bg-[var(--background)] cursor-pointer`}
                     >
                       {cat}
                     </button>
@@ -184,7 +184,7 @@ export default function DoctorTalksPage() {
               {/* Popular articles — first 5 talks */}
               {talks.length > 0 && (
                 <div className="bg-white rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] p-[24px] flex flex-col gap-[12px]">
-                  <h3 className="font-cormorant font-semibold text-[24px] text-black leading-none">Popular Talk</h3>
+                  <h3 className="font-cormorant font-semibold text-[24px] text-[#3b2d17] leading-none">Popular Talk</h3>
                   <div className="flex flex-col">
                     {talks.slice(0, 5).map((talk, i) => (
                       <div key={talk.id} className="flex gap-[8px] items-start py-[16px] border-b border-[#ead6a4]/30 last:border-0">
@@ -271,7 +271,7 @@ export default function DoctorTalksPage() {
                             href={watchUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 px-[12px] py-[8px] h-[32px] rounded-[12px] border border-[#b89148] font-dm-sans text-[12px] text-[#594522] hover:bg-[#fbf7ee] transition-colors shrink-0"
+                            className="flex items-center gap-1 px-[12px] py-[8px] h-[32px] rounded-[12px] border border-[#b89148] font-dm-sans text-[12px] text-[#594522] hover:bg-[var(--background)] transition-colors shrink-0"
                           >
                             Watch
                             <ChevronRight size={14} />

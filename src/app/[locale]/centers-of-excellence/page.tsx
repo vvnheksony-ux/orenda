@@ -48,7 +48,7 @@ export default function CentersOfExcellencePage() {
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full">
+      <div className="bg-[var(--background)] w-full">
         <div className="page-shell flex flex-col gap-[72px] lg:gap-[96px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
 
           {/* ── Hero ── */}

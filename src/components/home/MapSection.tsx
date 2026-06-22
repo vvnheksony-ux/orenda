@@ -33,7 +33,7 @@ function BranchCard({ branch, t, alwaysOpen = false }: { branch: Branch; t: Retu
           background: 'rgba(245,236,212,0.5)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          transform: open ? 'translateY(0)' : 'translateY(100%)',
+          transform: open ? 'translateY(0) translateZ(0)' : 'translateY(100%) translateZ(0)',
           transition: 'transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
@@ -45,7 +45,7 @@ function BranchCard({ branch, t, alwaysOpen = false }: { branch: Branch; t: Retu
             <p className="font-cormorant font-bold text-[26px] sm:text-[36px] lg:text-[48px] text-[#3b2d17] leading-[1.1]">
               {branch.name}
             </p>
-            <p className="font-dm-sans font-light text-[13px] sm:text-[18px] lg:text-[24px] text-black leading-snug">
+            <p className="font-dm-sans font-light text-[13px] sm:text-[18px] lg:text-[24px] text-[#3b2d17] leading-snug">
               {branch.address}
             </p>
           </div>

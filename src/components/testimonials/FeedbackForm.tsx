@@ -28,7 +28,6 @@ export default function FeedbackForm() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
-  const [consents, setConsents] = useState([false, false, false])
 
   const [form, setForm] = useState<FeedbackFormState>({
     date_of_birth: '',
@@ -46,14 +45,9 @@ export default function FeedbackForm() {
   })
 
   const set = <K extends keyof FeedbackFormState>(field: K, value: FeedbackFormState[K]) => setForm(f => ({ ...f, [field]: value }))
-  const toggleConsent = (index: number) => setConsents((current) => current.map((value, i) => (i === index ? !value : value)))
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!consents[0]) {
-      setError('Please accept the Terms of Service and Privacy Notice.')
-      return
-    }
     if (!form.feedback_type) {
       setError('Please select a feedback type.')
       return
@@ -99,7 +93,7 @@ export default function FeedbackForm() {
         <div className="flex flex-col gap-[32px] items-start w-full">
           <div className="flex flex-col gap-[8px] text-center w-full">
             <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none w-full">Submit Your Feedback</h3>
-            <p className="font-dm-sans text-[16px] text-[#594522] w-full">Book an appointment with us today</p>
+            <p className="font-dm-sans text-[16px] text-[#594522] w-full">We&apos;d love to hear about your experience with us.</p>
           </div>
 
           <div className="flex flex-col gap-[24px] w-full">
@@ -202,35 +196,6 @@ export default function FeedbackForm() {
                 className="w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors resize-none placeholder:text-[rgba(59,45,23,0.3)]"
               />
             </div>
-          </div>
-        </div>
-
-        <div className="w-full">
-          <div className="flex flex-col gap-3.5 sm:gap-4">
-            {[
-              "I have read and acknowledged the Hospital's Terms of Service and Privacy Notice.",
-              "I confirm that the information I have provided is true and I have the right to share it.",
-              'I consent to receive updates, services, and promotional information from the Hospital.',
-            ].map((text, i) => (
-              <label key={i} className="flex gap-4 items-start cursor-pointer">
-                <button
-                  type="button"
-                  onClick={() => toggleConsent(i)}
-                  className="shrink-0 size-6 rounded-[12px] border-[1.5px] flex items-center justify-center transition-colors mt-0.5"
-                  style={{
-                    borderColor: '#b89148',
-                    background: consents[i] ? '#b89148' : 'transparent',
-                  }}
-                >
-                  {consents[i] && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </button>
-                <span className="font-dm-sans text-[16px] text-[#3b2d17] leading-normal">{text}</span>
-              </label>
-            ))}
           </div>
         </div>
 

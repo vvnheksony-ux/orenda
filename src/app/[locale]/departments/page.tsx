@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { ArrowRight } from 'lucide-react'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import { useState, useEffect } from 'react'
 import SiteLayout from '@/components/layout/SiteLayout'
@@ -15,7 +16,7 @@ interface Department {
   icon: string | null
 }
 
-const WOMENS_KEYWORDS = ['obstetric','ob','gynecolog','gynaecolog','pediatric','paediatric','women','child','neonatal','maternity']
+const WOMENS_KEYWORDS = ['obstetric','gynecolog','gynaecolog','pediatric','paediatric','women','child','neonat','maternity']
 
 function isWomens(dept: Department) {
   const lower = dept.name.toLowerCase()
@@ -35,14 +36,31 @@ function DeptCard({ dept, variant }: { dept: Department; variant: 'pink' | 'gold
   return (
     <Link
       href={`/departments/${dept.slug || dept.id}` as any}
-      className="group flex aspect-square w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-[16px] border border-white bg-[rgba(245,236,212,0.20)] px-4 py-5 text-center shadow-[0px_4px_12px_3px_rgba(89,69,34,0.20),inset_0px_2px_8px_rgba(89,69,34,0.08)] transition-shadow hover:shadow-[0px_6px_16px_4px_rgba(89,69,34,0.28),inset_0px_2px_8px_rgba(89,69,34,0.08)] sm:gap-5 sm:px-5 sm:py-6 lg:gap-6 lg:px-6 lg:py-8"
+      className="group flex w-full flex-col items-center gap-4 overflow-hidden rounded-[16px] bg-white p-4 text-center transition-shadow hover:shadow-lg sm:gap-5 sm:p-5 lg:gap-6 lg:p-6"
+      style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}
     >
-      <div className="relative size-[92px] shrink-0 transition-transform duration-300 group-hover:scale-105 sm:size-[108px] lg:size-[128px] xl:size-[140px]">
-        <Image src={icon} alt={dept.name} fill className="object-contain" sizes="140px" unoptimized />
+      <div
+        className="relative size-[88px] shrink-0 overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-105 sm:size-[104px] lg:size-[120px]"
+        style={{
+          background: isPink
+            ? 'linear-gradient(180deg, rgba(255,244,249,0.4) 0%, rgba(242,135,180,0.4) 100%)'
+            : '#fbf7ee',
+          boxShadow: isPink
+            ? '0px 4px 30px 12px rgba(242,135,180,0.2)'
+            : '0px 4px 30px 12px rgba(184,145,72,0.2)',
+        }}
+      >
+        <Image src={icon} alt={dept.name} fill className="object-contain mix-blend-multiply" sizes="120px" unoptimized />
       </div>
-      <p className={`font-cormorant text-[20px] font-bold leading-[1.05] break-words text-balance sm:text-[22px] lg:text-[24px] ${isPink ? 'text-[#4f1b31]' : 'text-[#2A2620]'}`}>
-        {dept.name}
-      </p>
+      <div className="flex w-full flex-col items-center gap-3 sm:gap-4">
+        <p className={`font-cormorant text-[18px] font-medium capitalize leading-none text-balance sm:text-[20px] lg:text-[24px] ${isPink ? 'text-[#4f1b31]' : 'text-[#3b2d17]'}`}>
+          {dept.name}
+        </p>
+        <div className={`flex items-center gap-[4px] rounded-[12px] border-[1.5px] px-[12px] py-[8px] transition-colors group-hover:bg-[rgba(184,145,72,0.06)] ${isPink ? 'border-[#f6a3c6]' : 'border-[#b89148]'}`}>
+          <span className="px-[6px] font-dm-sans text-[14px] text-[#5c4924] sm:px-[8px] sm:text-[16px]">Learn More</span>
+          <ArrowRight size={16} className="text-[#5c4924]" />
+        </div>
+      </div>
     </Link>
   )
 }
@@ -53,20 +71,26 @@ function SkeletonCard() {
 
 export default function DepartmentsPage() {
   const locale = useLocale()
-  const { selectedBranch } = useBranch()
+  const { selectedBranch, ready } = useBranch()
   const [depts, setDepts] = useState<Department[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Wait until the branch is resolved, then fire exactly one fetch. Firing before
+    // `ready` would run a no-branch "all departments" request that races the real
+    // branch request — the non-deterministic cause of Women & Children flickering.
+    if (!ready) return
+    let active = true
     setLoading(true)
     const branchParam = selectedBranch ? `&branch=${selectedBranch.id}` : ''
     fetch(`/api/departments?locale=${locale}${branchParam}`)
       .then(r => r.json())
       .then(d => {
+        if (!active) return
         if (d?.docs?.length) {
           setDepts(
             d.docs
-              .filter((dept: any) => dept.order > 0)
+              .filter((dept: any) => dept.name)
               .map((dept: any) => ({
                 id:   String(dept.id),
                 name: dept.name,
@@ -79,15 +103,16 @@ export default function DepartmentsPage() {
         }
       })
       .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [locale, selectedBranch])
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [locale, selectedBranch, ready])
 
   const womens  = depts.filter(d => isWomens(d))
   const general = depts.filter(d => !isWomens(d))
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full">
+      <div className="bg-[var(--background)] w-full">
         <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
 
           {/* Hero slider */}
@@ -129,37 +154,37 @@ export default function DepartmentsPage() {
               <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
                 {Array(6).fill(0).map((_, i) => <SkeletonCard key={i} />)}
               </div>
-            ) : (
-              <>
-                {womens.length === 0 && general.length === 0 && (
-                  <p className="font-dm-sans text-[18px] text-[#594522] py-[60px] text-center w-full">No departments available at this time.</p>
-                )}
-
-                {womens.length > 0 && (
+            ) : depts.length === 0 ? (
+                <p className="font-dm-sans text-[18px] text-[#594522] py-[60px] text-center w-full">No departments available at this time.</p>
+              ) : (
+                <>
+                  {/* Women & Children — heading always shown; cards only when this branch has them */}
                   <div className="flex flex-col gap-[40px] items-start w-full">
                     <div className="flex flex-col gap-[8px] w-full">
                       <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">Women &amp; Children</h3>
                       <p className="font-dm-sans text-[16px] text-[#594522]">A selected team of experts committed to your health</p>
                     </div>
-                    <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
-                      {womens.map(d => <DeptCard key={d.id} dept={d} variant="pink" />)}
-                    </div>
+                    {womens.length > 0 && (
+                      <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
+                        {womens.map(d => <DeptCard key={d.id} dept={d} variant="pink" />)}
+                      </div>
+                    )}
                   </div>
-                )}
 
-                {general.length > 0 && (
+                  {/* General Hospital — heading always shown; cards only when this branch has them */}
                   <div className="flex flex-col gap-[40px] items-start w-full">
                     <div className="flex flex-col gap-[8px] w-full">
                       <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">General Hospital</h3>
                       <p className="font-dm-sans text-[18px] text-[#594522]">A selected team of experts committed to your health</p>
                     </div>
-                    <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
-                      {general.map(d => <DeptCard key={d.id} dept={d} variant="gold" />)}
-                    </div>
+                    {general.length > 0 && (
+                      <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
+                        {general.map(d => <DeptCard key={d.id} dept={d} variant="gold" />)}
+                      </div>
+                    )}
                   </div>
-                )}
-              </>
-            )}
+                </>
+              )}
           </div>
 
         </div>

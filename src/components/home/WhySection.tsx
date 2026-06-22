@@ -48,7 +48,7 @@ export default function WhySection() {
   if (!STATS) return null
 
   return (
-    <section className="relative w-full overflow-hidden py-[48px] xl:py-[100px] bg-[#fbf7ee] lg:bg-transparent">
+    <section className="relative w-full overflow-hidden py-[48px] xl:py-[100px] bg-[var(--background)] lg:bg-transparent">
 
       {/* Background image — desktop only */}
       <div className="absolute inset-0 hidden lg:block">
@@ -56,10 +56,10 @@ export default function WhySection() {
       </div>
 
       {/* Dark blur overlay — desktop only */}
-      <div className="absolute inset-0 hidden lg:block bg-[rgba(0,0,0,0.3)]" style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }} />
+      <div className="absolute inset-0 hidden lg:block bg-[rgba(0,0,0,0.3)]" style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }} />
 
       {/* Content */}
-      <div className="relative z-10 max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[32px] xl:gap-[82px]">
+      <div className="page-shell relative z-10 flex flex-col gap-[32px] xl:gap-[82px]">
 
         {/* Text block */}
         <div className="flex flex-col gap-[16px] items-start max-w-full xl:max-w-[695px]">

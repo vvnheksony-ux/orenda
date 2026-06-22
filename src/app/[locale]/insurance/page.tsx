@@ -42,7 +42,7 @@ export default async function InsurancePage({
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full">
+      <div className="bg-[var(--background)] w-full">
         <div className="page-shell flex flex-col gap-[56px] lg:gap-[80px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
 
           {/* Hero slider card */}
@@ -93,7 +93,7 @@ export default async function InsurancePage({
                         </div>
                       )}
                     </div>
-                    <p className="font-dm-sans font-normal text-[18px] lg:text-[24px] text-black text-center break-words">
+                    <p className="font-dm-sans font-normal text-[18px] lg:text-[24px] text-[#3b2d17] text-center break-words">
                       {ins.name}
                     </p>
                   </div>

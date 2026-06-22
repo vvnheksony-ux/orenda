@@ -76,7 +76,7 @@ export async function GET(req: Request) {
       description: lexicalToText(row.description),
     }))
 
-    return NextResponse.json({ docs, totalDocs })
+    return NextResponse.json({ docs, totalDocs }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('promotions:', err.message)
     return NextResponse.json({ docs: [], totalDocs: 0 })

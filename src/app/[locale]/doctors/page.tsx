@@ -20,7 +20,7 @@ interface Doctor {
 function DoctorCard({ doc }: { doc: Doctor }) {
   return (
     <div
-      className="relative flex h-[260px] w-full max-w-[168px] flex-col items-center justify-center gap-[18px] overflow-hidden rounded-[16px] bg-[#fbf7ee] sm:h-[330px] sm:max-w-[240px] sm:gap-[24px] lg:h-[400px] lg:max-w-[300px] lg:gap-[32px]"
+      className="relative flex h-[260px] w-full max-w-[168px] flex-col items-center justify-center gap-[18px] overflow-hidden rounded-[16px] bg-[var(--background)] sm:h-[330px] sm:max-w-[240px] sm:gap-[24px] lg:h-[400px] lg:max-w-[300px] lg:gap-[32px]"
       style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }}
     >
       {/* Gold gradient header */}
@@ -30,7 +30,7 @@ function DoctorCard({ doc }: { doc: Doctor }) {
       />
       {/* Circular photo */}
       <div
-        className="relative size-[84px] shrink-0 overflow-hidden rounded-full bg-[#fbf7ee] sm:size-[118px] lg:size-[146px]"
+        className="relative size-[84px] shrink-0 overflow-hidden rounded-full bg-[var(--background)] sm:size-[118px] lg:size-[146px]"
         style={{ boxShadow: '0px 4px 30px 12px rgba(184,145,72,0.2)' }}
       >
         {doc.image_url ? (
@@ -105,7 +105,7 @@ export default function DoctorsPage() {
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full">
+      <div className="bg-[var(--background)] w-full">
         <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
 
           {/* Hero banner */}
@@ -194,7 +194,7 @@ export default function DoctorsPage() {
                   <div className="grid w-full grid-cols-2 justify-items-center gap-[12px] sm:grid-cols-3 sm:gap-[20px] xl:grid-cols-4 xl:gap-[40px]">
                     {isLoading
                       ? Array(8).fill(0).map((_, i) => (
-                          <div key={i} className="aspect-[3/4] w-full max-w-[168px] rounded-[16px] bg-[#fbf7ee] animate-pulse sm:max-w-[240px] lg:max-w-[300px]" style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }} />
+                          <div key={i} className="aspect-[3/4] w-full max-w-[168px] rounded-[16px] bg-[var(--background)] animate-pulse sm:max-w-[240px] lg:max-w-[300px]" style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }} />
                         ))
                       : deptDoctors.map((doc, i) =>
                           doc ? <DoctorCard key={doc.id || i} doc={doc} /> : null

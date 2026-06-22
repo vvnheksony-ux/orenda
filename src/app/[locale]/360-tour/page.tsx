@@ -6,7 +6,8 @@ import SiteLayout from '@/components/layout/SiteLayout'
 import { Link } from '@/i18n/routing'
 import { useLocale } from 'next-intl'
 import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
-import { fetchTourScenes, tourCache, type TourScene } from '@/lib/tour-cache'
+import { fetchTourScenes, type TourScene } from '@/lib/tour-cache'
+import { useBranch } from '@/lib/branch-context'
 
 // Grid: scenes in sceneNumber order. Middle scene = featured full-width card. All others in rows of 2.
 function buildGrid(scenes: TourScene[]) {
@@ -127,16 +128,21 @@ function Skeleton() {
 
 export default function ThreeSixtyTourPage() {
   const locale = useLocale()
-  const [scenes, setScenes] = useState<TourScene[]>(() => tourCache[locale] ?? [])
-  const [loading, setLoading] = useState(() => !tourCache[locale]?.length)
+  const { selectedBranch, ready } = useBranch()
+  const [scenes, setScenes] = useState<TourScene[]>([])
+  const [loading, setLoading] = useState(true)
   const [heroLocked, setHeroLocked] = useState(true)
 
   useEffect(() => {
-    fetchTourScenes(locale)
-      .then(data => { if (data.length) setScenes(data) })
+    if (!ready) return
+    let active = true
+    setLoading(true)
+    fetchTourScenes(locale, selectedBranch?.id)
+      .then(data => { if (active) setScenes(data) })
       .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [locale])
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [locale, selectedBranch, ready])
 
   const scene1 = scenes.find(s => s.sceneNumber === 1) ?? scenes[0]
   const hasGroups = scenes.some(s => (s.roomGroup ?? '').trim())
@@ -146,10 +152,10 @@ export default function ThreeSixtyTourPage() {
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full">
+      <div className="bg-[var(--background)] w-full">
 
         {/* Scene 1 — interactive 360° hero */}
-        <div className="pt-[100px] lg:pt-[212px] px-4 sm:px-8 lg:px-[80px]">
+        <div className="pt-[100px] lg:pt-[212px] px-4 sm:px-8 md:px-12 lg:px-[80px]">
           {loading ? (
             <div className="w-full h-[520px] rounded-[28px] bg-[#1a1308] animate-pulse" />
           ) : !scene1 ? (
@@ -186,7 +192,7 @@ export default function ThreeSixtyTourPage() {
         </div>
 
         {/* Grid section */}
-        <div className="flex flex-col gap-[40px] items-center pb-[120px] px-4 sm:px-8 lg:px-[80px] pt-[80px]">
+        <div className="flex flex-col gap-[40px] items-center pb-[120px] px-4 sm:px-8 md:px-12 lg:px-[80px] pt-[80px]">
           <div className="flex flex-col gap-[12px] text-center w-full">
             <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none w-full">Visit Our Rooms</h2>
             <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522] w-full">See full 360 degree views of our rooms</p>

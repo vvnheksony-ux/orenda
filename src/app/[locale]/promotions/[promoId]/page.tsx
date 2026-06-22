@@ -68,7 +68,7 @@ export default async function PromotionDetailPage({
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
         <div className="content-shell flex flex-col gap-10">
 
           {/* Back */}

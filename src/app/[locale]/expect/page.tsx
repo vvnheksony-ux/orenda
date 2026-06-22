@@ -12,7 +12,7 @@ const STEPS = [
 export default function ExpectPage() {
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-20 px-5" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-20 px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]" style={{ background: 'var(--background)' }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="font-cormorant font-bold text-[56px] text-gold-900 leading-none mb-3">What to Expect</h1>

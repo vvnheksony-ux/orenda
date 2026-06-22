@@ -22,6 +22,7 @@ interface Props {
   message?: string
   initialView?: View
   registered?: boolean
+  initialError?: string
 }
 
 const inputCls = 'w-full px-4 py-3 rounded-[12px] border border-gold-200 outline-none focus:border-[#b89148] font-dm-sans text-[15px] bg-white transition-colors'
@@ -34,8 +35,14 @@ function friendlyError(message: string) {
   if (normalized.includes('email not confirmed')) return 'Please confirm your email before signing in.'
   if (normalized.includes('rate limit') || normalized.includes('too many')) return 'Too many attempts. Please wait a few minutes.'
   if (normalized.includes('user already registered')) return 'This account already exists. Please sign in instead.'
-  if (normalized.includes('password should be at least')) return 'Password must be at least 6 characters.'
+  if (normalized.includes('password should be at least')) return 'Password must be at least 8 characters.'
+  if (normalized.includes('token has expired') || normalized.includes('expired') || normalized.includes('invalid otp') || (normalized.includes('token') && normalized.includes('invalid'))) return 'That code is invalid or has expired. Please request a new one.'
+  if (normalized.includes('failed to fetch') || normalized.includes('network')) return 'Network error. Please check your connection and try again.'
   return message
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 }
 
 function normalizeCambodiaPhone(value: string) {
@@ -58,6 +65,7 @@ function LoginModalContent({
   message,
   initialView = 'login',
   registered = false,
+  initialError,
 }: Omit<Props, 'open'>) {
   const [view, setView] = useState<View>(initialView)
   const [mode, setMode] = useState<Mode>('options')
@@ -73,7 +81,7 @@ function LoginModalContent({
   const methodTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [resendIn, setResendIn] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [errorMsg, setErrorMsg] = useState('')
+  const [errorMsg, setErrorMsg] = useState(initialError ?? '')
   const [noticeMsg, setNoticeMsg] = useState(registered ? 'Account created! Check your email to confirm, then sign in.' : '')
   const [showResend, setShowResend] = useState(false)
   const [showLoginPassword, setShowLoginPassword] = useState(false)
@@ -85,6 +93,24 @@ function LoginModalContent({
   // Lock background scroll while the modal is mounted (shared, ref-counted).
   useScrollLock(true)
 
+  // Survive a page refresh during phone sign-up: if a code was just sent,
+  // restore the OTP entry screen (consumed once so it doesn't linger).
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('pendingPhoneOtp')
+      sessionStorage.removeItem('pendingPhoneOtp')
+      if (saved) {
+        const { phone: p, ts } = JSON.parse(saved)
+        if (p && Date.now() - ts < 10 * 60 * 1000) {
+          setPhone(p)
+          setMode('phone')
+          setPhoneStep('otp')
+          setResendIn(Math.max(0, 60 - Math.floor((Date.now() - ts) / 1000)))
+        }
+      }
+    } catch {}
+  }, [])
+
   const resetFlow = () => {
     setMode('options')
     setPhoneStep('phone')
@@ -93,6 +119,7 @@ function LoginModalContent({
     setErrorMsg('')
     setShowResend(false)
     setPendingMethod(null)
+    try { sessionStorage.removeItem('pendingPhoneOtp') } catch {}
   }
 
   const switchView = (nextView: View) => {
@@ -114,6 +141,8 @@ function LoginModalContent({
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isValidEmail(email)) { setErrorMsg('Please enter a valid email address.'); return }
+    if (!password) { setErrorMsg('Please enter your password.'); return }
     setLoading(true)
     setErrorMsg('')
     setShowResend(false)
@@ -135,6 +164,8 @@ function LoginModalContent({
 
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isValidEmail(email)) { setErrorMsg('Please enter a valid email address.'); return }
+    if (password.length < 8) { setErrorMsg('Password must be at least 8 characters.'); return }
     if (password !== confirmPassword) {
       setErrorMsg('Passwords do not match.')
       return
@@ -214,6 +245,7 @@ function LoginModalContent({
       setOtpDigits(['', '', '', '', '', ''])
       setResendIn(60)
       setNoticeMsg('')
+      try { sessionStorage.setItem('pendingPhoneOtp', JSON.stringify({ phone: normalizedPhone, ts: Date.now() })) } catch {}
     }
 
     setLoading(false)
@@ -246,6 +278,7 @@ function LoginModalContent({
     }
 
     if (data.user) {
+      try { sessionStorage.removeItem('pendingPhoneOtp') } catch {}
       await syncProfile(data.user.id, { email: data.user.email, phone: normalizedPhone })
       onSuccess?.()
       onClose()
@@ -359,7 +392,16 @@ function LoginModalContent({
     if (pendingMethod) return
     setErrorMsg('')
     setPendingMethod('google')
-    const callbackUrl = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(redirectTo)}`
+    // Keep the user on their current language after the OAuth round-trip:
+    // next-intl always prefixes paths with the locale, but redirectTo is often
+    // locale-less (e.g. '/appointments'), so prepend the active locale here.
+    const seg = window.location.pathname.split('/')[1]
+    const locale = ['en', 'km', 'zh'].includes(seg) ? seg : 'en'
+    const firstSeg = redirectTo.split('/')[1]
+    const next = ['en', 'km', 'zh'].includes(firstSeg)
+      ? redirectTo
+      : `/${locale}${redirectTo === '/' ? '' : redirectTo}`
+    const callbackUrl = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -519,7 +561,7 @@ function LoginModalContent({
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[13px] font-semibold text-gold-900 font-dm-sans">Password</label>
                   <div className="relative">
-                    <input type={showRegisterPassword ? 'text' : 'password'} placeholder="Minimum 6 characters" value={password} onChange={e => setPassword(e.target.value)} required className={passwordInputCls} />
+                    <input type={showRegisterPassword ? 'text' : 'password'} placeholder="Minimum 8 characters" value={password} onChange={e => setPassword(e.target.value)} required className={passwordInputCls} />
                     <button
                       type="button"
                       onClick={() => setShowRegisterPassword(v => !v)}

@@ -45,7 +45,7 @@ export async function GET(req: Request) {
         : null,
     }))
 
-    return NextResponse.json({ docs })
+    return NextResponse.json({ docs }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('services:', err.message)
     return NextResponse.json({ docs: [] })

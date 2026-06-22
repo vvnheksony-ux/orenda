@@ -88,7 +88,7 @@ export default function InquiryPage() {
 
   if (status === 'success') return (
     <SiteLayout>
-      <div className="min-h-screen flex items-center justify-center pt-[160px] pb-20" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen flex items-center justify-center pt-[160px] pb-20" style={{ background: 'var(--background)' }}>
         <div className="text-center flex flex-col items-center gap-6 px-6">
           <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: '#b89148' }}>
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
@@ -107,7 +107,7 @@ export default function InquiryPage() {
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: '#fbf7ee' }}>
+      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
         <div className="content-shell flex flex-col gap-20">
 
           {/* ── Hero banner ── */}
@@ -134,7 +134,7 @@ export default function InquiryPage() {
           {/* ── Inquiry Form ── */}
           <div
             className="rounded-[16px] p-5 sm:p-8 xl:p-10 shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)]"
-            style={{ background: '#fbf7ee' }}
+            style={{ background: 'var(--background)' }}
           >
             <form onSubmit={submit} className="flex flex-col gap-16">
 

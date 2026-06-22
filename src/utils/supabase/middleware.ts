@@ -25,13 +25,18 @@ export async function updateSession(request: NextRequest, response: NextResponse
 
   // Define routes that require authentication
   const protectedRoutes = ['/profile', '/dashboard']
-  
+
   const path = request.nextUrl.pathname
+  // Preserve the active locale on redirects — next-intl always prefixes paths,
+  // so a bare '/login' or '/' would bounce the user to the default language.
+  const seg = path.split('/')[1]
+  const locale = ['en', 'km', 'zh'].includes(seg) ? seg : 'en'
   const isProtectedRoute = protectedRoutes.some((route) => path.includes(route))
 
   if (isProtectedRoute && !user) {
     const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/login' // Assuming the localization middleware will handle the locale prefix if needed, or you might need /en/login
+    redirectUrl.pathname = `/${locale}/login`
+    redirectUrl.searchParams.set('next', path) // return here after signing in
     return NextResponse.redirect(redirectUrl)
   }
 
@@ -39,7 +44,7 @@ export async function updateSession(request: NextRequest, response: NextResponse
   const isAuthRoute = path.includes('/login') || path.includes('/register')
   if (isAuthRoute && user) {
     const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/'
+    redirectUrl.pathname = `/${locale}`
     return NextResponse.redirect(redirectUrl)
   }
 

@@ -14,6 +14,9 @@ interface Props {
   open: boolean
   onClose: () => void
   defaultService?: string
+  defaultDoctorId?: string
+  defaultDepartmentId?: string
+  defaultBranchId?: string
 }
 
 const inputCls = 'w-full border border-[#7a5f2c] rounded-[12px] px-[12px] py-[12px] font-dm-sans text-[16px] text-[#3b2d17] bg-white outline-none focus:border-[#b89148] transition-colors placeholder:text-[rgba(59,45,23,0.3)]'
@@ -154,7 +157,7 @@ type Doctor = { id: string; name: string; specialty: string; department: string;
 type Department = { id: string; name: string }
 type Service = { id: string; title: string; department?: { id: string; name: string } | null }
 
-export default function BookAppointmentModal({ open, onClose, defaultService = '' }: Props) {
+export default function BookAppointmentModal({ open, onClose, defaultService = '', defaultDoctorId = '', defaultDepartmentId = '', defaultBranchId = '' }: Props) {
   const locale = useLocale()
   const t = useTranslations('BookAppointmentModal')
   const { user, loading: authLoading } = useAuth()
@@ -162,6 +165,9 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   // re-renders into the form instead of closing.
   const justLoggedIn = useRef(false)
   const { selectedBranch } = useBranch()
+  // When opened from a doctor's profile, book against that doctor's branch
+  // (modal-only override) instead of the globally-selected branch.
+  const effectiveBranchId = defaultBranchId || selectedBranch?.id || null
   const [dateChoice, setDateChoice] = useState<'earliest' | 'choose'>('earliest')
   const [form, setForm] = useState(() => {
     const earliest = getEarliestAppointment()
@@ -174,6 +180,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [services, setServices] = useState<Service[]>([])
+  const [dataLoading, setDataLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -181,29 +188,52 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const [viewYear, setViewYear] = useState(() => new Date().getFullYear())
 
   useEffect(() => {
+    if (!open) return // defer the dept/doctor fetch until the modal is actually opened
     // Reset all selections that depend on branch when branch changes
     setForm(f => ({ ...f, department_payload_id: '', department_id: '', service_payload_id: '', doctor_payload_id: '' }))
-    const deptUrl = selectedBranch
-      ? `/api/departments?locale=${locale}&branch=${selectedBranch.id}`
+    setDataLoading(true)
+    const deptUrl = effectiveBranchId
+      ? `/api/departments?locale=${locale}&branch=${effectiveBranchId}`
       : `/api/departments?locale=${locale}`
-    fetch(deptUrl)
+    const deptP = fetch(deptUrl)
       .then(r => r.ok ? r.json() : { docs: [] })
       .then(d => setDepartments((d.docs ?? []).map((dept: any) => ({ id: String(dept.id), name: dept.name ?? '' }))))
       .catch(() => {})
-    const docUrl = selectedBranch
-      ? `/api/doctors?locale=${locale}&branch=${selectedBranch.id}`
+    const docUrl = effectiveBranchId
+      ? `/api/doctors?locale=${locale}&branch=${effectiveBranchId}`
       : `/api/doctors?locale=${locale}`
-    fetch(docUrl)
+    const docP = fetch(docUrl)
       .then(r => r.ok ? r.json() : [])
       .then(d => { if (Array.isArray(d)) setDoctors(d) })
       .catch(() => {})
-  }, [locale, selectedBranch])
+    Promise.all([deptP, docP]).finally(() => setDataLoading(false))
+  }, [open, locale, effectiveBranchId])
 
   useEffect(() => {
     if (!departments.length || !form.department_id || form.department_payload_id) return
     const matched = departments.find(d => d.name === form.department_id)
     if (matched) setForm(f => ({ ...f, department_id: matched.name, department_payload_id: matched.id }))
   }, [departments, form.department_id, form.department_payload_id])
+
+  // Pre-select a doctor + their department when opened from a doctor's profile.
+  // Runs once the branch-filtered lists have loaded (after the reset above).
+  const presetApplied = useRef(false)
+  useEffect(() => { if (!open) presetApplied.current = false }, [open])
+  useEffect(() => {
+    if (!open || presetApplied.current) return
+    if (defaultDoctorId) {
+      const doc = doctors.find(d => d.id === defaultDoctorId)
+      if (!doc) return // wait for the doctor list to arrive
+      const dept = departments.find(d => d.id === doc.department_payload_id)
+      setForm(f => ({ ...f, doctor_payload_id: doc.id, department_payload_id: doc.department_payload_id, department_id: dept?.name ?? doc.department }))
+      presetApplied.current = true
+    } else if (defaultDepartmentId) {
+      const dept = departments.find(d => d.id === defaultDepartmentId)
+      if (!dept) return
+      setForm(f => ({ ...f, department_payload_id: dept.id, department_id: dept.name }))
+      presetApplied.current = true
+    }
+  }, [open, doctors, departments, defaultDoctorId, defaultDepartmentId])
 
   useEffect(() => {
     const svcUrl = form.department_payload_id
@@ -290,7 +320,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
           patient_email: form.patient_email || null,
           doctor_payload_id: form.doctor_payload_id ? Number(form.doctor_payload_id) : null,
           department_payload_id: form.department_payload_id ? Number(form.department_payload_id) : null,
-          branch_payload_id: selectedBranch ? Number(selectedBranch.id) : null,
+          branch_payload_id: effectiveBranchId ? Number(effectiveBranchId) : null,
           department_id: form.department_id || null,
           preferred_date: preferred.date,
           preferred_time: preferred.time,
@@ -433,7 +463,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                     <CustomSelect
                       value={form.department_payload_id}
                       onChange={handleDepartmentChange}
-                      placeholder="Select department"
+                      placeholder={dataLoading ? 'Loading clinics…' : 'Select department'}
                       options={departments.map(d => ({ value: d.id, label: d.name }))}
                     />
                   </div>
@@ -465,7 +495,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                       <CustomSelect
                         value={form.doctor_payload_id}
                         onChange={handleDoctorChange}
-                        placeholder="Select doctor"
+                        placeholder={dataLoading ? 'Loading doctors…' : 'Select doctor'}
                         options={filteredDoctors.map(d => ({
                           value: d.id,
                           label: d.name + (d.specialty ? ` — ${d.specialty}` : ''),
@@ -515,11 +545,11 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                         >
                           {/* Month nav */}
                           <div className="flex items-center justify-between px-4 pt-5 pb-4">
-                            <button type="button" onClick={prevMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors">
+                            <button type="button" onClick={prevMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-[#3b2d17]/5 transition-colors">
                               <span className="font-dm-sans font-bold text-[16px] text-stone-500 leading-none">‹</span>
                             </button>
                             <span className="font-dm-sans font-semibold text-[13px] text-stone-900">{MONTH_NAMES[viewMonth]} {viewYear}</span>
-                            <button type="button" onClick={nextMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors">
+                            <button type="button" onClick={nextMonth} className="size-7 flex items-center justify-center rounded-full hover:bg-[#3b2d17]/5 transition-colors">
                               <span className="font-dm-sans font-bold text-[16px] text-stone-500 leading-none">›</span>
                             </button>
                           </div>
@@ -547,7 +577,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                                     isPast ? 'text-stone-300 cursor-not-allowed' : 'cursor-pointer',
                                     isSelected ? 'bg-[#b89148] text-white' : '',
                                     isToday && !isSelected ? 'text-orange-400' : '',
-                                    !isPast && !isSelected && !isToday ? 'text-slate-700 hover:bg-black/5' : '',
+                                    !isPast && !isSelected && !isToday ? 'text-[#594522] hover:bg-[#3b2d17]/5' : '',
                                   ].join(' ')}
                                   style={isToday && !isSelected ? { outline: '1.3px solid rgba(251,146,60,0.5)', outlineOffset: '-1.3px' } : undefined}
                                 >
@@ -589,7 +619,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                                   outlineOffset: '-1.1px',
                                 }}
                               >
-                                <span className={`font-dm-sans font-bold text-[12px] leading-3 ${isActive ? 'text-white' : 'text-slate-700'}`}>{p.label}</span>
+                                <span className={`font-dm-sans font-bold text-[12px] leading-3 ${isActive ? 'text-white' : 'text-[#594522]'}`}>{p.label}</span>
                                 <span className={`font-dm-sans font-medium text-[10px] leading-3 ${isActive ? 'text-white/80' : 'text-stone-500'}`}>{p.range}</span>
                               </button>
                             )

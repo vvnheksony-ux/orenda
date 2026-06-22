@@ -49,7 +49,7 @@ export default function NewsPage() {
 
   return (
     <SiteLayout>
-      <div className="bg-[#fbf7ee] w-full pt-[100px] lg:pt-[212px] pb-[120px]">
+      <div className="bg-[var(--background)] w-full pt-[100px] lg:pt-[212px] pb-[120px]">
         <div className="page-shell flex flex-col gap-[80px] items-center">
 
           {/* Skeletons */}
@@ -96,7 +96,7 @@ export default function NewsPage() {
                           }
                         </div>
                         <div className="absolute bottom-0 left-0 right-0 backdrop-blur-[6px] bg-[rgba(255,255,255,0.9)] p-4 sm:p-[24px] flex flex-col gap-[12px] items-end">
-                          <p className="font-dm-sans font-medium text-[16px] text-black leading-[1.5] w-full line-clamp-2">
+                          <p className="font-dm-sans font-medium text-[16px] text-[#3b2d17] leading-[1.5] w-full line-clamp-2">
                             {featured.title}
                           </p>
                           <div className="border border-[#b89148] rounded-[12px] flex items-center h-[32px] px-[12px] py-[8px] gap-[4px] shrink-0">

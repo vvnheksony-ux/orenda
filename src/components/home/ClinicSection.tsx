@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useState, useEffect } from 'react'
 import { useBranch } from '@/lib/branch-context'
+import { fetchDepartments } from '@/lib/departments-cache'
 
 interface Clinic {
   key: string
@@ -20,7 +21,7 @@ function ClinicCard({ c }: { c: Clinic }) {
       className="flex flex-col items-center justify-center gap-3 sm:gap-6 aspect-square sm:aspect-auto overflow-hidden px-4 py-4 sm:px-8 sm:py-8 bg-[rgba(245,236,212,0.20)] rounded-xl border border-white shadow-[0px_4px_12px_3px_rgba(89,69,34,0.20),inset_0px_2px_8px_rgba(89,69,34,0.08)] hover:shadow-[0px_6px_16px_4px_rgba(89,69,34,0.28),inset_0px_2px_8px_rgba(89,69,34,0.08)] transition-shadow cursor-pointer group"
     >
       <div className="relative shrink-0 size-20 sm:size-32 transition-transform duration-300 group-hover:scale-105">
-        {c.image && <Image src={c.image} alt={c.name} fill className="object-contain" sizes="128px" unoptimized />}
+        {c.image && <Image src={c.image} alt={c.name} fill className="object-contain" sizes="128px" unoptimized={c.image.startsWith('/payload')} />}
       </div>
       <span className="font-cormorant font-bold text-sm sm:text-2xl leading-tight sm:leading-6 line-clamp-2 sm:line-clamp-none text-[#2A2620] text-center">
         {c.name}
@@ -40,11 +41,9 @@ export default function ClinicSection() {
   useEffect(() => {
     if (!selectedBranch) return
     setLoading(true)
-    const url = `/api/departments?locale=${locale}&branch=${selectedBranch.id}`
-    fetch(url)
-      .then(r => r.json())
-      .then(d => {
-        const withIcons = (d?.docs || []).filter((dept: any) => dept.icon?.trim())
+    fetchDepartments(locale, selectedBranch.id)
+      .then(docs => {
+        const withIcons = docs.filter((dept: any) => dept.icon?.trim())
         setClinics(withIcons.map((dept: any) => ({
           key:    dept.slug || String(dept.id),
           name:   dept.name,
@@ -52,7 +51,6 @@ export default function ClinicSection() {
           circle: false,
         })))
       })
-      .catch(() => {})
       .finally(() => setLoading(false))
   }, [locale, selectedBranch])
 
@@ -69,7 +67,7 @@ export default function ClinicSection() {
 
   return (
     <section className="w-full" style={{ paddingTop: 'clamp(140px, 12vw, 180px)' }}>
-      <div className="max-w-[1280px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col gap-[32px] lg:gap-[40px] items-center">
+      <div className="page-shell flex flex-col gap-[32px] lg:gap-[40px] items-center">
 
         <div className="flex flex-col gap-[24px] items-center">
           <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-[#3d3123] leading-none text-center">

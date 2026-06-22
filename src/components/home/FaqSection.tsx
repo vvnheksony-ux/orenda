@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
 import { ChevronUp } from 'lucide-react'
-import { Link } from '@/i18n/routing'
 
 export default function FaqSection() {
   const t = useTranslations('FaqSection')
@@ -25,15 +24,15 @@ export default function FaqSection() {
   }, [locale])
 
   return (
-    <section className="w-full bg-[#fbf7ee]">
-      <div className="max-w-[1512px] mx-auto w-full px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px] flex flex-col lg:flex-row gap-[40px] items-start relative">
+    <section id="faq" className="w-full bg-[var(--background)] scroll-mt-[120px]">
+      <div className="page-shell flex flex-col lg:flex-row gap-[40px] items-start relative">
 
         {/* Mobile-only: title + subtitle above accordion */}
         <div className="flex flex-col gap-[16px] items-center text-center w-full lg:hidden">
           <h2 className="font-cormorant font-bold text-[36px] text-[#3b2d17] leading-none">
             {t('title')}
           </h2>
-          <p className="font-dm-sans text-[18px] text-[#594522] leading-none w-[299px]">
+          <p className="font-dm-sans text-[18px] text-[#594522] leading-none max-w-[299px]">
             {t('subtitle')}
           </p>
         </div>
@@ -53,7 +52,7 @@ export default function FaqSection() {
           {/* Layer 2: Frosted glass overlay */}
           <div
             className="absolute inset-0 z-10 border border-white/30 rounded-[24px]"
-            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
           />
 
           {/* Layer 3: FAQ text on top — locked with fixed top padding */}
@@ -80,7 +79,7 @@ export default function FaqSection() {
               >
                 {/* Question row */}
                 <div className="flex items-center justify-between w-full">
-                  <p className="font-cormorant font-bold text-[18px] sm:text-[22px] lg:text-[24px] text-black leading-none">
+                  <p className="font-cormorant font-bold text-[18px] sm:text-[22px] lg:text-[24px] text-[#3b2d17] leading-none">
                     {item.q}
                   </p>
                   {/* Figma: closed = rotate-90 (→), open = rotate-180 (↓) */}
@@ -102,7 +101,7 @@ export default function FaqSection() {
                       transition={{ duration: 0.2, ease: 'easeInOut' }}
                       className="overflow-hidden w-full"
                     >
-                      <p className="font-dm-sans font-normal text-[16px] text-black leading-[1.5] pt-[24px] w-full">
+                      <p className="font-dm-sans font-normal text-[16px] text-[#3b2d17] leading-[1.5] pt-[24px] w-full">
                         {item.a}
                       </p>
                     </motion.div>
@@ -111,11 +110,6 @@ export default function FaqSection() {
               </button>
             )
           })}
-
-          {/* See More — mobile only */}
-          <Link href="/faq" className="lg:hidden self-center px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
-            {t('seeMore')}
-          </Link>
         </div>
 
       </div>

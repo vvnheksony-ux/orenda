@@ -17,7 +17,7 @@ export async function GET(req: Request) {
       .limit(20)
 
     if (error) return NextResponse.json({ docs: [], error: error.message })
-    return NextResponse.json({ docs: data ?? [] })
+    return NextResponse.json({ docs: data ?? [] }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err) {
     console.error('testimonials catch:', err)
     return NextResponse.json({ docs: [] })
