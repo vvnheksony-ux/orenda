@@ -116,7 +116,7 @@ function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt, n }: {
             hover: { scale: 1.08, transition: { duration: 0.3 } }
           }}
         >
-          <Image src={doc.image} alt={doc.name} fill className="object-cover object-top" sizes={`${s.photo}px`} unoptimized />
+          <Image src={doc.image} alt={doc.name} fill className="object-cover object-top" sizes={`${s.photo}px`} unoptimized={doc.image?.startsWith('/payload')} />
         </motion.div>
       </div>
 
@@ -253,7 +253,7 @@ export default function SpecialistSection() {
                       }}
                     />
                     <div className="relative z-10 rounded-full overflow-hidden bg-[var(--background)] shadow-[0px_3px_25px_12px_rgba(184,145,72,0.2)]" style={{ width: 120, height: 120, marginTop: 24 }}>
-                      <Image src={doc.image} alt={doc.name} fill className="object-cover object-top" sizes="120px" unoptimized />
+                      <Image src={doc.image} alt={doc.name} fill className="object-cover object-top" sizes="120px" unoptimized={doc.image?.startsWith('/payload')} />
                     </div>
                   </div>
                   {/* Info */}

@@ -39,7 +39,7 @@ export async function GET(req: Request) {
         pool.query(`SELECT name FROM payload.doctors_languages WHERE _parent_id = $1 ORDER BY _order`, [row.id]),
         pool.query(`SELECT description FROM payload.doctors_education WHERE _parent_id = $1 ORDER BY _order`, [row.id]),
         row.department_id
-          ? pool.query(`SELECT name FROM payload.departments_locales WHERE _parent_id = $1 AND _locale = 'en' LIMIT 1`, [row.department_id])
+          ? pool.query(`SELECT dl.name, d.branch_id FROM payload.departments d LEFT JOIN payload.departments_locales dl ON dl._parent_id = d.id AND dl._locale = 'en' WHERE d.id = $1 LIMIT 1`, [row.department_id])
           : Promise.resolve({ rows: [] }),
       ])
 
@@ -49,6 +49,7 @@ export async function GET(req: Request) {
         specialty:                   row.specialty ?? '',
         department:                  depts[0]?.name ?? '',
         department_payload_id:       row.department_id ? String(row.department_id) : '',
+        branch_id:                   depts[0]?.branch_id ? String(depts[0].branch_id) : '',
         image_url:                   mediaStorageUrl(row.photo_filename, row.photo_prefix),
         bio:                         lexicalToText(row.bio),
         phone:                       row.phone ?? '',

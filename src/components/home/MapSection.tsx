@@ -33,7 +33,7 @@ function BranchCard({ branch, t, alwaysOpen = false }: { branch: Branch; t: Retu
           background: 'rgba(245,236,212,0.5)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          transform: open ? 'translateY(0)' : 'translateY(100%)',
+          transform: open ? 'translateY(0) translateZ(0)' : 'translateY(100%) translateZ(0)',
           transition: 'transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >

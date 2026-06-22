@@ -151,3 +151,13 @@ html::-webkit-scrollbar {
 @media (prefers-reduced-motion: reduce) {
   .health-tips-scroll { animation: none; }
 }
+
+/* Glassmorphism (backdrop-filter) elements flicker during scroll — the browser
+   re-rasterizes the blur every frame and it "loads and disappears". Pinning each
+   to its own GPU layer keeps the blur cached and stable while scrolling. */
+[class*="backdrop-blur"] {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}

@@ -70,7 +70,7 @@ export default function TourSection() {
 
       <div className="absolute inset-0 z-0" style={{
         background: 'linear-gradient(90deg,rgba(246,163,198,0.05) 0%,rgba(246,163,198,0.05) 100%),linear-gradient(90deg,rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.5) 100%)',
-        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)',
       }} />
 
       {/* 360° text block — top: 73 per Figma */}
@@ -128,9 +128,9 @@ export default function TourSection() {
                   else { trackTourView(1, name); router.push('/360-tour') }
                 }}
               >
-                {image && <Image src={image} alt={name} fill className="object-cover" sizes={`${W[key]}vw`} unoptimized />}
+                {image && <Image src={image} alt={name} fill className="object-cover" sizes={`${W[key]}vw`} unoptimized={image.startsWith('/payload')} />}
                 <div className="absolute inset-0 flex items-center justify-center"
-                  style={{ background: isCenter ? 'rgba(0,0,0,0.75)' : 'rgba(0,0,0,0.8)', backdropFilter: isCenter ? 'blur(4px)' : 'blur(2px)', WebkitBackdropFilter: isCenter ? 'blur(4px)' : 'blur(2px)' }}>
+                  style={{ background: isCenter ? 'rgba(0,0,0,0.75)' : 'rgba(0,0,0,0.8)', backdropFilter: isCenter ? 'blur(4px)' : 'blur(2px)', WebkitBackdropFilter: isCenter ? 'blur(4px)' : 'blur(2px)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}>
                   <p className="font-dm-sans font-semibold text-[#fbf7ee] text-center px-4 line-clamp-4"
                     style={{ fontSize: isCenter ? 30 : 24 }}>{name}</p>
                 </div>
