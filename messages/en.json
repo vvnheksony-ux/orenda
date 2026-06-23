@@ -90,10 +90,19 @@
   "WhySection": {
     "subtitle": "Why Choose Us",
     "title": "Why Orienda Is Your Best Choice?",
-    "description": "Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with compassionate, patient-centered care.",
+    "description": "Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with a proven track record of life-saving success. As an ISO-certified institution, we provide 24/7 comprehensive medical services—ranging from specialized fertility and maternity care to emergency air ambulance transport—all powered by a dedicated team of over 800 professionals.",
     "discoverMore": "Discover More",
     "statSatisfactionLabel": "Patient satisfaction",
-    "statSatisfactionBody": "Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction."
+    "statSatisfactionBody": "Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.",
+    "stat1Label": "Patient satisfaction",
+    "stat1Body": "Based on patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities.",
+    "stat2Value": "Over 100,000",
+    "stat2Label": "Patient Visits since 2024",
+    "stat2Body": "Including both Cambodian and International patients from over 20 countries — a sign of growing trust in local healthcare quality.",
+    "stat3Label": "Readmission Rate",
+    "stat3Body": "Orienda's readmission rate stands at 0%, reflecting consistent follow-up and preventive care success.",
+    "stat4Label": "Surgical Infection Rate",
+    "stat4Body": "A 0.5% surgical infection rate shows our commitment to safe surgeries and careful post-operative care for every patient."
   },
   "TourSection": {
     "title": "Discovers Our facilities",
