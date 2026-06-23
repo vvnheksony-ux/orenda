@@ -24,13 +24,13 @@ export default function SignOutModal({ open, onClose }: Props) {
 
   useScrollLock(open)
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setSigningOut(true)
-    setTimeout(async () => {
-      await signOut()
-      setProfileComplete(null)
-      router.replace('/')
-    }, 2000)
+    try { await signOut() } catch { /* ignore */ }
+    setProfileComplete(null)
+    // Hard fallback so we always leave even if client routing stalls.
+    const failsafe = setTimeout(() => { window.location.href = '/' }, 1500)
+    try { router.replace('/') } finally { void failsafe }
   }
 
   const modal = (

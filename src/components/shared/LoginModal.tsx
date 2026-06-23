@@ -167,11 +167,19 @@ function LoginModalContent({
     setErrorMsg('')
     setNoticeMsg('')
 
+    // Route the email-confirmation link through our callback so the PKCE `code`
+    // is exchanged for a session (otherwise the link lands on a page that can't
+    // log the user in — they end up on /<locale>?code=... still signed out).
+    const seg = window.location.pathname.split('/')[1]
+    const locale = ['en', 'km', 'zh'].includes(seg) ? seg : 'en'
+    const emailRedirectTo = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(`/${locale}`)}`
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { phone: phoneSignup || undefined },
+        emailRedirectTo,
       },
     })
 

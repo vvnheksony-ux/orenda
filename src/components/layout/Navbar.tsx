@@ -87,7 +87,7 @@ export default function Navbar() {
   const { trackLanguageSwitch, trackCallClick } = useAnalytics()
   const [isLocaleSwitching, startLocaleSwitch] = useTransition()
   const { branches, selectedBranch, switchBranch, ready: branchReady } = useBranch()
-  const { user, loading: authLoading } = useAuth()
+  const { user } = useAuth()
 
   const [mobileOpen,        setMobileOpen]        = useState(false)
   const [langOpen,          setLangOpen]          = useState(false)
@@ -122,7 +122,7 @@ export default function Navbar() {
   const branchNumeral = ({ I: 'I', II: 'II', III: 'III' } as Record<string, string>)[
     selectedBranch?.name.trim().split(/\s+/).pop()?.toUpperCase() ?? ''
   ]
-  const branchLabel = branchNumeral ? `Branch ${branchNumeral}` : branchReady ? 'Branch' : 'Branch --'
+  const branchLabel = branchNumeral ? `Branch ${branchNumeral}` : branchReady ? 'Branch' : 'Branch I'
 
   // Switching branch changes branch-specific content site-wide, so show a brief
   // loading screen and send the user home where the new branch data loads.
@@ -345,12 +345,7 @@ export default function Navbar() {
 
             {/* Account */}
             <div className="relative shrink-0 min-w-[126px] flex justify-end" ref={accountRef}>
-              {authLoading ? (
-                <div
-                  className="h-[54px] w-full rounded-[16px] bg-[#F5ECD4]/40 border border-white/50"
-                  aria-hidden="true"
-                />
-              ) : user ? (
+              {user ? (
                 <>
                   <button
                     onClick={() => setAccountOpen(!accountOpen)}
@@ -580,9 +575,7 @@ export default function Navbar() {
                 >
                   {t('bookAppointment')}
                 </button>
-                {authLoading ? (
-                  <div className="h-[44px] rounded-[12px] border border-[#dcbd72] bg-[#f5ecd4]/30" aria-hidden="true" />
-                ) : user ? (
+                {user ? (
                   <div className="grid grid-cols-2 gap-2">
                     <Link
                       href="/profile"

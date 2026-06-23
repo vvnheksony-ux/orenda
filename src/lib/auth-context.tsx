@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(data.session)
       setUser(data.session?.user ?? null)
       setLoading(false)
-    })
+    }).catch(() => setLoading(false))
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
@@ -33,11 +33,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    // Failsafe: never leave the UI stuck in a loading state if getSession stalls
+    // (slow network / dev build over LAN). Treat as logged-out after 2.5s.
+    const failsafe = setTimeout(() => setLoading(false), 2500)
+
+    return () => { clearTimeout(failsafe); subscription.unsubscribe() }
   }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    // Local scope clears the session in this browser without a server round-trip,
+    // so sign-out can't hang on a slow/unreachable auth request. Drop local state
+    // immediately too, so the UI reflects sign-out even if the call is slow.
+    try {
+      await supabase.auth.signOut({ scope: 'local' })
+    } catch {
+      /* ignore — local state is cleared below regardless */
+    }
+    setSession(null)
+    setUser(null)
   }
 
   return (
