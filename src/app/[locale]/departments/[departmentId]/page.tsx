@@ -10,6 +10,7 @@ import SiteLayout from '@/components/layout/SiteLayout'
 import { Link } from '@/i18n/routing'
 import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
 import { useBranch } from '@/lib/branch-context'
+import Reveal from '@/components/shared/Reveal'
 
 interface Department {
   id: string; name: string; slug: string; icon: string | null; description?: string
@@ -17,6 +18,8 @@ interface Department {
 interface HealthTip {
   id: string; title: string; slug: string; excerpt?: string; thumbnail?: string | null; category?: string; publishedAt?: string
 }
+type DepartmentResponse = { docs?: Department[] } | null
+type HealthTipResponse = { docs?: HealthTip[] } | HealthTip[] | null
 
 function formatDate(d?: string) {
   if (!d) return ''
@@ -40,18 +43,19 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ dep
     // (Health tips are global, so they're not branch-filtered.)
     if (!ready) return
     let active = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     const branchParam = selectedBranch ? `&branch=${selectedBranch.id}` : ''
     Promise.all([
       fetch(`/api/departments?locale=${locale}${branchParam}`).then(r => r.json()).catch(() => null),
       fetch(`/api/health-tips?locale=${locale}&limit=8`).then(r => r.json()).catch(() => null),
-    ]).then(([deptData, tipData]) => {
+    ]).then(([deptData, tipData]: [DepartmentResponse, HealthTipResponse]) => {
       if (!active) return
-      const depts: Department[] = (deptData?.docs || []).filter((dep: any) => dep.icon)
+      const depts = (deptData?.docs || []).filter((dep) => dep.icon)
       const found = depts.find(dep => dep.slug === departmentId || dep.id === departmentId)
       setDept(found ?? null)
       setOthers(depts.filter(dep => dep.id !== found?.id).slice(0, 4))
-      const arr = tipData?.docs || (Array.isArray(tipData) ? tipData : [])
+      const arr = Array.isArray(tipData) ? tipData : (tipData?.docs || [])
       setTips(arr.slice(0, 8))
     }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
@@ -85,7 +89,7 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ dep
 
           {/* Department detail — description only. The Figma's left photo is left blank
               until a `photo` field is added to the Clinics/Departments collection in Payload. */}
-          <div className="flex w-full max-w-[860px] flex-col items-center gap-[28px] text-center">
+          <Reveal className="flex w-full max-w-[860px] flex-col items-center gap-[28px] text-center">
             <h2 className="font-cormorant text-[36px] font-bold capitalize leading-none text-[#3b2d17] sm:text-[42px] lg:text-[48px]">
               {dept.name}
             </h2>
@@ -98,7 +102,7 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ dep
               className="flex w-fit items-center gap-2 rounded-[12px] bg-[#b89148] px-6 py-3 font-dm-sans text-[16px] text-white transition-colors hover:bg-[#9a7a3c]"
               label="Book Appointment"
             />
-          </div>
+          </Reveal>
 
           {/* Discover Other Clinic */}
           {others.length > 0 && (
@@ -107,11 +111,11 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ dep
                 <h3 className="font-cormorant text-[36px] font-bold leading-none text-[#3b2d17] lg:text-[40px]">Discover Other Clinic</h3>
                 <p className="font-dm-sans text-[16px] text-[#594522] lg:text-[18px]">Meet our specialists in this department</p>
               </div>
-              <div className="grid w-full grid-cols-2 gap-[16px] sm:gap-[20px] lg:gap-[24px] xl:grid-cols-4">
+              <div className="grid w-full grid-cols-2 gap-[16px] sm:gap-[20px] lg:gap-[24px] md:grid-cols-4">
                 {others.map(other => (
                   <Link
                     key={other.id}
-                    href={`/departments/${other.slug || other.id}` as any}
+                    href={`/departments/${other.slug || other.id}` as '/'}
                     className="group flex w-full flex-col items-center gap-4 rounded-[16px] bg-white p-4 text-center transition-shadow hover:shadow-lg sm:gap-5 sm:p-5 lg:gap-6 lg:p-6"
                     style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}
                   >
@@ -150,12 +154,12 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ dep
                 <p className="font-dm-sans text-[16px] text-[#594522] lg:text-[18px]">Articles for health care tips</p>
               </div>
               {/* Auto-scrolling row (cards duplicated so the loop is seamless) */}
-              <div className="w-full overflow-hidden">
-                <div className="flex w-max health-tips-scroll">
+              <div className="marquee-bleed">
+                <div className="marquee-track gap-[24px] lg:gap-[40px] health-tips-scroll">
                   {[...tips, ...tips].map((tip, i) => (
                     <div
                       key={`${tip.id}-${i}`}
-                      className="mr-[24px] flex w-[280px] shrink-0 flex-col overflow-hidden rounded-[12px] bg-white shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] sm:w-[320px] lg:mr-[40px]"
+                      className="flex w-[280px] shrink-0 flex-col overflow-hidden rounded-[12px] bg-white shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] sm:w-[320px]"
                     >
                       <div className="relative h-[200px] shrink-0 overflow-hidden bg-[#f9f9f9]">
                         {tip.thumbnail ? (
@@ -172,7 +176,7 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ dep
                           <p className="font-dm-sans text-[16px] font-medium leading-snug text-[#3b2d17] line-clamp-2">{tip.title}</p>
                         </div>
                         <Link
-                          href={`/health-tips/${tip.slug}` as any}
+                          href={`/health-tips/${tip.slug}` as '/'}
                           className="flex h-[32px] shrink-0 items-center gap-1 self-end rounded-[12px] border border-[#b89148] px-[12px] py-[8px] font-dm-sans text-[12px] text-[#594522] transition-colors hover:bg-[var(--background)]"
                         >
                           Read More

@@ -8,6 +8,7 @@ import LoginModal from '@/components/shared/LoginModal'
 import { CustomSelect } from '@/components/shared/FormControls'
 import { useAuth } from '@/lib/auth-context'
 import { createClient } from '@/utils/supabase/client'
+import { useTranslations } from 'next-intl'
 import { setProfileComplete } from '@/lib/profile-status'
 
 const supabase = createClient()
@@ -42,6 +43,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 export default function CompleteProfilePage() {
   const { user, loading: authLoading } = useAuth()
+  const t = useTranslations('CompleteProfile')
   const router = useRouter()
   const [form, setForm] = useState<ProfileForm>(EMPTY)
   const [loading, setLoading] = useState(true)
@@ -88,9 +90,9 @@ export default function CompleteProfilePage() {
 
     const name = form.display_name.trim()
     const phone = form.phone.trim()
-    if (!name) { setError('Please enter your full name.'); return }
-    if (!phone) { setError('Please enter your phone number.'); return }
-    if (phone.replace(/\D/g, '').length < 6) { setError('Please enter a valid phone number.'); return }
+    if (!name) { setError(t('errorName')); return }
+    if (!phone) { setError(t('errorPhone')); return }
+    if (phone.replace(/\D/g, '').length < 6) { setError(t('errorPhoneValid')); return }
 
     setSaving(true)
     setError('')
@@ -109,7 +111,7 @@ export default function CompleteProfilePage() {
       )
     setSaving(false)
     if (saveError) {
-      setError(saveError.message || 'Could not save your profile. Please try again.')
+      setError(saveError.message || t('errorSave'))
       return
     }
     setProfileComplete(true)
@@ -127,7 +129,7 @@ export default function CompleteProfilePage() {
           onSuccess={() => window.location.reload()}
           redirectTo="/complete-profile"
           initialView="login"
-          message="Sign in to continue."
+            message={t('signInToContinue')}
         />
       </Shell>
     )
@@ -146,7 +148,7 @@ export default function CompleteProfilePage() {
 
       {/* Welcome / brand panel */}
       <aside
-        className="hidden lg:flex lg:w-[44%] xl:w-[40%] relative flex-col justify-between px-12 py-14 text-white overflow-hidden"
+        className="hidden md:flex md:w-[40%] relative flex-col justify-between px-12 py-14 text-white overflow-hidden"
         style={{ background: 'linear-gradient(150deg, #cba85a 0%, #b89148 45%, #876327 100%)' }}
       >
         <div className="absolute -top-24 -right-20 w-72 h-72 rounded-full bg-white/10" />
@@ -156,66 +158,66 @@ export default function CompleteProfilePage() {
           <div className="relative w-12 h-12 rounded-full bg-white/95 overflow-hidden shrink-0">
             <Image src="/images/logo-emblem.png" alt="Orienda" fill sizes="48px" className="object-contain p-1.5" />
           </div>
-          <span className="font-cormorant font-bold text-[22px] leading-none">Orienda</span>
+          <span className="font-cormorant font-bold text-[22px] leading-none">{t('orienda')}</span>
         </div>
 
         <div className="relative flex flex-col gap-7">
           <div className="flex flex-col gap-3">
-            <h2 className="font-cormorant font-bold text-[40px] leading-[1.05] max-w-[420px]">Welcome to Orienda International Hospital</h2>
+            <h2 className="font-cormorant font-bold text-[40px] leading-[1.05] max-w-[420px]">{t('welcomeTitle')}</h2>
             <p className="font-dm-sans text-[15px] text-white/85 leading-relaxed max-w-[380px]">
-              Complete your profile to unlock the full experience and receive care tailored to you.
+              {t('welcomeDesc')}
             </p>
           </div>
           <ul className="flex flex-col gap-4">
-            {['Faster appointment booking', 'Personalized care and updates', 'Secure access to your information'].map(t => (
-              <li key={t} className="flex items-center gap-3 font-dm-sans text-[15px] text-white/95">
+            {[t('benefit1'), t('benefit2'), t('benefit3')].map(item => (
+              <li key={item} className="flex items-center gap-3 font-dm-sans text-[15px] text-white/95">
                 <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0"><Check size={14} /></span>
-                {t}
+                {item}
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative font-dm-sans text-[12px] text-white/70">Your information is kept private and secure.</p>
+        <p className="relative font-dm-sans text-[12px] text-white/70">{t('privacy')}</p>
       </aside>
 
       {/* Form panel */}
       <main className="flex-1 flex items-center justify-center px-4 py-12 sm:px-8">
         <div className="w-full max-w-[460px]">
           <div className="flex flex-col gap-2 mb-7">
-            <p className="font-dm-sans text-[12px] tracking-[2px] uppercase text-[#b89148]">Almost there</p>
-            <h1 className="font-cormorant font-bold text-[34px] sm:text-[40px] text-[#3b2d17] leading-none">Complete your profile</h1>
-            <p className="font-dm-sans text-[14px] text-[#6b5836]">Just a few details to finish setting up your account.</p>
+            <p className="font-dm-sans text-[12px] tracking-[2px] uppercase text-[#b89148]">{t('almostThere')}</p>
+            <h1 className="font-cormorant font-bold text-[34px] sm:text-[40px] text-[#3b2d17] leading-none">{t('heading')}</h1>
+            <p className="font-dm-sans text-[14px] text-[#6b5836]">{t('subtitle')}</p>
           </div>
 
           <form onSubmit={handleSave} className="flex flex-col gap-[18px]">
             <div className="flex flex-col gap-[7px]">
-              <label className={labelCls}>Full name <span className="text-[#b89148]">*</span></label>
-              <input className={fieldCls} value={form.display_name} onChange={e => set('display_name', e.target.value)} placeholder="Your full name" required />
+              <label className={labelCls}>{t('fullName')} <span className="text-[#b89148]">*</span></label>
+              <input className={fieldCls} value={form.display_name} onChange={e => set('display_name', e.target.value)} placeholder={t('fullNamePlaceholder')} required />
             </div>
 
             <div className="flex flex-col gap-[7px]">
-              <label className={labelCls}>Phone <span className="text-[#b89148]">*</span></label>
-              <input className={fieldCls} type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="e.g. 012 345 678" required />
+              <label className={labelCls}>{t('phone')} <span className="text-[#b89148]">*</span></label>
+              <input className={fieldCls} type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder={t('phonePlaceholder')} required />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
               <div className="flex flex-col gap-[7px]">
-                <label className={labelCls}>Date of birth</label>
+                <label className={labelCls}>{t('dateOfBirth')}</label>
                 <input className={fieldCls} type="date" value={form.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} />
               </div>
               <CustomSelect
-                label="Gender"
+                label={t('gender')}
                 labelCls={labelCls}
                 value={form.gender}
                 onChange={v => set('gender', v)}
-                options={['Male', 'Female', 'Other']}
-                placeholder="Prefer not to say"
+                options={[t('male'), t('female'), t('other')]}
+                placeholder={t('preferNotToSay')}
               />
             </div>
 
             <CustomSelect
-              label="Preferred language"
+              label={t('preferredLanguage')}
               labelCls={labelCls}
               value={LANG_LABELS[form.language] ?? 'English'}
               onChange={v => set('language', LANG_CODE[v] ?? 'en')}
@@ -231,11 +233,11 @@ export default function CompleteProfilePage() {
               disabled={saving || saved}
               className="mt-[4px] w-full py-3.5 rounded-[12px] bg-[#b89148] hover:bg-[#9a7630] disabled:opacity-60 transition-colors text-white font-dm-sans font-bold text-[16px] flex items-center justify-center gap-2"
             >
-              {saved ? (<><Check size={18} /> Saved</>) : saving ? 'Saving…' : 'Save & continue'}
+              {saved ? (<><Check size={18} /> {t('saved')}</>) : saving ? t('saving') : t('saveAndContinue')}
             </button>
 
             <p className="font-dm-sans text-[12px] text-[#9a8a6a] text-center">
-              <span className="text-[#b89148]">*</span> Required to book appointments.
+              <span className="text-[#b89148]">*</span> {t('required')}
             </p>
           </form>
         </div>

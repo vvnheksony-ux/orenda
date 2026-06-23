@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
 import { Link } from '@/i18n/routing'
 import { getTranslations } from 'next-intl/server'
+import Reveal from '@/components/shared/Reveal'
 
 export default async function FacilitiesSection() {
   const t = await getTranslations('FacilitiesSection')
@@ -10,17 +11,17 @@ export default async function FacilitiesSection() {
       <div className="page-shell flex flex-col gap-[32px] lg:gap-[46px] items-center pt-[48px] lg:pt-[78px] pb-[48px] lg:pb-[80px]">
 
         {/* Header */}
-        <div className="flex flex-col gap-[12px] lg:gap-[16px] items-start w-full">
+        <Reveal className="flex flex-col gap-[12px] lg:gap-[16px] items-start w-full">
           <h2 className="font-cormorant font-bold text-[36px] lg:text-[48px] text-[#3b2d17] leading-none">
             {t('title')}
           </h2>
           <p className="font-dm-sans text-[16px] lg:text-[20px] text-[#594522]">
             {t('subtitle')}
           </p>
-        </div>
+        </Reveal>
 
         {/* Mobile layout */}
-        <div className="flex flex-col gap-[24px] w-full lg:hidden">
+        <div className="flex flex-col gap-[24px] w-full md:hidden">
           {/* Large facility image */}
           <div className="relative overflow-hidden rounded-[16px] w-full" style={{ height: 220, boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)', background: '#f9f9f9' }}>
             <Image src="/images/facility-main.jpg" alt="Orienda Facilities" fill className="object-cover" sizes="100vw" priority />
@@ -37,13 +38,13 @@ export default async function FacilitiesSection() {
           {/* See More pill */}
           <div className="flex justify-center pt-[8px]">
             <Link href="/about" className="px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
-              See More
+              {t('seeMore')}
             </Link>
           </div>
         </div>
 
         {/* Desktop layout */}
-        <div className="hidden lg:flex gap-[40px] items-start w-full">
+        <div className="hidden md:flex gap-[40px] items-start w-full">
 
           {/* Left: Visit text block */}
           <div className="flex gap-[40px] items-center shrink-0">

@@ -13,24 +13,19 @@ import { Link } from '@/i18n/routing'
 export default function CentersSection() {
   const t = useTranslations('CentersSection')
   const locale = useLocale()
-  const { selectedBranch } = useBranch()
+  const { selectedBranch, ready } = useBranch()
   const [idx, setIdx] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [fetching, setFetching] = useState(true)
   const [SPECIALTIES, setSpecialties] = useState<{key:string;name:string;thumb:string;display:string}[]>([])
 
   useEffect(() => {
-    if (!selectedBranch) {
-      setSpecialties([])
-      setLoading(false)
-      return
-    }
+    if (!ready || !selectedBranch) return
 
     let active = true
-    setIdx(0)
-    setLoading(true)
     fetchDepartments(locale, selectedBranch.id)
       .then(docs => {
         if (!active) return
+        setIdx(0)
         const ADMIN_KEYWORDS = ['director', 'administration', 'admin', 'manager', 'executive', 'officer', 'coordinator']
         const depts = docs.filter((dept: DepartmentListItem) => {
           if (!dept.icon?.trim()) return false
@@ -49,17 +44,18 @@ export default function CentersSection() {
         }
       })
       .finally(() => {
-        if (active) setLoading(false)
+        if (active) setFetching(false)
       })
 
     return () => {
       active = false
     }
-  }, [locale, selectedBranch])
+  }, [locale, ready, selectedBranch])
 
   const prev = () => setIdx(i => (i - 1 + SPECIALTIES.length) % SPECIALTIES.length)
   const next = () => setIdx(i => (i + 1) % SPECIALTIES.length)
   const active = SPECIALTIES[idx] ?? SPECIALTIES[0]
+  const loading = !ready || (!!selectedBranch && fetching)
 
   if (loading) return (
     <section className="w-full" style={{ backgroundColor: 'var(--background)' }}>
@@ -68,21 +64,21 @@ export default function CentersSection() {
           <div className="h-[36px] lg:h-[48px] w-[280px] rounded-lg bg-[#e8d9b8] animate-pulse" />
           <div className="h-[20px] w-[220px] rounded bg-[#e8d9b8] animate-pulse" />
         </div>
-        <div className="hidden lg:flex gap-[52px] items-center w-full">
+        <div className="hidden md:flex gap-[52px] items-center w-full">
           <div className="flex flex-col gap-[40px] items-center shrink-0">
             {[0,1,2].map(i => <div key={i} className="rounded-full bg-[#e8d9b8] animate-pulse size-[144px]" />)}
           </div>
           <div className="w-[450px] aspect-square rounded-xl bg-[#e8d9b8] animate-pulse shrink-0" />
-          <div className="grid w-[280px] xl:w-[420px] shrink-0 grid-cols-2 gap-[16px] xl:gap-[20px] content-start">
+          <div className="grid w-[clamp(280px,28vw,420px)] shrink-0 grid-cols-2 gap-[clamp(16px,1.4vw,20px)] content-start">
             {[0,1,2,3].map(i => <div key={i} className="aspect-square rounded-[12px] bg-[#e8d9b8] animate-pulse" />)}
           </div>
         </div>
-        <div className="lg:hidden w-full aspect-square rounded-xl bg-[#e8d9b8] animate-pulse" />
+        <div className="md:hidden w-full aspect-square rounded-xl bg-[#e8d9b8] animate-pulse" />
       </div>
     </section>
   )
 
-  if (!active) return null
+  if (!selectedBranch || !active) return null
 
   const STATS = [
     { value: '99%',    label: t('stat1') },
@@ -105,7 +101,7 @@ export default function CentersSection() {
       </div>
 
       {/* ── Mobile layout ── */}
-      <div className="flex flex-col gap-[24px] items-center w-full lg:hidden">
+      <div className="flex flex-col gap-[24px] items-center w-full md:hidden">
 
         {/* Main image between L/R chevrons */}
         <div className="flex items-center gap-[12px] w-full">
@@ -162,7 +158,7 @@ export default function CentersSection() {
       </div>
 
       {/* ── Desktop layout ── */}
-      <div className="hidden lg:flex flex-col gap-[40px] items-center w-full">
+      <div className="hidden md:flex flex-col gap-[40px] items-center w-full">
       <div className="flex gap-6 xl:gap-12 items-center justify-between w-full">
 
         {/* LEFT: chevron up + 3 stat bubbles + chevron down */}
@@ -189,7 +185,7 @@ export default function CentersSection() {
         </div>
 
         {/* CENTER: large specialty illustration + name */}
-        <div className="flex flex-col gap-[20px] xl:gap-[40px] items-center justify-center shrink-0 w-[min(24vw,280px)] xl:w-[min(26vw,400px)] min-w-[220px] xl:min-w-[280px]">
+        <div className="flex flex-col gap-[clamp(20px,2.6vw,40px)] items-center justify-center shrink-0 w-[min(26vw,400px)] min-w-[280px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={active.key}
@@ -218,7 +214,7 @@ export default function CentersSection() {
         </div>
 
         {/* RIGHT: 2×2 specialty selector grid */}
-        <div className="grid w-[min(34vw,420px)] xl:w-[min(44vw,640px)] min-w-[300px] xl:min-w-[420px] shrink-0 grid-cols-2 gap-[12px] xl:gap-[24px] content-start">
+        <div className="grid w-[min(44vw,640px)] min-w-[420px] shrink-0 grid-cols-2 gap-[clamp(12px,1.6vw,24px)] content-start">
           {SPECIALTIES.map((s, i) => (
             <button
               key={s.key}

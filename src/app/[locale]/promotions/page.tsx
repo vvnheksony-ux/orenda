@@ -1,15 +1,19 @@
 'use client'
 
 import Image from 'next/image'
+import type { ComponentProps } from 'react'
 import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
+import Reveal from '@/components/shared/Reveal'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import { ChevronRight, MapPin, Calendar } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import PageState from '@/components/shared/PageState'
 
 interface Promo { id: string; title: string; slug: string; image: string | null; validTo: string | null }
 interface Package { id: string; slug: string; title: string; description: string; price: string; image: string | null }
+type LocalizedHref = ComponentProps<typeof Link>['href']
 
 const PACKAGE_FALLBACK_IMAGES = [
   '/images/promo-package.jpg',
@@ -24,7 +28,7 @@ function formatExpiry(iso: string | null) {
 
 function PromoCardSkeleton() {
   return (
-    <div className="bg-white rounded-[12px] overflow-hidden shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] flex flex-col h-[300px] sm:h-[340px] lg:h-[360px] shrink-0 w-[220px] sm:w-[270px] lg:w-[300px] mr-4 sm:mr-6 lg:mr-8 animate-pulse">
+    <div className="bg-white rounded-[12px] overflow-hidden shadow-[0_2px_8px_rgba(122,95,44,0.12)] flex flex-col h-[300px] sm:h-[340px] lg:h-[360px] shrink-0 w-[220px] sm:w-[270px] lg:w-[300px] animate-pulse">
       <div className="h-[155px] sm:h-[185px] lg:h-[200px] shrink-0 bg-[#ede8de]" />
       <div className="flex flex-col flex-1 justify-between px-4 sm:px-5 lg:px-6 pt-3 pb-4 sm:pb-6 gap-2">
         <div className="flex flex-col gap-2">
@@ -58,24 +62,51 @@ function PackageRowSkeleton() {
 
 export default function PromotionsPage() {
   const locale = useLocale()
+  const t = useTranslations('Promotions')
   const [promos, setPromos] = useState<Promo[]>([])
   const [packages, setPackages] = useState<Package[]>([])
   const [loadingPromos, setLoadingPromos] = useState(true)
   const [loadingPackages, setLoadingPackages] = useState(true)
+  const [promosError, setPromosError] = useState('')
+  const [packagesError, setPackagesError] = useState('')
 
   useEffect(() => {
-    setLoadingPromos(true)
-    setLoadingPackages(true)
+    let active = true
     fetch(`/api/promotions?locale=${locale}&limit=20`)
-      .then(r => r.json())
-      .then(d => { if ((d.docs||d).length) setPromos(d.docs||d) })
-      .catch(() => {})
-      .finally(() => setLoadingPromos(false))
+      .then(async (r) => {
+        if (!r.ok) throw new Error('We could not load promotions right now.')
+        return r.json()
+      })
+      .then(d => {
+        if (!active) return
+        setPromos(d.docs || d || [])
+        setPromosError('')
+      })
+      .catch((err: unknown) => {
+        if (!active) return
+        setPromos([])
+        setPromosError(err instanceof Error ? err.message : 'We could not load promotions right now.')
+      })
+      .finally(() => { if (active) setLoadingPromos(false) })
     fetch(`/api/packages?locale=${locale}`)
-      .then(r => r.json())
-      .then(d => { if (d.length) setPackages(d) })
-      .catch(() => {})
-      .finally(() => setLoadingPackages(false))
+      .then(async (r) => {
+        if (!r.ok) throw new Error('We could not load packages right now.')
+        return r.json()
+      })
+      .then(d => {
+        if (!active) return
+        setPackages(d || [])
+        setPackagesError('')
+      })
+      .catch((err: unknown) => {
+        if (!active) return
+        setPackages([])
+        setPackagesError(err instanceof Error ? err.message : 'We could not load packages right now.')
+      })
+      .finally(() => { if (active) setLoadingPackages(false) })
+    return () => {
+      active = false
+    }
   }, [locale])
 
   return (
@@ -89,31 +120,31 @@ export default function PromotionsPage() {
               { src: '/images/promo-hero-3.jpg', alt: 'Orienda Hospital' },
               { src: '/images/promo-hero-2.jpg', alt: 'Orienda Hospital' },
             ]}
-            title="Orienda International Hospital"
-            lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule and appointment to experience world-class healthcare.',
-            ]}
+            title={t('heroTitle')}
+            lines={[t('heroLine1'), t('heroLine2')]}
           />
 
           {/* ── Promotions (auto-scroll marquee) ── */}
           <div className="flex flex-col gap-10">
-            <div className="text-center flex flex-col gap-3">
-              <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">Promotions</h2>
-              <p className="font-dm-sans text-[18px] xl:text-[20px] text-gold-800">Exclusive Deals for You</p>
-            </div>
+            <Reveal className="text-center flex flex-col gap-3">
+              <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">{t('heading')}</h2>
+              <p className="font-dm-sans text-[18px] xl:text-[20px] text-gold-800">{t('subtitle')}</p>
+            </Reveal>
           </div>
         </div>
 
         {/* Full-width overflow-hidden scroll track */}
-        <div className="w-full overflow-hidden mt-0 py-4">
-          <div className="flex animate-scroll-left hover:[animation-play-state:paused]" style={{ width: 'max-content' }}>
+        <div className="marquee-bleed mt-10">
+          <div className="marquee-track gap-4 sm:gap-6 lg:gap-8 animate-scroll-left hover:[animation-play-state:paused]">
             {loadingPromos
               ? Array.from({ length: 6 }).map((_, i) => <PromoCardSkeleton key={i} />)
+              : promosError
+              ? <div className="px-6 py-2"><PageState title="Promotions unavailable" message={promosError} /></div>
               : promos.length === 0
-              ? <p className="font-dm-sans text-[16px] text-gold-800 px-8 py-6">No promotions available at this time.</p>
+              ? <div className="px-6 py-2"><PageState title="No promotions available" message="There are no active promotions at the moment." /></div>
               : [...promos, ...promos].map((promo, i) => (
-               <div key={i} className="bg-white rounded-[12px] overflow-hidden shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] flex flex-col h-[300px] sm:h-[340px] lg:h-[360px] relative shrink-0 w-[220px] sm:w-[270px] lg:w-[300px] mr-4 sm:mr-6 lg:mr-8">
+               <div key={i} className="bg-white rounded-[12px] overflow-hidden shadow-[0_2px_8px_rgba(122,95,44,0.12)] flex flex-col h-[300px] sm:h-[340px] lg:h-[360px] relative shrink-0 w-[220px] sm:w-[270px] lg:w-[300px]">
+
                  <div className="relative h-[155px] sm:h-[185px] lg:h-[200px] shrink-0 overflow-hidden bg-[#f9f9f9]">
                    {promo.image
                      ? <Image src={promo.image} alt={promo.title} fill className="object-cover" sizes="300px" unoptimized />
@@ -130,13 +161,13 @@ export default function PromotionsPage() {
                      {promo.validTo && (
                        <div className="flex items-center gap-1.5">
                          <Calendar size={12} className="shrink-0" style={{ color: '#80776a' }} />
-                        <span className="font-dm-sans text-[10px]" style={{ color: '#80776a' }}>Expires {formatExpiry(promo.validTo)}</span>
+                        <span className="font-dm-sans text-[10px]" style={{ color: '#80776a' }}>{t('expires')} {formatExpiry(promo.validTo)}</span>
                       </div>
                     )}
                   </div>
-                  <Link href={`/promotions/${promo.slug}` as any}
+                  <Link href={`/promotions/${promo.slug}` as LocalizedHref}
                      className="self-end flex items-center gap-1 px-2.5 py-1.5 rounded-[12px] border border-gold-500 font-dm-sans text-[11px] sm:text-[12px] text-gold-800 hover:bg-gold-50 transition-colors">
-                     View Details <ChevronRight size={14} />
+                     {t('viewDetails')} <ChevronRight size={14} />
                    </Link>
                  </div>
               </div>
@@ -149,18 +180,20 @@ export default function PromotionsPage() {
 
           {/* ── Packages ── */}
           <div className="flex flex-col gap-10">
-            <div className="text-center flex flex-col gap-3">
-              <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">Packages</h2>
-              <p className="font-dm-sans text-[18px] xl:text-[20px] text-gold-800">All available packages we provide.</p>
-            </div>
+            <Reveal className="text-center flex flex-col gap-3">
+              <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">{t('packagesHeading')}</h2>
+              <p className="font-dm-sans text-[18px] xl:text-[20px] text-gold-800">{t('packagesSubtitle')}</p>
+            </Reveal>
 
             <div className="flex flex-col gap-6">
               {loadingPackages
                 ? Array.from({ length: 3 }).map((_, i) => <PackageRowSkeleton key={i} />)
+                : packagesError
+                ? <PageState title={t('packagesUnavailable')} message={packagesError} />
                 : packages.length === 0
-                ? <p className="font-dm-sans text-[16px] text-gold-800 py-6">No packages available at this time.</p>
+                ? <PageState title={t('noPackages')} message={t('noPackagesMsg')} />
                 : packages.map((pkg, pkgIdx) => (
-                <Link key={pkg.title} href={`/promotions/packages/${pkg.slug}` as any} className="bg-white rounded-[16px] overflow-hidden shadow-[0px_4px_16px_rgba(122,95,44,0.08)] flex flex-col md:flex-row h-auto md:h-[217px] relative hover:shadow-[0px_4px_24px_rgba(122,95,44,0.16)] transition-shadow">
+                <Link key={pkg.title} href={`/promotions/packages/${pkg.slug}` as LocalizedHref} className="bg-white rounded-[16px] overflow-hidden shadow-[0px_4px_16px_rgba(122,95,44,0.08)] flex flex-col md:flex-row h-auto md:h-[217px] relative hover:shadow-[0px_4px_24px_rgba(122,95,44,0.16)] transition-shadow">
 
                   {/* Image */}
                   <div className="relative shrink-0 w-full md:w-[353px] h-[200px] md:h-full overflow-hidden">

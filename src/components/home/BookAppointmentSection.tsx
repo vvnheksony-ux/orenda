@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { useAnalytics } from '@/lib/use-analytics'
 import { useTranslations } from 'next-intl'
 import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
+import Reveal from '@/components/shared/Reveal'
 
 export default function BookAppointmentSection() {
   const { trackCallClick } = useAnalytics()
@@ -15,14 +16,14 @@ export default function BookAppointmentSection() {
     <section className="w-full py-[80px] flex flex-col items-center justify-center" style={{ background: 'var(--background)' }}>
       <div className="flex flex-col gap-[40px] items-center max-w-[582px] w-full px-[40px]">
 
-        <div className="flex flex-col gap-[12px] items-center text-center w-full">
+        <Reveal className="flex flex-col gap-[12px] items-center text-center w-full">
           <h2 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none w-full">
             {t('title')}
           </h2>
           <p className="font-dm-sans text-[20px] text-gold-800 w-full">
             {t('subtitle')}
           </p>
-        </div>
+        </Reveal>
 
         <button
           onClick={() => { trackCallClick('home-section'); setOpen(true) }}

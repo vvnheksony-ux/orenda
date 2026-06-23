@@ -5,7 +5,10 @@ import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { ChevronRight, Search } from 'lucide-react'
+import PageState from '@/components/shared/PageState'
+import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
+import Reveal from '@/components/shared/Reveal'
 
 interface HealthTip {
   id: string
@@ -35,25 +38,6 @@ const POPULAR = [
   { rank: 5, title: 'Mindfulness Practice', desc: 'Spending 10 minutes on mindfulness or meditation reduces stress and improves clarity.' },
 ]
 
-const HERO_SLIDES = [
-  {
-    image: '/images/about/about-hero-3.jpg',
-    title: 'Orienda International Hospital',
-    lines: [
-      'We dedicated to providing safe and reliable medical services.',
-      'Schedule and appointment to experience world-class healthcare.',
-    ],
-  },
-  {
-    image: '/images/about/about-hero-2.jpg',
-    title: 'Orienda International Hospital',
-    lines: [
-      'We dedicated to providing safe and reliable medical services.',
-      'Schedule and appointment to experience world-class healthcare.',
-    ],
-  },
-] as const
-
 function formatDate(iso: string) {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -63,27 +47,47 @@ export default function HealthTipsPage() {
   const locale = useLocale()
   const [tips, setTips] = useState<HealthTip[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [category, setCategory] = useState('')
   const [search, setSearch] = useState('')
   const [showAllCategories, setShowAllCategories] = useState(false)
-  const [heroIndex, setHeroIndex] = useState(0)
 
   useEffect(() => {
+    const controller = new AbortController()
     const params = new URLSearchParams({ locale, limit: '20' })
     if (category) params.set('category', category)
-    fetch(`/api/health-tips?${params}`)
-      .then(r => r.json())
-      .then(d => { if (d?.docs) setTips(d.docs) })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    // Reset the UI immediately when locale/filter changes so stale results do not linger.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true)
+    setError('')
+
+    fetch(`/api/health-tips?${params}`, { cache: 'no-store', signal: controller.signal })
+      .then(async (r) => {
+        if (!r.ok) throw new Error('We could not load health tips right now.')
+        return r.json()
+      })
+      .then(d => {
+        setTips(d?.docs || [])
+        setError('')
+      })
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return
+        setTips([])
+        setError(err instanceof Error ? err.message : 'We could not load health tips right now.')
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+
+    return () => controller.abort()
   }, [locale, category])
 
   const displayed = tips.filter(t =>
-    !search || t.title.toLowerCase().includes(search.toLowerCase())
+    !search || [t.title, t.excerpt, t.category].some((value) => value.toLowerCase().includes(search.toLowerCase()))
   )
 
-  const visibleCategories = showAllCategories ? CATEGORIES : CATEGORIES.slice(0, 6)
-  const activeHero = HERO_SLIDES[heroIndex]
+  const filterCategories = CATEGORIES.slice(1)
+  const visibleCategories = showAllCategories ? filterCategories : filterCategories.slice(0, 5)
 
   return (
     <SiteLayout>
@@ -91,67 +95,19 @@ export default function HealthTipsPage() {
         <div className="page-shell flex flex-col gap-[32px] lg:gap-[40px]">
 
           {/* Hero banner */}
-          <div className="relative w-full">
-            <button
-              type="button"
-              aria-label="Previous slide"
-              onClick={() => setHeroIndex(current => (current - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-              className="absolute left-[-20px] top-1/2 z-10 hidden -translate-y-1/2 text-[#b89148] xl:flex"
-            >
-              <ChevronLeft size={28} strokeWidth={1.5} />
-            </button>
-
-            <div className="overflow-hidden rounded-[24px] bg-white p-[16px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.10)] lg:p-[20px]">
-              <div className="flex flex-col-reverse gap-[20px] lg:flex-row lg:items-stretch lg:gap-[24px]">
-                <div className="flex flex-1 flex-col justify-center px-[12px] py-[8px] lg:max-w-[46%] lg:px-[24px]">
-                  <div className="flex flex-col gap-[18px] lg:gap-[28px]">
-                    <h1 className="font-cormorant text-[36px] font-bold leading-[0.95] text-[#3b2d17] lg:text-[56px]">
-                      {activeHero.title}
-                    </h1>
-                    <div className="flex flex-col gap-[14px] font-dm-sans text-[16px] leading-[1.35] text-[#594522] lg:text-[20px]">
-                      <p>{activeHero.lines[0]}</p>
-                      <p>{activeHero.lines[1]}</p>
-                    </div>
-                    <div className="flex items-center gap-[12px] pt-[8px]">
-                      <Link
-                        href="/about"
-                        className="inline-flex h-[40px] items-center gap-[8px] rounded-[12px] border border-[#b89148] px-[18px] font-dm-sans text-[14px] text-[#5c4924] transition-colors hover:bg-[var(--background)] lg:h-[52px] lg:px-[24px]"
-                      >
-                        Learn More
-                        <ChevronRight size={14} />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative h-[240px] overflow-hidden rounded-[18px] sm:h-[320px] lg:h-[390px] lg:flex-1">
-                  <Image
-                    src={activeHero.image}
-                    alt={activeHero.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 55vw"
-                    priority
-                  />
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              aria-label="Next slide"
-              onClick={() => setHeroIndex(current => (current + 1) % HERO_SLIDES.length)}
-              className="absolute right-[-20px] top-1/2 z-10 hidden -translate-y-1/2 text-[#b89148] xl:flex"
-            >
-              <ChevronRight size={28} strokeWidth={1.5} />
-            </button>
-          </div>
+          <PromotionStyleHero
+            title="Orienda International Hospital"
+            lines={[
+              'We dedicated to providing safe and reliable medical services.',
+              'Schedule and appointment to experience world-class healthcare.',
+            ]}
+          />
 
           {/* Two-column layout */}
-          <div className="flex flex-col lg:flex-row gap-[32px] lg:gap-[40px] items-start">
+          <div className="flex flex-col md:flex-row gap-[32px] lg:gap-[40px] items-start">
 
             {/* Left sidebar: 332px */}
-            <div className="shrink-0 w-full lg:w-[332px] flex flex-col gap-[24px] lg:gap-[28px]">
+            <div className="shrink-0 w-full md:w-[332px] flex flex-col gap-[24px] lg:gap-[28px]">
 
               {/* Search */}
               <div className="bg-white flex items-center gap-[12px] h-[42px] px-[12px] py-[8px] rounded-[12px] shadow-[0px_4px_15px_rgba(220,189,114,0.12)]">
@@ -166,24 +122,26 @@ export default function HealthTipsPage() {
 
               {/* Category list */}
               <div className="bg-white rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] overflow-hidden">
-                {visibleCategories.slice(1).map((cat, i) => (
+                {visibleCategories.map((cat, i) => (
                   <button
                     key={cat.value}
                     onClick={() => setCategory(cat.value === category ? '' : cat.value)}
                     className={`w-full flex items-center gap-[12px] p-[24px] font-dm-sans text-[16px] text-[#3b2d17] text-left transition-colors ${
-                      i < CATEGORIES.length - 2 ? 'border-b border-[#ead6a4]/50' : ''
+                      i < visibleCategories.length - 1 ? 'border-b border-[#ead6a4]/50' : ''
                     } ${cat.value === category ? 'bg-[rgba(184,145,72,0.12)]' : 'hover:bg-[var(--background)]'}`}
                   >
                     {cat.label}
                   </button>
                 ))}
-                <button
-                  onClick={() => setShowAllCategories(!showAllCategories)}
-                  className="w-full flex items-center justify-between p-[24px] bg-[rgba(184,145,72,0.6)] font-dm-sans text-[16px] text-[#3b2d17]"
-                >
-                  <span>{showAllCategories ? 'Show Less' : 'See More'}</span>
-                  <ChevronRight size={16} className={`transition-transform ${showAllCategories ? 'rotate-90' : ''}`} />
-                </button>
+                {filterCategories.length > 5 && (
+                  <button
+                    onClick={() => setShowAllCategories(!showAllCategories)}
+                    className="w-full flex items-center justify-between p-[24px] bg-[rgba(184,145,72,0.6)] font-dm-sans text-[16px] text-[#3b2d17]"
+                  >
+                    <span>{showAllCategories ? 'Show Less' : 'See More'}</span>
+                    <ChevronRight size={16} className={`transition-transform ${showAllCategories ? 'rotate-90' : ''}`} />
+                  </button>
+                )}
               </div>
 
               {/* Popular articles */}
@@ -208,26 +166,42 @@ export default function HealthTipsPage() {
             {/* Main content */}
             <div className="flex-1 min-w-0 flex flex-col gap-[40px]">
               {/* Section heading */}
-              <div className="flex flex-col gap-[12px]">
+              <Reveal className="flex flex-col gap-[12px]">
                 <h2 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">Health Tips</h2>
                 <p className="font-dm-sans text-[16px] text-[#594522]">Article for health care tips</p>
-              </div>
+              </Reveal>
 
               {/* Cards grid */}
               {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[24px] lg:gap-[40px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[24px] lg:gap-[40px]">
                   {Array(9).fill(0).map((_, i) => (
-                    <div key={i} className="h-[360px] rounded-[12px] bg-[#f0ebe0] animate-pulse" />
+                    <div key={i} className="overflow-hidden rounded-[12px] bg-white shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)]">
+                      <div className="h-[219px] bg-[#f0ebe0] animate-pulse" />
+                      <div className="flex flex-col gap-[12px] p-[24px]">
+                        <div className="h-[10px] w-[96px] rounded bg-[#f0ebe0] animate-pulse" />
+                        <div className="h-[20px] w-full rounded bg-[#f0ebe0] animate-pulse" />
+                        <div className="h-[20px] w-[70%] rounded bg-[#f0ebe0] animate-pulse" />
+                        <div className="mt-2 ml-auto h-[32px] w-[96px] rounded-[12px] bg-[#f0ebe0] animate-pulse" />
+                      </div>
+                    </div>
                   ))}
                 </div>
+              ) : error ? (
+                <PageState
+                  title="Health tips unavailable"
+                  message={error}
+                />
               ) : displayed.length === 0 ? (
-                <p className="font-dm-sans text-[#594522] text-[16px] py-[60px] text-center">No articles found.</p>
+                <PageState
+                  title="No articles found"
+                  message="There are no health tips matching this filter right now."
+                />
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-[24px] lg:gap-[40px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[24px] lg:gap-[40px]">
                   {displayed.map(tip => (
                     <div
                       key={tip.id}
-                      className="bg-white rounded-[12px] overflow-hidden shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] flex flex-col"
+                      className="bg-white rounded-[12px] overflow-hidden shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] flex h-full min-h-[360px] flex-col"
                     >
                       <div className="h-[219px] bg-[#f9f9f9] overflow-hidden shrink-0 relative">
                         {tip.thumbnail ? (
@@ -243,7 +217,7 @@ export default function HealthTipsPage() {
                           <div className="w-full h-full bg-[#ead6a4]/30" />
                         )}
                       </div>
-                      <div className="flex flex-col justify-between gap-[16px] p-[24px] flex-1">
+                      <div className="flex flex-1 flex-col justify-between gap-[16px] p-[24px]">
                         <div className="flex flex-col gap-[12px]">
                           <p className="font-dm-sans font-light text-[10px] text-[rgba(59,45,23,0.7)]">
                             {formatDate(tip.publishedAt)}

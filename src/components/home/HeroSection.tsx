@@ -7,8 +7,6 @@ import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from '@/i18n/routing'
 
-const UNION_IMG = '/images/Union.svg'
-
 function dispatchAskAI(message: string) {
   window.dispatchEvent(new CustomEvent('orienda:ask-ai', { detail: { message } }))
 }
@@ -25,7 +23,14 @@ export default function HeroSection() {
     const vid = videoRef.current
     if (!vid) return
     const io = new IntersectionObserver(
-      ([entry]) => { entry.isIntersecting ? vid.play().catch(() => {}) : vid.pause() },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          vid.play().catch(() => {})
+          return
+        }
+
+        vid.pause()
+      },
       { threshold: 0.01 },
     )
     io.observe(vid)
@@ -46,25 +51,14 @@ export default function HeroSection() {
       <video
         ref={videoRef}
         src="/videos/hero.mp4"
+        poster="/images/hero-poster.jpg"
         autoPlay
         muted
         loop
         playsInline
+        preload="auto"
         className="absolute inset-0 w-full h-full object-cover object-center"
       />
-
-      {/* Welcome text */}
-      <div
-        className="absolute flex flex-col gap-[20px] not-italic text-gold-900"
-        style={{ left: 'clamp(16px, 2.6vw, 40px)', top: 'clamp(100px, 18vh, 250px)', width: 'clamp(180px, 40vw, 595px)' }}
-      >
-        <p className="text-[24px] md:text-[36px] xl:text-[48px] leading-normal" style={{ fontFamily: 'var(--font-script)' }}>
-          {t('welcome')}
-        </p>
-        <p className="font-cormorant font-bold text-[18px] md:text-[28px] xl:text-[36px] leading-none">
-          {t('hospital')}
-        </p>
-      </div>
 
       {/* Rating card — hidden on mobile */}
       <div
@@ -153,7 +147,13 @@ export default function HeroSection() {
         style={{ width: 'clamp(118px, 13vw, 184px)', height: 'clamp(58px, 6.4vw, 90px)', filter: 'drop-shadow(0px 0px 5px rgba(184,145,72,0.25))' }}
       >
         {/* Union background */}
-        <img src="/images/Union.svg" alt="" className="absolute inset-0 w-full h-full pointer-events-none" style={{ objectFit: 'fill' }} />
+        <Image
+          src="/images/Union.svg"
+          alt=""
+          fill
+          sizes="(max-width: 640px) 118px, 184px"
+          className="pointer-events-none object-fill"
+        />
         {/* Content */}
         <div className="relative flex flex-col items-center justify-center gap-[3px] w-full h-full" style={{ paddingBottom: 4 }}>
           <div className="flex flex-col items-center gap-[3px]">
@@ -167,7 +167,7 @@ export default function HeroSection() {
             </svg>
           </div>
           {/* Room Tour label */}
-          <span className="font-dm-sans font-semibold text-[#fbf7ee] leading-none" style={{ fontSize: 'clamp(9px, 1vw, 14px)' }}>Room Tour</span>
+          <span className="font-dm-sans font-semibold text-[#fbf7ee] leading-none" style={{ fontSize: 'clamp(9px, 1vw, 14px)' }}>{t('roomTour')}</span>
         </div>
       </Link>
 

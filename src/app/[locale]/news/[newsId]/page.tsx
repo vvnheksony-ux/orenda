@@ -1,12 +1,15 @@
 'use client'
 
 import Image from 'next/image'
+import type { ComponentProps } from 'react'
 import { useState, useEffect, use } from 'react'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useScrollLock } from '@/lib/useScrollLock'
-import { ArrowRight, Phone, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Phone, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
+import PageState from '@/components/shared/PageState'
+import ExploreMoreCarousel from '@/components/shared/ExploreMoreCarousel'
 
 interface NewsDetail {
   id: string; title: string; slug: string; body: string
@@ -15,6 +18,10 @@ interface NewsDetail {
 }
 interface RelatedItem { id: string; title: string; slug: string; thumbnail: string | null }
 
+type LocalizedHref = ComponentProps<typeof Link>['href']
+const articleHref = (slug: string, relatedIsNews: boolean): LocalizedHref =>
+  (relatedIsNews ? `/news/${slug}` : `/health-tips/${slug}`) as LocalizedHref
+
 export default function NewsDetailPage({ params }: { params: Promise<{ newsId: string }> }) {
   const { newsId } = use(params)
   const locale = useLocale()
@@ -22,6 +29,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
   const [related, setRelated] = useState<RelatedItem[]>([])
   const [relatedIsNews, setRelatedIsNews] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
 
   // Lock background scroll while the image lightbox is open.
@@ -29,21 +37,29 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/news?locale=${locale}&slug=${encodeURIComponent(newsId)}`).then(r => r.json()),
+      fetch(`/api/news?locale=${locale}&slug=${encodeURIComponent(newsId)}`).then(async (r) => {
+        if (!r.ok) throw new Error('We could not load this article right now.')
+        return r.json()
+      }),
       fetch(`/api/health-tips?locale=${locale}&limit=6`).then(r => r.json()).catch(() => ({ docs: [] })),
     ]).then(async ([art, tips]) => {
       if (art) setArticle(art)
+      setLoadError('')
       const tipDocs = (tips?.docs || []).slice(0, 5)
       if (tipDocs.length > 0) {
         setRelated(tipDocs)
         setRelatedIsNews(false)
       } else {
         const newsList = await fetch(`/api/news?locale=${locale}&limit=10`).then(r => r.json()).catch(() => ({ docs: [] }))
-        const others = (newsList?.docs || []).filter((n: any) => n.slug !== newsId).slice(0, 5)
+        const others = ((newsList?.docs || []) as RelatedItem[]).filter((item) => item.slug !== newsId).slice(0, 5)
         setRelated(others)
         setRelatedIsNews(true)
       }
-    }).catch(() => {}).finally(() => setLoading(false))
+    }).catch((err: unknown) => {
+      setArticle(null)
+      setRelated([])
+      setLoadError(err instanceof Error ? err.message : 'We could not load this article right now.')
+    }).finally(() => setLoading(false))
   }, [locale, newsId])
 
   // Keyboard navigation for lightbox
@@ -115,10 +131,21 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
 
           {/* Not found */}
           {!loading && !article && (
-            <div className="text-center py-[80px]">
-              <p className="font-cormorant text-[32px] text-[#3b2d17]">Article not found</p>
-              <Link href="/news" className="font-dm-sans text-[#b89148] underline mt-4 block">← Back to News</Link>
-            </div>
+            loadError ? (
+              <PageState
+                title="Article unavailable"
+                message={loadError}
+              >
+                <Link href="/news" className="font-dm-sans text-[#b89148] underline">
+                  Back to News
+                </Link>
+              </PageState>
+            ) : (
+              <div className="text-center py-[80px]">
+                <p className="font-cormorant text-[32px] text-[#3b2d17]">Article not found</p>
+                <Link href="/news" className="font-dm-sans text-[#b89148] underline mt-4 block">← Back to News</Link>
+              </div>
+            )
           )}
 
           {/* Article */}
@@ -157,7 +184,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
 
                   {/* First text + sidebar */}
                   {(firstParas.length > 0 || article.excerpt) && (
-                    <div className={`${bodyContentClass} flex flex-col lg:flex-row gap-[40px] items-start`}>
+                    <div className={`${bodyContentClass} flex flex-col md:flex-row gap-[40px] items-start`}>
                       <div className="flex-1 min-w-0">
                         {article.excerpt && paragraphs.length <= 1 ? (
                           <p className="font-dm-sans text-[18px] text-[#2a2620] leading-[1.8]">{article.excerpt}</p>
@@ -271,59 +298,13 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
               </div>
 
               {/* Explore More */}
-              <div className="flex flex-col gap-[40px] items-center w-full overflow-hidden">
-                <style>{`
-                  @keyframes news-marquee {
-                    0%   { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                  }
-                  .news-marquee-track {
-                    animation: news-marquee 28s linear infinite;
-                  }
-                  .news-marquee-track:hover {
-                    animation-play-state: paused;
-                  }
-                `}</style>
-
-                <div className="flex flex-col gap-[12px] items-center text-center w-full">
-                  <p className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">Explore More</p>
-                  <p className="font-dm-sans text-[20px] text-[#594522]">Article for health care tips</p>
-                </div>
-
-                {related.length > 0 ? (
-                  <div className="w-full overflow-hidden">
-                    <div className="news-marquee-track flex gap-[40px]" style={{ width: 'max-content' }}>
-                      {[...related, ...related].map((item, idx) => (
-                        <Link
-                          key={idx}
-                          href={(relatedIsNews ? `/news/${item.slug}` : `/health-tips/${item.slug}`) as any}
-                          className="bg-white flex flex-col overflow-hidden rounded-[16px] shrink-0 w-[300px] hover:shadow-[0px_8px_40px_rgba(184,145,72,0.25)] transition-shadow group"
-                          style={{ boxShadow: '0px 4px 30px 12px rgba(220,189,114,0.12)' }}
-                        >
-                          <div className="relative w-full bg-[#f9f9f9] overflow-hidden shrink-0" style={{ height: 170 }}>
-                            {item.thumbnail
-                              ? <Image src={item.thumbnail} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="300px" unoptimized />
-                              : <div className="w-full h-full bg-[#f9f9f9]" />
-                            }
-                          </div>
-                          <div className="flex flex-col justify-between pb-[24px] pt-[32px] px-[24px]" style={{ height: 200 }}>
-                            <p className="font-dm-sans font-medium text-[16px] text-[#3b2d17] leading-[1.5] line-clamp-3">{item.title}</p>
-                            <div className="h-[32px] border border-[#b89148] rounded-[12px] flex items-center justify-center gap-[4px] font-dm-sans text-[12px] text-[#594522] group-hover:bg-[#b89148] group-hover:text-white transition-colors duration-300">
-                              Read More <ArrowRight size={14} />
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex gap-[40px]">
-                    {[1, 2, 3, 4].map(i => (
-                      <div key={i} className="w-[300px] rounded-[16px] bg-[#f0ebe0] animate-pulse shrink-0" style={{ height: 370 }} />
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ExploreMoreCarousel
+                items={related.map((item) => ({
+                  title: item.title,
+                  image: item.thumbnail,
+                  href: articleHref(item.slug, relatedIsNews),
+                }))}
+              />
             </>
           )}
 

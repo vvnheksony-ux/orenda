@@ -68,7 +68,7 @@ export default function CookieConsent() {
               <button
                 onClick={handleDecline}
                 className="text-gold-300 hover:text-gold-500 transition-colors"
-                title="Refuse all"
+                title={t('refuseAll')}
               >
                 <X size={16} />
               </button>
@@ -86,7 +86,7 @@ export default function CookieConsent() {
                 onClick={() => setShowDetails(!showDetails)}
                 className="self-start text-gold-500 font-medium text-[11px] hover:text-gold-700 transition-colors inline-flex items-center gap-0.5"
               >
-                {showDetails ? 'Hide details' : 'View details'}
+                {showDetails ? t('hideDetails') : t('viewDetails')}
                 {showDetails ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
               </button>
             </div>

@@ -95,7 +95,7 @@ export default function TourSection() {
         <Link href="/360-tour"
           className="flex items-center justify-center font-dm-sans text-white hover:opacity-90 transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
           style={{ background: '#b89148', borderRadius: 12, fontSize: 24, paddingLeft: 56, paddingRight: 56, paddingTop: 16, paddingBottom: 16, boxShadow: '0 0 12px 4px rgba(255,255,255,0.2),0 4px 16px 4px rgba(122,95,44,0.12)' }}>
-          Start Discovering
+          {t('startDiscovering')}
         </Link>
       </div>
 

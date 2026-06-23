@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState, useEffect, use } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { ArrowLeft } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
@@ -32,6 +32,7 @@ interface Doctor {
 export default function DoctorProfilePage({ params }: { params: Promise<{ doctorId: string }> }) {
   const { doctorId } = use(params)
   const locale = useLocale()
+  const t = useTranslations('DoctorDetail')
   const [doctor, setDoctor] = useState<Doctor | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -55,8 +56,8 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
 
         {!loading && !doctor && (
           <div className="text-center py-[120px]">
-            <p className="font-cormorant text-[32px] text-[#3b2d17]">Doctor not found</p>
-            <Link href="/doctors" className="font-dm-sans text-[#b89148] underline mt-4 block">← Back to Doctors</Link>
+            <p className="font-cormorant text-[32px] text-[#3b2d17]">{t('notFound')}</p>
+            <Link href="/doctors" className="font-dm-sans text-[#b89148] underline mt-4 block">{t('backToDoctors')}</Link>
           </div>
         )}
 
@@ -67,7 +68,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
               <Link href="/doctors"
                 className="inline-flex items-center gap-[10px] font-dm-sans text-[16px] lg:text-[18px] text-[#3b2d17] opacity-70 hover:opacity-100 transition-opacity px-3 py-2">
                 <ArrowLeft size={28} />
-                <span>Back</span>
+                <span>{t('back')}</span>
               </Link>
             </div>
 
@@ -97,7 +98,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
             </div>
 
             {/* Content */}
-            <div className="flex flex-col lg:flex-row gap-[32px] lg:gap-[40px] items-start px-5 sm:px-8 md:px-16 lg:px-[120px] py-24 lg:py-[80px]">
+            <div className="flex flex-col md:flex-row gap-[32px] lg:gap-[40px] items-start px-5 sm:px-8 md:px-16 lg:px-[120px] py-24 lg:py-[80px]">
 
               {/* Left 60% */}
               <div className="flex flex-col gap-[32px] lg:gap-[40px] items-end text-[#2a2620] w-full lg:w-auto" style={{ flex: '0 0 58%' }}>
@@ -105,7 +106,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
                 {/* Education */}
                 {doctor.education?.length > 0 && (
                   <div className="flex flex-col gap-[24px] items-start w-full">
-                    <p className="font-cormorant font-bold text-[24px] leading-none w-full">Education &amp; Training</p>
+                    <p className="font-cormorant font-bold text-[24px] leading-none w-full">{t('education')}</p>
                     <ul className="font-dm-sans text-[16px] leading-[1.5] list-disc w-full">
                       {doctor.education.map((e, i) => (
                         <li key={i} className="mb-[12px] last:mb-0 ms-[24px]">{e}</li>
@@ -117,7 +118,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
               {/* Bio */}
                 {doctor.bio && (
                   <div className="flex flex-col gap-[24px] items-start w-full">
-                    <p className="font-cormorant font-bold text-[24px] leading-none w-full">About</p>
+                    <p className="font-cormorant font-bold text-[24px] leading-none w-full">{t('about')}</p>
                     <div className="font-dm-sans text-[16px] leading-[1.5] w-full text-[#2a2620]">
                       {(typeof doctor.bio === 'string' ? doctor.bio : '').split('\n').filter(Boolean).map((p, i) => (
                         <p key={i} className="mb-[12px] last:mb-0">{p}</p>
@@ -129,13 +130,13 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
                 {/* Experience */}
                 {(doctor.total_experience_years || doctor.specialist_experience_years) && (
                   <div className="flex flex-col gap-[24px] items-start w-full">
-                    <p className="font-cormorant font-bold text-[24px] leading-none w-full">Experience</p>
+                    <p className="font-cormorant font-bold text-[24px] leading-none w-full">{t('experience')}</p>
                     <ul className="font-dm-sans text-[16px] leading-[1.5] list-disc w-full">
                       {doctor.total_experience_years && (
-                        <li className="mb-[12px] ms-[24px]">Total clinical experience: {doctor.total_experience_years} years</li>
+                        <li className="mb-[12px] ms-[24px]">{t('totalExperience', { years: doctor.total_experience_years })}</li>
                       )}
                       {doctor.specialist_experience_years && (
-                        <li className="ms-[24px]">Specialist experience: {doctor.specialist_experience_years} years in {doctor.specialty}</li>
+                        <li className="ms-[24px]">{t('specialistExperience', { years: doctor.specialist_experience_years, specialty: doctor.specialty })}</li>
                       )}
                     </ul>
                   </div>
@@ -145,31 +146,31 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
                 <div className="flex flex-col gap-[16px] items-start w-full">
                   {doctor.position_title && (
                     <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px]">
-                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Position:</span>
+                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">{t('position')}</span>
                       <span className="font-dm-sans text-[16px] text-[#2a2620]">{doctor.position_title}</span>
                     </div>
                   )}
                   {doctor.nationality && (
                     <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px]">
-                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Nationality:</span>
+                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">{t('nationality')}</span>
                       <span className="font-dm-sans text-[16px] text-[#2a2620]">{doctor.nationality}</span>
                     </div>
                   )}
                   {doctor.employment_type && (
                     <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px]">
-                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Employment:</span>
+                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">{t('employment')}</span>
                       <span className="font-dm-sans text-[16px] text-[#2a2620]">{doctor.employment_type}</span>
                     </div>
                   )}
                   {doctor.email && (
                     <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px] break-all">
-                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Email:</span>
+                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">{t('email')}</span>
                       <a href={`mailto:${doctor.email}`} className="font-dm-sans text-[16px] text-[#b89148] hover:underline">{doctor.email}</a>
                     </div>
                   )}
                   {doctor.phone && (
                     <div className="flex flex-col sm:flex-row gap-[8px] sm:gap-[16px]">
-                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">Phone:</span>
+                      <span className="font-cormorant font-bold text-[18px] text-[#3b2d17] shrink-0">{t('phone')}</span>
                       <a href={`tel:${doctor.phone}`} className="font-dm-sans text-[16px] text-[#b89148] hover:underline">{doctor.phone}</a>
                     </div>
                   )}
@@ -178,7 +179,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
                 {/* Fallback if no data */}
                 {!doctor.bio && !doctor.total_experience_years && !doctor.position_title && (
                   <p className="font-dm-sans text-[16px] text-[#594522] leading-[1.5]">
-                    Dr. {(doctor.name ?? '').replace(/^Dr\.\s*/i, '')} is a dedicated {doctor.specialty ?? ''} specialist at Orienda International Hospital, committed to providing high-quality, compassionate care.
+                    {t('fallbackBio', { name: (doctor.name ?? '').replace(/^Dr\.\s*/i, ''), specialty: doctor.specialty ?? '' })}
                   </p>
                 )}
 
@@ -192,7 +193,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
                 {doctor.languages?.length > 0 && (
                   <div className="bg-white flex flex-col gap-[21px] items-start p-[24px] rounded-[12px] w-full"
                     style={{ boxShadow: '0px 4px 8px rgba(122,95,44,0.12)' }}>
-                    <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">Language</p>
+                    <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">{t('language')}</p>
                     <div className="flex gap-[16px] items-center flex-wrap">
                       {doctor.languages.map(lang => (
                         <div key={lang} className="bg-[#f5ecd4] flex items-center justify-center px-[24px] py-[10px] rounded-[12px]">
@@ -206,16 +207,16 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
                 {/* Book Appointment card */}
                 <div className="bg-white flex flex-col gap-[21px] items-start p-[24px] rounded-[12px] w-full"
                   style={{ boxShadow: '0px 4px 8px rgba(122,95,44,0.12)' }}>
-                  <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">Book Appointment</p>
+                  <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">{t('bookAppointment')}</p>
                   <p className="font-dm-sans text-[16px] text-[#2a2620] leading-[1.5]">
-                    Choose a convenient time to meet with one of our specialists
+                    {t('chooseTime')}
                   </p>
                   <BookAppointmentButton
                     defaultDoctorId={doctor.id}
                     defaultDepartmentId={doctor.department_payload_id}
                     defaultBranchId={doctor.branch_id}
                     className="bg-[#b89148] flex gap-[10px] items-center justify-center px-[32px] py-[16px] rounded-[12px] w-full font-dm-sans text-[18px] text-[#fbf7ee] hover:bg-[#c8a25a] transition-colors"
-                    label="📅 Book Now"
+                    label={t('bookNow')}
                   />
                 </div>
 

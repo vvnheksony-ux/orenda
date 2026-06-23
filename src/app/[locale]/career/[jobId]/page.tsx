@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { Link } from '@/i18n/routing'
 import { ChevronLeft } from 'lucide-react'
+import Reveal from '@/components/shared/Reveal'
 
 function textToParagraphs(text: string | null): string[] {
   return String(text || '')
@@ -15,6 +16,19 @@ function textToParagraphs(text: string | null): string[] {
 function formatDeadline(iso: string | null) {
   if (!iso) return null
   return new Date(iso).toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })
+}
+
+type CareerDetail = {
+  id: string
+  title?: string | null
+  thumbnail?: string | null
+  department?: string | null
+  employmentType?: string | null
+  experienceLevel?: string | null
+  salaryRange?: string | null
+  responsibilities?: string | null
+  requirements?: string | null
+  applicationDeadline?: string | null
 }
 
 export default async function CareerDetailPage({
@@ -35,7 +49,7 @@ export default async function CareerDetailPage({
     : process.env.NEXT_PUBLIC_SITE_URL ||
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
-  let career: any = null
+  let career: CareerDetail | null = null
   try {
     const res = await fetch(
       `${base}/api/careers?slug=${encodeURIComponent(jobId)}&locale=${locale}`,
@@ -52,26 +66,22 @@ export default async function CareerDetailPage({
   const title = career.title ?? ''
   const dept = career.department || null
   const location: string | null = null
-  const responsibilities = textToParagraphs(career.responsibilities)
-  const requirements = textToParagraphs(career.requirements)
+  const responsibilities = textToParagraphs(career.responsibilities ?? null)
+  const requirements = textToParagraphs(career.requirements ?? null)
   const expiry = formatDeadline(career.applicationDeadline ?? null)
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
-
-        <div className="narrow-shell mb-6">
-          <Link
-            href="/career"
-            className="inline-flex items-center gap-1 font-dm-sans text-[14px] text-gold-700 hover:text-gold-900 transition-colors"
-          >
-            <ChevronLeft size={16} />
-            Back to Career Opportunities
-          </Link>
-        </div>
-
+      <div className="min-h-screen pb-[120px] pt-[82px] min-[1500px]:pt-[128px]" style={{ background: 'var(--background)' }}>
         <div className="narrow-shell mb-10">
           <div className="relative w-full h-[320px] md:h-[460px] xl:h-[574px] rounded-[10px] overflow-hidden">
+            <Link
+              href="/career"
+              className="absolute left-4 top-4 z-10 inline-flex h-[36px] items-center gap-1 rounded-full border border-white/70 bg-[#fbf7ee]/85 px-4 font-dm-sans text-[13px] font-medium text-[#6b5836] shadow-[0_6px_18px_rgba(59,45,23,0.16)] backdrop-blur-md transition-colors hover:bg-white"
+            >
+              <ChevronLeft size={16} />
+              Back
+            </Link>
             <Image
               src={career.thumbnail || '/images/career-hero-bg.jpg'}
               alt={title}
@@ -90,7 +100,7 @@ export default async function CareerDetailPage({
             {title}
           </h1>
 
-          <div className="font-dm-sans text-[16px] xl:text-[20px] text-[#3b2d17] leading-normal flex flex-col gap-4">
+          <Reveal className="font-dm-sans text-[16px] xl:text-[20px] text-[#3b2d17] leading-normal flex flex-col gap-4">
 
             <p className="font-semibold">Job Details</p>
             <ul className="list-disc pl-8 flex flex-col gap-1">
@@ -119,7 +129,7 @@ export default async function CareerDetailPage({
               </>
             )}
 
-          </div>
+          </Reveal>
 
           {expiry && (
             <p className="font-dm-sans font-bold text-[20px] xl:text-[24px] leading-normal mt-2" style={{ color: '#9a7838' }}>
