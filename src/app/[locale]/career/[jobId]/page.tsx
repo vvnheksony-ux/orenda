@@ -2,8 +2,6 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { Link } from '@/i18n/routing'
-import { ChevronLeft } from 'lucide-react'
 import Reveal from '@/components/shared/Reveal'
 
 function textToParagraphs(text: string | null): string[] {
@@ -75,13 +73,6 @@ export default async function CareerDetailPage({
       <div className="min-h-screen pb-[120px] pt-[82px] min-[1500px]:pt-[128px]" style={{ background: 'var(--background)' }}>
         <div className="narrow-shell mb-10">
           <div className="relative w-full h-[320px] md:h-[460px] xl:h-[574px] rounded-[10px] overflow-hidden">
-            <Link
-              href="/career"
-              className="absolute left-4 top-4 z-10 inline-flex h-[36px] items-center gap-1 rounded-full border border-white/70 bg-[#fbf7ee]/85 px-4 font-dm-sans text-[13px] font-medium text-[#6b5836] shadow-[0_6px_18px_rgba(59,45,23,0.16)] backdrop-blur-md transition-colors hover:bg-white"
-            >
-              <ChevronLeft size={16} />
-              Back
-            </Link>
             <Image
               src={career.thumbnail || '/images/career-hero-bg.jpg'}
               alt={title}
