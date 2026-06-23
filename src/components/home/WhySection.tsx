@@ -28,26 +28,29 @@ function StatCard({ value, label, body }: { value: string; label: string; body: 
   )
 }
 
-const STATIC_STATS = [
-  { value: '99%', label: 'Patient satisfaction', body: 'Based on patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities.' },
-  { value: 'Over 100,000', label: 'Patient Visits since 2024', body: 'Including both Cambodian and International patients from over 20 countries — a sign of growing trust in local healthcare quality.' },
-  { value: '0%', label: 'Readmission Rate', body: "Orienda's readmission rate stands at 0%, reflecting consistent follow-up and preventive care success." },
-  { value: '0.5%', label: 'Surgical Infection Rate', body: 'A 0.5% surgical infection rate shows our commitment to safe surgeries and careful post-operative care for every patient.' },
-]
+type Stat = { value: string; label: string; body: string }
 
 export default function WhySection() {
   const t = useTranslations('WhySection')
   const locale = useLocale()
-  const [STATS, setStats] = useState<typeof STATIC_STATS | null>(null)
+  const [apiStats, setApiStats] = useState<Stat[] | null>(null)
+
+  // Fallback stats shown when the CMS (why-stats) returns nothing — translated.
+  const staticStats: Stat[] = [
+    { value: '99%',           label: t('stat1Label'), body: t('stat1Body') },
+    { value: t('stat2Value'), label: t('stat2Label'), body: t('stat2Body') },
+    { value: '0%',            label: t('stat3Label'), body: t('stat3Body') },
+    { value: '0.5%',          label: t('stat4Label'), body: t('stat4Body') },
+  ]
 
   useEffect(() => {
     fetch(`/api/why-stats?locale=${locale}`)
       .then(r => r.json())
-      .then(d => setStats(d.docs?.length ? d.docs : STATIC_STATS))
-      .catch(() => setStats(STATIC_STATS))
+      .then(d => setApiStats(d.docs?.length ? d.docs : null))
+      .catch(() => setApiStats(null))
   }, [locale])
 
-  const stats = STATS ?? STATIC_STATS
+  const stats = apiStats ?? staticStats
 
   return (
     <section className="relative w-full overflow-hidden py-[48px] xl:py-[100px] bg-[var(--background)] lg:bg-transparent">
@@ -67,10 +70,10 @@ export default function WhySection() {
         <div className="flex flex-col gap-[16px] items-start max-w-full xl:max-w-[695px]">
           <Reveal className="flex flex-col gap-[12px] lg:gap-[16px]">
             <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] leading-tight text-[#3b2d17] lg:text-[#fbf7ee]">
-              Why Orienda Is Your Best Choice?
+              {t('title')}
             </h2>
             <p className="font-dm-sans font-light text-[14px] sm:text-[16px] xl:text-[24px] leading-[1.5] overflow-hidden text-[#3b2d17] lg:text-[#fbf7ee]" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-              Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with a proven track record of life-saving success. As an ISO-certified institution, we provide 24/7 comprehensive medical services—ranging from specialized fertility and maternity care to emergency air ambulance transport—all powered by a dedicated team of over 800 professionals.
+              {t('description')}
             </p>
           </Reveal>
           <Link href="/about" className="flex items-center gap-[8px] bg-[#b89148] text-white rounded-[12px] font-dm-sans text-[15px] xl:text-[16px] px-[20px] hover:opacity-90 transition-opacity" style={{ height: 44 }}>

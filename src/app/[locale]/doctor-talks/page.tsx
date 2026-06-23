@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { ChevronRight, Search, Play } from 'lucide-react'
 import PageState from '@/components/shared/PageState'
@@ -35,6 +35,7 @@ function formatDate(iso: string) {
 
 export default function DoctorTalksPage() {
   const locale = useLocale()
+  const t = useTranslations('DoctorTalks')
   const [talks, setTalks] = useState<DoctorTalk[]>([])
   const [filteredTalks, setFilteredTalks] = useState<DoctorTalk[]>([])
   const [loading, setLoading] = useState(true)
@@ -117,11 +118,8 @@ export default function DoctorTalksPage() {
 
           {/* Hero banner */}
           <PromotionStyleHero
-            title="Orienda International Hospital"
-            lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule and appointment to experience world-class healthcare.',
-            ]}
+            title={t('heroTitle')}
+            lines={[t('heroLine1'), t('heroLine2')]}
           />
 
           {/* Two-column layout */}
@@ -134,7 +132,7 @@ export default function DoctorTalksPage() {
               <div className="bg-white flex items-center gap-[12px] h-[42px] px-[12px] py-[8px] rounded-[12px] shadow-[0px_4px_15px_rgba(220,189,114,0.12)]">
                 <input
                   className="flex-1 font-dm-sans text-[12px] text-[#3b2d17] placeholder:text-[rgba(89,69,34,0.3)] bg-transparent outline-none"
-                  placeholder="What are we looking for?"
+                  placeholder={t('searchPlaceholder')}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
@@ -161,7 +159,7 @@ export default function DoctorTalksPage() {
                       onClick={() => setShowMore(!showMore)}
                       className="w-full flex items-center justify-between p-[24px] bg-[rgba(184,145,72,0.6)] font-dm-sans text-[16px] text-[#3b2d17]"
                     >
-                      <span>{showMore ? 'Show Less' : 'See More'}</span>
+                      <span>{showMore ? t('showLess') : t('seeMore')}</span>
                       <ChevronRight size={16} className={`transition-transform ${showMore ? 'rotate-90' : ''}`} />
                     </button>
                   )}
@@ -171,7 +169,7 @@ export default function DoctorTalksPage() {
               {/* Popular articles — first 5 talks */}
               {!loading && !filtering && displayed.length > 0 && (
                 <div className="bg-white rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] p-[24px] flex flex-col gap-[12px]">
-                  <h3 className="font-cormorant font-semibold text-[24px] text-[#3b2d17] leading-none">Popular Talk</h3>
+                  <h3 className="font-cormorant font-semibold text-[24px] text-[#3b2d17] leading-none">{t('popularTalk')}</h3>
                   <div className="flex flex-col">
                     {displayed.slice(0, 5).map((talk, i) => (
                       <div key={talk.id} className="flex gap-[8px] items-start py-[16px] border-b border-[#ead6a4]/30 last:border-0">
@@ -197,8 +195,8 @@ export default function DoctorTalksPage() {
             <div className="flex-1 min-w-0 flex flex-col gap-[40px]">
               {/* Section heading */}
               <Reveal className="flex flex-col gap-[12px]">
-                <h2 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">Doctor Talk</h2>
-                <p className="font-dm-sans text-[16px] text-[#594522]">Article for health care tips</p>
+                <h2 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">{t('heading')}</h2>
+                <p className="font-dm-sans text-[16px] text-[#594522]">{t('subtitle')}</p>
               </Reveal>
 
               {/* Cards grid — 2 columns */}
@@ -218,13 +216,13 @@ export default function DoctorTalksPage() {
                 </div>
               ) : error ? (
                 <PageState
-                  title="Doctor talks unavailable"
+                  title={t('unavailable')}
                   message={error}
                 />
               ) : displayed.length === 0 ? (
                 <PageState
-                  title="No talks available"
-                  message="There are no doctor talks matching this view right now."
+                  title={t('noTalks')}
+                  message={t('noTalksMsg')}
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px] lg:gap-[40px]">
@@ -284,7 +282,7 @@ export default function DoctorTalksPage() {
                               rel="noopener noreferrer"
                               className="flex items-center gap-1 px-[12px] py-[8px] h-[32px] rounded-[12px] border border-[#b89148] font-dm-sans text-[12px] text-[#594522] hover:bg-[var(--background)] transition-colors shrink-0"
                             >
-                              Watch
+                              {t('watch')}
                               <ChevronRight size={14} />
                             </a>
                           ) : (
@@ -292,7 +290,7 @@ export default function DoctorTalksPage() {
                               href={detailHref}
                               className="flex items-center gap-1 px-[12px] py-[8px] h-[32px] rounded-[12px] border border-[#b89148] font-dm-sans text-[12px] text-[#594522] hover:bg-[var(--background)] transition-colors shrink-0"
                             >
-                              Read More
+                              {t('readMore')}
                               <ChevronRight size={14} />
                             </Link>
                           )}

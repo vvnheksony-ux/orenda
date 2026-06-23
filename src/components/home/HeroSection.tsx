@@ -60,19 +60,6 @@ export default function HeroSection() {
         className="absolute inset-0 w-full h-full object-cover object-center"
       />
 
-      {/* Welcome text */}
-      <div
-        className="absolute flex flex-col gap-[20px] not-italic text-gold-900"
-        style={{ left: 'clamp(16px, 2.6vw, 40px)', top: 'clamp(100px, 18vh, 250px)', width: 'clamp(180px, 40vw, 595px)' }}
-      >
-        <p className="text-[24px] md:text-[36px] xl:text-[48px] leading-normal" style={{ fontFamily: 'var(--font-script)' }}>
-          {t('welcome')}
-        </p>
-        <p className="font-cormorant font-bold text-[18px] md:text-[28px] xl:text-[36px] leading-none">
-          {t('hospital')}
-        </p>
-      </div>
-
       {/* Rating card — hidden on mobile */}
       <div
         className="hidden sm:flex absolute flex-col rounded-[20px] px-[16px] py-[12px] lg:px-[32px] lg:py-[24px] gap-[12px] bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(107,90,69,0.12)] z-10"
@@ -180,7 +167,7 @@ export default function HeroSection() {
             </svg>
           </div>
           {/* Room Tour label */}
-          <span className="font-dm-sans font-semibold text-[#fbf7ee] leading-none" style={{ fontSize: 'clamp(9px, 1vw, 14px)' }}>Room Tour</span>
+          <span className="font-dm-sans font-semibold text-[#fbf7ee] leading-none" style={{ fontSize: 'clamp(9px, 1vw, 14px)' }}>{t('roomTour')}</span>
         </div>
       </Link>
 

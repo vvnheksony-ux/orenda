@@ -25,7 +25,8 @@
     "promotions": "Promotion & Package",
     "packages": "Packages",
     "career": "Career",
-    "testimonials": "Testimonials"
+    "testimonials": "Testimonials",
+    "switchingBranch": "Switching branch…"
   },
   "Footer": {
     "aboutUs": "About US",
@@ -45,7 +46,8 @@
     "address": "Address",
     "open": "Open",
     "hours24": "24 Hours",
-    "socialMedia": "Social Media"
+    "socialMedia": "Social Media",
+    "internationalHospital": "International Hospital"
   },
   "HeroSection": {
     "welcome": "Welcome To",
@@ -54,7 +56,8 @@
     "aiResponse": "You asked: \"{query}\" — I'll connect you with the right information.",
     "testimonialName": "Dr. Marcus Lee",
     "testimonialRole": "Pediatric Specialist",
-    "testimonialQuote": "Timmy Demonstrates Impressive Ada..."
+    "testimonialQuote": "Timmy Demonstrates Impressive Ada...",
+    "roomTour": "Room Tour"
   },
   "ClinicSection": {
     "title": "Clinic & Centered",
@@ -87,10 +90,19 @@
   "WhySection": {
     "subtitle": "Why Choose Us",
     "title": "Why Orienda Is Your Best Choice?",
-    "description": "Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with compassionate, patient-centered care.",
+    "description": "Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with a proven track record of life-saving success. As an ISO-certified institution, we provide 24/7 comprehensive medical services—ranging from specialized fertility and maternity care to emergency air ambulance transport—all powered by a dedicated team of over 800 professionals.",
     "discoverMore": "Discover More",
     "statSatisfactionLabel": "Patient satisfaction",
-    "statSatisfactionBody": "Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction."
+    "statSatisfactionBody": "Based on 2004 patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities as key reasons for satisfaction.",
+    "stat1Label": "Patient satisfaction",
+    "stat1Body": "Based on patient feedback surveys across departments. Patients highlighted clear communication, staff friendliness, and modern facilities.",
+    "stat2Value": "Over 100,000",
+    "stat2Label": "Patient Visits since 2024",
+    "stat2Body": "Including both Cambodian and International patients from over 20 countries — a sign of growing trust in local healthcare quality.",
+    "stat3Label": "Readmission Rate",
+    "stat3Body": "Orienda's readmission rate stands at 0%, reflecting consistent follow-up and preventive care success.",
+    "stat4Label": "Surgical Infection Rate",
+    "stat4Body": "A 0.5% surgical infection rate shows our commitment to safe surgeries and careful post-operative care for every patient."
   },
   "TourSection": {
     "title": "Discovers Our facilities",
@@ -166,7 +178,10 @@
       "own": "Own",
       "year": "A Year",
       "week": "A week"
-    }
+    },
+    "refuseAll": "Refuse all",
+    "viewDetails": "View details",
+    "hideDetails": "Hide details"
   },
   "AboutHero": {
     "eyebrow": "About Orienda",
@@ -195,7 +210,8 @@
     "visitDesc": "Orienda International Hospital is committed to transparent and compassionate healthcare. Our focus on patient satisfaction and well-being, drives our continuous improvement in providing exceptional medical care.",
     "discoverMore": "Discover More",
     "facilitiesTitle": "Our Medical Facilities",
-    "facilitiesDesc": "Explore our modern and fully-equipped medical facilities, designed to deliver world-class care with comfort and precision."
+    "facilitiesDesc": "Explore our modern and fully-equipped medical facilities, designed to deliver world-class care with comfort and precision.",
+    "seeMore": "See More"
   },
   "OurClinics": {
     "title": "Our Clinics",
@@ -259,7 +275,6 @@
     "signUpEmail": "Sign up with Email",
     "continuePhone": "Continue with Phone",
     "signUpPhone": "Sign up with Phone",
-    "continueGoogle": "Continue with Google",
     "signUpGoogle": "Sign up with Google",
     "loading": "Loading…",
     "connecting": "Connecting…",
@@ -368,9 +383,9 @@
     "almostThere": "Almost there",
     "heading": "Complete your profile",
     "subtitle": "Just a few details to finish setting up your account.",
-    "fullName": "Full name *",
+    "fullName": "Full name",
     "fullNamePlaceholder": "Your full name",
-    "phone": "Phone *",
+    "phone": "Phone",
     "phonePlaceholder": "e.g. 012 345 678",
     "dateOfBirth": "Date of birth",
     "gender": "Gender",
@@ -382,7 +397,7 @@
     "saved": "Saved",
     "saving": "Saving…",
     "saveAndContinue": "Save & continue",
-    "required": "* Required to book appointments.",
+    "required": "Required to book appointments.",
     "errorName": "Please enter your full name.",
     "errorPhone": "Please enter your phone number.",
     "errorPhoneValid": "Please enter a valid phone number.",
@@ -576,6 +591,62 @@
     "sendFeedback": "Send Feedback",
     "errorName": "First and last name are required.",
     "errorFeedback": "Feedback message is required.",
-    "errorSubmit": "Something went wrong. Please try again."
+    "errorSubmit": "Something went wrong. Please try again.",
+    "dateOfBirth": "Date of Birth",
+    "selectDob": "Select date of birth",
+    "clinicVisited": "Clinic/Area Visited",
+    "selectClinic": "Select clinic"
+  },
+  "Doctors": {
+    "contactNow": "Contact Now",
+    "meetOurDoctors": "Meet Our Doctors",
+    "teamSubtitle": "A selected team of experts committed to your health",
+    "unavailable": "Doctors unavailable",
+    "noDoctors": "No doctors available",
+    "noDoctorsMsg": "There are no doctors available for this branch at the moment.",
+    "viewProfile": "View Profile"
+  },
+  "News": {
+    "latestNews": "Latest News",
+    "latestSubtitle": "Orienda's News",
+    "readMore": "Read More",
+    "heading": "News",
+    "publishedSubtitle": "Published News",
+    "unavailable": "News unavailable",
+    "noNews": "No news available",
+    "noNewsMsg": "There are no published news items right now. Please check back again soon."
+  },
+  "Promotions": {
+    "heroTitle": "Orienda International Hospital",
+    "heroLine1": "We dedicated to providing safe and reliable medical services.",
+    "heroLine2": "Schedule and appointment to experience world-class healthcare.",
+    "heading": "Promotions",
+    "subtitle": "Exclusive Deals for You",
+    "viewDetails": "View Details",
+    "packagesHeading": "Packages",
+    "packagesSubtitle": "All available packages we provide.",
+    "packagesUnavailable": "Packages unavailable",
+    "noPackages": "No packages available",
+    "noPackagesMsg": "There are no packages available at the moment.",
+    "expires": "Expires"
+  },
+  "DoctorTalks": {
+    "heroTitle": "Orienda International Hospital",
+    "heroLine1": "We dedicated to providing safe and reliable medical services.",
+    "heroLine2": "Schedule and appointment to experience world-class healthcare.",
+    "searchPlaceholder": "What are we looking for?",
+    "showLess": "Show Less",
+    "seeMore": "See More",
+    "popularTalk": "Popular Talk",
+    "heading": "Doctor Talk",
+    "subtitle": "Article for health care tips",
+    "watch": "Watch",
+    "readMore": "Read More",
+    "unavailable": "Doctor talks unavailable",
+    "noTalks": "No talks available",
+    "noTalksMsg": "There are no doctor talks matching this view right now."
+  },
+  "Common": {
+    "learnMore": "Learn More"
   }
 }

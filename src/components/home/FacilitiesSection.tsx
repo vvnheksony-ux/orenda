@@ -38,7 +38,7 @@ export default async function FacilitiesSection() {
           {/* See More pill */}
           <div className="flex justify-center pt-[8px]">
             <Link href="/about" className="px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
-              See More
+              {t('seeMore')}
             </Link>
           </div>
         </div>

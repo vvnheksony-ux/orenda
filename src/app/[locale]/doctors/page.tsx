@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { Phone } from 'lucide-react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import SiteLayout from '@/components/layout/SiteLayout'
 import Reveal from '@/components/shared/Reveal'
 import { useAnalytics } from '@/lib/use-analytics'
@@ -24,6 +24,7 @@ export default function DoctorsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const locale = useLocale()
+  const t = useTranslations('Doctors')
   const { trackCallClick } = useAnalytics()
   const { selectedBranch, ready } = useBranch()
 
@@ -97,7 +98,7 @@ export default function DoctorsPage() {
               style={{ boxShadow: '0px 0px 4.5px #cba655' }}
             >
               <Phone size={18} className="text-[#fbf7ee]" />
-              <span className="font-dm-sans text-[14px] leading-none text-[#fbf7ee]">Contact Now</span>
+              <span className="font-dm-sans text-[14px] leading-none text-[#fbf7ee]">{t('contactNow')}</span>
             </button>
           </div>
 
@@ -123,7 +124,7 @@ export default function DoctorsPage() {
                 style={{ boxShadow: '0px 0px 4.5px #cba655' }}
               >
                 <Phone size={24} className="text-[#fbf7ee]" />
-                <span className="font-dm-sans text-[20px] leading-none text-[#fbf7ee] lg:text-[24px]">Contact Now</span>
+                <span className="font-dm-sans text-[20px] leading-none text-[#fbf7ee] lg:text-[24px]">{t('contactNow')}</span>
               </button>
             </div>
           </div>
@@ -133,18 +134,18 @@ export default function DoctorsPage() {
             {/* Section header */}
             <Reveal className="flex flex-col gap-[12px] text-center w-full">
                 <h1 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none w-full">
-                  Meet Our Doctors
+                  {t('meetOurDoctors')}
                 </h1>
                 <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522] w-full">
-                  A selected team of experts committed to your health
+                  {t('teamSubtitle')}
                 </p>
             </Reveal>
 
             {/* Empty state */}
             {!isLoading && doctors.length === 0 && (
               <PageState
-                title={error ? 'Doctors unavailable' : 'No doctors available'}
-                message={error || 'There are no doctors available for this branch at the moment.'}
+                title={error ? t('unavailable') : t('noDoctors')}
+                message={error || t('noDoctorsMsg')}
               />
             )}
 
@@ -156,7 +157,7 @@ export default function DoctorsPage() {
                   <div className="flex flex-col gap-[8px] w-full">
                     <h2 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">{dept}</h2>
                     <p className="font-dm-sans text-[16px] text-[#594522]">
-                      A selected team of experts committed to your health
+                      {t('teamSubtitle')}
                     </p>
                   </div>
                   {/* Cards */}

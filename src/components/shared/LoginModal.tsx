@@ -167,11 +167,19 @@ function LoginModalContent({
     setErrorMsg('')
     setNoticeMsg('')
 
+    // Route the email-confirmation link through our callback so the PKCE `code`
+    // is exchanged for a session (otherwise the link lands on a page that can't
+    // log the user in — they end up on /<locale>?code=... still signed out).
+    const seg = window.location.pathname.split('/')[1]
+    const locale = ['en', 'km', 'zh'].includes(seg) ? seg : 'en'
+    const emailRedirectTo = `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(`/${locale}`)}`
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { phone: phoneSignup || undefined },
+        emailRedirectTo,
       },
     })
 
@@ -445,6 +453,13 @@ function LoginModalContent({
                   className={`px-4 py-2 rounded-full font-dm-sans text-[13px] transition-colors ${view === 'login' ? 'bg-[#b89148] text-white' : 'text-gold-800 hover:bg-gold-50'}`}
                 >
                   {t('signIn')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchView('register')}
+                  className={`px-4 py-2 rounded-full font-dm-sans text-[13px] transition-colors ${view === 'register' ? 'bg-[#b89148] text-white' : 'text-gold-800 hover:bg-gold-50'}`}
+                >
+                  {t('register')}
                 </button>
               </div>
               <h2 className="font-cormorant font-bold text-[32px] text-gold-900 leading-none">{title}</h2>

@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import type { ComponentProps } from 'react'
 import { useState, useEffect } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { ArrowRight, ChevronRight } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
@@ -38,6 +38,7 @@ function formatDate(iso: string) {
 
 export default function NewsPage() {
   const locale = useLocale()
+  const t = useTranslations('News')
   const [news, setNews] = useState<NewsItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -93,8 +94,8 @@ export default function NewsPage() {
               {featured && (
                 <div className="flex flex-col gap-[40px] items-start w-full max-w-[1352px]">
                   <Reveal className="flex flex-col gap-[12px] text-center w-full leading-none">
-                    <h1 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17]">Latest News</h1>
-                    <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">Orienda&apos;s News</p>
+                    <h1 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17]">{t('latestNews')}</h1>
+                    <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">{t('latestSubtitle')}</p>
                   </Reveal>
 
                   <div className="flex flex-col gap-[40px] w-full">
@@ -116,7 +117,7 @@ export default function NewsPage() {
                             {featured.title}
                           </p>
                           <div className="border border-[#b89148] rounded-[12px] flex items-center h-[32px] px-[12px] py-[8px] gap-[4px] shrink-0">
-                            <span className="font-dm-sans text-[12px] text-[#594522] px-[8px]">Read More</span>
+                            <span className="font-dm-sans text-[12px] text-[#594522] px-[8px]">{t('readMore')}</span>
                             <ArrowRight size={16} className="text-[#594522]" />
                           </div>
                         </div>
@@ -180,8 +181,8 @@ export default function NewsPage() {
               {news.length > 0 && (
                 <div className="flex flex-col gap-[40px] items-center w-full max-w-[1352px]">
                    <Reveal className="flex flex-col gap-[12px] text-center w-full leading-none">
-                     <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17]">News</h2>
-                     <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">Published News</p>
+                     <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17]">{t('heading')}</h2>
+                     <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">{t('publishedSubtitle')}</p>
                    </Reveal>
 
                   <div className="marquee-bleed py-[4px]">
@@ -209,7 +210,7 @@ export default function NewsPage() {
                             </div>
                           </div>
                           <div className="border border-[#b89148] rounded-[12px] flex items-center h-[32px] px-[12px] py-[8px] gap-[4px] shrink-0 mt-auto">
-                            <span className="font-dm-sans text-[12px] text-[#594522] px-[8px]">Read More</span>
+                            <span className="font-dm-sans text-[12px] text-[#594522] px-[8px]">{t('readMore')}</span>
                             <ArrowRight size={16} className="text-[#594522]" />
                           </div>
                         </div>
@@ -223,13 +224,13 @@ export default function NewsPage() {
               {!featured && (
                 error ? (
                   <PageState
-                    title="News unavailable"
+                    title={t('unavailable')}
                     message={error}
                   />
                 ) : (
                   <PageState
-                    title="No news available"
-                    message="There are no published news items right now. Please check back again soon."
+                    title={t('noNews')}
+                    message={t('noNewsMsg')}
                   />
                 )
               )}
