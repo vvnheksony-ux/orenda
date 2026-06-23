@@ -24,7 +24,7 @@ type ProfileForm = {
 const EMPTY: ProfileForm = { display_name: '', phone: '', date_of_birth: '', gender: '', language: 'en' }
 
 // Matches the site's form fields + CustomSelect (border #dcbd72, white bg).
-const fieldCls = 'w-full border border-[#dcbd72] rounded-[12px] px-4 py-3 font-dm-sans text-[15px] text-[#3b2d17] bg-white outline-none focus:border-[#b89148] transition-colors'
+const fieldCls = 'w-full rounded-[12px] border border-[#e7d6a8] bg-white px-4 py-3 font-dm-sans text-[15px] text-[#3b2d17] outline-none transition-all focus:border-[#b89148] focus:ring-4 focus:ring-[#b89148]/10'
 const labelCls = 'font-dm-sans text-[13px] font-medium text-[#6b5836]'
 
 // Language is stored as a code (en/km/zh) but shown as a label in the dropdown.
@@ -231,7 +231,7 @@ export default function CompleteProfilePage() {
             <button
               type="submit"
               disabled={saving || saved}
-              className="mt-[4px] w-full py-3.5 rounded-[12px] bg-[#b89148] hover:bg-[#9a7630] disabled:opacity-60 transition-colors text-white font-dm-sans font-bold text-[16px] flex items-center justify-center gap-2"
+              className="mt-[4px] w-full py-3.5 rounded-[12px] bg-[#b89148] hover:bg-[#9a7630] disabled:opacity-60 transition-colors text-white font-dm-sans font-bold text-[16px] flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(184,145,72,0.3)]"
             >
               {saved ? (<><Check size={18} /> {t('saved')}</>) : saving ? t('saving') : t('saveAndContinue')}
             </button>

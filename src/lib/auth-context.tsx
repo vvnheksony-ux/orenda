@@ -37,7 +37,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    // Local scope clears the session in this browser without a server round-trip,
+    // so sign-out can't hang on a slow/unreachable auth request. Drop local state
+    // immediately too, so the UI reflects sign-out even if the call is slow.
+    try {
+      await supabase.auth.signOut({ scope: 'local' })
+    } catch {
+      /* ignore — local state is cleared below regardless */
+    }
+    setSession(null)
+    setUser(null)
   }
 
   return (
