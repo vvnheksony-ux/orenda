@@ -206,7 +206,7 @@ export default function Navbar() {
                     >
                       <Link
                         href={item.href}
-                        className="flex items-center justify-center py-[26px] px-[10px] rounded-[22px] gap-[6px] hover:bg-white/50 transition-colors shrink-0"
+                        className="flex items-center justify-center py-[26px] px-[10px] rounded-[22px] gap-[6px] hover:bg-white/50 transition-colors shrink-0 min-w-[92px]"
                       >
                         <span className={cn(
                           'text-[14px] font-inter leading-none whitespace-nowrap',

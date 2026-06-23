@@ -51,7 +51,7 @@ export function DoctorProfileCard({ id, name, specialty, imageUrl }: DoctorProfi
       </div>
 
       <div className="flex h-[clamp(124px,10vw,145px)] shrink-0 flex-col items-center justify-between">
-        <div className="flex flex-col items-center gap-[clamp(10px,1vw,16px)] overflow-hidden px-3 text-center text-[#3b2d17] capitalize">
+        <div className="flex flex-col items-center gap-[clamp(10px,1vw,16px)] overflow-hidden px-3 pt-[clamp(16px,2.5vw,36px)] text-center text-[#3b2d17] capitalize">
           <p className="max-w-[217px] break-words font-cormorant text-[clamp(19px,1.45vw,24px)] font-medium leading-none">
             {name}
           </p>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { DatePicker, CustomSelect } from '@/components/shared/FormControls'
 
-const inputCls = 'w-full min-w-0 border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors'
+const inputCls = 'w-full min-w-0 border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-transparent outline-none focus:border-[#b89148] transition-colors'
 const labelCls = 'font-dm-sans font-medium text-[16px] text-[#3b2d17]'
 const radioCls = 'shrink-0 size-[24px] rounded-[12px] border-[1.5px] border-[#b89148] appearance-none checked:bg-[#b89148] cursor-pointer'
 
@@ -194,7 +194,7 @@ export default function FeedbackForm() {
                 onChange={e => set('comment', e.target.value)}
                 placeholder={t('feedbackPlaceholder')}
                 rows={5}
-                className="w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors resize-none placeholder:text-[rgba(59,45,23,0.3)]"
+                className="w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-transparent outline-none focus:border-[#b89148] transition-colors resize-none placeholder:text-[rgba(59,45,23,0.3)]"
               />
             </div>
           </div>

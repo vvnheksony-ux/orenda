@@ -198,16 +198,10 @@ export default function PromotionsPage() {
                   {/* Image */}
                   <div className="relative shrink-0 w-full md:w-[353px] h-[200px] md:h-full overflow-hidden">
                     <Image src={pkg.image || PACKAGE_FALLBACK_IMAGES[pkgIdx % PACKAGE_FALLBACK_IMAGES.length]} alt={pkg.title} fill className="object-cover" sizes="353px" unoptimized />
-                    {/* Price badge */}
-                    {pkg.price && (
-                      <div className="absolute bottom-3 right-3 flex items-end px-4 py-2 rounded-[16px] border-[0.5px] border-gold-500 bg-gold-50">
-                        <span className="font-dm-sans font-bold text-[18px] text-gold-500 leading-none">{pkg.price}</span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Content */}
-                  <div className="flex flex-1 items-end justify-between px-5 md:px-6 py-5 md:py-9 gap-4">
+                  <div className="flex flex-1 items-center justify-between px-5 md:px-6 py-5 md:py-7 gap-4">
                     <div className="flex flex-col gap-2.5">
                       <div className="flex items-center gap-1.5">
                         <MapPin size={14} className="text-gold-700 shrink-0" />
@@ -215,6 +209,9 @@ export default function PromotionsPage() {
                       </div>
                       <p className="font-dm-sans font-bold text-[16px] md:text-[18px] text-neutral-black leading-[1.5]">{pkg.title}</p>
                       {pkg.description && <p className="font-dm-sans text-[14px] md:text-[16px] text-neutral-black leading-[1.5] hidden md:block">{pkg.description}</p>}
+                      {pkg.price && (
+                        <span className="mt-1 inline-flex w-fit items-center px-5 py-2 rounded-full border-[0.5px] border-gold-500 bg-gold-50 font-dm-sans font-bold text-[16px] text-gold-500 leading-none">{pkg.price}</span>
+                      )}
                     </div>
                     <ChevronRight size={24} className="shrink-0 text-gold-700" />
                   </div>
