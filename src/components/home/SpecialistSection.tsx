@@ -165,13 +165,22 @@ function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt, n }: {
 export default function SpecialistSection() {
   const t = useTranslations('SpecialistSection')
   const locale = useLocale()
-  const { selectedBranch } = useBranch()
+  const { selectedBranch, ready } = useBranch()
   const [activeIdx, setActiveIdx] = useState(2)
   const [doctors, setDoctors] = useState<{ id: string; name: string; specialty: string; image: string }[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!selectedBranch) return
+    if (!ready) {
+      setLoading(true)
+      return
+    }
+
+    if (!selectedBranch) {
+      setDoctors([])
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setActiveIdx(2)
     fetch(`/api/doctors?locale=${locale}&branch=${selectedBranch.id}`)
@@ -188,7 +197,7 @@ export default function SpecialistSection() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [locale, selectedBranch])
+  }, [locale, ready, selectedBranch])
 
   const DOCTORS = doctors
   const n = DOCTORS.length
@@ -228,7 +237,7 @@ export default function SpecialistSection() {
         </div>
 
         {/* ── Mobile: centered peek carousel ── */}
-        <div className="lg:hidden w-full relative overflow-hidden">
+        <div className="md:hidden w-full relative overflow-hidden">
           <div
             className="flex transition-transform duration-300 ease-in-out"
             style={{ transform: `translateX(calc(50% - ${activeIdx * 266 + 125}px))`, gap: 16 }}
@@ -274,7 +283,7 @@ export default function SpecialistSection() {
 
         {/* ── Desktop: motion carousel ── */}
         <motion.div
-          className="hidden lg:flex relative w-full items-center justify-center h-[600px] cursor-grab active:cursor-grabbing"
+          className="hidden md:flex relative w-full items-center justify-center h-[600px] cursor-grab active:cursor-grabbing"
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.05}

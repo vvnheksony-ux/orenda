@@ -25,10 +25,10 @@ export default function FaqSection() {
 
   return (
     <section id="faq" className="w-full bg-[var(--background)] scroll-mt-[120px]">
-      <div className="page-shell flex flex-col lg:flex-row gap-[40px] items-start relative">
+      <div className="page-shell flex flex-col md:flex-row gap-[40px] items-start relative">
 
         {/* Mobile-only: title + subtitle above accordion */}
-        <div className="flex flex-col gap-[16px] items-center text-center w-full lg:hidden">
+        <div className="flex flex-col gap-[16px] items-center text-center w-full md:hidden">
           <h2 className="font-cormorant font-bold text-[36px] text-[#3b2d17] leading-none">
             {t('title')}
           </h2>
@@ -39,7 +39,7 @@ export default function FaqSection() {
 
         {/* Left panel — anatomy image + glass overlay + FAQ text (desktop only) */}
         <div
-          className="hidden lg:block flex-1 rounded-[24px] relative overflow-hidden lg:h-[640px]"
+          className="hidden md:block flex-1 rounded-[24px] relative overflow-hidden md:h-[640px]"
           style={{ zIndex: 1 }}
         >
           {/* Layer 1: Anatomy illustration — locked to top */}

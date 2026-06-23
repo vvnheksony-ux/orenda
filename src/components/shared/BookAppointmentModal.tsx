@@ -347,7 +347,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
     e.preventDefault()
     setSubmitted(true)
     if (!form.patient_name.trim() || !form.patient_phone.trim()) {
-      setError('Patient name and phone are required.')
+      setError(t('requiredFields'))
       return
     }
     const preferred = dateChoice === 'earliest'
@@ -374,10 +374,10 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
           status: 'pending',
         }),
       })
-      if (!res.ok) { const d = await res.json(); setError(d.error || 'Something went wrong.'); setStatus('error'); return }
+      if (!res.ok) { const d = await res.json(); setError(d.error || t('genericError')); setStatus('error'); return }
       setStatus('success'); setSubmitted(false)
     } catch {
-      setError('Could not reach the server. Please try again.'); setStatus('error')
+      setError(t('networkError')); setStatus('error')
     }
   }
 
@@ -395,7 +395,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
     )
   }
 
-  return (
+  const modal = (
     <>
       <AnimatePresence>
         {open && (
@@ -465,10 +465,10 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
                   {/* Patient's Name */}
                   <div className="flex flex-col gap-[8px] w-full">
-                    <label className={labelCls}>Patient&apos;s Name</label>
+                    <label className={labelCls}>{t('patientName')}</label>
                     <input
                       type="text"
-                      placeholder="Full name"
+                      placeholder={t('namePlaceholder')}
                       value={form.patient_name}
                       onChange={e => set('patient_name', e.target.value)}
                       className={inputCls + reqCls(!form.patient_name.trim())}
@@ -478,20 +478,20 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                   {/* Email + Phone */}
                   <div className="flex flex-col sm:flex-row gap-[24px] w-full">
                     <div className="flex flex-1 flex-col gap-[8px]">
-                      <label className={labelCls}>Email</label>
+                      <label className={labelCls}>{t('email')}</label>
                       <input
                         type="email"
-                        placeholder="your@email.com"
+                        placeholder={t('emailPlaceholder')}
                         value={form.patient_email}
                         onChange={e => set('patient_email', e.target.value)}
                         className={inputCls}
                       />
                     </div>
                     <div className="flex flex-1 flex-col gap-[8px]">
-                      <label className={labelCls}>Phone Number</label>
+                      <label className={labelCls}>{t('phoneNumber')}</label>
                       <input
                         type="tel"
-                        placeholder="098 000 999"
+                        placeholder={t('phonePlaceholder')}
                         value={form.patient_phone}
                         onChange={e => set('patient_phone', e.target.value)}
                         className={inputCls + reqCls(!form.patient_phone.trim())}
@@ -502,12 +502,12 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                   {/* Clinic (dept) */}
                   <div className="flex flex-col gap-[8px] w-full">
                     <label className={labelCls}>
-                      Clinic <span className="text-[#b89148] font-normal">(Optional)</span>
+                      {t('clinicLabel')} <span className="text-[#b89148] font-normal">{t('emailOptional')}</span>
                     </label>
                     <CustomSelect
                       value={form.department_payload_id}
                       onChange={handleDepartmentChange}
-                      placeholder={dataLoading ? 'Loading clinics…' : 'Select department'}
+                      placeholder={dataLoading ? t('loadingDepartments') : t('selectDepartment')}
                       options={departments.map(d => ({ value: d.id, label: d.name }))}
                     />
                   </div>
@@ -516,17 +516,17 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                   <div className="flex flex-col sm:flex-row gap-[24px] w-full">
                     <div className="flex flex-1 flex-col gap-[8px]">
                       <label className={labelCls}>
-                        Service / Purpose <span className="text-[#b89148] font-normal">(Optional)</span>
+                        {t('servicePurpose')} <span className="text-[#b89148] font-normal">{t('emailOptional')}</span>
                       </label>
                       <CustomSelect
                         value={form.service_payload_id}
                         onChange={v => set('service_payload_id', v)}
                         placeholder={
                           !form.department_payload_id
-                            ? 'Select service'
+                            ? t('selectService')
                             : serviceLocked
-                              ? 'No services available for this clinic'
-                              : 'Select service'
+                              ? t('noServicesAvailable')
+                              : t('selectService')
                         }
                         options={services.map(s => ({ value: s.id, label: s.title }))}
                         disabled={serviceLocked}
@@ -534,12 +534,12 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                     </div>
                     <div className="flex flex-1 flex-col gap-[8px]">
                       <label className={labelCls}>
-                        Doctor&apos;s Name <span className="text-[#b89148] font-normal">(Optional)</span>
+                        {t('doctorNameLabel')} <span className="text-[#b89148] font-normal">{t('emailOptional')}</span>
                       </label>
                       <CustomSelect
                         value={form.doctor_payload_id}
                         onChange={handleDoctorChange}
-                        placeholder={dataLoading ? 'Loading doctors…' : 'Select doctor'}
+                        placeholder={dataLoading ? t('loadingDoctors') : t('selectDoctor')}
                         options={filteredDoctors.map(d => ({
                           value: d.id,
                           label: d.name + (d.specialty ? ` — ${d.specialty}` : ''),
@@ -557,7 +557,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                           {dateChoice === choice && <div className="size-[12px] rounded-full bg-[#b89148] absolute" />}
                         </div>
                         <span className="font-dm-sans text-[16px] text-[#7a5f2c]">
-                          {i === 0 ? 'Earliest date available' : 'Choose Prefer Date'}
+                          {i === 0 ? t('earliestAvailable') : t('chooseDate')}
                         </span>
                       </label>
                     ))}
@@ -565,11 +565,11 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
                   {/* Date + Time — only when choose */}
                   {dateChoice === 'choose' && (
-                    <div className="flex flex-col lg:flex-row gap-4 w-full">
+                    <div className="flex flex-col md:flex-row gap-4 w-full">
 
                       {/* ── Calendar ── */}
                       <div className="flex-1 min-w-0">
-                        <p className="font-dm-sans text-[16px] text-[#3b2d17] mb-2">Preferred date</p>
+                        <p className="font-dm-sans text-[16px] text-[#3b2d17] mb-2">{t('preferredDate')}</p>
                         <div className="px-4 py-3 rounded-xl outline outline-1 outline-[#7a5f2c] flex items-center justify-between bg-white mb-3">
                           <span className="font-dm-sans text-[16px] text-[#3b2d17] leading-6">
                             {form.preferred_date
@@ -635,7 +635,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
                       {/* ── Time periods ── */}
                       <div className="flex-1 min-w-0">
-                        <p className="font-dm-sans text-[16px] text-[#3b2d17] mb-2">Preferred time</p>
+                        <p className="font-dm-sans text-[16px] text-[#3b2d17] mb-2">{t('preferredTime')}</p>
                         <div className="px-4 py-3 rounded-xl outline outline-1 outline-[#7a5f2c] flex items-center justify-between bg-white mb-3">
                           <span className="font-dm-sans text-[16px] text-[#3b2d17] leading-6">
                             {TIME_PERIODS.find(p => p.time === form.preferred_time)?.time ?? '12:00 AM'}
@@ -675,10 +675,10 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
                   {/* Personal Request */}
                   <div className="flex flex-col gap-[8px] w-full">
-                    <label className={labelCls}>Personal Request</label>
+                    <label className={labelCls}>{t('personalRequest')}</label>
                     <textarea
                       rows={4}
-                      placeholder="Enter your message here"
+                      placeholder={t('messagePlaceholder')}
                       value={form.message}
                       onChange={e => set('message', e.target.value)}
                       className={inputCls + ' resize-none'}
@@ -697,7 +697,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                       boxShadow: requiredReady ? '0px 0px 12px 4px rgba(184,145,72,0.22)' : '0px 0px 12px 4px rgba(184,145,72,0.15)',
                     }}
                   >
-                    {status === 'loading' ? 'Booking...' : 'Book Appointment'}
+                    {status === 'loading' ? t('booking') : t('bookAppointment')}
                   </button>
                 </form>
               </>
@@ -710,4 +710,8 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
     </>
   )
+
+  if (typeof document === 'undefined') return null
+
+  return createPortal(modal, document.body)
 }

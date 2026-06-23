@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import { friendlyError } from '@/lib/auth-errors'
 
 const supabase = createClient()
 
@@ -38,9 +39,7 @@ function ResetForm() {
     const { error } = await supabase.auth.updateUser({ password })
 
     if (error) {
-      setErrorMsg(error.message.includes('same password')
-        ? 'New password must be different from your current password.'
-        : error.message)
+      setErrorMsg(friendlyError(error.message))
     } else {
       setDone(true)
     }

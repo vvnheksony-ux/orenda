@@ -14,8 +14,8 @@ import { Link } from '@/i18n/routing'
 import { useScrollLock } from '@/lib/useScrollLock'
 import { useBranch } from '@/lib/branch-context'
 import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
+import SignOutModal from '@/components/shared/SignOutModal'
 import { useAuth } from '@/lib/auth-context'
-import { setProfileComplete } from '@/lib/profile-status'
 
 type NavChild = { key: string; href: string }
 type NavItem  = { key: string; href: string; children?: NavChild[] }
@@ -86,8 +86,8 @@ export default function Navbar() {
   const router     = useRouter()
   const { trackLanguageSwitch, trackCallClick } = useAnalytics()
   const [isLocaleSwitching, startLocaleSwitch] = useTransition()
-  const { branches, selectedBranch, switchBranch } = useBranch()
-  const { user, loading: authLoading, signOut } = useAuth()
+  const { branches, selectedBranch, switchBranch, ready: branchReady } = useBranch()
+  const { user, loading: authLoading } = useAuth()
 
   const [mobileOpen,        setMobileOpen]        = useState(false)
   const [langOpen,          setLangOpen]          = useState(false)
@@ -96,11 +96,14 @@ export default function Navbar() {
   const [accountOpen,       setAccountOpen]       = useState(false)
   const [branchOpen,        setBranchOpen]        = useState(false)
   const [bookOpen,          setBookOpen]          = useState(false)
+  const [signOutOpen,       setSignOutOpen]       = useState(false)
   const [switchingBranch,   setSwitchingBranch]   = useState(false)
   const [hoveredKey,        setHoveredKey]        = useState<string | null>(null)
   const [mobileExpandedKey, setMobileExpandedKey] = useState<string | null>(null)
   // The drawer is portaled to <body>, so guard against SSR where document is absent.
   const [mounted,           setMounted]           = useState(false)
+  // The portal only exists after hydration, so this one-time flip is intentional.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), [])
 
   // Lock background scroll while the mobile menu is open.
@@ -119,7 +122,7 @@ export default function Navbar() {
   const branchNumeral = ({ I: 'I', II: 'II', III: 'III' } as Record<string, string>)[
     selectedBranch?.name.trim().split(/\s+/).pop()?.toUpperCase() ?? ''
   ]
-  const branchLabel = branchNumeral ? `Branch ${branchNumeral}` : 'Branch'
+  const branchLabel = branchNumeral ? `Branch ${branchNumeral}` : branchReady ? 'Branch' : 'Branch --'
 
   // Switching branch changes branch-specific content site-wide, so show a brief
   // loading screen and send the user home where the new branch data loads.
@@ -151,12 +154,10 @@ export default function Navbar() {
     }
   }, [])
 
-  const handleSignOut = async () => {
-    await signOut()
-    setProfileComplete(null)
+  const handleSignOut = () => {
     setAccountOpen(false)
     setMobileOpen(false)
-    router.push('/')
+    setSignOutOpen(true)
   }
 
   return (
@@ -182,7 +183,7 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center min-w-0">
             <Link href="/" className="relative shrink-0 w-[72px] h-[92px] transition-all duration-300">
-              <Image src="/images/logo-emblem.png" alt="Orienda International Hospital" fill sizes="64px" className="object-contain" priority />
+              <Image src="/images/logo-emblem.png" alt="Orienda International Hospital" fill sizes="72px" className="object-contain" priority />
             </Link>
           </div>
 
@@ -265,11 +266,13 @@ export default function Navbar() {
               <button
                 onClick={() => setBranchOpen(!branchOpen)}
                 className={cn(
-                  'flex items-center justify-center py-[14px] px-[12px] gap-[6px] rounded-[16px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 bg-[#F5ECD4]/40 backdrop-blur-md shrink-0'
+                  'flex min-w-[138px] items-center justify-center py-[14px] px-[12px] gap-[6px] rounded-[16px] border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#F5ECD4]/60 transition-all duration-200 bg-[#F5ECD4]/40 backdrop-blur-md shrink-0'
                 )}
               >
                 <Building2 className="w-[22px] h-[22px] text-[#3B2D17] shrink-0" strokeWidth={1.5} />
-                <span className="font-dm-sans text-[14px] text-[#3B2D17] font-normal leading-none whitespace-nowrap">{branchLabel}</span>
+                <span className="min-w-[68px] font-dm-sans text-[14px] text-[#3B2D17] font-normal leading-none whitespace-nowrap text-left">
+                  {branchLabel}
+                </span>
                 <ChevronDown className="w-[14px] h-[14px] text-[#3B2D17] shrink-0" strokeWidth={2} />
               </button>
               <AnimatePresence>
@@ -341,9 +344,12 @@ export default function Navbar() {
             </div>
 
             {/* Account */}
-            <div className="relative shrink-0" ref={accountRef}>
+            <div className="relative shrink-0 min-w-[126px] flex justify-end" ref={accountRef}>
               {authLoading ? (
-                <div className="w-[54px] h-[54px] rounded-full bg-[#F5ECD4]/40 border border-white/50" />
+                <div
+                  className="h-[54px] w-full rounded-[16px] bg-[#F5ECD4]/40 border border-white/50"
+                  aria-hidden="true"
+                />
               ) : user ? (
                 <>
                   <button
@@ -403,6 +409,7 @@ export default function Navbar() {
               <span className="font-dm-sans text-[14px] font-normal text-[#F9F9F9] whitespace-nowrap">{t('bookAppointment')}</span>
             </button>
             <BookAppointmentModal open={bookOpen} onClose={() => setBookOpen(false)} />
+            <SignOutModal open={signOutOpen} onClose={() => setSignOutOpen(false)} />
 
             <button
               onClick={() => setPhoneOpen(!phoneOpen)}
@@ -439,7 +446,7 @@ export default function Navbar() {
           className="flex items-center gap-[12px] bg-[#fbf7ee]/50 backdrop-blur-md rounded-[28px] px-[20px] py-[6px]"
         >
           <div className="relative shrink-0" style={{ width: 42, height: 55 }}>
-            <Image src="/images/logo-emblem.png" alt="Logo" fill className="object-contain" />
+            <Image src="/images/logo-emblem.png" alt="Logo" fill sizes="42px" className="object-contain" />
           </div>
           <span className="font-cormorant font-bold text-[#3b2d17] leading-none" style={{ fontSize: 28 }}>Orienda</span>
         </button>
@@ -479,7 +486,7 @@ export default function Navbar() {
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#ead6a4]/40">
                 <Link href="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-[8px]">
                   <div className="relative shrink-0" style={{ width: 32, height: 42 }}>
-                    <Image src="/images/logo-emblem.png" alt="Logo" fill className="object-contain" />
+                    <Image src="/images/logo-emblem.png" alt="Logo" fill sizes="32px" className="object-contain" />
                   </div>
                   <span className="font-cormorant font-bold text-[#3b2d17] leading-none text-[22px]">Orienda</span>
                 </Link>
@@ -492,10 +499,12 @@ export default function Navbar() {
               <div ref={mobileBranchRef} className="flex flex-col gap-2 px-4 py-4 border-b border-[#ead6a4]/40">
                 <button
                   onClick={() => setBranchOpen(!branchOpen)}
-                  className="flex items-center gap-2 bg-[#f5ecd4]/60 rounded-[12px] px-3 py-2.5"
+                  className="flex min-h-[42px] items-center gap-2 bg-[#f5ecd4]/60 rounded-[12px] px-3 py-2.5"
                 >
                   <Building2 size={16} className="text-[#3b2d17] shrink-0" />
-                  <span className="font-dm-sans text-[14px] text-[#3b2d17] leading-none flex-1 text-left truncate">{selectedBranch?.name ?? 'Select Branch'}</span>
+                  <span className="font-dm-sans text-[14px] text-[#3b2d17] leading-none flex-1 text-left truncate">
+                    {selectedBranch?.name ?? (branchReady ? 'Select Branch' : 'Loading branch...')}
+                  </span>
                   <ChevronDown size={12} className="text-[#7a5f2c] shrink-0" />
                 </button>
                 {branchOpen && branches.length > 0 && (
@@ -571,7 +580,9 @@ export default function Navbar() {
                 >
                   {t('bookAppointment')}
                 </button>
-                {authLoading ? null : user ? (
+                {authLoading ? (
+                  <div className="h-[44px] rounded-[12px] border border-[#dcbd72] bg-[#f5ecd4]/30" aria-hidden="true" />
+                ) : user ? (
                   <div className="grid grid-cols-2 gap-2">
                     <Link
                       href="/profile"

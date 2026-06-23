@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { DatePicker, CustomSelect } from '@/components/shared/FormControls'
 
 const inputCls = 'w-full min-w-0 border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors'
@@ -25,6 +25,7 @@ type FeedbackFormState = {
 
 export default function FeedbackForm() {
   const locale = useLocale()
+  const t = useTranslations('FeedbackForm')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -49,15 +50,15 @@ export default function FeedbackForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.feedback_type) {
-      setError('Please select a feedback type.')
+      setError(t('errorFeedbackType'))
       return
     }
     if (!form.comment.trim()) {
-      setError('Please enter your feedback.')
+      setError(t('errorFeedback'))
       return
     }
     if (form.contact_required && !form.email.trim() && !form.phone.trim()) {
-      setError('Please provide an email or phone number if you want us to contact you.')
+      setError(t('errorContact'))
       return
     }
     setSubmitting(true)
@@ -71,7 +72,7 @@ export default function FeedbackForm() {
       if (!res.ok) throw new Error('Failed to submit')
       setSubmitted(true)
     } catch {
-      setError('Failed to submit. Please try again.')
+      setError(t('errorSubmit'))
     } finally {
       setSubmitting(false)
     }
@@ -80,8 +81,8 @@ export default function FeedbackForm() {
   if (submitted) {
     return (
       <div className="bg-[#fbf7ee] flex flex-col items-center justify-center p-6 sm:p-[40px] rounded-[16px] w-full min-h-[200px] gap-[16px]" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
-        <p className="font-cormorant font-bold text-[28px] sm:text-[32px] text-[#3b2d17] text-center">Thank You!</p>
-        <p className="font-dm-sans text-[16px] sm:text-[18px] text-[#594522] text-center">Your feedback has been submitted successfully.</p>
+        <p className="font-cormorant font-bold text-[28px] sm:text-[32px] text-[#3b2d17] text-center">{t('thankYou')}</p>
+        <p className="font-dm-sans text-[16px] sm:text-[18px] text-[#594522] text-center">{t('thankYouDesc')}</p>
       </div>
     )
   }
@@ -92,8 +93,8 @@ export default function FeedbackForm() {
 
         <div className="flex flex-col gap-[32px] items-start w-full">
           <div className="flex flex-col gap-[8px] text-center w-full">
-            <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none w-full">Submit Your Feedback</h3>
-            <p className="font-dm-sans text-[16px] text-[#594522] w-full">We&apos;d love to hear about your experience with us.</p>
+            <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none w-full">{t('title')}</h3>
+            <p className="font-dm-sans text-[16px] text-[#594522] w-full">{t('subtitle')}</p>
           </div>
 
           <div className="flex flex-col gap-[24px] w-full">
@@ -115,10 +116,10 @@ export default function FeedbackForm() {
             />
 
             <div className="flex flex-col gap-[16px] w-full">
-              <label className={labelCls}>Would you like us to contact you about your feedback?</label>
+              <label className={labelCls}>{t('responseRequired')}</label>
               <div className="flex flex-col gap-[16px] px-[12px]">
-                {[{ label: 'Response Required', value: true }, { label: 'Response Is Not Required', value: false }].map(opt => (
-                  <label key={opt.label} className="flex gap-[16px] items-center cursor-pointer">
+                {[{ label: t('responseYes'), value: true }, { label: t('responseNo'), value: false }].map(opt => (
+                  <label key={String(opt.value)} className="flex gap-[16px] items-center cursor-pointer">
                     <input type="radio" name="contact_required" checked={form.contact_required === opt.value} onChange={() => set('contact_required', opt.value)} className={radioCls} />
                     <span className="font-dm-sans text-[16px] text-[#3b2d17]">{opt.label}</span>
                   </label>
@@ -127,14 +128,14 @@ export default function FeedbackForm() {
             </div>
 
             <div className="flex flex-col gap-[8px] w-full">
-              <label className={labelCls}>Title</label>
-              <input type="text" placeholder="Dr. Navy Blue" value={form.title} onChange={e => set('title', e.target.value)} className={inputCls} />
+              <label className={labelCls}>{t('titleField')}</label>
+              <input type="text" placeholder={t('titlePlaceholder')} value={form.title} onChange={e => set('title', e.target.value)} className={inputCls} />
             </div>
 
             <div className="flex flex-col gap-[16px] w-full">
-              <label className={labelCls}>Type of Feedback</label>
+              <label className={labelCls}>{t('feedbackType')}</label>
               <div className="flex flex-col gap-[16px] px-[12px]">
-                {['Praise', 'Suggestion', 'Complaint'].map(opt => (
+                {[t('categoryPraise'), t('categorySuggestion'), t('categoryComplaint')].map(opt => (
                   <label key={opt} className="flex gap-[16px] items-center cursor-pointer">
                     <input type="radio" name="feedbackType" value={opt} checked={form.feedback_type === opt} onChange={() => set('feedback_type', opt)} className={radioCls} />
                     <span className="font-dm-sans text-[16px] text-[#3b2d17]">{opt}</span>
@@ -145,39 +146,39 @@ export default function FeedbackForm() {
 
             <div className="flex flex-col md:flex-row gap-[24px] items-start w-full">
               <div className="flex flex-1 flex-col gap-[8px]">
-                <label className={labelCls}>Email</label>
-                <input type="email" placeholder="Travis@gmail.com" value={form.email} onChange={e => set('email', e.target.value)} className={inputCls} />
+                <label className={labelCls}>{t('email')}</label>
+                <input type="email" placeholder={t('emailPlaceholder')} value={form.email} onChange={e => set('email', e.target.value)} className={inputCls} />
               </div>
               <div className="flex flex-1 flex-col gap-[8px]">
-                <label className={labelCls}>Phone Number</label>
-                <input type="tel" placeholder="098 000 999" value={form.phone} onChange={e => set('phone', e.target.value)} className={inputCls} />
+                <label className={labelCls}>{t('phone')}</label>
+                <input type="tel" placeholder={t('phonePlaceholder')} value={form.phone} onChange={e => set('phone', e.target.value)} className={inputCls} />
               </div>
             </div>
 
             <div className="flex flex-col md:flex-row gap-[24px] items-start w-full">
               <div className="flex flex-1 flex-col gap-[8px]">
-                <label className={labelCls}>First Name</label>
-                <input type="text" placeholder="Travis" value={form.first_name} onChange={e => set('first_name', e.target.value)} className={inputCls} />
+                <label className={labelCls}>{t('firstName')}</label>
+                <input type="text" placeholder={t('firstNamePlaceholder')} value={form.first_name} onChange={e => set('first_name', e.target.value)} className={inputCls} />
               </div>
               <div className="flex flex-1 flex-col gap-[8px]">
-                <label className={labelCls}>Last Name</label>
-                <input type="text" placeholder="Scott" value={form.last_name} onChange={e => set('last_name', e.target.value)} className={inputCls} />
+                <label className={labelCls}>{t('lastName')}</label>
+                <input type="text" placeholder={t('lastNamePlaceholder')} value={form.last_name} onChange={e => set('last_name', e.target.value)} className={inputCls} />
               </div>
             </div>
 
             <CustomSelect
-              label="Nationality"
+              label={t('nationality')}
               value={form.nationality}
               onChange={v => set('nationality', v)}
-              options={['Cambodian', 'Other']}
+              options={[t('nationalityCambodian'), t('nationalityOther')]}
               placeholder="Select nationality"
               labelCls={labelCls}
             />
 
             <div className="flex flex-col gap-[16px] w-full">
-              <label className={labelCls}>Please select your role</label>
+              <label className={labelCls}>{t('role')}</label>
               <div className="flex flex-col gap-[16px] px-[12px]">
-                {['Patient', 'Other'].map(opt => (
+                {[t('rolePatient'), t('roleOther')].map(opt => (
                   <label key={opt} className="flex gap-[16px] items-center cursor-pointer">
                     <input type="radio" name="role" value={opt} checked={form.role === opt} onChange={() => set('role', opt)} className={radioCls} />
                     <span className="font-dm-sans text-[16px] text-[#3b2d17]">{opt}</span>
@@ -187,11 +188,11 @@ export default function FeedbackForm() {
             </div>
 
             <div className="flex flex-col gap-[8px] w-full">
-              <label className={labelCls}>Your Feedback</label>
+              <label className={labelCls}>{t('feedback')}</label>
               <textarea
                 value={form.comment}
                 onChange={e => set('comment', e.target.value)}
-                placeholder="Share your experience..."
+                placeholder={t('feedbackPlaceholder')}
                 rows={5}
                 className="w-full border border-[#dcbd72] rounded-[12px] px-[16px] py-[12px] font-dm-sans text-[16px] text-[rgba(59,45,23,0.5)] bg-white outline-none focus:border-[#b89148] transition-colors resize-none placeholder:text-[rgba(59,45,23,0.3)]"
               />
@@ -208,7 +209,7 @@ export default function FeedbackForm() {
             className="bg-[#b89148] flex items-center justify-center overflow-hidden px-[24px] py-[16px] rounded-[12px] w-[232px] disabled:opacity-60 hover:bg-[#c8a25a] transition-colors"
           >
             <span className="font-dm-sans font-semibold text-[20px] text-[#fbf7ee]">
-              {submitting ? 'Sending...' : 'Send Feedback'}
+              {submitting ? t('sending') : t('sendFeedback')}
             </span>
           </button>
         </div>

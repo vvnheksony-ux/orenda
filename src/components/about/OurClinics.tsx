@@ -15,8 +15,8 @@ export default async function OurClinics() {
       </RevealItem>
 
       {/* Image + first paragraph row */}
-      <RevealItem className="flex flex-col lg:flex-row gap-6 lg:gap-[40px] items-start w-full">
-        <div className="relative shrink-0 w-full lg:w-[536px] h-[260px] sm:h-[360px] lg:h-[510px] rounded-[24px] overflow-hidden shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] bg-white">
+      <RevealItem className="flex flex-col md:flex-row gap-6 lg:gap-[40px] items-start w-full">
+        <div className="relative shrink-0 w-full md:w-[clamp(320px,35vw,536px)] h-[260px] sm:h-[360px] md:h-[clamp(360px,34vw,510px)] rounded-[24px] overflow-hidden shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] bg-white">
           <Image
             src="/images/about/about-vision.jpg"
             alt="Our Clinics"

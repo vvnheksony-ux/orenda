@@ -4,9 +4,21 @@ export const metadata: Metadata = { title: 'Insurance' }
 import Image from 'next/image'
 import { headers } from 'next/headers'
 import SiteLayout from '@/components/layout/SiteLayout'
+import Reveal from '@/components/shared/Reveal'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
+import PageState from '@/components/shared/PageState'
 
-async function getInsuranceUpdates(locale: string): Promise<{ id: string; name: string; logo: string | null }[]> {
+type InsuranceDoc = {
+  id: string | number
+  insuranceProvider?: string | null
+  title?: string | null
+  thumbnail?: string | null
+}
+
+async function getInsuranceUpdates(locale: string): Promise<{
+  insurers: { id: string; name: string; logo: string | null }[]
+  error: string | null
+}> {
   // Fetch via the raw-pool API route (the working DB path) instead of Payload's
   // direct connection, which times out on serverless.
   try {
@@ -20,15 +32,21 @@ async function getInsuranceUpdates(locale: string): Promise<{ id: string; name: 
         (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
     const res = await fetch(`${base}/api/insurance-updates?locale=${locale}`, { cache: 'no-store' })
-    if (!res.ok) return []
+    if (!res.ok) {
+      return { insurers: [], error: 'We could not load insurance providers right now.' }
+    }
     const data = await res.json()
-    return (data.docs ?? []).map((doc: any) => ({
-      id: String(doc.id),
-      name: doc.insuranceProvider || doc.title || '',
-      logo: doc.thumbnail ?? null,
-    }))
+    const docs = (data.docs ?? []) as InsuranceDoc[]
+    return {
+      insurers: docs.map((doc) => ({
+        id: String(doc.id),
+        name: doc.insuranceProvider || doc.title || '',
+        logo: doc.thumbnail ?? null,
+      })),
+      error: null,
+    }
   } catch {
-    return []
+    return { insurers: [], error: 'We could not load insurance providers right now.' }
   }
 }
 
@@ -38,7 +56,7 @@ export default async function InsurancePage({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
-  const insurers = await getInsuranceUpdates(locale)
+  const { insurers, error } = await getInsuranceUpdates(locale)
 
   return (
     <SiteLayout>
@@ -58,16 +76,21 @@ export default async function InsurancePage({
 
           {/* Insurance section */}
           <div className="flex flex-col gap-[40px] items-center w-full">
-            <div className="flex flex-col gap-[12px] text-center w-full">
+            <Reveal className="flex flex-col gap-[12px] text-center w-full">
               <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">
                 Insurance
               </h2>
               <p className="font-dm-sans text-[20px] text-[#594522] capitalize w-full">
                 What do we accept?
               </p>
-            </div>
+            </Reveal>
 
-            {insurers.length > 0 ? (
+            {error ? (
+              <PageState
+                title="Insurance unavailable"
+                message={error}
+              />
+            ) : insurers.length > 0 ? (
               <div className="flex flex-wrap gap-5 lg:gap-[40px] items-stretch justify-center w-full">
                 {insurers.map((ins) => (
                   <div
@@ -100,9 +123,10 @@ export default async function InsurancePage({
                 ))}
               </div>
             ) : (
-              <p className="font-dm-sans text-[18px] text-[#594522] opacity-60">
-                No insurance providers listed yet.
-              </p>
+              <PageState
+                title="No insurance providers listed yet"
+                message="We do not have any insurance partners published right now."
+              />
             )}
           </div>
 

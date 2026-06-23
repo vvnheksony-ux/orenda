@@ -5,8 +5,9 @@ import { ArrowRight } from 'lucide-react'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import { useState, useEffect } from 'react'
 import SiteLayout from '@/components/layout/SiteLayout'
+import Reveal from '@/components/shared/Reveal'
 import { Link } from '@/i18n/routing'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useBranch } from '@/lib/branch-context'
 
 interface Department {
@@ -24,12 +25,12 @@ function isWomens(dept: Department) {
 }
 
 const BANNER_ITEMS = [
-  { icon: '/images/clinics/banner-icon1.png', title: 'Discover our departments',  desc: 'Choose by name, specialty and more.' },
-  { icon: '/images/clinics/banner-icon2.png', title: 'Discover our departments',  desc: 'Ask about our treatments and services' },
-  { icon: '/images/clinics/banner-icon3.png', title: 'Discover our departments',  desc: 'Schedule your visit online.' },
+  { icon: '/images/clinics/banner-icon1.png', titleKey: 'banner1Title' as const,  descKey: 'banner1Desc' as const },
+  { icon: '/images/clinics/banner-icon2.png', titleKey: 'banner2Title' as const,  descKey: 'banner2Desc' as const },
+  { icon: '/images/clinics/banner-icon3.png', titleKey: 'banner3Title' as const,  descKey: 'banner3Desc' as const },
 ]
 
-function DeptCard({ dept, variant }: { dept: Department; variant: 'pink' | 'gold' }) {
+function DeptCard({ dept, variant, learnMoreLabel }: { dept: Department; variant: 'pink' | 'gold'; learnMoreLabel: string }) {
   const icon = dept.icon || '/images/specialty-obstetric.png'
   const isPink = variant === 'pink'
 
@@ -57,7 +58,7 @@ function DeptCard({ dept, variant }: { dept: Department; variant: 'pink' | 'gold
           {dept.name}
         </p>
         <div className={`flex items-center gap-[4px] rounded-[12px] border-[1.5px] px-[12px] py-[8px] transition-colors group-hover:bg-[rgba(184,145,72,0.06)] ${isPink ? 'border-[#f6a3c6]' : 'border-[#b89148]'}`}>
-          <span className="px-[6px] font-dm-sans text-[14px] text-[#5c4924] sm:px-[8px] sm:text-[16px]">Learn More</span>
+                          <span className="px-[6px] font-dm-sans text-[14px] text-[#5c4924] sm:px-[8px] sm:text-[16px]">{learnMoreLabel}</span>
           <ArrowRight size={16} className="text-[#5c4924]" />
         </div>
       </div>
@@ -71,6 +72,7 @@ function SkeletonCard() {
 
 export default function DepartmentsPage() {
   const locale = useLocale()
+  const t = useTranslations('Departments')
   const { selectedBranch, ready } = useBranch()
   const [depts, setDepts] = useState<Department[]>([])
   const [loading, setLoading] = useState(true)
@@ -119,10 +121,10 @@ export default function DepartmentsPage() {
           <PromotionStyleHero
             imageSrc="/images/about/about-hero-3.jpg"
             imageAlt="Orienda International Hospital"
-            title="Orienda International Hospital"
+            title={t('heroTitle')}
             lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule an appointment to experience world-class healthcare.',
+              t('heroLine1'),
+              t('heroLine2'),
             ]}
           />
 
@@ -132,11 +134,11 @@ export default function DepartmentsPage() {
               {BANNER_ITEMS.map((item, i) => (
                 <div key={i} className={`flex flex-col gap-[16px] items-center justify-center h-full px-4 py-5 ${i < BANNER_ITEMS.length - 1 ? 'md:border-r-2 md:border-b-0 border-b border-[#f5ecd4]' : ''}`}>
                   <div className="relative size-[97px]">
-                    <Image src={item.icon} alt={item.title} fill className="object-contain" sizes="97px" />
+                    <Image src={item.icon} alt={t(item.titleKey)} fill className="object-contain" sizes="97px" />
                   </div>
                   <div className="flex flex-col gap-[8px] items-center text-center">
-                      <p className="font-dm-sans font-medium text-[20px] lg:text-[24px] text-[#fbf7ee] leading-none capitalize">{item.title}</p>
-                      <p className="font-dm-sans text-[14px] lg:text-[16px] text-[#f5ecd4] leading-snug capitalize">{item.desc}</p>
+                      <p className="font-dm-sans font-medium text-[20px] lg:text-[24px] text-[#fbf7ee] leading-none capitalize">{t(item.titleKey)}</p>
+                      <p className="font-dm-sans text-[14px] lg:text-[16px] text-[#f5ecd4] leading-snug capitalize">{t(item.descKey)}</p>
                     </div>
                   </div>
                 ))}
@@ -145,28 +147,28 @@ export default function DepartmentsPage() {
 
           {/* Clinics & Departments */}
           <div className="flex flex-col gap-[80px] items-center w-full">
-            <div className="flex flex-col gap-[12px] text-center w-full">
-              <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">Clinics &amp; Departments</h2>
-              <p className="font-dm-sans text-[20px] text-[#594522] w-full">A selected team of experts committed to your health</p>
-            </div>
+            <Reveal className="flex flex-col gap-[12px] text-center w-full">
+              <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">{t('heading')}</h2>
+              <p className="font-dm-sans text-[20px] text-[#594522] w-full">{t('subtitle')}</p>
+            </Reveal>
 
             {loading ? (
-              <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
+              <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] md:grid-cols-4 lg:gap-[24px]">
                 {Array(6).fill(0).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : depts.length === 0 ? (
-                <p className="font-dm-sans text-[18px] text-[#594522] py-[60px] text-center w-full">No departments available at this time.</p>
+                <p className="font-dm-sans text-[18px] text-[#594522] py-[60px] text-center w-full">{t('noDepartments')}</p>
               ) : (
                 <>
                   {/* Women & Children — heading always shown; cards only when this branch has them */}
                   <div className="flex flex-col gap-[40px] items-start w-full">
                     <div className="flex flex-col gap-[8px] w-full">
-                      <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">Women &amp; Children</h3>
-                      <p className="font-dm-sans text-[16px] text-[#594522]">A selected team of experts committed to your health</p>
+                      <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">{t('womensHealth')}</h3>
+                      <p className="font-dm-sans text-[16px] text-[#594522]">{t('womensSub')}</p>
                     </div>
                     {womens.length > 0 && (
-                      <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
-                        {womens.map(d => <DeptCard key={d.id} dept={d} variant="pink" />)}
+                      <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] md:grid-cols-4 lg:gap-[24px]">
+                        {womens.map(d => <DeptCard key={d.id} dept={d} variant="pink" learnMoreLabel={t('learnMore')} />)}
                       </div>
                     )}
                   </div>
@@ -174,12 +176,12 @@ export default function DepartmentsPage() {
                   {/* General Hospital — heading always shown; cards only when this branch has them */}
                   <div className="flex flex-col gap-[40px] items-start w-full">
                     <div className="flex flex-col gap-[8px] w-full">
-                      <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">General Hospital</h3>
-                      <p className="font-dm-sans text-[18px] text-[#594522]">A selected team of experts committed to your health</p>
+                      <h3 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">{t('generalHospital')}</h3>
+                      <p className="font-dm-sans text-[18px] text-[#594522]">{t('generalSub')}</p>
                     </div>
                     {general.length > 0 && (
-                      <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] xl:grid-cols-4 lg:gap-[24px]">
-                        {general.map(d => <DeptCard key={d.id} dept={d} variant="gold" />)}
+                      <div className="mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-[16px] sm:gap-[20px] md:grid-cols-4 lg:gap-[24px]">
+                        {general.map(d => <DeptCard key={d.id} dept={d} variant="gold" learnMoreLabel={t('learnMore')} />)}
                       </div>
                     )}
                   </div>
