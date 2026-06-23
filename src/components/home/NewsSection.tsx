@@ -1,12 +1,17 @@
 'use client'
 
 import Image from 'next/image'
+import type { ComponentProps } from 'react'
 import { ChevronRight, ArrowRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useState, useEffect } from 'react'
+import Reveal from '@/components/shared/Reveal'
 
 interface NewsItem { id: string; title: string; slug: string; thumbnail: string | null; publishedAt: string }
+
+type LocalizedHref = ComponentProps<typeof Link>['href']
+const newsHref = (slug: string): LocalizedHref => `/news/${slug}` as LocalizedHref
 
 export default function NewsSection() {
   const t = useTranslations('NewsSection')
@@ -32,9 +37,9 @@ export default function NewsSection() {
           <div className="h-[52px] lg:h-[72px] w-[200px] rounded-lg bg-[#e8d9b8] animate-pulse" />
           <div className="h-[24px] w-[260px] rounded bg-[#e8d9b8] animate-pulse" />
         </div>
-        <div className="flex flex-col lg:flex-row gap-[24px] lg:gap-[37px] items-start w-full">
-          <div className="w-full lg:flex-1 rounded-2xl overflow-hidden bg-[#e8d9b8] animate-pulse h-[360px] lg:h-[508px]" />
-          <div className="hidden lg:flex lg:w-[44%] flex-col">
+        <div className="flex flex-col md:flex-row gap-[24px] lg:gap-[37px] items-start w-full">
+          <div className="w-full md:flex-1 rounded-2xl overflow-hidden bg-[#e8d9b8] animate-pulse h-[360px] lg:h-[508px]" />
+          <div className="hidden md:flex md:w-[44%] flex-col">
             {[0,1,2,3].map(i => (
               <div key={i} className="flex gap-[22px] items-center py-[12px] border-b border-[#e8d9b8]">
                 <div className="shrink-0 w-[240px] h-[147px] bg-[#e8d9b8] animate-pulse rounded" />
@@ -52,20 +57,20 @@ export default function NewsSection() {
       <div className="page-shell flex flex-col gap-[24px] lg:gap-[80px]">
 
         {/* Header */}
-        <div className="flex flex-col gap-[12px] lg:gap-[16px] items-center text-center w-full">
+        <Reveal className="flex flex-col gap-[12px] lg:gap-[16px] items-center text-center w-full">
           <h2 className="font-cormorant font-bold text-[52px] lg:text-[72px] text-[#3b2d17] leading-none">
             {t('title')}
           </h2>
           <p className="font-dm-sans text-[20px] lg:text-[24px] text-[#594522] leading-[1.4] max-w-[320px] lg:max-w-none text-center">
             {t('subtitle')}
           </p>
-        </div>
+        </Reveal>
 
         {/* Content row */}
-        <div className="flex flex-col lg:flex-row gap-[24px] lg:gap-[37px] items-start w-full">
+        <div className="flex flex-col md:flex-row gap-[24px] lg:gap-[37px] items-start w-full">
 
           {/* Featured card — full width on mobile, flex-1 on desktop */}
-          <div className="w-full lg:flex-1 min-w-0 overflow-hidden bg-white rounded-2xl shadow-[0px_2px_8px_2px_rgba(122,95,44,0.12)]">
+          <div className="w-full md:flex-1 min-w-0 overflow-hidden bg-white rounded-2xl shadow-[0px_2px_8px_2px_rgba(122,95,44,0.12)]">
 
             {/* Image */}
             <div className="relative w-full h-[280px] lg:h-[440px]">
@@ -83,7 +88,7 @@ export default function NewsSection() {
                 {featured?.title ?? t('featuredTitle')}
               </p>
               <Link
-                href={featured?.slug ? `/news/${featured.slug}` as any : '/news' as any}
+                href={featured?.slug ? newsHref(featured.slug) : '/news'}
                 className="flex items-center justify-center shrink-0 h-[32px] lg:h-[36px] px-[12px] lg:px-[16px] border border-[#b89148] rounded-[10px] gap-[4px]"
               >
                 <span className="font-dm-sans text-[12px] lg:text-[13px] text-[#594522]">{t('readMore')}</span>
@@ -93,7 +98,7 @@ export default function NewsSection() {
           </div>
 
           {/* Right: 4 stacked news items — desktop only */}
-          <div className="hidden lg:flex w-full lg:shrink-0 lg:w-[44%] flex-col items-start justify-center">
+          <div className="hidden md:flex w-full md:shrink-0 md:w-[44%] flex-col items-start justify-center">
             {sideItems.map((item, i) => (
               <div
                 key={i}
@@ -129,7 +134,7 @@ export default function NewsSection() {
         </div>
 
         {/* See More — mobile only */}
-        <div className="flex justify-center lg:hidden">
+        <div className="flex justify-center md:hidden">
           <Link href="/news" className="px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
             {t('seeMore')}
           </Link>

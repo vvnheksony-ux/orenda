@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { CalendarDays, Clock, Building2, Stethoscope, MapPin, X, Phone, Mail } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
@@ -54,6 +54,7 @@ function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: strin
 
 export default function AppointmentsPage() {
   const locale = useLocale()
+  const t = useTranslations('Appointments')
   const { user, loading: authLoading } = useAuth()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -121,7 +122,7 @@ export default function AppointmentsPage() {
           onSuccess={() => window.location.href = `/${locale}/appointments`}
           redirectTo={`/${locale}/appointments`}
           initialView="login"
-          message="Sign in to view your appointments and book new ones."
+          message={t('loginSubtitle')}
         />
       </SiteLayout>
     )
@@ -145,11 +146,11 @@ export default function AppointmentsPage() {
           {/* Header */}
           <div className="flex items-start justify-between mb-[48px] flex-wrap gap-4">
             <div className="flex flex-col gap-[8px]">
-              <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">My Appointments</h1>
-              <p className="font-dm-sans text-[18px] text-[#594522]">{appointments.length} appointment{appointments.length !== 1 ? 's' : ''} found</p>
+              <h1 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none">{t('heading')}</h1>
+              <p className="font-dm-sans text-[18px] text-[#594522]">{t('count', { count: appointments.length })}</p>
             </div>
             <BookAppointmentButton
-              label="Book New Appointment"
+              label={t('bookNew')}
               className="flex items-center gap-[8px] bg-[#b89148] hover:bg-[#9a7630] transition-colors text-white font-dm-sans text-[16px] px-[24px] py-[14px] rounded-[12px]"
             />
           </div>
@@ -158,10 +159,10 @@ export default function AppointmentsPage() {
           {appointments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-[80px] gap-[20px] text-center">
               <CalendarDays size={64} className="text-[#b89148] opacity-40" />
-              <p className="font-cormorant font-bold text-[32px] text-[#3b2d17]">No appointments yet</p>
-              <p className="font-dm-sans text-[18px] text-[#594522]">Book your first appointment with our specialists.</p>
+              <p className="font-cormorant font-bold text-[32px] text-[#3b2d17]">{t('noAppointments')}</p>
+              <p className="font-dm-sans text-[18px] text-[#594522]">{t('noAppointmentsDesc')}</p>
               <BookAppointmentButton
-                label="Book Appointment"
+                label={t('bookAppointment')}
                 className="flex items-center justify-center bg-[#b89148] hover:bg-[#9a7630] transition-colors text-white font-dm-sans text-[16px] px-[32px] py-[14px] rounded-[12px]"
               />
             </div>
@@ -237,7 +238,7 @@ export default function AppointmentsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-[28px] py-[20px] border-b border-[#f0ebe0]">
-              <h2 className="font-cormorant font-bold text-[26px] text-[#3b2d17]">Appointment Details</h2>
+              <h2 className="font-cormorant font-bold text-[26px] text-[#3b2d17]">{t('details')}</h2>
               <button onClick={() => setSelected(null)} className="text-[#594522] hover:text-[#3b2d17]" aria-label="Close">
                 <X size={22} />
               </button>
@@ -245,26 +246,26 @@ export default function AppointmentsPage() {
             <div className="px-[28px] py-[24px] flex flex-col gap-[18px]">
               <div className="flex items-center justify-between">
                 <StatusBadge status={selected.status} />
-                <span className="font-dm-sans text-[12px] text-[#b89148]">Ref: {selected.id.slice(0, 8).toUpperCase()}</span>
+                <span className="font-dm-sans text-[12px] text-[#b89148]">{t('ref')}: {selected.id.slice(0, 8).toUpperCase()}</span>
               </div>
               <div className="flex flex-col gap-[14px]">
-                <DetailRow icon={<Stethoscope size={16} />} label="Patient" value={selected.patient_name} />
-                {selected.doctor_name && <DetailRow icon={<Stethoscope size={16} />} label="Doctor" value={selected.doctor_name} />}
-                {selected.department_name && <DetailRow icon={<Building2 size={16} />} label="Department" value={selected.department_name} />}
-                {selected.branch_name && <DetailRow icon={<MapPin size={16} />} label="Branch" value={selected.branch_name} />}
-                {selected.preferred_date && <DetailRow icon={<CalendarDays size={16} />} label="Date" value={new Date(selected.preferred_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} />}
-                {selected.preferred_time && <DetailRow icon={<Clock size={16} />} label="Time" value={selected.preferred_time} />}
-                {selected.patient_phone && <DetailRow icon={<Phone size={16} />} label="Phone" value={selected.patient_phone} />}
-                {selected.patient_email && <DetailRow icon={<Mail size={16} />} label="Email" value={selected.patient_email} />}
+                <DetailRow icon={<Stethoscope size={16} />} label={t('patient')} value={selected.patient_name} />
+                {selected.doctor_name && <DetailRow icon={<Stethoscope size={16} />} label={t('doctor')} value={selected.doctor_name} />}
+                {selected.department_name && <DetailRow icon={<Building2 size={16} />} label={t('department')} value={selected.department_name} />}
+                {selected.branch_name && <DetailRow icon={<MapPin size={16} />} label={t('branch')} value={selected.branch_name} />}
+                {selected.preferred_date && <DetailRow icon={<CalendarDays size={16} />} label={t('date')} value={new Date(selected.preferred_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} />}
+                {selected.preferred_time && <DetailRow icon={<Clock size={16} />} label={t('time')} value={selected.preferred_time} />}
+                {selected.patient_phone && <DetailRow icon={<Phone size={16} />} label={t('phone')} value={selected.patient_phone} />}
+                {selected.patient_email && <DetailRow icon={<Mail size={16} />} label={t('email')} value={selected.patient_email} />}
               </div>
               {selected.message && (
                 <div className="bg-[var(--background)] rounded-[12px] p-[16px]">
-                  <p className="font-dm-sans text-[12px] text-[#b89148] mb-1">Message</p>
+                  <p className="font-dm-sans text-[12px] text-[#b89148] mb-1">{t('message')}</p>
                   <p className="font-dm-sans text-[14px] text-[#594522]">{selected.message}</p>
                 </div>
               )}
               <p className="font-dm-sans text-[12px] text-[#9a8a6a] text-center pt-3 border-t border-[#f0ebe0]">
-                Booked on {new Date(selected.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                {t('bookedOn')} {new Date(selected.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
               </p>
             </div>
           </div>

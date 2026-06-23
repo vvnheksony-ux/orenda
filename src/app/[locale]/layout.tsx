@@ -7,11 +7,10 @@ import { getMessages } from 'next-intl/server'
 import CookieConsent from '@/components/shared/CookieConsent'
 import { AnalyticsTracker } from '@/components/shared/AnalyticsTracker'
 import GoogleAnalyticsLoader from '@/components/shared/GoogleAnalyticsLoader'
-import OneSignalInit from '@/components/shared/OneSignalInit'
 import ProfileGate from '@/components/shared/ProfileGate'
 import AuthErrorToast from '@/components/shared/AuthErrorToast'
 import { BranchProvider } from '@/lib/branch-context'
-import FloatingChat from '@/components/chat/FloatingChat'
+import AppClientOverlays from '@/components/shared/AppClientOverlays'
 
 export const metadata: Metadata = {
   title: {
@@ -74,11 +73,10 @@ export default async function RootLayout({
             <BranchProvider locale={locale}>
               <GoogleAnalyticsLoader />
               <AnalyticsTracker />
-              <OneSignalInit />
               <ProfileGate />
               <AuthErrorToast />
               {children}
-              <FloatingChat />
+              <AppClientOverlays />
               <CookieConsent />
             </BranchProvider>
           </AuthProvider>

@@ -5,6 +5,7 @@ import { ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useState, useEffect } from 'react'
+import Reveal from '@/components/shared/Reveal'
 import { useBranch } from '@/lib/branch-context'
 import { DepartmentListItem, fetchDepartments } from '@/lib/departments-cache'
 
@@ -34,11 +35,16 @@ export default function ClinicSection() {
   const t = useTranslations('ClinicSection')
   const locale = useLocale()
 
-  const { selectedBranch } = useBranch()
+  const { selectedBranch, ready } = useBranch()
   const [clinics, setClinics] = useState<Clinic[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!ready) {
+      setLoading(true)
+      return
+    }
+
     if (!selectedBranch) {
       setClinics([])
       setLoading(false)
@@ -65,7 +71,7 @@ export default function ClinicSection() {
     return () => {
       active = false
     }
-  }, [locale, selectedBranch])
+  }, [locale, ready, selectedBranch])
 
   const row1 = clinics.slice(0, 4)
   const row2 = clinics.slice(4, 7)
@@ -82,14 +88,14 @@ export default function ClinicSection() {
     <section className="w-full" style={{ paddingTop: 'clamp(140px, 12vw, 180px)' }}>
       <div className="page-shell flex flex-col gap-[32px] lg:gap-[40px] items-center">
 
-        <div className="flex flex-col gap-[24px] items-center">
+        <Reveal className="flex flex-col gap-[24px] items-center">
           <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-[#3d3123] leading-none text-center">
             {t('title')}
           </h2>
           <p className="font-dm-sans text-[15px] sm:text-[17px] xl:text-[20px] text-[#8c7d6c] text-center w-full">
             {t('subtitle')}
           </p>
-        </div>
+        </Reveal>
 
         {loading && (
           <>

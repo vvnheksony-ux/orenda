@@ -1,6 +1,7 @@
 'use client'
 
 import { ArrowRight } from 'lucide-react'
+import type { ComponentProps } from 'react'
 import { useState, useEffect } from 'react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { Link } from '@/i18n/routing'
@@ -8,6 +9,10 @@ import { useLocale } from 'next-intl'
 import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
 import { fetchTourScenes, type TourScene } from '@/lib/tour-cache'
 import { useBranch } from '@/lib/branch-context'
+import Reveal from '@/components/shared/Reveal'
+
+type LocalizedHref = ComponentProps<typeof Link>['href']
+const tourHref = (sceneNumber: number): LocalizedHref => `/360-tour/${sceneNumber}` as LocalizedHref
 
 // Grid: scenes in sceneNumber order. Middle scene = featured full-width card. All others in rows of 2.
 function buildGrid(scenes: TourScene[]) {
@@ -45,12 +50,12 @@ function SceneCard({ scene }: { scene: TourScene }) {
   const src = scene.thumbnailUrl || scene.panoramaUrl || '/images/360-page-banner.jpg'
   return (
     <Link
-      href={`/360-tour/${scene.sceneNumber}` as any}
+      href={tourHref(scene.sceneNumber)}
       className="bg-white flex flex-1 flex-col items-center min-w-0 overflow-hidden rounded-3xl group w-full"
       style={{ boxShadow: '0px 4px 30px 12px rgba(138,124,88,0.12)' }}
     >
       {/* Image */}
-      <div className="relative h-[280px] sm:h-96 w-full bg-zinc-100 shrink-0 overflow-hidden">
+      <div className="relative h-[280px] sm:h-[clamp(320px,25vw,384px)] w-full bg-zinc-100 shrink-0 overflow-hidden">
         <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
         <div className="absolute top-[14px] left-[14px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
           style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
@@ -77,12 +82,12 @@ function SceneCardFull({ scene }: { scene: TourScene }) {
   const src = scene.thumbnailUrl || scene.panoramaUrl || '/images/360-page-banner.jpg'
   return (
     <Link
-      href={`/360-tour/${scene.sceneNumber}` as any}
+      href={tourHref(scene.sceneNumber)}
       className="bg-white flex flex-col md:flex-row w-full overflow-hidden rounded-3xl group"
       style={{ boxShadow: '0px 4px 30px 12px rgba(138,124,88,0.12)' }}
     >
       {/* Left: 360° frozen view ~65% width */}
-      <div className="relative shrink-0 overflow-hidden rounded-3xl w-full md:w-[65%] h-[280px] sm:h-[360px] md:h-[536px]">
+      <div className="relative shrink-0 overflow-hidden rounded-3xl w-full md:w-[65%] h-[280px] sm:h-[360px] md:h-[clamp(420px,35vw,536px)]">
         <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
         <div className="absolute top-[16px] left-[16px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
           style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
@@ -136,7 +141,6 @@ export default function ThreeSixtyTourPage() {
   useEffect(() => {
     if (!ready) return
     let active = true
-    setLoading(true)
     fetchTourScenes(locale, selectedBranch?.id)
       .then(data => { if (active) setScenes(data) })
       .catch(() => {})
@@ -155,7 +159,7 @@ export default function ThreeSixtyTourPage() {
       <div className="bg-[var(--background)] w-full">
 
         {/* Scene 1 — interactive 360° hero */}
-        <div className="pt-[100px] lg:pt-[212px] px-4 sm:px-8 md:px-12 lg:px-[80px]">
+        <div className="page-shell pt-[100px] lg:pt-[212px]">
           {loading ? (
             <div className="w-full h-[520px] rounded-[28px] bg-[#1a1308] animate-pulse" />
           ) : !scene1 ? (
@@ -181,7 +185,7 @@ export default function ThreeSixtyTourPage() {
                   <p className="font-cormorant font-bold text-white text-[28px] sm:text-[36px] lg:text-[42px] leading-none break-words">{scene1.title}</p>
                 </div>
               <Link
-                href={`/360-tour/${scene1.sceneNumber}` as any}
+                href={tourHref(scene1.sceneNumber)}
                 className="absolute top-[20px] right-[20px] z-20 flex items-center gap-[8px] px-[18px] py-[10px] rounded-[10px] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#c8a25a] transition-colors"
                 style={{ background: 'rgba(184,145,72,0.92)', backdropFilter: 'blur(6px)' }}
               >
@@ -192,11 +196,11 @@ export default function ThreeSixtyTourPage() {
         </div>
 
         {/* Grid section */}
-        <div className="flex flex-col gap-[40px] items-center pb-[120px] px-4 sm:px-8 md:px-12 lg:px-[80px] pt-[80px]">
-          <div className="flex flex-col gap-[12px] text-center w-full">
+        <div className="page-shell flex flex-col gap-[40px] items-center pb-[120px] pt-[80px]">
+          <Reveal className="flex flex-col gap-[12px] text-center w-full">
             <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none w-full">Visit Our Rooms</h2>
             <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522] w-full">See full 360 degree views of our rooms</p>
-          </div>
+          </Reveal>
 
           {loading ? <Skeleton /> : hasGroups ? (
             /* Grouped view: each room group shown as a sub-room section */

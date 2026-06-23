@@ -5,11 +5,13 @@ import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
 import { Phone, MapPin } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
+import Reveal from '@/components/shared/Reveal'
 
 interface Branch { id: string; name: string; address: string; phone: string; hours: string; image: string | null; mapUrl?: string }
 
 export default function ContactPage() {
   const locale = useLocale()
+  const t = useTranslations('Contact')
   const [branches, setBranches] = useState<Branch[]>([])
   const [sel, setSel] = useState(0)
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
@@ -34,8 +36,8 @@ export default function ContactPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name) { setError('Name is required.'); return }
-    if (!form.phone && !form.email) { setError('Phone or email is required.'); return }
+    if (!form.name) { setError(t('errorName')); return }
+    if (!form.phone && !form.email) { setError(t('errorContact')); return }
     setStatus('loading'); setError('')
     try {
       const res = await fetch('/api/contact', {
@@ -54,7 +56,7 @@ export default function ContactPage() {
       setStatus('success')
     } catch {
       setStatus('error')
-      setError('Something went wrong. Please try again.')
+      setError(t('errorGeneric'))
     }
   }
 
@@ -77,13 +79,13 @@ export default function ContactPage() {
           {/* Headline */}
           <div className="absolute bottom-[100px] lg:bottom-auto lg:top-[228px] left-0 px-6 lg:px-[56px] max-w-[900px]">
             <h1 className="font-cormorant font-bold text-[32px] lg:text-[48px] text-[#fbf7ee] leading-[1.15] italic">
-              We&apos;re Here for You<br />Whenever You Need Us
+              {t('heroLine1')}<br />{t('heroLine2')}
             </h1>
           </div>
 
           {/* Contact info card — desktop only, shown once branches load */}
           {branches.length > 0 && (
-            <div className="hidden lg:flex absolute right-[56px] top-[289px] w-[372px] bg-[var(--background)] rounded-[16px] flex-col gap-[16px] justify-end p-[36px]">
+            <div className="hidden md:flex absolute right-[56px] top-[289px] w-[372px] bg-[var(--background)] rounded-[16px] flex-col gap-[16px] justify-end p-[36px]">
               {branches.slice(0, 2).map(b => b.phone ? (
                 <div key={b.id}>
                   <p className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none mb-2">{b.name}</p>
@@ -98,12 +100,12 @@ export default function ContactPage() {
         <div className="content-shell flex flex-col items-center gap-[36px] py-[46px]">
 
           {/* Heading */}
-          <div className="text-center flex flex-col gap-[12px]">
-            <h2 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">Contact Us</h2>
+          <Reveal className="text-center flex flex-col gap-[12px]">
+            <h2 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">{t('heading')}</h2>
             <p className="font-dm-sans text-[16px] text-[#594522]">
-              We&apos;re here to answer your questions and guide you toward the right care.
+              {t('subtitle')}
             </p>
-          </div>
+          </Reveal>
 
           {/* Branch switcher */}
           {branches.length >= 2 && (
@@ -123,7 +125,7 @@ export default function ContactPage() {
           )}
 
           {/* Two columns */}
-          <div className="flex flex-col lg:flex-row gap-[24px] w-full">
+          <div className="flex flex-col md:flex-row gap-[24px] w-full">
 
             {/* Form */}
             <div className="flex-1 min-w-0">
@@ -134,34 +136,34 @@ export default function ContactPage() {
                       <path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
-                  <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none">Message Sent</h3>
-                  <p className="font-dm-sans text-[16px] text-[#594522]">Thank you! We&apos;ll get back to you shortly.</p>
+                  <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none">{t('messageSent')}</h3>
+                  <p className="font-dm-sans text-[16px] text-[#594522]">{t('messageSentDesc')}</p>
                   <button
                     onClick={() => { setStatus('idle'); setForm({ name: '', email: '', phone: '', message: '' }) }}
                     className="px-8 py-3 bg-[#b89148] text-white rounded-[12px] font-dm-sans text-[16px] hover:opacity-90 transition-opacity"
                   >
-                    Send Another
+                    {t('sendAnother')}
                   </button>
                 </div>
               ) : (
                 <form onSubmit={submit} className="bg-white rounded-[16px] shadow-[0px_4px_8px_rgba(122,95,44,0.12)] p-[40px] flex flex-col gap-[32px] h-full">
                   <div className="flex flex-col gap-[12px] items-center text-center">
-                    <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none">Send us a message</h3>
+                    <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none">{t('sendMessage')}</h3>
                     <p className="font-dm-sans text-[16px] text-[#594522]">
-                      Your health is our priority. Let us know how we can assist you today
+                      {t('sendMessageSub')}
                     </p>
                   </div>
 
                   <div className="flex flex-col gap-[24px]">
-                    <ContactField label="Patient's Name" value={form.name} onChange={v => set('name', v)} placeholder="Full name" />
-                    <ContactField label="Email" type="email" value={form.email} onChange={v => set('email', v)} placeholder="your@email.com" />
-                    <ContactField label="Phone Number" type="tel" value={form.phone} onChange={v => set('phone', v)} placeholder="098 000 999" />
+                    <ContactField label={t('nameLabel')} value={form.name} onChange={v => set('name', v)} placeholder={t('namePlaceholder')} />
+                    <ContactField label={t('emailLabel')} type="email" value={form.email} onChange={v => set('email', v)} placeholder={t('emailPlaceholder')} />
+                    <ContactField label={t('phoneLabel')} type="tel" value={form.phone} onChange={v => set('phone', v)} placeholder={t('phonePlaceholder')} />
                     <div className="flex flex-col gap-[8px]">
-                      <label className="font-dm-sans font-medium text-[16px] text-[#131927]">Personal Request</label>
+                      <label className="font-dm-sans font-medium text-[16px] text-[#131927]">{t('messageLabel')}</label>
                       <textarea
                         value={form.message}
                         onChange={e => set('message', e.target.value)}
-                        placeholder="Enter your message here"
+                        placeholder={t('messagePlaceholder')}
                         rows={6}
                         className="w-full px-[16px] py-[12px] rounded-[12px] border border-[#dcbd72] font-dm-sans text-[16px] text-[#3b2d17] outline-none resize-none focus:border-[#b89148] transition-colors bg-white placeholder:text-[rgba(59,45,23,0.3)]"
                       />
@@ -176,7 +178,7 @@ export default function ContactPage() {
                       disabled={status === 'loading'}
                       className="px-[24px] py-[16px] bg-[#b89148] text-[#fbf7ee] rounded-[12px] font-dm-sans font-semibold text-[20px] w-[232px] hover:opacity-90 transition-opacity disabled:opacity-60"
                     >
-                      {status === 'loading' ? 'Sending...' : 'Get Started'}
+                      {status === 'loading' ? t('submitting') : t('submit')}
                     </button>
                   </div>
                 </form>
@@ -231,7 +233,7 @@ export default function ContactPage() {
                   rel="noopener noreferrer"
                   className="self-center px-[32px] py-[12px] bg-[#b89148] text-white font-dm-sans font-medium text-[16px] rounded-[24px] hover:opacity-90 transition-opacity"
                 >
-                  View on Google Maps
+                  {t('viewOnGoogleMaps')}
                 </a>
               )}
             </div>

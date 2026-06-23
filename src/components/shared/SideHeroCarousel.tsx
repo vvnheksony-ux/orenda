@@ -40,9 +40,9 @@ export default function SideHeroCarousel({ slides }: SideHeroCarouselProps) {
   return (
     <div className="relative w-full">
       <div className="overflow-hidden rounded-2xl bg-white p-[10px] shadow-[0px_4px_30px_12px_rgba(220,189,114,0.10)]">
-        <div className="flex flex-col items-stretch gap-[10px] lg:flex-row-reverse">
+        <div className="flex flex-col items-stretch gap-[10px] md:flex-row-reverse">
           {/* Image — nearly full-bleed (2px inset): right on desktop, top on mobile */}
-          <div className="relative h-[220px] w-full shrink-0 overflow-hidden rounded-xl bg-[#f4efe5] sm:h-[300px] lg:h-auto lg:w-[50%]">
+          <div className="relative h-[260px] w-full shrink-0 overflow-hidden rounded-xl bg-[#f4efe5] sm:h-[320px] lg:h-auto lg:w-[50%]">
             {slides.map((slide, index) => (
               <div
                 key={`${slide.src}-${index}`}

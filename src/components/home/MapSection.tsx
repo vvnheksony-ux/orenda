@@ -12,7 +12,7 @@ function BranchCard({ branch, t, alwaysOpen = false }: { branch: Branch; t: Retu
 
   return (
     <div
-      className="relative flex-1 h-[280px] sm:h-[360px] lg:h-[450px] overflow-hidden cursor-pointer"
+      className="relative md:flex-1 h-[280px] sm:h-[360px] lg:h-[450px] overflow-hidden cursor-pointer"
       onMouseEnter={() => { if (!alwaysOpen) setHovered(true) }}
       onMouseLeave={() => { if (!alwaysOpen) setHovered(false) }}
     >
@@ -75,7 +75,7 @@ function BranchCard({ branch, t, alwaysOpen = false }: { branch: Branch; t: Retu
 export default function MapSection() {
   const t = useTranslations('MapSection')
   const locale = useLocale()
-  const [branches, setBranches] = useState<Branch[]>([])
+  const [branches, setBranches] = useState<Branch[] | null>(null)
 
   useEffect(() => {
     fetch(`/api/branches?locale=${locale}`)
@@ -84,6 +84,15 @@ export default function MapSection() {
       .catch(() => {})
   }, [locale])
 
+  if (!branches) {
+    return (
+      <section className="flex flex-col md:flex-row w-full overflow-hidden">
+        <div className="h-[280px] sm:h-[360px] lg:h-[450px] md:flex-1 bg-[#e8d9b8] animate-pulse" />
+        <div className="h-[280px] sm:h-[360px] lg:h-[450px] md:flex-1 bg-[#eadfc8] animate-pulse" />
+      </section>
+    )
+  }
+
   // branches[0] = Hospital II (left), branches[1] = Hospital I (right)
   const left = branches[0]
   const right = branches[1]
@@ -91,7 +100,7 @@ export default function MapSection() {
   if (!branches.length) return null
 
   return (
-    <section className="flex flex-col lg:flex-row w-full overflow-hidden">
+    <section className="flex flex-col md:flex-row w-full overflow-hidden">
       {left && <BranchCard branch={left} t={t} alwaysOpen={true} />}
       {right && <BranchCard branch={right} t={t} />}
     </section>

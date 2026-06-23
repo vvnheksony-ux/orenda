@@ -4,6 +4,8 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
+import { Link } from '@/i18n/routing'
+import Reveal from '@/components/shared/Reveal'
 
 
 function StatCard({ value, label, body }: { value: string; label: string; body: string }) {
@@ -14,7 +16,7 @@ function StatCard({ value, label, body }: { value: string; label: string; body: 
     >
       <div className="flex flex-col gap-[10px] pt-[4px] pb-[12px] w-full items-center text-center">
         {/* Value + label: inline on mobile, stacked on xl */}
-        <div className="flex flex-wrap xl:flex-col items-baseline xl:items-center justify-center gap-x-[6px] gap-y-[2px] xl:gap-y-[8px] font-cormorant font-bold leading-none">
+        <div className="flex flex-wrap md:flex-col items-baseline xl:items-center justify-center gap-x-[6px] gap-y-[2px] xl:gap-y-[8px] font-cormorant font-bold leading-none">
           <span className="text-[20px] sm:text-[28px] xl:text-[36px] text-[#7a5f2c] whitespace-nowrap">{value}</span>
           <span className="text-[14px] sm:text-[18px] xl:text-[24px] text-[#3b2d17]">{label}</span>
         </div>
@@ -45,48 +47,48 @@ export default function WhySection() {
       .catch(() => setStats(STATIC_STATS))
   }, [locale])
 
-  if (!STATS) return null
+  const stats = STATS ?? STATIC_STATS
 
   return (
     <section className="relative w-full overflow-hidden py-[48px] xl:py-[100px] bg-[var(--background)] lg:bg-transparent">
 
       {/* Background image — desktop only */}
-      <div className="absolute inset-0 hidden lg:block">
+      <div className="absolute inset-0 hidden md:block">
         <Image src="/images/figma-facility-1.jpg" alt="Why Orienda" fill className="object-cover" sizes="100vw" priority />
       </div>
 
       {/* Dark blur overlay — desktop only */}
-      <div className="absolute inset-0 hidden lg:block bg-[rgba(0,0,0,0.3)]" style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }} />
+      <div className="absolute inset-0 hidden md:block bg-[rgba(0,0,0,0.3)]" style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }} />
 
       {/* Content */}
       <div className="page-shell relative z-10 flex flex-col gap-[32px] xl:gap-[82px]">
 
         {/* Text block */}
         <div className="flex flex-col gap-[16px] items-start max-w-full xl:max-w-[695px]">
-          <div className="flex flex-col gap-[12px] lg:gap-[16px]">
+          <Reveal className="flex flex-col gap-[12px] lg:gap-[16px]">
             <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] leading-tight text-[#3b2d17] lg:text-[#fbf7ee]">
               Why Orienda Is Your Best Choice?
             </h2>
             <p className="font-dm-sans font-light text-[14px] sm:text-[16px] xl:text-[24px] leading-[1.5] overflow-hidden text-[#3b2d17] lg:text-[#fbf7ee]" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
               Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with a proven track record of life-saving success. As an ISO-certified institution, we provide 24/7 comprehensive medical services—ranging from specialized fertility and maternity care to emergency air ambulance transport—all powered by a dedicated team of over 800 professionals.
             </p>
-          </div>
-          <button className="flex items-center gap-[8px] bg-[#b89148] text-white rounded-[12px] font-dm-sans text-[15px] xl:text-[16px] px-[20px]" style={{ height: 44 }}>
+          </Reveal>
+          <Link href="/about" className="flex items-center gap-[8px] bg-[#b89148] text-white rounded-[12px] font-dm-sans text-[15px] xl:text-[16px] px-[20px] hover:opacity-90 transition-opacity" style={{ height: 44 }}>
             {t('discoverMore')}
             <ArrowRight size={16} />
-          </button>
+          </Link>
         </div>
 
         {/* 4 stat cards — 2 cols on mobile, staggered row on xl */}
-        {STATS.length > 0 && (
-          <div className="grid grid-cols-2 gap-[12px] xl:hidden">
-            {STATS.map((s) => (
+        {stats.length > 0 && (
+          <div className="grid grid-cols-2 gap-[12px] md:hidden">
+            {stats.map((s) => (
               <StatCard key={s.label} value={s.value} label={s.label} body={s.body} />
             ))}
           </div>
         )}
-        <div className="hidden xl:flex gap-[20px] items-start">
-          {[STATS[0], STATS[2], STATS[1], STATS[3]].filter(Boolean).map((s, i) => (
+        <div className="hidden md:flex gap-[20px] items-start">
+          {[stats[0], stats[2], stats[1], stats[3]].filter(Boolean).map((s, i) => (
             <div key={s.label} className="shrink-0 w-[322px]" style={{ marginTop: i % 2 === 1 ? 86 : 0 }}>
               <StatCard value={s.value} label={s.label} body={s.body} />
             </div>

@@ -185,7 +185,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
                   </div>
 
                   {/* Doctor cards grid */}
-                  <div className="grid w-full grid-cols-2 justify-items-center gap-[12px] sm:gap-[20px] lg:grid-cols-4 lg:gap-[40px]">
+                  <div className="grid w-full grid-cols-2 justify-items-center gap-[12px] sm:gap-[20px] md:grid-cols-4 lg:gap-[40px]">
                     {doctors.map(doc => (
                       <DoctorCard key={doc.id} doc={doc} />
                     ))}

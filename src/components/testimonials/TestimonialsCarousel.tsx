@@ -30,8 +30,8 @@ export default function TestimonialsCarousel() {
   const doubled = [...items, ...items]
 
   return (
-    <div className="w-full overflow-hidden">
-      <div className="flex gap-[32px] animate-scroll-left w-max">
+    <div className="marquee-bleed">
+      <div className="marquee-track gap-[32px] animate-scroll-left">
         {doubled.map((t, i) => {
           const name = t.name ?? t.author ?? ''
           const role = t.role ?? ''

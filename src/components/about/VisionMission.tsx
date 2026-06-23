@@ -15,7 +15,7 @@ export default async function VisionMission() {
       </RevealItem>
 
       {/* Vision: image left, text card right overlapping */}
-      <RevealItem className="flex flex-col gap-6 w-full lg:relative lg:block lg:min-h-[500px]">
+      <RevealItem className="flex flex-col gap-6 w-full lg:relative md:block lg:min-h-[500px]">
         <div className="relative lg:absolute left-0 top-0 rounded-[22px] overflow-hidden bg-white shadow-[0px_3.6px_27px_10.8px_rgba(220,189,114,0.12)] h-[240px] sm:h-[320px] lg:h-[459px] w-full lg:w-[51%] z-20">
           <Image src="/images/about/about-vision.jpg" alt="Our Vision" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 51vw" />
         </div>
@@ -26,7 +26,7 @@ export default async function VisionMission() {
       </RevealItem>
 
       {/* Mission: text card left, image right overlapping */}
-      <RevealItem className="flex flex-col gap-6 w-full lg:relative lg:block lg:min-h-[472px]">
+      <RevealItem className="flex flex-col gap-6 w-full lg:relative md:block lg:min-h-[472px] -mt-[20px]">
         <div className="relative lg:absolute right-0 top-0 rounded-[22px] overflow-hidden bg-white shadow-[0px_3.6px_27px_10.8px_rgba(220,189,114,0.12)] h-[240px] sm:h-[320px] lg:h-[431px] w-full lg:w-[54%] order-1 lg:order-2 z-20">
           <Image src="/images/about/about-mission.jpg" alt="Our Mission" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 54vw" />
         </div>
