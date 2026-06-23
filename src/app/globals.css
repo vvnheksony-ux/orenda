@@ -152,9 +152,10 @@ html::-webkit-scrollbar {
 
 .marquee-bleed {
   position: relative;
-  left: 50%;
   width: 100vw;
-  margin-left: -50vw;
+  /* Full-bleed that survives flex `items-center` parents: margin collapses to 0
+     when the parent is already viewport-wide, so it isn't mis-centered. */
+  margin-left: calc(50% - 50vw);
   overflow: hidden;
   background-color: var(--background);
 }
