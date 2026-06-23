@@ -68,7 +68,7 @@ export default function Footer() {
 
           <Link href="/" className="flex flex-col font-cormorant font-bold text-gold-50 leading-none hover:opacity-90 transition-opacity">
             <p className="text-[60px] xl:text-[128px] leading-none">ORIENDA</p>
-            <p className="text-[36px] xl:text-[64px] leading-none">International Hospital</p>
+            <p className="text-[36px] xl:text-[64px] leading-none">{t('internationalHospital')}</p>
           </Link>
 
           <div className="flex flex-col gap-[23.74px] xl:gap-[40px]">

@@ -169,7 +169,7 @@ export default function Navbar() {
             <Image src="/images/logo-emblem.png" alt="Orienda" fill sizes="64px" className="object-contain" priority />
           </div>
           <div className="w-9 h-9 border-[3px] border-[#b89148] border-t-transparent rounded-full animate-spin" />
-          <p className="font-dm-sans text-[14px] text-[#6b5836]">Switching branch…</p>
+          <p className="font-dm-sans text-[14px] text-[#6b5836]">{t('switchingBranch')}</p>
         </div>
       </div>
     )}

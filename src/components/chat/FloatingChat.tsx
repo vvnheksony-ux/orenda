@@ -80,7 +80,9 @@ function persistSession(session: Session, userId?: string) {
   if (typeof window === 'undefined') return
   try {
     const key = storageKey(userId)
-    const updated = [session, ...loadSessions(userId).filter(s => s.id !== session.id)].slice(0, MAX_SESSIONS)
+    // Logged-in users keep a full history; guests keep only a single rolling session.
+    const limit = userId ? MAX_SESSIONS : 1
+    const updated = [session, ...loadSessions(userId).filter(s => s.id !== session.id)].slice(0, limit)
     localStorage.setItem(key, JSON.stringify(updated))
   } catch {}
 }
@@ -248,6 +250,8 @@ export default function FloatingChat() {
   }
 
   const openHistory = () => {
+    // History is a signed-in feature — guests are prompted to sign in first.
+    if (!user) { setLoginOpen(true); return }
     void refreshSessions()
     setView('history')
   }

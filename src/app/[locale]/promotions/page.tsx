@@ -8,7 +8,7 @@ import Reveal from '@/components/shared/Reveal'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import { ChevronRight, MapPin, Calendar } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import PageState from '@/components/shared/PageState'
 
 interface Promo { id: string; title: string; slug: string; image: string | null; validTo: string | null }
@@ -62,6 +62,7 @@ function PackageRowSkeleton() {
 
 export default function PromotionsPage() {
   const locale = useLocale()
+  const t = useTranslations('Promotions')
   const [promos, setPromos] = useState<Promo[]>([])
   const [packages, setPackages] = useState<Package[]>([])
   const [loadingPromos, setLoadingPromos] = useState(true)
@@ -119,18 +120,15 @@ export default function PromotionsPage() {
               { src: '/images/promo-hero-3.jpg', alt: 'Orienda Hospital' },
               { src: '/images/promo-hero-2.jpg', alt: 'Orienda Hospital' },
             ]}
-            title="Orienda International Hospital"
-            lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule and appointment to experience world-class healthcare.',
-            ]}
+            title={t('heroTitle')}
+            lines={[t('heroLine1'), t('heroLine2')]}
           />
 
           {/* ── Promotions (auto-scroll marquee) ── */}
           <div className="flex flex-col gap-10">
             <Reveal className="text-center flex flex-col gap-3">
-              <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">Promotions</h2>
-              <p className="font-dm-sans text-[18px] xl:text-[20px] text-gold-800">Exclusive Deals for You</p>
+              <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">{t('heading')}</h2>
+              <p className="font-dm-sans text-[18px] xl:text-[20px] text-gold-800">{t('subtitle')}</p>
             </Reveal>
           </div>
         </div>
@@ -163,13 +161,13 @@ export default function PromotionsPage() {
                      {promo.validTo && (
                        <div className="flex items-center gap-1.5">
                          <Calendar size={12} className="shrink-0" style={{ color: '#80776a' }} />
-                        <span className="font-dm-sans text-[10px]" style={{ color: '#80776a' }}>Expires {formatExpiry(promo.validTo)}</span>
+                        <span className="font-dm-sans text-[10px]" style={{ color: '#80776a' }}>{t('expires')} {formatExpiry(promo.validTo)}</span>
                       </div>
                     )}
                   </div>
                   <Link href={`/promotions/${promo.slug}` as LocalizedHref}
                      className="self-end flex items-center gap-1 px-2.5 py-1.5 rounded-[12px] border border-gold-500 font-dm-sans text-[11px] sm:text-[12px] text-gold-800 hover:bg-gold-50 transition-colors">
-                     View Details <ChevronRight size={14} />
+                     {t('viewDetails')} <ChevronRight size={14} />
                    </Link>
                  </div>
               </div>
@@ -183,17 +181,17 @@ export default function PromotionsPage() {
           {/* ── Packages ── */}
           <div className="flex flex-col gap-10">
             <Reveal className="text-center flex flex-col gap-3">
-              <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">Packages</h2>
-              <p className="font-dm-sans text-[18px] xl:text-[20px] text-gold-800">All available packages we provide.</p>
+              <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">{t('packagesHeading')}</h2>
+              <p className="font-dm-sans text-[18px] xl:text-[20px] text-gold-800">{t('packagesSubtitle')}</p>
             </Reveal>
 
             <div className="flex flex-col gap-6">
               {loadingPackages
                 ? Array.from({ length: 3 }).map((_, i) => <PackageRowSkeleton key={i} />)
                 : packagesError
-                ? <PageState title="Packages unavailable" message={packagesError} />
+                ? <PageState title={t('packagesUnavailable')} message={packagesError} />
                 : packages.length === 0
-                ? <PageState title="No packages available" message="There are no packages available at the moment." />
+                ? <PageState title={t('noPackages')} message={t('noPackagesMsg')} />
                 : packages.map((pkg, pkgIdx) => (
                 <Link key={pkg.title} href={`/promotions/packages/${pkg.slug}` as LocalizedHref} className="bg-white rounded-[16px] overflow-hidden shadow-[0px_4px_16px_rgba(122,95,44,0.08)] flex flex-col md:flex-row h-auto md:h-[217px] relative hover:shadow-[0px_4px_24px_rgba(122,95,44,0.16)] transition-shadow">
 

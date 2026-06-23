@@ -25,7 +25,8 @@
     "promotions": "促销与套餐",
     "packages": "套餐",
     "career": "职业",
-    "testimonials": "推荐"
+    "testimonials": "推荐",
+    "switchingBranch": "正在切换分院…"
   },
   "Footer": {
     "aboutUs": "关于我们",
@@ -45,7 +46,8 @@
     "address": "地址",
     "open": "开放时间",
     "hours24": "24小时",
-    "socialMedia": "社交媒体"
+    "socialMedia": "社交媒体",
+    "internationalHospital": "国际医院"
   },
   "HeroSection": {
     "welcome": "欢迎来到",
@@ -54,7 +56,8 @@
     "aiResponse": "您问了：“{query}” — 我将为您连接正确的信息。",
     "testimonialName": "Dr. Marcus Lee",
     "testimonialRole": "儿科专家",
-    "testimonialQuote": "Timmy 表现出令人印象深刻的适应能力..."
+    "testimonialQuote": "Timmy 表现出令人印象深刻的适应能力...",
+    "roomTour": "房间参观"
   },
   "ClinicSection": {
     "title": "诊所与中心",
@@ -166,7 +169,10 @@
       "own": "自有",
       "year": "一年",
       "week": "一周"
-    }
+    },
+    "refuseAll": "全部拒绝",
+    "viewDetails": "查看详情",
+    "hideDetails": "隐藏详情"
   },
   "AboutHero": {
     "eyebrow": "关于欧瑞达",
@@ -195,7 +201,8 @@
     "visitDesc": "欧瑞达国际医院致力于提供透明和富有同情心的医疗保健。我们专注于患者的满意度和福祉，推动我们不断改进提供卓越的医疗护理。",
     "discoverMore": "了解更多",
     "facilitiesTitle": "我们的医疗设施",
-    "facilitiesDesc": "探索我们现代化且设备齐全的医疗设施，旨在以舒适和精准的方式提供世界级护理。"
+    "facilitiesDesc": "探索我们现代化且设备齐全的医疗设施，旨在以舒适和精准的方式提供世界级护理。",
+    "seeMore": "查看更多"
   },
   "OurClinics": {
     "title": "我们的诊所",
@@ -575,6 +582,62 @@
     "sendFeedback": "发送反馈",
     "errorName": "名字和姓氏为必填项。",
     "errorFeedback": "反馈内容为必填项。",
-    "errorSubmit": "出错了，请重试。"
+    "errorSubmit": "出错了，请重试。",
+    "dateOfBirth": "出生日期",
+    "selectDob": "选择出生日期",
+    "clinicVisited": "就诊的诊所/区域",
+    "selectClinic": "选择诊所"
+  },
+  "Doctors": {
+    "contactNow": "立即联系",
+    "meetOurDoctors": "认识我们的医生",
+    "teamSubtitle": "精选专家团队，致力于您的健康",
+    "unavailable": "暂时无法显示医生",
+    "noDoctors": "暂无医生",
+    "noDoctorsMsg": "目前该分院暂无医生。",
+    "viewProfile": "查看资料"
+  },
+  "News": {
+    "latestNews": "最新消息",
+    "latestSubtitle": "奥伦达新闻",
+    "readMore": "阅读更多",
+    "heading": "新闻",
+    "publishedSubtitle": "已发布的新闻",
+    "unavailable": "暂时无法显示新闻",
+    "noNews": "暂无新闻",
+    "noNewsMsg": "目前暂无已发布的新闻，请稍后再来查看。"
+  },
+  "Promotions": {
+    "heroTitle": "奥伦达国际医院",
+    "heroLine1": "我们致力于提供安全可靠的医疗服务。",
+    "heroLine2": "预约体验世界一流的医疗保健。",
+    "heading": "促销",
+    "subtitle": "为您提供的专属优惠",
+    "viewDetails": "查看详情",
+    "packagesHeading": "套餐",
+    "packagesSubtitle": "我们提供的所有套餐。",
+    "packagesUnavailable": "暂时无法显示套餐",
+    "noPackages": "暂无套餐",
+    "noPackagesMsg": "目前暂无套餐。",
+    "expires": "到期"
+  },
+  "DoctorTalks": {
+    "heroTitle": "奥伦达国际医院",
+    "heroLine1": "我们致力于提供安全可靠的医疗服务。",
+    "heroLine2": "预约体验世界一流的医疗保健。",
+    "searchPlaceholder": "您在寻找什么？",
+    "showLess": "显示更少",
+    "seeMore": "查看更多",
+    "popularTalk": "热门讲座",
+    "heading": "医生讲座",
+    "subtitle": "保健提示文章",
+    "watch": "观看",
+    "readMore": "阅读更多",
+    "unavailable": "暂时无法显示医生讲座",
+    "noTalks": "暂无讲座",
+    "noTalksMsg": "目前没有符合此视图的医生讲座。"
+  },
+  "Common": {
+    "learnMore": "了解更多"
   }
 }

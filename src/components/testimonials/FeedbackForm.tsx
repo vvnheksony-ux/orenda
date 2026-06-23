@@ -99,19 +99,19 @@ export default function FeedbackForm() {
 
           <div className="flex flex-col gap-[24px] w-full">
             <DatePicker
-              label="Date of Birth"
+              label={t('dateOfBirth')}
               value={form.date_of_birth}
               onChange={v => set('date_of_birth', v)}
-              placeholder="Select date of birth"
+              placeholder={t('selectDob')}
               labelCls={labelCls}
             />
 
             <CustomSelect
-              label="Clinic/Area Visited"
+              label={t('clinicVisited')}
               value={form.clinic_visited}
               onChange={v => set('clinic_visited', v)}
               options={['Spine', 'Obstetrics', 'Gynecology', 'General Medicine']}
-              placeholder="Select clinic"
+              placeholder={t('selectClinic')}
               labelCls={labelCls}
             />
 

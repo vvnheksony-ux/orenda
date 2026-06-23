@@ -1,6 +1,9 @@
+'use client'
+
 import Image from 'next/image'
 import { UserRound } from 'lucide-react'
 import type { ComponentProps } from 'react'
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 
 type DoctorProfileCardProps = {
@@ -11,6 +14,7 @@ type DoctorProfileCardProps = {
 }
 
 export function DoctorProfileCard({ id, name, specialty, imageUrl }: DoctorProfileCardProps) {
+  const t = useTranslations('Doctors')
   const href = `/doctors/${id}` as ComponentProps<typeof Link>['href']
 
   return (
@@ -59,7 +63,7 @@ export function DoctorProfileCard({ id, name, specialty, imageUrl }: DoctorProfi
           href={href}
           className="flex h-[32px] w-[145px] items-center justify-center overflow-hidden rounded-[10px] bg-[#b89148] px-[12px] py-[8px] font-dm-sans text-[13px] text-[#fbf7ee] transition-colors hover:bg-[#c8a25a]"
         >
-          View Profile
+          {t('viewProfile')}
         </Link>
       </div>
     </div>

@@ -79,7 +79,7 @@ export default function ClinicSection() {
   const SeeMorePill = () => (
     <div className="flex justify-center">
       <Link href="/departments" className="px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
-        See More
+        {t('seeMore')}
       </Link>
     </div>
   )
@@ -134,7 +134,7 @@ export default function ClinicSection() {
                   className="flex items-center justify-center gap-[8px] rounded-xl shadow-[0px_4px_12px_3px_rgba(89,69,34,0.2)] hover:opacity-90 transition-opacity"
                   style={{ background: 'rgba(184,145,72,0.6)' }}
                 >
-                  <span className="font-cormorant font-bold text-[18px] lg:text-[24px] text-[#fbf7ee] leading-none">See More</span>
+                  <span className="font-cormorant font-bold text-[18px] lg:text-[24px] text-[#fbf7ee] leading-none">{t('seeMore')}</span>
                   <ChevronRight className="w-[20px] h-[20px] lg:w-[24px] lg:h-[24px] text-[#fbf7ee]" />
                 </Link>
               </div>

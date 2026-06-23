@@ -446,6 +446,13 @@ function LoginModalContent({
                 >
                   {t('signIn')}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => switchView('register')}
+                  className={`px-4 py-2 rounded-full font-dm-sans text-[13px] transition-colors ${view === 'register' ? 'bg-[#b89148] text-white' : 'text-gold-800 hover:bg-gold-50'}`}
+                >
+                  {t('register')}
+                </button>
               </div>
               <h2 className="font-cormorant font-bold text-[32px] text-gold-900 leading-none">{title}</h2>
               <p className="font-dm-sans text-[14px] text-gold-700 leading-[1.5]">{message ?? subtitle}</p>

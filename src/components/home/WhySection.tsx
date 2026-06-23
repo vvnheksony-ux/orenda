@@ -67,7 +67,7 @@ export default function WhySection() {
         <div className="flex flex-col gap-[16px] items-start max-w-full xl:max-w-[695px]">
           <Reveal className="flex flex-col gap-[12px] lg:gap-[16px]">
             <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] leading-tight text-[#3b2d17] lg:text-[#fbf7ee]">
-              Why Orienda Is Your Best Choice?
+              {t('title')}
             </h2>
             <p className="font-dm-sans font-light text-[14px] sm:text-[16px] xl:text-[24px] leading-[1.5] overflow-hidden text-[#3b2d17] lg:text-[#fbf7ee]" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
               Orienda International Hospital is the premier choice for healthcare in Cambodia, combining award-winning international standards with a proven track record of life-saving success. As an ISO-certified institution, we provide 24/7 comprehensive medical services—ranging from specialized fertility and maternity care to emergency air ambulance transport—all powered by a dedicated team of over 800 professionals.
