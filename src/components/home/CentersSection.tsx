@@ -144,7 +144,7 @@ export default function CentersSection() {
         {/* 3 stat bubbles */}
         <div className="flex gap-5 w-full justify-center">
           {STATS.map(stat => (
-            <div key={stat.value} className="flex flex-col gap-[4px] items-center justify-center rounded-full bg-white/10 shadow-[0px_2.8px_8.4px_2.1px_rgba(89,69,34,0.20)]" style={{ width: 108, height: 108 }}>
+            <div key={stat.value} className="flex flex-col gap-[4px] items-center justify-center rounded-full liquid-glass" style={{ width: 108, height: 108 }}>
               <p className="font-cormorant font-bold text-[24px] text-[#3b2d17] leading-none">{stat.value}</p>
               <p className="font-dm-sans text-[11px] text-[#7a5f2c] text-center leading-tight px-2">{stat.label}</p>
             </div>
@@ -171,7 +171,7 @@ export default function CentersSection() {
             {STATS.map(stat => (
               <div
                 key={stat.value}
-                className="flex flex-col gap-[4px] items-center justify-center rounded-full bg-white/10 shadow-[0px_2.8px_8.4px_2.1px_rgba(89,69,34,0.20)] shrink-0 size-[130px] xl:size-[144px]"
+                className="flex flex-col gap-[4px] items-center justify-center rounded-full liquid-glass shrink-0 size-[130px] xl:size-[144px]"
               >
                 <p className="font-cormorant font-bold text-[22px] xl:text-[24px] text-[#3b2d17] leading-none">{stat.value}</p>
                 <p className="font-dm-sans text-[12px] text-[#7a5f2c] text-center leading-tight px-2">{stat.label}</p>
@@ -219,8 +219,8 @@ export default function CentersSection() {
             <button
               key={s.key}
               onClick={() => setIdx(i)}
-              className="group flex aspect-square flex-col items-center justify-center gap-3 sm:gap-6 rounded-xl border border-white px-4 py-4 sm:px-8 sm:py-8 overflow-hidden transition-shadow shadow-[0px_4px_12px_3px_rgba(89,69,34,0.20),inset_0px_2px_8px_rgba(89,69,34,0.08)] hover:shadow-[0px_6px_16px_4px_rgba(89,69,34,0.28),inset_0px_2px_8px_rgba(89,69,34,0.08)]"
-              style={{ background: i === idx ? 'rgba(245,236,212,0.35)' : 'rgba(245,236,212,0.20)' }}
+              className="group flex aspect-square flex-col items-center justify-center gap-3 sm:gap-6 rounded-2xl px-4 py-4 sm:px-8 sm:py-8 overflow-hidden liquid-glass"
+              style={i === idx ? { background: 'linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.16))' } : undefined}
             >
               {s.thumb && (
                 <div className="relative size-24 sm:size-32 overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105">

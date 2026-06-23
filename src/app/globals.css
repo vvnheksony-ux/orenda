@@ -190,3 +190,50 @@ html::-webkit-scrollbar {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
+
+/* Liquid glass — translucent refractive pane with a glossy top reflection and a
+   bright lower rim (Apple "liquid glass" look), not flat frosted blur. The
+   saturate/brightness lift makes whatever is behind it look wet and lensed.
+   Pseudo-elements sit at z-index:-1 above the fill but below content (the
+   element is its own stacking context via `isolation`), so card icons/text stay
+   crisp without per-child z-index. */
+.liquid-glass {
+  position: relative;
+  isolation: isolate;
+  /* white translucent frosted glass: see-through white fill + backdrop blur,
+     glossy top reflection + bright bottom edge */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
+  -webkit-backdrop-filter: blur(14px) saturate(185%) brightness(1.08);
+  backdrop-filter: blur(14px) saturate(185%) brightness(1.08);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 4px 12px 3px rgba(89, 69, 34, 0.2);
+  transition: box-shadow 0.3s ease;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.liquid-glass:hover {
+  box-shadow: 0 6px 16px 4px rgba(89, 69, 34, 0.28);
+}
+/* glossy reflection across the top + a soft corner glint */
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.12) 30%, rgba(255, 255, 255, 0) 55%),
+    radial-gradient(120% 80% at 18% 0%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 60%);
+  pointer-events: none;
+  z-index: -1;
+}
+/* bright refracted light along the bottom edge */
+.liquid-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 26%);
+  pointer-events: none;
+  z-index: -1;
+}
