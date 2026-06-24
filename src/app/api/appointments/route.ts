@@ -149,11 +149,44 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Service role client — bypasses RLS so unauthenticated submissions work
+  const insertBody = appointmentInsertBody(body, user.id)
+
+  // Service role client — bypasses RLS so submissions work
   const serviceClient = await createServiceClient()
+
+  // Availability guard (only when a specific doctor is chosen), via the
+  // get_doctor_availability RPC:
+  //   1. daily limit — a doctor accepts at most 3 bookings/day, then is locked
+  //   2. no double-booking the same time slot
+  if (insertBody.doctor_payload_id && insertBody.preferred_date) {
+    try {
+      const { data } = await serviceClient.rpc('get_doctor_availability', {
+        p_doctor: insertBody.doctor_payload_id,
+        p_date: insertBody.preferred_date,
+      })
+      const row = Array.isArray(data) ? data[0] : data
+      const booked: string[] = Array.isArray(row?.booked) ? row.booked : []
+      if (row?.is_full) {
+        return NextResponse.json(
+          { error: 'This doctor is fully booked on this date (max 3 per day). Please choose another date or doctor.' },
+          { status: 409 },
+        )
+      }
+      if (insertBody.preferred_time && booked.includes(insertBody.preferred_time)) {
+        return NextResponse.json(
+          { error: 'This time slot is already booked for this doctor. Please choose another time or doctor.' },
+          { status: 409 },
+        )
+      }
+    } catch (e) {
+      console.error('appointment availability check failed:', (e as Error).message)
+      // Don't block a booking if the check itself errors.
+    }
+  }
+
   const { error } = await serviceClient
     .from('appointments')
-    .insert([appointmentInsertBody(body, user.id)])
+    .insert([insertBody])
 
   if (error) {
     console.error('Error saving appointment:', error.message, error.details, error.hint)

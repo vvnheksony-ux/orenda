@@ -53,6 +53,9 @@ export const News: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       hasMany: true,
+      admin: {
+        description: 'Additional images shown in the article gallery. Drag to reorder.',
+      },
     },
     {
       name: 'excerpt',

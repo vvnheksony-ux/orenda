@@ -1,6 +1,7 @@
 import Navbar from './Navbar'
 import Footer from './Footer'
 import PageTransition from '@/components/shared/PageTransition'
+import MarqueeSpeed from '@/components/shared/MarqueeSpeed'
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <PageTransition>{children}</PageTransition>
       </main>
       <Footer />
+      <MarqueeSpeed />
     </>
   )
 }

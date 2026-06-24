@@ -24,6 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     key: 'about', href: '/about',
     children: [
+      { key: 'about',   href: '/about'   },
       { key: 'faq',     href: '/#faq'    },
       { key: 'inquiry', href: '/inquiry' },
       { key: 'expect',  href: '/expect'  },
@@ -32,6 +33,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     key: 'doctors', href: '/doctors',
     children: [
+      { key: 'doctors',     href: '/doctors'             },
       { key: 'departments', href: '/departments'          },
       { key: 'centers',     href: '/centers-of-excellence'},
     ],
@@ -39,12 +41,14 @@ const NAV_ITEMS: NavItem[] = [
   {
     key: 'promotions', href: '/promotions',
     children: [
-      { key: 'insurance', href: '/insurance' },
+      { key: 'promotions', href: '/promotions' },
+      { key: 'insurance',  href: '/insurance' },
     ],
   },
   {
     key: 'news', href: '/news',
     children: [
+      { key: 'news',        href: '/news'         },
       { key: 'healthTip',   href: '/health-tips'  },
       { key: 'doctorTalks', href: '/doctor-talks' },
     ],
@@ -206,7 +210,7 @@ export default function Navbar() {
                     >
                       <Link
                         href={item.href}
-                        className="flex items-center justify-center py-[26px] px-[10px] rounded-[22px] gap-[6px] hover:bg-white/50 transition-colors shrink-0"
+                        className="flex items-center justify-center py-[26px] px-[10px] rounded-[22px] gap-[6px] hover:bg-white/50 transition-colors shrink-0 min-w-[92px]"
                       >
                         <span className={cn(
                           'text-[14px] font-inter leading-none whitespace-nowrap',
@@ -349,10 +353,14 @@ export default function Navbar() {
                 <>
                   <button
                     onClick={() => setAccountOpen(!accountOpen)}
-                    className="flex items-center justify-center w-[54px] h-[54px] rounded-full bg-[#B89148]/85 border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#B89148] transition-all duration-200"
+                    className="flex items-center justify-center w-[54px] h-[54px] rounded-full overflow-hidden bg-[#B89148]/85 border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:bg-[#B89148] transition-all duration-200"
                     aria-label={t('profile')}
                   >
-                    <UserRound className="w-[24px] h-[24px] text-white" strokeWidth={1.8} />
+                    {user.user_metadata?.photo_url ? (
+                      <Image src={user.user_metadata.photo_url} alt={t('profile')} width={54} height={54} className="w-full h-full object-cover" unoptimized />
+                    ) : (
+                      <UserRound className="w-[24px] h-[24px] text-white" strokeWidth={1.8} />
+                    )}
                   </button>
                   <AnimatePresence>
                     {accountOpen && (

@@ -37,6 +37,15 @@ export const HealthTips: CollectionConfig = {
     ...baseContentFields(),
     ...slugField(),
     {
+      name: 'images',
+      type: 'upload',
+      relationTo: 'media',
+      hasMany: true,
+      admin: {
+        description: 'Additional images shown in the article gallery (in order).',
+      },
+    },
+    {
       name: 'healthTipCategory',
       type: 'select',
       options: [

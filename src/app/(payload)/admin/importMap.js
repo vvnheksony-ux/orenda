@@ -26,12 +26,15 @@ import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { default as default_4f8e48a1c50933d9d69dda40569b5dc3 } from '@/payload/admin/components/QuillRichTextField'
 import { default as default_fb430d8642b742ec80424862d3e6e3c1 } from '@/payload/admin/components/CustomEditHeader'
+import { default as default_7bf7cb5bd6b16dc3b1f617d992f6b72e } from '@/payload/admin/components/tour/HotspotEditorField'
 import { default as default_d11c455656be5af330525b1244f818b0 } from '@/payload/admin/components/navigation/OriendaPayloadNav'
 import { default as default_ef1eabf80ecf74444fefc706293acda9 } from '@/payload/admin/components/NavIcon'
 import { default as default_77ade67ed561ea0ed29bd613ed636ea9 } from '@/payload/admin/components/providers/OriendaAdminStyle'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { default as default_4a2750247bf594f2123294852220a321 } from '@/payload/admin/components/dashboard/OriendaDashboardView'
 import { default as default_86107400645bff82c4a47bb652e919d0 } from '@/payload/admin/components/operations/OperationsAdminView'
+import { default as default_6848a9104fbe088318c94c600c3e0a43 } from '@/payload/admin/components/ai-chat-bot/AIChatBotAdminView'
+import { default as default_6508a4828656d13aa498366f931c440e } from '@/payload/admin/components/settings/SettingsAdminView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -64,11 +67,14 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/payload/admin/components/QuillRichTextField#default": default_4f8e48a1c50933d9d69dda40569b5dc3,
   "@/payload/admin/components/CustomEditHeader#default": default_fb430d8642b742ec80424862d3e6e3c1,
+  "@/payload/admin/components/tour/HotspotEditorField#default": default_7bf7cb5bd6b16dc3b1f617d992f6b72e,
   "@/payload/admin/components/navigation/OriendaPayloadNav#default": default_d11c455656be5af330525b1244f818b0,
   "@/payload/admin/components/NavIcon#default": default_ef1eabf80ecf74444fefc706293acda9,
   "@/payload/admin/components/providers/OriendaAdminStyle#default": default_77ade67ed561ea0ed29bd613ed636ea9,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@/payload/admin/components/dashboard/OriendaDashboardView#default": default_4a2750247bf594f2123294852220a321,
   "@/payload/admin/components/operations/OperationsAdminView#default": default_86107400645bff82c4a47bb652e919d0,
+  "@/payload/admin/components/ai-chat-bot/AIChatBotAdminView#default": default_6848a9104fbe088318c94c600c3e0a43,
+  "@/payload/admin/components/settings/SettingsAdminView#default": default_6508a4828656d13aa498366f931c440e,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

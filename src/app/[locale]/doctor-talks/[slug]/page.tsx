@@ -88,7 +88,7 @@ export default function DoctorTalkDetailPage({ params }: { params: Promise<{ slu
 
   return (
     <SiteLayout>
-      <div className="bg-[var(--background)] w-full pb-[120px] pt-[100px] lg:pt-[212px]">
+      <div className="bg-[var(--background)] w-full pb-[120px] pt-[90px] lg:pt-[150px]">
         <div className="page-shell flex flex-col gap-[80px]">
           {loading && <div className="h-[600px] rounded-[16px] bg-[#f0ebe0] animate-pulse" />}
 
@@ -206,6 +206,7 @@ export default function DoctorTalkDetailPage({ params }: { params: Promise<{ slu
               <ExploreMoreCarousel
                 title="More Doctor Talks"
                 subtitle="Explore more sessions and healthcare topics"
+                ctaLabel="Watch"
                 items={related.map((item) => ({
                   title: item.title,
                   image: item.thumbnail,

@@ -107,7 +107,7 @@ export default function InquiryPage() {
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen pt-[90px] lg:pt-[150px] pb-[120px]" style={{ background: 'var(--background)' }}>
         <div className="content-shell flex flex-col gap-20">
 
           {/* ── Hero banner ── */}

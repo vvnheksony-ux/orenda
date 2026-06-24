@@ -38,6 +38,10 @@ export default function OriendaAdminStyle({ children }: { children: React.ReactN
     <>
       <style>{`
         .app-header__account { display: none !important; }
+        /* Remove all breadcrumbs across the admin panel (bong kaneka request). */
+        .step-nav,
+        nav.step-nav,
+        .doc-header__breadcrumbs { display: none !important; }
         .app-header__localizer {
           right: calc(var(--gutter-h) + 4px) !important;
         }

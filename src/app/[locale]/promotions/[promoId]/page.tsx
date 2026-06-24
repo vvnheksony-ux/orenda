@@ -26,6 +26,8 @@ interface PromoDetail {
   slug: string
   image: string | null
   validTo: string | null
+  price?: string
+  originalPrice?: string
   description: string
 }
 
@@ -108,7 +110,7 @@ export default async function PromotionDetailPage({
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen pt-[90px] lg:pt-[150px] pb-[120px]" style={{ background: 'var(--background)' }}>
         <div className="content-shell flex flex-col gap-10">
 
           {/* Hero image */}
@@ -149,6 +151,16 @@ export default async function PromotionDetailPage({
           <h1 className="font-dm-sans font-semibold text-[26px] xl:text-[32px] text-neutral-800 leading-[1.8]">
             {promo.title}
           </h1>
+
+          {/* Price */}
+          {promo.price && (
+            <span className="inline-flex w-fit items-baseline gap-3 rounded-full border-[0.5px] border-gold-500 bg-gold-50 px-6 py-2.5 font-dm-sans leading-none">
+              <span className="font-bold text-[18px] xl:text-[20px] text-[#a07d2c]">{promo.price}</span>
+              {promo.originalPrice && (
+                <span className="text-[15px] xl:text-[17px] text-gold-900/40 line-through">{promo.originalPrice}</span>
+              )}
+            </span>
+          )}
 
           {/* Body */}
           {paragraphs.length > 0 && (

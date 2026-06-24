@@ -66,7 +66,7 @@ export default function NewsPage() {
 
   return (
     <SiteLayout>
-      <div className="bg-[var(--background)] w-full pt-[100px] lg:pt-[212px] pb-[120px]">
+      <div className="bg-[var(--background)] w-full pt-[90px] lg:pt-[150px] pb-[120px]">
         <div className="page-shell flex flex-col gap-[80px] items-center">
 
           {/* Skeletons */}

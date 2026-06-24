@@ -149,7 +149,7 @@ export default function PurchasePage({ params }: { params: Promise<{ promoId: st
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen pt-[90px] lg:pt-[150px] pb-[120px]" style={{ background: 'var(--background)' }}>
         <div className="content-shell flex flex-col gap-10">
 
           {/* Back */}
@@ -171,6 +171,12 @@ export default function PurchasePage({ params }: { params: Promise<{ promoId: st
           </div>
 
           {/* Promo title */}
+          {loading && (
+            <div className="flex flex-col gap-2 animate-pulse">
+              <div className="h-[40px] w-[60%] rounded-[12px] bg-[#e7dcc7]" />
+              <div className="h-[14px] w-[200px] rounded-[12px] bg-[#f0ebe0]" />
+            </div>
+          )}
           {!loading && promo && (
             <div className="flex flex-col gap-2">
               <h1 className="font-cormorant font-bold text-[40px] text-gold-900 leading-none">{promo.title}</h1>

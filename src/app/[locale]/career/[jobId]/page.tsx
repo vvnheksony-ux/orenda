@@ -2,9 +2,8 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { Link } from '@/i18n/routing'
-import { ChevronLeft } from 'lucide-react'
 import Reveal from '@/components/shared/Reveal'
+import ApplyButton from '@/components/career/ApplyButton'
 
 function textToParagraphs(text: string | null): string[] {
   return String(text || '')
@@ -26,6 +25,8 @@ type CareerDetail = {
   employmentType?: string | null
   experienceLevel?: string | null
   salaryRange?: string | null
+  description?: string | null
+  body?: string | null
   responsibilities?: string | null
   requirements?: string | null
   applicationDeadline?: string | null
@@ -66,22 +67,17 @@ export default async function CareerDetailPage({
   const title = career.title ?? ''
   const dept = career.department || null
   const location: string | null = null
+  const description = (career.description ?? '').trim()
+  const bodyParas = textToParagraphs(career.body ?? null)
   const responsibilities = textToParagraphs(career.responsibilities ?? null)
   const requirements = textToParagraphs(career.requirements ?? null)
   const expiry = formatDeadline(career.applicationDeadline ?? null)
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pb-[120px] pt-[82px] min-[1500px]:pt-[128px]" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen pb-[120px] pt-[90px] lg:pt-[150px]" style={{ background: 'var(--background)' }}>
         <div className="narrow-shell mb-10">
           <div className="relative w-full h-[320px] md:h-[460px] xl:h-[574px] rounded-[10px] overflow-hidden">
-            <Link
-              href="/career"
-              className="absolute left-4 top-4 z-10 inline-flex h-[36px] items-center gap-1 rounded-full border border-white/70 bg-[#fbf7ee]/85 px-4 font-dm-sans text-[13px] font-medium text-[#6b5836] shadow-[0_6px_18px_rgba(59,45,23,0.16)] backdrop-blur-md transition-colors hover:bg-white"
-            >
-              <ChevronLeft size={16} />
-              Back
-            </Link>
             <Image
               src={career.thumbnail || '/images/career-hero-bg.jpg'}
               alt={title}
@@ -100,7 +96,20 @@ export default async function CareerDetailPage({
             {title}
           </h1>
 
+          {description && (
+            <p className="font-dm-sans text-[16px] xl:text-[20px] text-[#3b2d17] leading-relaxed">{description}</p>
+          )}
+
           <Reveal className="font-dm-sans text-[16px] xl:text-[20px] text-[#3b2d17] leading-normal flex flex-col gap-4">
+
+            {bodyParas.length > 0 && (
+              <>
+                <p className="font-semibold">About This Role</p>
+                <div className="flex flex-col gap-3">
+                  {bodyParas.map((b, i) => <p key={i}>{b}</p>)}
+                </div>
+              </>
+            )}
 
             <p className="font-semibold">Job Details</p>
             <ul className="list-disc pl-8 flex flex-col gap-1">
@@ -138,13 +147,7 @@ export default async function CareerDetailPage({
           )}
 
           <div className="mt-4">
-            <a
-              href="mailto:hr@orienda.com"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-[12px] font-dm-sans font-medium text-[16px] text-white transition-opacity hover:opacity-90"
-              style={{ background: '#b89148' }}
-            >
-              Apply for this Position
-            </a>
+            <ApplyButton />
           </div>
 
         </div>

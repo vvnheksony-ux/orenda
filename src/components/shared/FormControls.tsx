@@ -67,7 +67,7 @@ export function DatePicker({
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="w-full border border-[#dcbd72] rounded-[12px] px-3.5 py-2.5 sm:px-[16px] sm:py-[12px] font-dm-sans text-[15px] sm:text-[16px] bg-white outline-none focus:border-[#b89148] transition-colors flex items-center justify-between gap-2 text-left"
+        className="w-full border border-[#dcbd72] rounded-[12px] px-3.5 py-2.5 sm:px-[16px] sm:py-[12px] font-dm-sans text-[15px] sm:text-[16px] bg-transparent outline-none focus:border-[#b89148] transition-colors flex items-center justify-between gap-2 text-left"
         style={{ color: displayValue ? '#3b2d17' : 'rgba(59,45,23,0.4)' }}
       >
         <span>{displayValue || placeholder}</span>
@@ -75,7 +75,7 @@ export function DatePicker({
       </button>
 
       {open && (
-        <div className="absolute top-full mt-2 z-[100] bg-white rounded-[16px] shadow-[0px_8px_40px_rgba(122,95,44,0.20)] border border-[#e8d9b8] p-4 w-[288px]">
+        <div className="absolute top-full right-0 mt-2 z-[100] bg-white rounded-[16px] shadow-[0px_8px_40px_rgba(122,95,44,0.20)] border border-[#e8d9b8] p-4 w-[288px]">
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-3">
             <button
@@ -171,7 +171,7 @@ export function CustomSelect({
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="w-full border border-[#dcbd72] rounded-[12px] px-3.5 py-2.5 sm:px-[16px] sm:py-[12px] font-dm-sans text-[15px] sm:text-[16px] bg-white outline-none transition-colors flex items-center justify-between gap-2 text-left"
+        className="w-full border border-[#dcbd72] rounded-[12px] px-3.5 py-2.5 sm:px-[16px] sm:py-[12px] font-dm-sans text-[15px] sm:text-[16px] bg-transparent outline-none transition-colors flex items-center justify-between gap-2 text-left"
         style={{
           color: value ? '#3b2d17' : 'rgba(59,45,23,0.4)',
           borderColor: open ? '#b89148' : '#dcbd72',

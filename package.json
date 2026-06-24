@@ -14,12 +14,14 @@
     "payload:migrate": "payload migrate"
   },
   "dependencies": {
+    "@google-analytics/data": "^6.1.0",
     "@next/third-parties": "^16.2.6",
     "@payloadcms/db-postgres": "^3.85.0",
     "@payloadcms/next": "^3.85.0",
     "@payloadcms/richtext-lexical": "^3.85.0",
     "@payloadcms/storage-s3": "^3.85.0",
     "@photo-sphere-viewer/core": "^5.14.1",
+    "@photo-sphere-viewer/markers-plugin": "^5.14.1",
     "@react-google-maps/api": "^2.20.8",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",

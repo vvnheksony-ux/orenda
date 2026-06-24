@@ -63,8 +63,64 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ dep
 
   if (loading) return (
     <SiteLayout>
-      <div className="bg-[var(--background)] min-h-screen flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-[#b89148] border-t-transparent rounded-full animate-spin" />
+      <div className="bg-[var(--background)] w-full">
+        <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[90px] lg:pt-[150px]">
+          {/* Hero skeleton */}
+          <div className="w-full max-w-[1352px] animate-pulse">
+            <div className="h-[260px] w-full rounded-[16px] bg-[#ece3d2] sm:h-[360px] lg:h-[440px]" />
+          </div>
+
+          {/* Department detail skeleton */}
+          <div className="flex w-full max-w-[860px] flex-col items-center gap-[28px] animate-pulse">
+            <div className="h-[44px] w-[60%] rounded-[12px] bg-[#e7dcc7]" />
+            <div className="flex w-full flex-col items-center gap-[14px]">
+              <div className="h-[18px] w-full rounded-[12px] bg-[#f0ebe0]" />
+              <div className="h-[18px] w-[90%] rounded-[12px] bg-[#f0ebe0]" />
+              <div className="h-[18px] w-[80%] rounded-[12px] bg-[#f0ebe0]" />
+            </div>
+            <div className="h-[48px] w-[200px] rounded-[12px] bg-[#e8d9b8]" />
+          </div>
+
+          {/* Discover Other Clinic skeleton */}
+          <div className="flex w-full max-w-[1352px] flex-col items-center gap-[40px] animate-pulse">
+            <div className="flex flex-col items-center gap-[12px]">
+              <div className="h-[36px] w-[280px] rounded-[12px] bg-[#e7dcc7]" />
+              <div className="h-[18px] w-[220px] rounded-[12px] bg-[#f0ebe0]" />
+            </div>
+            <div className="grid w-full grid-cols-2 gap-[16px] sm:gap-[20px] lg:gap-[24px] md:grid-cols-4">
+              {Array(4).fill(0).map((_, i) => (
+                <div key={i} className="flex w-full flex-col items-center gap-4 rounded-[16px] bg-white p-4 sm:gap-5 sm:p-5 lg:gap-6 lg:p-6" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
+                  <div className="size-[88px] shrink-0 rounded-full bg-[#ece3d2] sm:size-[104px] lg:size-[120px]" />
+                  <div className="flex w-full flex-col items-center gap-3 sm:gap-4">
+                    <div className="h-[22px] w-[70%] rounded-[12px] bg-[#e7dcc7]" />
+                    <div className="h-[36px] w-[110px] rounded-[12px] bg-[#f0ebe0]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Health Tips skeleton */}
+          <div className="flex w-full max-w-[1352px] flex-col items-center gap-[40px] animate-pulse">
+            <div className="flex flex-col items-center gap-[12px]">
+              <div className="h-[36px] w-[180px] rounded-[12px] bg-[#e7dcc7]" />
+              <div className="h-[18px] w-[220px] rounded-[12px] bg-[#f0ebe0]" />
+            </div>
+            <div className="flex w-full gap-[24px] overflow-hidden lg:gap-[40px]">
+              {Array(4).fill(0).map((_, i) => (
+                <div key={i} className="flex w-[280px] shrink-0 flex-col overflow-hidden rounded-[12px] bg-white shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] sm:w-[320px]">
+                  <div className="h-[200px] shrink-0 bg-[#ece3d2]" />
+                  <div className="flex flex-1 flex-col gap-[16px] p-[24px]">
+                    <div className="h-[12px] w-[40%] rounded-[12px] bg-[#f0ebe0]" />
+                    <div className="h-[18px] w-full rounded-[12px] bg-[#e7dcc7]" />
+                    <div className="h-[18px] w-[70%] rounded-[12px] bg-[#e7dcc7]" />
+                    <div className="mt-2 h-[32px] w-[100px] self-end rounded-[12px] bg-[#f0ebe0]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </SiteLayout>
   )
@@ -74,7 +130,7 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ dep
   return (
     <SiteLayout>
       <div className="bg-[var(--background)] w-full">
-        <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
+        <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[90px] lg:pt-[150px]">
 
           {/* Hero */}
           <PromotionStyleHero

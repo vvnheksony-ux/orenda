@@ -1,15 +1,20 @@
 /* ==========================================================================
-   PAYLOAD-LIKE PAGINATION
+   ORIENDA PAGINATION
    ========================================================================== */
 
 .orienda-pagination {
   align-items: center;
+  background: #ffffff;
+  box-sizing: border-box;
   display: flex;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
   border-top: 1px solid #f5f2eb;
   flex-wrap: wrap;
   gap: 0.75rem;
+  margin: 0;
+  min-height: 3rem;
+  padding: 0.75rem 1.25rem;
+  width: 100%;
 }
 
 .orienda-pagination__info {
@@ -52,6 +57,15 @@
   }
 }
 
+.orienda-list-table-wrap > .orienda-pagination {
+  border-radius: 0 0 0.875rem 0.875rem;
+  min-width: 100%;
+}
+
+.orienda-list-table-wrap > .orienda-list-table + .orienda-pagination {
+  margin-top: 0;
+}
+
 .orienda-pagination__page {
   align-items: center;
   background: transparent;
@@ -88,4 +102,166 @@
   align-items: center;
   justify-content: center;
   min-width: 1.25rem;
+}
+
+.collection-list__wrap > .page-controls {
+  display: none !important;
+}
+
+/* Payload's default collection list uses PageControls/Pagination internally.
+   Keep those controls visually identical to the OperationsTable paginator. */
+.collection-list .page-controls {
+  align-items: center !important;
+  background: #ffffff !important;
+  border-top: 1px solid #f5f2eb !important;
+  display: flex !important;
+  gap: 0.75rem !important;
+  justify-content: space-between !important;
+  min-height: 3rem !important;
+  padding: 0.75rem 0 !important;
+  width: 100% !important;
+}
+
+.collection-list .page-controls__page-info {
+  color: #716b60 !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  order: 1 !important;
+  white-space: nowrap !important;
+}
+
+.collection-list .page-controls .paginator {
+  align-items: center !important;
+  display: flex !important;
+  gap: 0.25rem !important;
+  justify-content: flex-end !important;
+  margin: 0 !important;
+  order: 3 !important;
+  width: auto !important;
+}
+
+.collection-list .page-controls .per-page {
+  display: none !important;
+}
+
+.collection-list .paginator__page,
+.collection-list .paginator__separator,
+.collection-list .clickable-arrow {
+  margin: 0 !important;
+}
+
+.collection-list .paginator__page {
+  align-items: center !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 0.5rem !important;
+  color: #4c4740 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  height: 2rem !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  min-width: 2rem !important;
+  padding: 0 0.25rem !important;
+  transition: all 0.15s ease !important;
+  order: 2 !important;
+}
+
+.collection-list .paginator__page:hover:not(.paginator__page--is-current) {
+  background: #f5f2eb !important;
+}
+
+.collection-list .paginator__page--is-current {
+  background: #473318 !important;
+  border-color: #473318 !important;
+  color: #d4c5ad !important;
+  cursor: default !important;
+  font-weight: 700 !important;
+}
+
+.collection-list .paginator__separator {
+  align-items: center !important;
+  color: #aaa6a0 !important;
+  display: inline-flex !important;
+  font-size: 0 !important;
+  height: 2rem !important;
+  justify-content: center !important;
+  min-width: 1.25rem !important;
+  order: 2 !important;
+}
+
+.collection-list .paginator__separator::before {
+  content: "...";
+  font-size: 0.875rem !important;
+  line-height: 1 !important;
+}
+
+.collection-list .clickable-arrow {
+  align-items: center !important;
+  background: transparent !important;
+  border: 1px solid #e7dfd5 !important;
+  border-radius: 0.5rem !important;
+  color: #4c4740 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  font-size: 0 !important;
+  font-weight: 600 !important;
+  gap: 0.25rem !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  min-height: 2rem !important;
+  padding: 0.25rem 0.75rem !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+  width: auto !important;
+}
+
+.collection-list .clickable-arrow svg {
+  display: none !important;
+}
+
+.collection-list .clickable-arrow--left::after {
+  content: "Previous";
+  font-size: 0.8125rem !important;
+}
+
+.collection-list .clickable-arrow--left {
+  order: 1 !important;
+}
+
+.collection-list .clickable-arrow--right::after {
+  content: "Next";
+  font-size: 0.8125rem !important;
+}
+
+.collection-list .clickable-arrow--right {
+  order: 3 !important;
+}
+
+.collection-list .clickable-arrow:hover:not(:disabled) {
+  background: #fbfaf7 !important;
+  border-color: #d4c5ad !important;
+}
+
+.collection-list .clickable-arrow:disabled,
+.collection-list .clickable-arrow--is-disabled {
+  color: #aaa6a0 !important;
+  cursor: not-allowed !important;
+  opacity: 0.45 !important;
+}
+
+@media (max-width: 768px) {
+  .collection-list .page-controls {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .collection-list .page-controls .paginator {
+    justify-content: flex-start !important;
+    order: 2 !important;
+    width: 100% !important;
+  }
 }

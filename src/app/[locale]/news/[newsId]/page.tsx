@@ -10,6 +10,7 @@ import { Phone, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import PageState from '@/components/shared/PageState'
 import ExploreMoreCarousel from '@/components/shared/ExploreMoreCarousel'
+import { useBranch } from '@/lib/branch-context'
 
 interface NewsDetail {
   id: string; title: string; slug: string; body: string
@@ -25,6 +26,7 @@ const articleHref = (slug: string, relatedIsNews: boolean): LocalizedHref =>
 export default function NewsDetailPage({ params }: { params: Promise<{ newsId: string }> }) {
   const { newsId } = use(params)
   const locale = useLocale()
+  const { selectedBranch } = useBranch()
   const [article, setArticle] = useState<NewsDetail | null>(null)
   const [related, setRelated] = useState<RelatedItem[]>([])
   const [relatedIsNews, setRelatedIsNews] = useState(false)
@@ -41,20 +43,13 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
         if (!r.ok) throw new Error('We could not load this article right now.')
         return r.json()
       }),
-      fetch(`/api/health-tips?locale=${locale}&limit=6`).then(r => r.json()).catch(() => ({ docs: [] })),
-    ]).then(async ([art, tips]) => {
+      fetch(`/api/news?locale=${locale}&limit=10`).then(r => r.json()).catch(() => ({ docs: [] })),
+    ]).then(([art, newsList]) => {
       if (art) setArticle(art)
       setLoadError('')
-      const tipDocs = (tips?.docs || []).slice(0, 5)
-      if (tipDocs.length > 0) {
-        setRelated(tipDocs)
-        setRelatedIsNews(false)
-      } else {
-        const newsList = await fetch(`/api/news?locale=${locale}&limit=10`).then(r => r.json()).catch(() => ({ docs: [] }))
-        const others = ((newsList?.docs || []) as RelatedItem[]).filter((item) => item.slug !== newsId).slice(0, 5)
-        setRelated(others)
-        setRelatedIsNews(true)
-      }
+      const others = ((newsList?.docs || []) as RelatedItem[]).filter((item) => item.slug !== newsId).slice(0, 5)
+      setRelated(others)
+      setRelatedIsNews(true)
     }).catch((err: unknown) => {
       setArticle(null)
       setRelated([])
@@ -109,7 +104,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
 
   return (
     <SiteLayout>
-      <div className="bg-[var(--background)] w-full pb-[120px] pt-[100px] lg:pt-[212px]">
+      <div className="bg-[var(--background)] w-full pb-[120px] pt-[90px] lg:pt-[150px]">
         <div className="page-shell flex flex-col gap-[80px]">
 
           {/* Skeleton */}
@@ -200,7 +195,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
                           style={{ filter: 'drop-shadow(0px 4px 8px rgba(122,95,44,0.12))' }}>
                           <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">Location</p>
                           <p className="font-dm-sans text-[16px] text-[#2a2620] leading-[1.8]">
-                            Building No. 66, Street 31cc, Stueng Mean Chey Commune, Mean Chey District, Phnom Penh.
+                            {selectedBranch?.address || ''}
                           </p>
                         </div>
 
@@ -208,7 +203,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
                           style={{ filter: 'drop-shadow(0px 4px 8px rgba(122,95,44,0.12))' }}>
                           <p className="font-cormorant font-medium text-[24px] text-[#3b2d17] leading-none">Contact Orienda Hospital</p>
                           <p className="font-dm-sans text-[16px] text-[#2a2620] leading-[1.8]">
-                            012 322 025 / 086 999 528 / 098 941 758
+                            {selectedBranch?.phone || ''}
                           </p>
                           <button className="w-full h-[48px] bg-[#b89148] rounded-[12px] flex items-center justify-center gap-[8px] font-dm-sans text-[18px] text-white hover:bg-[#c8a25a] transition-colors">
                             <Phone size={20} />
@@ -299,6 +294,7 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
 
               {/* Explore More */}
               <ExploreMoreCarousel
+                subtitle="Latest news and updates"
                 items={related.map((item) => ({
                   title: item.title,
                   image: item.thumbnail,

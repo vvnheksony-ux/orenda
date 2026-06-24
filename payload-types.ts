@@ -72,6 +72,7 @@ export interface Config {
     pages: Page;
     doctors: Doctor;
     departments: Department;
+    'centers-of-excellence': CentersOfExcellence;
     branches: Branch;
     'doctor-schedules': DoctorSchedule;
     services: Service;
@@ -96,13 +97,18 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    doctors: {
+      availability: 'doctor-schedules';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     doctors: DoctorsSelect<false> | DoctorsSelect<true>;
     departments: DepartmentsSelect<false> | DepartmentsSelect<true>;
+    'centers-of-excellence': CentersOfExcellenceSelect<false> | CentersOfExcellenceSelect<true>;
     branches: BranchesSelect<false> | BranchesSelect<true>;
     'doctor-schedules': DoctorSchedulesSelect<false> | DoctorSchedulesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
@@ -369,6 +375,14 @@ export interface Doctor {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Weekly availability shifts for this doctor (day, start/end time, department, room). Add or edit shifts here — these power appointment booking.
+   */
+  availability?: {
+    docs?: (number | DoctorSchedule)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   order?: number | null;
   status?: ('draft' | 'published' | 'archived') | null;
   publishedAt?: string | null;
@@ -483,6 +497,52 @@ export interface DoctorSchedule {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "centers-of-excellence".
+ */
+export interface CentersOfExcellence {
+  id: number;
+  thumbnail?: (number | null) | Media;
+  title: string;
+  slug: string;
+  branch: number | Branch;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * e.g. "99%"
+   */
+  successRate?: string | null;
+  /**
+   * e.g. "20k"
+   */
+  surgeries?: string | null;
+  /**
+   * e.g. "100%"
+   */
+  satisfactionsRate?: string | null;
+  doctors?: (number | Doctor)[] | null;
+  testimonialIds?: number[] | null;
+  order?: number | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "services".
  */
 export interface Service {
@@ -571,6 +631,14 @@ export interface Promotion {
     [k: string]: unknown;
   } | null;
   image?: (number | null) | Media;
+  /**
+   * Current / sale price, e.g. "$25.00" — shown bold in the price pill.
+   */
+  price?: string | null;
+  /**
+   * Original price, e.g. "$50.00" — shown struck-through next to the price (optional).
+   */
+  originalPrice?: string | null;
   validFrom?: string | null;
   validTo?: string | null;
   status?: ('draft' | 'published' | 'archived') | null;
@@ -603,6 +671,9 @@ export interface News {
     [k: string]: unknown;
   } | null;
   thumbnail?: (number | null) | Media;
+  /**
+   * Additional images shown in the article gallery. Drag to reorder.
+   */
   images?: (number | Media)[] | null;
   excerpt?: string | null;
   author?: string | null;
@@ -678,6 +749,10 @@ export interface HealthTip {
   excerpt?: string | null;
   author?: string | null;
   slug: string;
+  /**
+   * Additional images shown in the article gallery (in order).
+   */
+  images?: (number | Media)[] | null;
   healthTipCategory?: ('nutrition' | 'exercise' | 'mentalHealth' | 'preventiveCare' | 'chronicDisease') | null;
   /**
    * Estimated reading time in minutes
@@ -937,10 +1012,17 @@ export interface TourScene {
   title: string;
   description?: string | null;
   thumbnailImage?: (number | null) | Media;
+  /**
+   * Pins placed on the 360° photo. Use the visual editor above to add a pin (click the photo), then pick the room it opens.
+   */
   hotspots?:
     | {
-        pitch: number;
-        yaw: number;
+        pitch?: number | null;
+        yaw?: number | null;
+        /**
+         * When clicked, take the visitor to this room. Leave empty for an info-only marker.
+         */
+        targetScene?: (number | null) | TourScene;
         label?: string | null;
         description?: string | null;
         id?: string | null;
@@ -1034,7 +1116,7 @@ export interface KpiSnapshot {
  */
 export interface GaReport {
   id: number;
-  reportType: 'page_views' | 'traffic_sources' | 'user_demographics' | 'device_breakdown';
+  reportType: 'overview' | 'top_pages' | 'devices' | 'geo';
   dateRange: {
     start: string;
     end: string;
@@ -1121,6 +1203,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'departments';
         value: number | Department;
+      } | null)
+    | ({
+        relationTo: 'centers-of-excellence';
+        value: number | CentersOfExcellence;
       } | null)
     | ({
         relationTo: 'branches';
@@ -1414,6 +1500,7 @@ export interface DoctorsSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
+  availability?: T;
   order?: T;
   status?: T;
   publishedAt?: T;
@@ -1431,6 +1518,28 @@ export interface DepartmentsSelect<T extends boolean = true> {
   description?: T;
   icon?: T;
   branch?: T;
+  order?: T;
+  status?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "centers-of-excellence_select".
+ */
+export interface CentersOfExcellenceSelect<T extends boolean = true> {
+  thumbnail?: T;
+  title?: T;
+  slug?: T;
+  branch?: T;
+  description?: T;
+  successRate?: T;
+  surgeries?: T;
+  satisfactionsRate?: T;
+  doctors?: T;
+  testimonialIds?: T;
   order?: T;
   status?: T;
   publishedAt?: T;
@@ -1567,6 +1676,7 @@ export interface HealthTipsSelect<T extends boolean = true> {
   excerpt?: T;
   author?: T;
   slug?: T;
+  images?: T;
   healthTipCategory?: T;
   readingTime?: T;
   healthTipTags?:
@@ -1685,6 +1795,8 @@ export interface PromotionsSelect<T extends boolean = true> {
   slug?: T;
   description?: T;
   image?: T;
+  price?: T;
+  originalPrice?: T;
   validFrom?: T;
   validTo?: T;
   status?: T;
@@ -1724,6 +1836,7 @@ export interface TourScenesSelect<T extends boolean = true> {
     | {
         pitch?: T;
         yaw?: T;
+        targetScene?: T;
         label?: T;
         description?: T;
         id?: T;

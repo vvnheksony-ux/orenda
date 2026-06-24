@@ -31,6 +31,11 @@ const accessControlLinks = [
   { label: 'Patients', path: '/operations/patients' },
 ] as const
 
+const systemLinks = [
+  { label: 'AI Chat Bot', path: '/ai-chat-bot' },
+  { label: 'Settings', path: '/settings' },
+] as const
+
 const baseClass = 'nav'
 const navLinkClass =
   'flex min-h-10 items-center rounded-xl px-3.5 py-3 text-md text-[#c2b49d] no-underline transition-colors hover:bg-white/[0.08] hover:text-white'
@@ -160,6 +165,24 @@ export default function OriendaPayloadNavClient({
                               className={isActive ? activeNavLinkClass : navLinkClass}
                               href={href}
                               id={`nav-public-${link.path.replace(/\//g, '-')}`}
+                              key={link.path}
+                              prefetch={false}
+                            >
+                              {link.label}
+                            </Link>
+                          )
+                        })
+                      : null}
+                    {label === 'Systems'
+                      ? systemLinks.map((link) => {
+                          const href = formatAdminURL({ adminRoute, path: link.path })
+                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
+
+                          return (
+                            <Link
+                              className={isActive ? activeNavLinkClass : navLinkClass}
+                              href={href}
+                              id={`nav-system-${link.path.replace(/\//g, '-')}`}
                               key={link.path}
                               prefetch={false}
                             >

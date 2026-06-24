@@ -189,6 +189,10 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [services, setServices] = useState<Service[]>([])
+  // Time slots already taken for the chosen doctor + date — those slots get locked.
+  const [bookedSlots, setBookedSlots] = useState<string[]>([])
+  // True when the chosen doctor has hit the daily booking limit (3/day) — locks the doctor.
+  const [doctorFull, setDoctorFull] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
@@ -285,6 +289,23 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
     }
   }, [open, locale, form.department_payload_id])
 
+  // Fetch the doctor's already-booked slots for the chosen date, so taken times get locked.
+  useEffect(() => {
+    if (!open || !form.doctor_payload_id) { setBookedSlots([]); setDoctorFull(false); return }
+    const date = dateChoice === 'choose' ? form.preferred_date : getEarliestAppointment().date
+    if (!date) { setBookedSlots([]); setDoctorFull(false); return }
+    let active = true
+    fetch(`/api/appointments/availability?doctor=${form.doctor_payload_id}&date=${date}`)
+      .then(r => (r.ok ? r.json() : { booked: [], full: false }))
+      .then(d => {
+        if (!active) return
+        setBookedSlots(Array.isArray(d.booked) ? d.booked : [])
+        setDoctorFull(Boolean(d.full))
+      })
+      .catch(() => { if (active) { setBookedSlots([]); setDoctorFull(false) } })
+    return () => { active = false }
+  }, [open, form.doctor_payload_id, form.preferred_date, dateChoice])
+
   useScrollLock(open)
 
   const today = localDateString()
@@ -341,6 +362,8 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
     ? doctors.filter(d => d.department_payload_id === form.department_payload_id)
     : doctors
   const serviceLocked = Boolean(form.department_payload_id) && services.length === 0
+  // Lock the doctor field when a clinic is selected but has no doctors (mirrors serviceLocked).
+  const doctorLocked = Boolean(form.department_payload_id) && !dataLoading && filteredDoctors.length === 0
   const requiredReady = Boolean(form.patient_name.trim() && form.patient_phone.trim())
 
   const submit = async (e: React.FormEvent) => {
@@ -539,12 +562,19 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                       <CustomSelect
                         value={form.doctor_payload_id}
                         onChange={handleDoctorChange}
-                        placeholder={dataLoading ? t('loadingDoctors') : t('selectDoctor')}
+                        placeholder={
+                          dataLoading
+                            ? t('loadingDoctors')
+                            : doctorLocked
+                              ? t('noDoctorsAvailable')
+                              : t('selectDoctor')
+                        }
                         options={filteredDoctors.map(d => ({
                           value: d.id,
                           label: d.name + (d.specialty ? ` — ${d.specialty}` : ''),
                           group: d.department || 'General',
                         }))}
+                        disabled={doctorLocked}
                       />
                     </div>
                   </div>
@@ -645,7 +675,9 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                         <div className="grid grid-cols-2 gap-3">
                           {TIME_PERIODS.map(p => {
                             const isActive = form.preferred_time === p.time
-                            const available = availablePeriodsForDate(form.preferred_date).some(a => a.id === p.id)
+                            // Locked when the doctor is already booked for this slot (busy).
+                            const isBooked = bookedSlots.includes(p.time)
+                            const available = availablePeriodsForDate(form.preferred_date).some(a => a.id === p.id) && !isBooked
                             return (
                               <button
                                 key={p.id}
@@ -664,7 +696,9 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                                 }}
                               >
                                 <span className={`font-dm-sans font-bold text-[12px] leading-3 ${isActive ? 'text-white' : 'text-[#594522]'}`}>{p.label}</span>
-                                <span className={`font-dm-sans font-medium text-[10px] leading-3 ${isActive ? 'text-white/80' : 'text-stone-500'}`}>{p.range}</span>
+                                <span className={`font-dm-sans font-medium text-[10px] leading-3 ${isActive ? 'text-white/80' : 'text-stone-500'}`}>
+                                  {isBooked ? t('slotBooked') : p.range}
+                                </span>
                               </button>
                             )
                           })}
@@ -687,10 +721,16 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
                   {error && <p className="font-dm-sans text-[14px] text-red-400 w-full">{error}</p>}
 
+                  {doctorFull && (
+                    <p className="font-dm-sans text-[14px] text-[#b45309] w-full rounded-[10px] bg-[#fef3e2] px-4 py-3">
+                      This doctor is fully booked on this date (max 3 per day). Please choose another date or doctor.
+                    </p>
+                  )}
+
                   {/* Submit — matches Figma: full width, h-64px, rgba(184,145,72,0.7) */}
                   <button
                     type="submit"
-                    disabled={status === 'loading'}
+                    disabled={status === 'loading' || doctorFull}
                     className="w-full h-[64px] rounded-[12px] font-dm-sans text-[16px] text-[#f9f9f9] disabled:opacity-60 transition-opacity hover:opacity-90"
                     style={{
                       background: requiredReady ? '#b89148' : 'rgba(184,145,72,0.7)',

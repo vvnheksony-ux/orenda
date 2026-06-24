@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-interface Branch { id: string; name: string; slug: string }
+interface Branch { id: string; name: string; slug: string; address?: string; phone?: string; email?: string; hours?: string; mapUrl?: string }
 
 interface BranchContextValue {
   branches: Branch[]
@@ -33,6 +33,11 @@ export function BranchProvider({ children, locale }: { children: ReactNode; loca
           id: String(b.id),
           name: b.name?.trim() ?? '',
           slug: b.slug ?? '',
+          address: b.address?.trim() ?? '',
+          phone: b.phone?.trim() ?? '',
+          email: b.email?.trim() ?? '',
+          hours: b.hours?.trim() ?? '',
+          mapUrl: b.mapUrl ?? '',
         }))
         setBranches(list)
         const saved = localStorage.getItem('selectedBranchId')

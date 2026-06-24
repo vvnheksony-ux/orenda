@@ -84,7 +84,7 @@ function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt, n }: {
   return (
     <motion.div
       style={{ x, width: w, height: h, zIndex: 5 - Math.abs(diff), borderRadius: s.radius }}
-      className="absolute bg-white overflow-hidden cursor-pointer shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] flex flex-col"
+      className="absolute bg-[var(--background)] overflow-hidden cursor-pointer shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] flex flex-col"
       onClick={() => setIdx(docIndex)}
       whileHover="hover"
       animate={{ y: 0 }}
@@ -123,7 +123,7 @@ function DocCard({ doc, docIndex, activeIdx, setIdx, viewProfileTxt, n }: {
       {/* Info */}
       <div
         className="absolute left-0 right-0 flex flex-col items-center justify-between px-[16px] pb-[24px]"
-        style={{ top: '53%', bottom: 0 }}
+        style={{ top: '60%', bottom: 0 }}
       >
         <div className="flex flex-col gap-[12px] items-center text-center w-full overflow-hidden">
           <p className="font-cormorant text-gold-900 leading-[1.2] font-bold capitalize w-full truncate" style={{ fontSize: s.name }}>
@@ -248,7 +248,7 @@ export default function SpecialistSection() {
                 <div
                   key={i}
                   onClick={() => setActiveIdx(i)}
-                  className="bg-white rounded-[16px] overflow-hidden shadow-[0px_3px_13px_3px_rgba(122,95,44,0.12)] shrink-0 flex flex-col items-center transition-all duration-300 cursor-pointer"
+                  className="bg-[var(--background)] rounded-[16px] overflow-hidden shadow-[0px_3px_13px_3px_rgba(122,95,44,0.12)] shrink-0 flex flex-col items-center transition-all duration-300 cursor-pointer"
                   style={{ width: 250, height: 329, opacity: diff === 0 ? 1 : 0.5, transform: diff === 0 ? 'scale(1)' : 'scale(0.93)' }}
                 >
                   {/* Gold gradient header */}

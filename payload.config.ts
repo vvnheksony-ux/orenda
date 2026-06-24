@@ -12,6 +12,7 @@ import { Media } from './src/payload/collections/Media'
 import { Pages } from './src/payload/collections/Pages'
 import { Doctors } from './src/payload/collections/Doctors'
 import { Departments } from './src/payload/collections/Departments'
+import { CentersOfExcellence } from './src/payload/collections/CentersOfExcellence'
 import { Branches } from './src/payload/collections/Branches'
 import { DoctorSchedules } from './src/payload/collections/DoctorSchedules'
 import { Services } from './src/payload/collections/Services'
@@ -50,6 +51,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const enableApiDocs =
   process.env.ENABLE_API_DOCS
+const ADMIN_TABLE_PAGE_SIZE = 10
 
 const oriendaListView = '@/payload/admin/components/list/OriendaListView'
 const oriendaEditView = '@/payload/admin/components/edit/OriendaEditView'
@@ -60,6 +62,11 @@ function withOriendaListView(collection: CollectionConfig): CollectionConfig {
     admin: {
       ...collection.admin,
       hideAPIURL: true,
+      pagination: {
+        ...collection.admin?.pagination,
+        defaultLimit: ADMIN_TABLE_PAGE_SIZE,
+        limits: [ADMIN_TABLE_PAGE_SIZE],
+      },
       components: {
         ...collection.admin?.components,
         views: {
@@ -81,6 +88,9 @@ function withOriendaListView(collection: CollectionConfig): CollectionConfig {
 export default buildConfig({
   admin: {
     user: Users.slug,
+    // Force light mode so the admin matches the (light) dashboard, instead of
+    // following the OS setting (which could render dark).
+    theme: 'light',
     importMap: {
       baseDir: path.resolve(dirname),
     },
@@ -124,6 +134,14 @@ export default buildConfig({
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/testimonials/:mode?/:id?',
         },
+        aiChatBot: {
+          Component: '@/payload/admin/components/ai-chat-bot/AIChatBotAdminView',
+          path: '/ai-chat-bot/:mode?/:id?',
+        },
+        settings: {
+          Component: '@/payload/admin/components/settings/SettingsAdminView',
+          path: '/settings',
+        },
       },
     },
     meta: {
@@ -141,6 +159,7 @@ export default buildConfig({
     Pages,
     Doctors,
     Departments,
+    CentersOfExcellence,
     Branches,
     DoctorSchedules,
     Services,

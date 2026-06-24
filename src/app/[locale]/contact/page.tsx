@@ -27,6 +27,7 @@ export default function ContactPage() {
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
   const branch = branches[sel]
+  const branchesLoading = branches.length === 0
 
   const mapEmbedUrl = (b?: Branch) => {
     if (!b?.address) return null
@@ -84,7 +85,16 @@ export default function ContactPage() {
           </div>
 
           {/* Contact info card — desktop only, shown once branches load */}
-          {branches.length > 0 && (
+          {branchesLoading ? (
+            <div className="hidden md:flex absolute right-[56px] top-[289px] w-[372px] bg-[var(--background)] rounded-[16px] flex-col gap-[16px] justify-end p-[36px]" aria-hidden="true">
+              {[0, 1].map(i => (
+                <div key={i} className="flex flex-col gap-2">
+                  <div className="h-[24px] w-[180px] rounded-full bg-[#e7dcc7] animate-pulse" />
+                  <div className="h-[16px] w-[140px] rounded-full bg-[#ece3d2] animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : branches.length > 0 && (
             <div className="hidden md:flex absolute right-[56px] top-[289px] w-[372px] bg-[var(--background)] rounded-[16px] flex-col gap-[16px] justify-end p-[36px]">
               {branches.slice(0, 2).map(b => b.phone ? (
                 <div key={b.id}>
@@ -108,6 +118,12 @@ export default function ContactPage() {
           </Reveal>
 
           {/* Branch switcher */}
+          {branchesLoading && (
+            <div className="bg-white flex items-center p-[10px] rounded-full shadow-sm" aria-hidden="true">
+              <div className="h-[44px] w-[120px] rounded-full bg-[#e8d9b8] animate-pulse" />
+              <div className="h-[44px] w-[120px] rounded-full bg-[#f0ebe0] animate-pulse ml-[10px]" />
+            </div>
+          )}
           {branches.length >= 2 && (
             <div className="bg-white flex items-center p-[10px] rounded-full shadow-sm">
               {branches.map((b, i) => (
@@ -188,20 +204,31 @@ export default function ContactPage() {
             {/* Map & info */}
             <div className="flex flex-col gap-[24px] w-full lg:w-[572px] shrink-0">
               <div className="flex flex-col gap-[20px] py-[32px]">
-                <a
-                  href={branch?.phone ? `tel:${branch.phone.replace(/\s/g, '')}` : undefined}
-                  className="flex items-center gap-[12px] group"
-                >
+                <div className="flex items-center gap-[12px]">
                   <Phone size={24} className="text-[#3b2d17] shrink-0" />
-                  <span className="font-dm-sans text-[18px] lg:text-[20px] text-[#3b2d17] group-hover:underline">
-                    {branch?.phone}
-                  </span>
-                </a>
+                  {branchesLoading ? (
+                    <div className="h-[20px] w-[160px] rounded-full bg-[#e7dcc7] animate-pulse" aria-hidden="true" />
+                  ) : (
+                    <a
+                      href={branch?.phone ? `tel:${branch.phone.replace(/\s/g, '')}` : undefined}
+                      className="font-dm-sans text-[18px] lg:text-[20px] text-[#3b2d17] hover:underline"
+                    >
+                      {branch?.phone}
+                    </a>
+                  )}
+                </div>
                 <div className="flex items-start gap-[12px]">
                   <MapPin size={24} className="text-[#3b2d17] shrink-0 mt-0.5" />
-                  <span className="font-dm-sans text-[18px] lg:text-[20px] text-[#2a2620]">
-                    {branch?.address}
-                  </span>
+                  {branchesLoading ? (
+                    <div className="flex flex-col gap-[8px] flex-1" aria-hidden="true">
+                      <div className="h-[18px] w-full rounded-full bg-[#ece3d2] animate-pulse" />
+                      <div className="h-[18px] w-2/3 rounded-full bg-[#ece3d2] animate-pulse" />
+                    </div>
+                  ) : (
+                    <span className="font-dm-sans text-[18px] lg:text-[20px] text-[#2a2620]">
+                      {branch?.address}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -220,9 +247,7 @@ export default function ContactPage() {
                     title={`Map - ${branch?.name}`}
                   />
                 ) : (
-                  <div className="size-full bg-[#f5ecd4] flex items-center justify-center">
-                    <p className="font-dm-sans text-[16px] text-[#594522]">Map loading…</p>
-                  </div>
+                  <div className="size-full bg-[#ece3d2] animate-pulse" aria-hidden="true" />
                 )}
               </div>
 

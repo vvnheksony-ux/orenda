@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Phone } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import SiteLayout from '@/components/layout/SiteLayout'
+import { Link } from '@/i18n/routing'
 import Reveal from '@/components/shared/Reveal'
 import { useAnalytics } from '@/lib/use-analytics'
 import { useBranch } from '@/lib/branch-context'
@@ -73,7 +74,7 @@ export default function DoctorsPage() {
   return (
     <SiteLayout>
       <div className="bg-[var(--background)] w-full">
-        <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
+        <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[90px] lg:pt-[150px]">
 
           {/* Hero banner */}
           <div className="flex w-full flex-col gap-[16px] sm:hidden">
@@ -92,14 +93,15 @@ export default function DoctorsPage() {
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(184,145,72,0.18)]" />
             </div>
 
-            <button
+            <Link
+              href="/contact"
               onClick={() => trackCallClick('doctors-banner')}
               className="ml-auto flex items-center gap-[8px] rounded-[12px] border border-[#b89148] bg-[#b89148] px-4 py-3"
               style={{ boxShadow: '0px 0px 4.5px #cba655' }}
             >
               <Phone size={18} className="text-[#fbf7ee]" />
               <span className="font-dm-sans text-[14px] leading-none text-[#fbf7ee]">{t('contactNow')}</span>
-            </button>
+            </Link>
           </div>
 
           <div
@@ -118,14 +120,15 @@ export default function DoctorsPage() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(184,145,72,0.25)]" />
             {/* Contact Now button */}
             <div className="absolute bottom-[24px] right-[24px]">
-              <button
+              <Link
+                href="/contact"
                 onClick={() => trackCallClick('doctors-banner')}
                 className="flex items-center gap-[10px] rounded-[12px] border border-[#b89148] bg-[#b89148] px-[42px] py-[24px] backdrop-blur-[6px]"
                 style={{ boxShadow: '0px 0px 4.5px #cba655' }}
               >
                 <Phone size={24} className="text-[#fbf7ee]" />
                 <span className="font-dm-sans text-[20px] leading-none text-[#fbf7ee] lg:text-[24px]">{t('contactNow')}</span>
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -151,7 +154,7 @@ export default function DoctorsPage() {
 
             {/* Department groups */}
             <div className="flex flex-col gap-[40px] items-start w-full">
-              {Object.entries(displayGroups).filter(([, d]) => isLoading || d.length > 0).map(([dept, deptDoctors]) => (
+              {Object.entries(displayGroups).filter(() => isLoading || doctors.length > 0).map(([dept, deptDoctors]) => (
                 <div key={dept} className="flex flex-col gap-[40px] items-start w-full">
                   {/* Department header */}
                   <div className="flex flex-col gap-[8px] w-full">

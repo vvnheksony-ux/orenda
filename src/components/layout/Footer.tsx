@@ -4,11 +4,13 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAnalytics } from '@/lib/use-analytics'
 import { Link } from '@/i18n/routing'
+import { useBranch } from '@/lib/branch-context'
 import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
 
 export default function Footer() {
   const t = useTranslations('Footer')
   const { trackCallClick } = useAnalytics()
+  const { branches } = useBranch()
   const [bookOpen, setBookOpen] = useState(false)
 
   const LEFT_COLS = [
@@ -38,13 +40,20 @@ export default function Footer() {
     },
   ]
 
-  const CONTACT_PHONES = ['(+855) 016 593 789', '(+855) 012 593 789']
-  const CONTACT_EMAIL = 'Orienda@gmail.com'
+  // Contact info is pulled from the branches (CMS). Falls back to the static values
+  // while branches load or if none exist. Emergency phones have no branch field yet.
+  const CONTACT_PHONES = branches.length
+    ? branches.map((b) => (b.phone || '').trim()).filter(Boolean)
+    : ['(+855) 016 593 789', '(+855) 012 593 789']
+  const CONTACT_EMAIL = branches.find((b) => (b.email || '').trim())?.email || 'Orienda@gmail.com'
   const EMERGENCY_PHONES = ['(+855) 023 232 789', '(+855) 078 233 789', '(+855) 096 6233 789']
-  const ADDRESSES = [
-    { name: 'Orienda Hospital (Duong Ngeap)', label: '66, Street 31cc, 3, Phnom Penh 120605', mapUrl: 'https://maps.google.com/?q=Phnom+Penh+Cambodia' },
-    { name: 'Orienda Hospital (Chaktomuk)', label: '66, Street 31cc, 3, Phnom Penh 120605', mapUrl: 'https://maps.google.com/?q=Phnom+Penh+Cambodia' },
-  ]
+  const ADDRESSES = branches.length
+    ? branches.map((b) => ({ name: b.name, label: (b.address || '').trim(), mapUrl: (b.mapUrl || '').trim() || '#' }))
+    : [
+        { name: 'Orienda Hospital (Duong Ngeap)', label: '66, Street 31cc, 3, Phnom Penh 120605', mapUrl: 'https://maps.google.com/?q=Phnom+Penh+Cambodia' },
+        { name: 'Orienda Hospital (Chaktomuk)', label: '66, Street 31cc, 3, Phnom Penh 120605', mapUrl: 'https://maps.google.com/?q=Phnom+Penh+Cambodia' },
+      ]
+  const HOURS = branches.find((b) => (b.hours || '').trim())?.hours?.trim() || t('hours24')
   const SOCIAL = [
     { label: 'Facebook', href: 'https://facebook.com' },
     { label: 'Instagram', href: 'https://instagram.com' },
@@ -137,7 +146,7 @@ export default function Footer() {
           {/* Hours */}
           <div className="flex items-start justify-between w-full">
             <p className={headingCls}>{t('open')}</p>
-            <p className={contactItemCls}>{t('hours24')}</p>
+            <p className={contactItemCls}>{HOURS}</p>
           </div>
 
           {/* Social Media */}

@@ -48,6 +48,26 @@ async function rawQuery(locale: string, limit: number, slug?: string, category?:
   return rows as HealthTipRow[]
 }
 
+// Gallery images for a health tip (the `images` upload-hasMany relation),
+// stored in health_tips_rels — mirrors the news_rels pattern.
+async function rawHealthTipImages(ids: number[]): Promise<Record<number, string[]>> {
+  if (ids.length === 0) return {}
+  const pool = getRawPool()
+  const { rows } = await pool.query(`
+    SELECT r.parent_id, m.filename, m.prefix
+    FROM payload.health_tips_rels r
+    JOIN payload.media m ON m.id = r.media_id
+    WHERE r.parent_id = ANY($1) AND r.path = 'images'
+    ORDER BY r."order"
+  `, [ids])
+  const map: Record<number, string[]> = {}
+  for (const r of rows as Array<{ parent_id: number; filename: string | null; prefix: string | null }>) {
+    const url = mediaStorageUrl(r.filename, r.prefix)
+    if (url) (map[r.parent_id] ??= []).push(url)
+  }
+  return map
+}
+
 function toDoc(row: HealthTipRow, full: boolean) {
   return {
     id:          String(row.id),
@@ -76,7 +96,16 @@ export async function GET(req: Request) {
 
     if (slug) {
       if (!rows[0]) return NextResponse.json(null, { status: 404 })
-      return NextResponse.json(toDoc(rows[0], true))
+      // Resilient: if the health_tips_rels table doesn't exist yet (pre-migration),
+      // just return no gallery images instead of failing the whole request.
+      let images: string[] = []
+      try {
+        const imgMap = await rawHealthTipImages([rows[0].id])
+        images = imgMap[rows[0].id] ?? []
+      } catch (e) {
+        console.error('health-tips images:', e instanceof Error ? e.message : e)
+      }
+      return NextResponse.json({ ...toDoc(rows[0], true), images })
     }
 
     const docs = rows.map((row) => toDoc(row, false))
