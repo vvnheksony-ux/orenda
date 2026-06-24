@@ -46,9 +46,11 @@ export async function GET(req: Request) {
       SELECT
         tsh._parent_id AS scene_id, tsh._order,
         tsh.pitch, tsh.yaw,
+        tgt.scene_number AS target_scene_number,
         COALESCE(tshl.label, entshl.label)             AS label,
         COALESCE(tshl.description, entshl.description) AS description
       FROM payload.tour_scenes_hotspots tsh
+      LEFT JOIN payload.tour_scenes tgt ON tgt.id = tsh.target_scene_id
       LEFT JOIN payload.tour_scenes_hotspots_locales tshl
         ON tshl._parent_id = tsh.id AND tshl._locale = $1
       LEFT JOIN payload.tour_scenes_hotspots_locales entshl
@@ -65,6 +67,7 @@ export async function GET(req: Request) {
         yaw: Number(h.yaw),
         label: h.label ?? '',
         description: h.description ?? '',
+        targetSceneNumber: h.target_scene_number != null ? Number(h.target_scene_number) : null,
       })
     }
 

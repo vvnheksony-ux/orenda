@@ -26,6 +26,10 @@ export const fetchGaReports = async (payload: Payload) => {
 
     const reportTypes = ['overview', 'top_pages', 'devices', 'geo'] as const
 
+    // Resolve the GA4 relative range ("30daysAgo".."today") to real dates for storage.
+    const rangeEnd = new Date().toISOString()
+    const rangeStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+
     for (const type of reportTypes) {
       payload.logger.info(`Fetching GA4 ${type} report...`)
       
@@ -57,8 +61,8 @@ export const fetchGaReports = async (payload: Payload) => {
       await payload.create({
         collection: 'gaReports',
         data: {
-          reportType: type as 'page_views' | 'traffic_sources' | 'user_demographics' | 'device_breakdown',
-          dateRange: { start: '30daysAgo', end: 'today' },
+          reportType: type,
+          dateRange: { start: rangeStart, end: rangeEnd },
           data: response as Record<string, unknown>,
           fetchedAt: new Date().toISOString(),
         },

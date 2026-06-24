@@ -12,6 +12,7 @@ import { Media } from './src/payload/collections/Media'
 import { Pages } from './src/payload/collections/Pages'
 import { Doctors } from './src/payload/collections/Doctors'
 import { Departments } from './src/payload/collections/Departments'
+import { CentersOfExcellence } from './src/payload/collections/CentersOfExcellence'
 import { Branches } from './src/payload/collections/Branches'
 import { DoctorSchedules } from './src/payload/collections/DoctorSchedules'
 import { Services } from './src/payload/collections/Services'
@@ -87,6 +88,9 @@ function withOriendaListView(collection: CollectionConfig): CollectionConfig {
 export default buildConfig({
   admin: {
     user: Users.slug,
+    // Force light mode so the admin matches the (light) dashboard, instead of
+    // following the OS setting (which could render dark).
+    theme: 'light',
     importMap: {
       baseDir: path.resolve(dirname),
     },
@@ -155,6 +159,7 @@ export default buildConfig({
     Pages,
     Doctors,
     Departments,
+    CentersOfExcellence,
     Branches,
     DoctorSchedules,
     Services,

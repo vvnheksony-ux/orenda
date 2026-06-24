@@ -55,6 +55,7 @@ export default function OperationsTable({ config, initialRecords }: OperationsTa
   const [appointmentFilters, setAppointmentFilters] = useState(emptyAppointmentFilters)
   const [promotionPurchaseFilters, setPromotionPurchaseFilters] = useState(emptyPromotionPurchaseFilters)
   const [page, setPage] = useState(1)
+  const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -116,12 +117,39 @@ export default function OperationsTable({ config, initialRecords }: OperationsTa
     })
   }, [records, search, config.columns, isAppointmentsTable, isPromotionPurchasesTable, appointmentFilters, promotionPurchaseFilters])
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  // Client-side sort on the active (filtered) rows. Numbers sort numerically,
+  // dates chronologically, everything else alphabetically; blanks sink to the end.
+  const sorted = useMemo(() => {
+    if (!sort) return filtered
+    const { key, dir } = sort
+    const factor = dir === 'asc' ? 1 : -1
+    return [...filtered].sort((a, b) => {
+      const av = a[key]
+      const bv = b[key]
+      const aEmpty = av == null || av === ''
+      const bEmpty = bv == null || bv === ''
+      if (aEmpty || bEmpty) return aEmpty && bEmpty ? 0 : aEmpty ? 1 : -1
+      const an = Number(av)
+      const bn = Number(bv)
+      if (!Number.isNaN(an) && !Number.isNaN(bn)) return (an - bn) * factor
+      const ad = Date.parse(String(av))
+      const bd = Date.parse(String(bv))
+      if (!Number.isNaN(ad) && !Number.isNaN(bd)) return (ad - bd) * factor
+      return String(av).localeCompare(String(bv)) * factor
+    })
+  }, [filtered, sort])
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
   const paginated = useMemo(() => {
     const start = (safePage - 1) * PAGE_SIZE
-    return filtered.slice(start, start + PAGE_SIZE)
-  }, [filtered, safePage])
+    return sorted.slice(start, start + PAGE_SIZE)
+  }, [sorted, safePage])
+
+  const toggleSort = (key: string) => {
+    setSort((cur) => (cur?.key === key ? (cur.dir === 'asc' ? { key, dir: 'desc' } : null) : { key, dir: 'asc' }))
+    setPage(1)
+  }
 
   const handleSearch = (value: string) => {
     setSearch(value)
@@ -253,11 +281,24 @@ export default function OperationsTable({ config, initialRecords }: OperationsTa
           <table className="orienda-list-table">
             <thead>
               <tr>
-                {config.columns.map((column) => (
-                  <th key={column.key} style={{ padding: 0 }}>
-                    {column.label}
-                  </th>
-                ))}
+                {config.columns.map((column) => {
+                  const active = sort?.key === column.key
+                  return (
+                    <th key={column.key} style={{ padding: 0 }}>
+                      <button
+                        type="button"
+                        onClick={() => toggleSort(column.key)}
+                        style={{ background: 'none', border: 0, font: 'inherit', color: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, padding: 0 }}
+                        title={`Sort by ${column.label}`}
+                      >
+                        {column.label}
+                        <span aria-hidden style={{ opacity: active ? 1 : 0.35, fontSize: '0.8em' }}>
+                          {active ? (sort?.dir === 'asc' ? '▲' : '▼') : '↕'}
+                        </span>
+                      </button>
+                    </th>
+                  )
+                })}
                 <th className="orienda-list-table__actions-heading" style={{ padding: 0 }}>
                   Actions
                 </th>
@@ -376,9 +417,10 @@ function AppointmentFilterRow({
 }) {
   return (
     <div className=" flex flex-row gap-4 justify-start items-center mb-4">
-      <FilterSelect label="Doctor" onChange={(value) => onChange('doctor', value)} options={options.doctor} value={filters.doctor} />
+      {/* Filter hierarchy: Branch → Clinic (Department) → Doctor → Preferred Date → Status */}
       <FilterSelect label="Branch" onChange={(value) => onChange('branch', value)} options={options.branch} value={filters.branch} />
       <FilterSelect label="Department" onChange={(value) => onChange('department', value)} options={options.department} value={filters.department} />
+      <FilterSelect label="Doctor" onChange={(value) => onChange('doctor', value)} options={options.doctor} value={filters.doctor} />
       <FilterSelect label="Preferred Date" onChange={(value) => onChange('preferredDate', value)} options={options.preferredDate} value={filters.preferredDate} />
         <FilterSelect label="Status" onChange={(value) => onChange('status', value)} options={options.status} value={filters.status} />
         {hasFilters ? (

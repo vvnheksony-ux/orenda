@@ -65,6 +65,9 @@ export default function ProfilePage() {
   const [signOutOpen, setSignOutOpen] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [uploadingCover, setUploadingCover] = useState(false)
+  // Picked-but-not-yet-saved image URLs — staged here and only persisted on Save (no auto-save).
+  const [pendingPhotoUrl, setPendingPhotoUrl] = useState<string | null>(null)
+  const [pendingCoverUrl, setPendingCoverUrl] = useState<string | null>(null)
   const [apptPage, setApptPage] = useState(1)
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
@@ -132,6 +135,24 @@ export default function ProfilePage() {
 
     setSaving(true)
     setError('')
+
+    // Persist any staged profile/cover images first (these were not auto-saved).
+    if (pendingPhotoUrl !== null || pendingCoverUrl !== null) {
+      const { error: imgError } = await supabase.auth.updateUser({
+        data: {
+          photo_url: pendingPhotoUrl ?? user.user_metadata?.photo_url ?? null,
+          cover_url: pendingCoverUrl ?? user.user_metadata?.cover_url ?? null,
+        },
+      })
+      if (imgError) {
+        setSaving(false)
+        setError(imgError.message || 'Could not save your photo. Please try again.')
+        return
+      }
+      setPendingPhotoUrl(null)
+      setPendingCoverUrl(null)
+    }
+
     const { error: saveError } = await supabase.from('profiles').upsert(
       {
         id: user.id,
@@ -178,7 +199,9 @@ export default function ProfilePage() {
     setError('')
     const url = await uploadImage(file, 'profiles/avatars')
     if (url) {
-      await supabase.auth.updateUser({ data: { photo_url: url } })
+      // Stage the new avatar — it's persisted when the user clicks Save.
+      setPendingPhotoUrl(url)
+      setSaved(false)
     }
     setUploadingAvatar(false)
     if (avatarInputRef.current) avatarInputRef.current.value = ''
@@ -191,7 +214,9 @@ export default function ProfilePage() {
     setError('')
     const url = await uploadImage(file, 'profiles/covers')
     if (url) {
-      await supabase.auth.updateUser({ data: { cover_url: url } })
+      // Stage the new cover — it's persisted when the user clicks Save.
+      setPendingCoverUrl(url)
+      setSaved(false)
     }
     setUploadingCover(false)
     if (coverInputRef.current) coverInputRef.current.value = ''
@@ -216,6 +241,10 @@ export default function ProfilePage() {
     .slice(0, 2)
     .join('')
     .toUpperCase()
+
+  // Show the staged image as a preview if one was just picked, otherwise the saved one.
+  const avatarSrc = pendingPhotoUrl ?? user?.user_metadata?.photo_url ?? null
+  const coverSrc = pendingCoverUrl ?? user?.user_metadata?.cover_url ?? null
 
   const completionFields = [form.display_name, form.phone, form.email, form.date_of_birth, form.gender]
   const completeness = Math.round(
@@ -263,8 +292,8 @@ export default function ProfilePage() {
             className="relative h-[140px] sm:h-[160px] cursor-pointer group overflow-hidden"
             onClick={() => coverInputRef.current?.click()}
           >
-            {user?.user_metadata?.cover_url ? (
-              <Image src={user.user_metadata.cover_url} alt="Cover" fill className="object-cover" sizes="960px" unoptimized />
+            {coverSrc ? (
+              <Image src={coverSrc} alt="Cover" fill className="object-cover" sizes="960px" unoptimized />
             ) : (
               <>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#b89148] via-[#c8a35c] to-[#8a6a30]" />
@@ -280,7 +309,7 @@ export default function ProfilePage() {
               ) : (
                 <Camera size={14} className="mr-1.5 shrink-0" />
               )}
-              {uploadingCover ? 'Uploading…' : user?.user_metadata?.cover_url ? 'Change cover' : 'Add cover'}
+              {uploadingCover ? 'Uploading…' : coverSrc ? 'Change cover' : 'Add cover'}
             </div>
             <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
           </div>
@@ -290,8 +319,8 @@ export default function ProfilePage() {
               <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end">
                 <div className="relative -mt-16 shrink-0 cursor-pointer group" onClick={() => avatarInputRef.current?.click()}>
                   <div className="relative flex h-[112px] w-[112px] items-center justify-center rounded-full bg-gradient-to-br from-[#d8b765] to-[#b89148] font-cormorant text-[42px] font-bold text-white ring-4 ring-white shadow-[0_8px_24px_rgba(184,145,72,0.3)] overflow-hidden">
-                    {user?.user_metadata?.photo_url ? (
-                      <Image src={user.user_metadata.photo_url} alt="Profile" fill className="object-cover" sizes="112px" unoptimized />
+                    {avatarSrc ? (
+                      <Image src={avatarSrc} alt="Profile" fill className="object-cover" sizes="112px" unoptimized />
                     ) : (
                       initials
                     )}

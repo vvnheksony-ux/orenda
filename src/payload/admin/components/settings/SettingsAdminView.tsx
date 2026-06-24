@@ -8,7 +8,22 @@ import SettingsForm, { type SettingsUser } from './SettingsForm'
 
 export default async function SettingsAdminView(props: AdminViewServerProps) {
   const { locale, permissions, req } = props.initPageResult ?? {}
-  const user = props.user as SettingsUser | null | undefined
+  // props.user is a lightweight token user that may not include email/avatar.
+  // Re-fetch the full record so the form shows the real email, name and photo.
+  const authedUser = (req?.user ?? props.user) as (SettingsUser & { id?: number | string }) | null | undefined
+  let user: SettingsUser | null = (authedUser as SettingsUser) ?? null
+  if (authedUser?.id != null) {
+    try {
+      user = (await props.payload.findByID({
+        collection: 'users',
+        id: authedUser.id,
+        depth: 1,
+        overrideAccess: true,
+      })) as unknown as SettingsUser
+    } catch {
+      // keep the token user as a fallback
+    }
+  }
   const nav: StepNavItem[] = [
     { label: 'System' },
     { label: 'Settings' },

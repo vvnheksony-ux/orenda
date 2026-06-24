@@ -69,8 +69,11 @@ export default function NewsSection() {
         {/* Content row */}
         <div className="flex flex-col md:flex-row gap-[24px] lg:gap-[37px] items-start w-full">
 
-          {/* Featured card — full width on mobile, flex-1 on desktop */}
-          <div className="w-full md:flex-1 min-w-0 overflow-hidden bg-white rounded-2xl shadow-[0px_2px_8px_2px_rgba(122,95,44,0.12)]">
+          {/* Featured card — whole card clickable */}
+          <Link
+            href={featured?.slug ? newsHref(featured.slug) : '/news'}
+            className="group block w-full md:flex-1 min-w-0 overflow-hidden bg-white rounded-2xl shadow-[0px_2px_8px_2px_rgba(122,95,44,0.12)] transition-shadow hover:shadow-[0px_4px_16px_4px_rgba(122,95,44,0.18)]"
+          >
 
             {/* Image */}
             <div className="relative w-full h-[280px] lg:h-[440px]">
@@ -87,22 +90,20 @@ export default function NewsSection() {
               <p className="font-dm-sans font-medium text-[14px] lg:text-[16px] text-[#3b2d17] leading-[1.5] flex-1">
                 {featured?.title ?? t('featuredTitle')}
               </p>
-              <Link
-                href={featured?.slug ? newsHref(featured.slug) : '/news'}
-                className="flex items-center justify-center shrink-0 h-[32px] lg:h-[36px] px-[12px] lg:px-[16px] border border-[#b89148] rounded-[10px] gap-[4px]"
-              >
-                <span className="font-dm-sans text-[12px] lg:text-[13px] text-[#594522]">{t('readMore')}</span>
-                <ArrowRight size={13} className="text-[#594522]" />
-              </Link>
+              <span className="flex items-center justify-center shrink-0 h-[32px] lg:h-[36px] px-[12px] lg:px-[16px] border border-[#b89148] rounded-[10px] gap-[4px] transition-colors group-hover:bg-[#b89148] group-hover:text-white">
+                <span className="font-dm-sans text-[12px] lg:text-[13px] text-[#594522] group-hover:text-white">{t('readMore')}</span>
+                <ArrowRight size={13} className="text-[#594522] group-hover:text-white" />
+              </span>
             </div>
-          </div>
+          </Link>
 
           {/* Right: 4 stacked news items — desktop only */}
           <div className="hidden md:flex w-full md:shrink-0 md:w-[44%] flex-col items-start justify-center">
             {sideItems.map((item, i) => (
-              <div
+              <Link
                 key={i}
-                className="flex items-center w-full bg-white overflow-hidden"
+                href={item.slug ? newsHref(item.slug) : '/news'}
+                className="group flex items-center w-full bg-white overflow-hidden transition-colors hover:bg-[#faf6ee]"
                 style={{
                   borderBottom: `0.5px solid ${i < 3 ? 'rgba(89,69,34,0.8)' : 'rgba(89,69,34,0.2)'}`,
                 }}
@@ -125,9 +126,9 @@ export default function NewsSection() {
                   <p className="flex-1 font-dm-sans font-normal text-[16px] text-[#050505] leading-[1.5] min-w-0">
                     {item.title}
                   </p>
-                  <ChevronRight size={24} className="shrink-0 text-[#594522]" />
+                  <ChevronRight size={24} className="shrink-0 text-[#594522] transition-transform group-hover:translate-x-1" />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 

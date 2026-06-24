@@ -20,10 +20,10 @@ export const GaReports: CollectionConfig = {
       type: 'select',
       required: true,
       options: [
-        { label: 'Page Views', value: 'page_views' },
-        { label: 'Traffic Sources', value: 'traffic_sources' },
-        { label: 'User Demographics', value: 'user_demographics' },
-        { label: 'Device Breakdown', value: 'device_breakdown' },
+        { label: 'Overview', value: 'overview' },
+        { label: 'Top Pages', value: 'top_pages' },
+        { label: 'Devices', value: 'devices' },
+        { label: 'Geography', value: 'geo' },
       ],
     },
     {

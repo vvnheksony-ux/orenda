@@ -146,6 +146,20 @@ export const Doctors: CollectionConfig = {
       ],
     },
     {
+      // Doctor availability, shown right on the doctor edit page. This is a
+      // virtual join into the doctor-schedules collection (no DB column / no
+      // migration) — adding a shift here pre-fills this doctor automatically.
+      name: 'availability',
+      type: 'join',
+      collection: 'doctor-schedules',
+      on: 'doctor',
+      admin: {
+        defaultColumns: ['dayOfWeek', 'startTime', 'endTime', 'department', 'active'],
+        description:
+          'Weekly availability shifts for this doctor (day, start/end time, department, room). Add or edit shifts here — these power appointment booking.',
+      },
+    },
+    {
       name: 'order',
       type: 'number',
       defaultValue: 0,

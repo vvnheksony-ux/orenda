@@ -22,7 +22,7 @@ export async function GET(req: Request) {
 
       const { rows } = await pool.query(`
         SELECT
-          p.id, p.slug, p.valid_from, p.valid_to, p.published_at, p.created_at,
+          p.id, p.slug, p.valid_from, p.valid_to, p.published_at, p.created_at, p.price, p.original_price,
           COALESCE(pl.title, enpl.title)             AS title,
           COALESCE(pl.description, enpl.description) AS description,
           m.filename AS img_filename, m.prefix AS img_prefix
@@ -41,8 +41,10 @@ export async function GET(req: Request) {
         title:       row.title ?? '',
         slug:        row.slug ?? '',
         image:       mediaStorageUrl(row.img_filename, row.img_prefix),
-        validFrom:   row.valid_from ?? null,
-        validTo:     row.valid_to ?? null,
+        validFrom:     row.valid_from ?? null,
+        validTo:       row.valid_to ?? null,
+        price:         row.price ?? '',
+        originalPrice: row.original_price ?? '',
         description: lexicalToText(row.description),
       })
     }
@@ -50,7 +52,7 @@ export async function GET(req: Request) {
     const offset = (page - 1) * limit
     const { rows } = await pool.query(`
       SELECT
-        p.id, p.slug, p.valid_from, p.valid_to, p.published_at, p.created_at,
+        p.id, p.slug, p.valid_from, p.valid_to, p.published_at, p.created_at, p.price, p.original_price,
         COALESCE(pl.title, enpl.title)             AS title,
         COALESCE(pl.description, enpl.description) AS description,
         m.filename AS img_filename, m.prefix AS img_prefix,
@@ -70,8 +72,10 @@ export async function GET(req: Request) {
       title:       row.title ?? '',
       slug:        row.slug ?? '',
       image:       mediaStorageUrl(row.img_filename, row.img_prefix),
-      validFrom:   row.valid_from ?? null,
-      validTo:     row.valid_to ?? null,
+      validFrom:     row.valid_from ?? null,
+      validTo:       row.valid_to ?? null,
+      price:         row.price ?? '',
+      originalPrice: row.original_price ?? '',
       publishedAt: row.published_at ?? row.created_at ?? '',
       description: lexicalToText(row.description),
     }))

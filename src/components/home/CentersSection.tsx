@@ -3,11 +3,9 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useBranch } from '@/lib/branch-context'
-import { DepartmentListItem, fetchDepartments } from '@/lib/departments-cache'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
-import { Link } from '@/i18n/routing'
 
 
 export default function CentersSection() {
@@ -16,36 +14,35 @@ export default function CentersSection() {
   const { selectedBranch, ready } = useBranch()
   const [idx, setIdx] = useState(0)
   const [fetching, setFetching] = useState(true)
-  const [SPECIALTIES, setSpecialties] = useState<{key:string;name:string;thumb:string;display:string}[]>([])
+  const [SPECIALTIES, setSpecialties] = useState<{key:string;name:string;thumb:string;display:string;successRate?:string;surgeries?:string;satisfactionsRate?:string}[]>([])
 
   useEffect(() => {
     if (!ready || !selectedBranch) return
 
     let active = true
-    fetchDepartments(locale, selectedBranch.id)
-      .then(docs => {
+    ;(async () => {
+      setIdx(0)
+      try {
+        // Bound solely to the Centers of Excellence collection (CMS-managed).
+        const res = await fetch(`/api/centers-of-excellence?locale=${locale}`)
+        const data = await res.json().catch(() => ({}))
+        const centers = Array.isArray(data?.docs) ? data.docs : []
         if (!active) return
-        setIdx(0)
-        const ADMIN_KEYWORDS = ['director', 'administration', 'admin', 'manager', 'executive', 'officer', 'coordinator']
-        const depts = docs.filter((dept: DepartmentListItem) => {
-          if (!dept.icon?.trim()) return false
-          const lower = (dept.name || '').toLowerCase()
-          return !ADMIN_KEYWORDS.some(k => lower.includes(k))
-        })
-        if (depts.length > 0) {
-          setSpecialties(depts.slice(0, 4).map((dept: DepartmentListItem) => ({
-            key:     dept.slug || String(dept.id),
-            name:    dept.name,
-            thumb:   dept.icon ?? '',
-            display: dept.icon ?? '',
-          })))
-        } else {
-          setSpecialties([])
-        }
-      })
-      .finally(() => {
+        setSpecialties(centers.map((c: { id: string; slug?: string; title: string; icon?: string | null; successRate?: string; surgeries?: string; satisfactionsRate?: string }) => ({
+          key:     c.slug || String(c.id),
+          name:    c.title,
+          thumb:   c.icon ?? '',
+          display: c.icon ?? '',
+          successRate:       c.successRate || undefined,
+          surgeries:         c.surgeries || undefined,
+          satisfactionsRate: c.satisfactionsRate || undefined,
+        })))
+      } catch {
+        if (active) setSpecialties([])
+      } finally {
         if (active) setFetching(false)
-      })
+      }
+    })()
 
     return () => {
       active = false
@@ -81,9 +78,9 @@ export default function CentersSection() {
   if (!selectedBranch || !active) return null
 
   const STATS = [
-    { value: '99%',    label: t('stat1') },
-    { value: '20k',    label: t('stat2') },
-    { value: '100%',   label: t('stat3') },
+    { value: active.successRate       || '99%',  label: t('stat1') },
+    { value: active.surgeries         || '20k',  label: t('stat2') },
+    { value: active.satisfactionsRate || '100%', label: t('stat3') },
   ]
 
   return (
@@ -151,10 +148,6 @@ export default function CentersSection() {
           ))}
         </div>
 
-        {/* See More button */}
-        <Link href="/centers-of-excellence" className="px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
-          {t('seeMore')}
-        </Link>
       </div>
 
       {/* ── Desktop layout ── */}
@@ -234,10 +227,6 @@ export default function CentersSection() {
           ))}
         </div>
       </div>
-        {/* See More — desktop */}
-        <Link href="/centers-of-excellence" className="px-8 py-3 bg-transparent rounded-[32px] outline outline-[1.5px] outline-offset-[-1.5px] outline-[#b89148] inline-flex justify-center items-center font-dm-sans text-base font-normal text-[#5c4924] hover:bg-[#b89148]/10 transition-colors">
-          {t('seeMore')}
-        </Link>
       </div>
       </div>
     </section>

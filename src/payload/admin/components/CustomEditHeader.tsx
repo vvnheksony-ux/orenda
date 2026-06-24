@@ -62,6 +62,7 @@ export default function CustomEditHeader() {
   const {
     collectionSlug,
     data,
+    docConfig,
     docPermissions,
     hasDeletePermission,
     hasPublishPermission,
@@ -71,6 +72,14 @@ export default function CustomEditHeader() {
     redirectAfterDelete,
     title,
   } = useDocumentInfo()
+
+  // Collections without a draft system (e.g. Tour Scenes) have no "publish
+  // permission" concept, which would otherwise leave the Publish button stuck
+  // disabled. For those, gate on save permission instead.
+  const collectionHasDrafts = Boolean(
+    (docConfig as { versions?: { drafts?: unknown } } | undefined)?.versions?.drafts,
+  )
+  const publishBlockedByPerms = collectionHasDrafts && !hasPublishPermission
   const {
     config: {
       routes: { admin: adminRoute, api: apiRoute },
@@ -106,6 +115,12 @@ export default function CustomEditHeader() {
     runAction('publish', async () => {
       await submit({ overrides: { _status: 'published', status: 'published', publishedAt: new Date().toISOString() } })
       toast.success('Changes published')
+      // Route back to the collection listing after a successful publish/create.
+      if (collectionSlug) {
+        startRouteTransition(() => {
+          router.push(formatAdminURL({ adminRoute, path: collectionPath as AdminPath }))
+        })
+      }
     })
 
   const revertToDraft = () =>
@@ -224,7 +239,7 @@ export default function CustomEditHeader() {
         <div className="flex shrink-0 flex-wrap items-center gap-3">
           <button
             className="rounded-xl bg-stone-100 px-4 py-2.5 border-none text-sm font-semibold text-stone-700 transition hover:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={disabled || !isPublished || !hasPublishPermission}
+            disabled={disabled || !isPublished || publishBlockedByPerms}
             onClick={revertToDraft}
             type="button"
           >
@@ -233,7 +248,7 @@ export default function CustomEditHeader() {
 
           <button
             className="rounded-xl bg-[#c39a42] px-5 py-2.5 text-sm border-none font-semibold text-white shadow-sm transition hover:bg-[#a88f59] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={disabled || !hasSavePermission || !hasPublishPermission}
+            disabled={disabled || !hasSavePermission || publishBlockedByPerms}
             onClick={publishChanges}
             type="button"
           >

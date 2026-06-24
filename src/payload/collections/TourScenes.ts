@@ -64,18 +64,42 @@ export const TourScenes: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      // Visual placement tool: lets non-technical editors click on the panorama
+      // to drop a navigation pin instead of typing pitch/yaw numbers by hand.
+      // It reads/writes the `hotspots` array below via the form state.
+      name: 'hotspotEditor',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/payload/admin/components/tour/HotspotEditorField',
+        },
+      },
+    },
+    {
       name: 'hotspots',
       type: 'array',
+      admin: {
+        description:
+          'Pins placed on the 360° photo. Use the visual editor above to add a pin (click the photo), then pick the room it opens.',
+      },
       fields: [
         {
+          // Set automatically by the visual editor (crosshair). Not required, so a
+          // freshly-placed pin can never block saving/publishing the scene.
           name: 'pitch',
           type: 'number',
-          required: true,
         },
         {
           name: 'yaw',
           type: 'number',
-          required: true,
+        },
+        {
+          name: 'targetScene',
+          type: 'relationship',
+          relationTo: 'tourScenes',
+          admin: {
+            description: 'When clicked, take the visitor to this room. Leave empty for an info-only marker.',
+          },
         },
         {
           name: 'label',

@@ -6,12 +6,13 @@ import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
 import Reveal from '@/components/shared/Reveal'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
-import { ChevronRight, MapPin, Calendar } from 'lucide-react'
+import { ChevronRight, MapPin, Clock, ArrowRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import PageState from '@/components/shared/PageState'
+import { useBranch } from '@/lib/branch-context'
 
-interface Promo { id: string; title: string; slug: string; image: string | null; validTo: string | null }
+interface Promo { id: string; title: string; slug: string; image: string | null; validTo: string | null; price?: string; originalPrice?: string; description?: string }
 interface Package { id: string; slug: string; title: string; description: string; price: string; image: string | null }
 type LocalizedHref = ComponentProps<typeof Link>['href']
 
@@ -28,16 +29,14 @@ function formatExpiry(iso: string | null) {
 
 function PromoCardSkeleton() {
   return (
-    <div className="bg-white rounded-[12px] overflow-hidden shadow-[0_2px_8px_rgba(122,95,44,0.12)] flex flex-col h-[300px] sm:h-[340px] lg:h-[360px] shrink-0 w-[220px] sm:w-[270px] lg:w-[300px] animate-pulse">
-      <div className="h-[155px] sm:h-[185px] lg:h-[200px] shrink-0 bg-[#ede8de]" />
-      <div className="flex flex-col flex-1 justify-between px-4 sm:px-5 lg:px-6 pt-3 pb-4 sm:pb-6 gap-2">
-        <div className="flex flex-col gap-2">
-          <div className="h-3 w-24 rounded-full bg-[#e5dfd4]" />
-          <div className="h-4 w-full rounded-full bg-[#e5dfd4]" />
-          <div className="h-4 w-3/4 rounded-full bg-[#e5dfd4]" />
-          <div className="h-3 w-28 rounded-full bg-[#e5dfd4]" />
-        </div>
-        <div className="self-end h-7 w-24 rounded-[12px] bg-[#e5dfd4]" />
+    <div className="bg-white rounded-[12px] shadow-[0_4px_16px_rgba(122,95,44,0.12)] flex flex-col shrink-0 w-[228px] sm:w-[248px] lg:w-[268px] animate-pulse">
+      <div className="h-[135px] sm:h-[150px] lg:h-[160px] rounded-t-[12px] bg-[#ede8de]" />
+      <div className="flex flex-col gap-1.5 px-4 pt-5 pb-4">
+        <div className="h-2.5 w-20 rounded-full bg-[#e5dfd4]" />
+        <div className="h-4 w-2/3 rounded-full bg-[#e5dfd4]" />
+        <div className="h-3 w-full rounded-full bg-[#e5dfd4]" />
+        <div className="h-3 w-3/4 rounded-full bg-[#e5dfd4]" />
+        <div className="self-end h-8 w-28 rounded-full bg-[#e5dfd4]" />
       </div>
     </div>
   )
@@ -63,6 +62,8 @@ function PackageRowSkeleton() {
 export default function PromotionsPage() {
   const locale = useLocale()
   const t = useTranslations('Promotions')
+  const { selectedBranch } = useBranch()
+  const promoLocation = selectedBranch?.address || 'Orienda Hospital'
   const [promos, setPromos] = useState<Promo[]>([])
   const [packages, setPackages] = useState<Package[]>([])
   const [loadingPromos, setLoadingPromos] = useState(true)
@@ -143,32 +144,46 @@ export default function PromotionsPage() {
               : promos.length === 0
               ? <div className="px-6 py-2"><PageState title="No promotions available" message="There are no active promotions at the moment." /></div>
               : [...promos, ...promos].map((promo, i) => (
-               <div key={i} className="bg-white rounded-[12px] overflow-hidden shadow-[0_2px_8px_rgba(122,95,44,0.12)] flex flex-col h-[300px] sm:h-[340px] lg:h-[360px] relative shrink-0 w-[220px] sm:w-[270px] lg:w-[300px]">
+               <div key={i} className="bg-white rounded-[12px] shadow-[0_4px_16px_rgba(122,95,44,0.12)] flex flex-col relative shrink-0 w-[228px] sm:w-[248px] lg:w-[268px]">
 
-                 <div className="relative h-[155px] sm:h-[185px] lg:h-[200px] shrink-0 overflow-hidden bg-[#f9f9f9]">
-                   {promo.image
-                     ? <Image src={promo.image} alt={promo.title} fill className="object-cover" sizes="300px" unoptimized />
-                     : <div className="w-full h-full bg-[#f0ebe0]" />
-                   }
-                 </div>
-                 <div className="flex flex-col flex-1 justify-between px-4 sm:px-5 lg:px-6 pt-3 pb-4 sm:pb-6 gap-2">
-                   <div className="flex flex-col gap-2">
-                     <div className="flex items-center gap-1.5">
-                       <MapPin size={12} className="text-gold-700 shrink-0" />
-                       <span className="font-dm-sans text-[10px] text-gold-900/70">Orienda Hospital</span>
+                 {/* Full-bleed image, only the top corners rounded to match the card */}
+                 <div className="relative">
+                   <div className="relative h-[135px] sm:h-[150px] lg:h-[160px] rounded-t-[12px] overflow-hidden bg-[#f0ebe0]">
+                     {promo.image
+                       ? <Image src={promo.image} alt={promo.title} fill className="object-cover" sizes="268px" unoptimized />
+                       : <div className="w-full h-full bg-[#f0ebe0]" />
+                     }
+                   </div>
+                   {promo.price && (
+                     <div className="absolute bottom-3 right-3 flex items-baseline gap-1.5 rounded-full bg-white px-3.5 py-1.5 shadow-[0_6px_18px_rgba(122,95,44,0.20)]">
+                       <span className="font-dm-sans font-bold text-[15px] sm:text-[17px] text-[#a07d2c] leading-none">{promo.price}</span>
+                       {promo.originalPrice && (
+                         <span className="font-dm-sans text-[11px] sm:text-[12px] text-neutral-400 line-through leading-none">{promo.originalPrice}</span>
+                       )}
                      </div>
-                     <p className="font-dm-sans font-medium text-[13px] sm:text-[15px] lg:text-[16px] text-gold-900 line-clamp-2">{promo.title}</p>
-                     {promo.validTo && (
-                       <div className="flex items-center gap-1.5">
-                         <Calendar size={12} className="shrink-0" style={{ color: '#80776a' }} />
-                        <span className="font-dm-sans text-[10px]" style={{ color: '#80776a' }}>{t('expires')} {formatExpiry(promo.validTo)}</span>
-                      </div>
-                    )}
-                  </div>
-                  <Link href={`/promotions/${promo.slug}` as LocalizedHref}
-                     className="self-end flex items-center gap-1 px-2.5 py-1.5 rounded-[12px] border border-gold-500 font-dm-sans text-[11px] sm:text-[12px] text-gold-800 hover:bg-gold-50 transition-colors">
-                     {t('viewDetails')} <ChevronRight size={14} />
-                   </Link>
+                   )}
+                 </div>
+
+                 {/* Body */}
+                 <div className="flex flex-col gap-1.5 px-4 pt-4 pb-4">
+                   <div className="flex items-center gap-1">
+                     <MapPin size={12} className="text-neutral-400 shrink-0" />
+                     <span className="font-dm-sans text-[11px] text-neutral-500 line-clamp-1">{promoLocation}</span>
+                   </div>
+                   <h3 className="font-dm-sans font-bold text-[16px] sm:text-[18px] text-neutral-800 leading-tight line-clamp-1">{promo.title}</h3>
+                   {promo.description && (
+                     <p className="font-dm-sans text-[12px] sm:text-[12.5px] text-neutral-500 leading-snug line-clamp-2 min-h-[34px]">{promo.description}</p>
+                   )}
+                   {promo.validTo && (
+                     <div className="flex items-center gap-1">
+                       <Clock size={12} className="text-neutral-400 shrink-0" />
+                       <span className="font-dm-sans text-[11px] text-neutral-500">{t('expires')} {formatExpiry(promo.validTo)}</span>
+                     </div>
+                   )}
+                   <Link href={`/promotions/${promo.slug}/purchase` as LocalizedHref}
+                      className="mt-1 self-end inline-flex items-center gap-1.5 rounded-full border border-gold-500 px-4 py-2 font-dm-sans text-[12px] text-gold-800 hover:bg-gold-50 transition-colors">
+                      {t('makePurchase')} <ArrowRight size={14} />
+                    </Link>
                  </div>
               </div>
             ))

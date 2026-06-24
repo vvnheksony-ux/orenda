@@ -44,6 +44,20 @@ export const Promotions: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      name: 'price',
+      type: 'text',
+      admin: {
+        description: 'Current / sale price, e.g. "$25.00" — shown bold in the price pill.',
+      },
+    },
+    {
+      name: 'originalPrice',
+      type: 'text',
+      admin: {
+        description: 'Original price, e.g. "$50.00" — shown struck-through next to the price (optional).',
+      },
+    },
+    {
       name: 'validFrom',
       type: 'date',
       admin: {

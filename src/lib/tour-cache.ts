@@ -1,3 +1,12 @@
+export interface TourHotspot {
+  pitch: number
+  yaw: number
+  label?: string
+  description?: string
+  // When set, clicking this hotspot navigates to the room with this sceneNumber.
+  targetSceneNumber?: number | null
+}
+
 export interface TourScene {
   id: string
   sceneNumber: number
@@ -6,6 +15,7 @@ export interface TourScene {
   roomGroup?: string | null
   thumbnailUrl: string | null
   panoramaUrl: string | null
+  hotspots?: TourHotspot[]
 }
 
 // Module-level cache — persists across client-side navigations for the session

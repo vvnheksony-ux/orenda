@@ -5,11 +5,12 @@ import { useState, useEffect, use } from 'react'
 import Image from 'next/image'
 import SiteLayout from '@/components/layout/SiteLayout'
 import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
-import { Link } from '@/i18n/routing'
+import { Link, useRouter } from '@/i18n/routing'
 import { useScrollLock } from '@/lib/useScrollLock'
 import { useLocale } from 'next-intl'
 import { fetchTourScenes, type TourScene } from '@/lib/tour-cache'
 import { useBranch } from '@/lib/branch-context'
+import { useAnalytics } from '@/lib/use-analytics'
 
 type Doctor = { id: number; name: string; specialty: string; image_url: string | null; slug: string }
 
@@ -52,6 +53,8 @@ function DoctorCard({ doc }: { doc: Doctor }) {
 export default function RoomDetailPage({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = use(params)
   const locale = useLocale()
+  const router = useRouter()
+  const { trackTourView } = useAnalytics()
   const { selectedBranch, ready } = useBranch()
 
   const [scene, setScene] = useState<TourScene | null>(null)
@@ -83,6 +86,13 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
 
   const panorama = scene?.panoramaUrl || scene?.thumbnailUrl || '/images/360-page-banner.jpg'
   const descParts = (scene?.description || '').split('\n\n').filter(Boolean)
+
+  const handleHotspotClick = (targetSceneNumber: number | null) => {
+    if (targetSceneNumber == null) return
+    trackTourView(targetSceneNumber)
+    setExpanded(false)
+    router.push(`/360-tour/${targetSceneNumber}` as any)
+  }
 
   return (
     <SiteLayout>
@@ -124,7 +134,12 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
                 className="relative w-full h-[598px] rounded-[24px] overflow-hidden bg-[#1a1410]"
                 onDoubleClick={() => setLocked(false)}
               >
-                <ThreeSixtyViewer src={panorama} interactive={!locked} />
+                <ThreeSixtyViewer
+                  src={panorama}
+                  interactive={!locked}
+                  hotspots={!locked ? scene.hotspots : undefined}
+                  onHotspotClick={handleHotspotClick}
+                />
 
                 {/* Lock overlay — subtle dark tint with hint */}
                 {locked && (
@@ -227,7 +242,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
             </button>
           </div>
           <div className="flex-1 relative" onClick={e => e.stopPropagation()}>
-            <ThreeSixtyViewer src={panorama} />
+            <ThreeSixtyViewer src={panorama} hotspots={scene.hotspots} onHotspotClick={handleHotspotClick} />
           </div>
         </div>
       )}

@@ -130,15 +130,15 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
                 </div>
 
                 {images.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px] w-full">
+                  <div className="flex flex-col gap-[24px] w-full">
                     {images.map((src, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => setLightboxIdx(i)}
-                        className="relative h-[220px] sm:h-[260px] rounded-[12px] overflow-hidden bg-[#f0ebe0] group cursor-zoom-in"
+                        className="relative w-full h-[260px] sm:h-[360px] lg:h-[500px] rounded-[16px] overflow-hidden bg-[#f0ebe0] group cursor-zoom-in"
                       >
-                        <Image src={src} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, 33vw" unoptimized />
+                        <Image src={src} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="100vw" unoptimized />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                       </button>
                     ))}

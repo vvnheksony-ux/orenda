@@ -233,6 +233,15 @@ function ViewDetails({ config, isPending, markConfirmed, record }: { config: Ope
           <div className="rounded-xl bg-[#fee2e2] px-8 py-4 font-bold text-[#991b1b]">
             Rejected ✗
           </div>
+        ) : config.slug === 'appointments' && record?.status && record.status !== 'pending' ? (
+          // Already actioned — hide "Mark as Confirmed" and show the final status instead.
+          <div
+            className={`rounded-xl px-8 py-4 font-bold ${
+              record.status === 'cancelled' ? 'bg-[#fee2e2] text-[#991b1b]' : 'bg-[#dcf7e9] text-[#065f46]'
+            }`}
+          >
+            {record.status.charAt(0).toUpperCase() + record.status.slice(1)} {record.status === 'cancelled' ? '✗' : '✓'}
+          </div>
         ) : (
           <button className="rounded-xl bg-[#22a95a] border-none px-8 py-4 font-bold text-white" disabled={isPending} onClick={markConfirmed} type="button">
             Mark as {config.slug === 'inquiries' ? 'Resolved' : config.slug === 'profiles' ? 'Active' : config.slug === 'feedback' ? 'Approved' : 'Confirmed'}
