@@ -6,12 +6,16 @@ import type { StepNavItem } from '@payloadcms/ui'
 import { DefaultListView, SetStepNav, useConfig, useListQuery, useTableColumns } from '@payloadcms/ui'
 import { Eye, Pencil, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect } from 'react'
+
+const ADMIN_TABLE_PAGE_SIZE = 10
 
 type PayloadListDoc = {
   id: number | string
   _status?: unknown
   publishedAt?: unknown
   status?: unknown
+  [key: string]: unknown
 }
 
 type OriendaListTableProps = {
@@ -63,6 +67,12 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
   const docs = (data?.docs || []) as PayloadListDoc[]
   const activeColumns = getVisibleColumns(columns || [])
 
+  useEffect(() => {
+    if (query?.limit === ADMIN_TABLE_PAGE_SIZE) return
+
+    void refineListData({ limit: ADMIN_TABLE_PAGE_SIZE, page: 1 }, false)
+  }, [query?.limit, refineListData])
+
   async function deleteDoc(doc: PayloadListDoc) {
     if (!hasDeletePermission) return
     if (!window.confirm('Delete this record?')) return
@@ -83,55 +93,57 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
 
   return (
     <div className="orienda-list-table-wrap">
-      <table className="orienda-list-table">
-        <thead>
-          <tr>
-            {activeColumns.map((column, colIndex) => (
-              <th key={column.accessor ?? `th-${colIndex}`} style={{ padding: 0 }}>{column.Heading}</th>
-            ))}
-            <th className="orienda-list-table__actions-heading" style={{ padding: 0 }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {docs.map((doc, rowIndex) => {
-            const docURL = `/admin/collections/${collectionSlug}/${doc.id}`
+      <div className="orienda-list-table-scroll">
+        <table className="orienda-list-table">
+          <thead>
+            <tr>
+              {activeColumns.map((column, colIndex) => (
+                <th key={column.accessor ?? `th-${colIndex}`} style={{ padding: 0 }}>{column.Heading}</th>
+              ))}
+              <th className="orienda-list-table__actions-heading" style={{ padding: 0 }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {docs.map((doc, rowIndex) => {
+              const docURL = `/admin/collections/${collectionSlug}/${doc.id}`
 
-            return (
-              <tr data-id={doc.id} key={doc.id ?? `row-${rowIndex}`}>
-                {activeColumns.map((column, colIndex) => (
-                  <td className={`cell-${column.accessor.replace(/\./g, '__')}`} key={column.accessor ?? `td-${rowIndex}-${colIndex}`}>
-                    <div className="orienda-list-table__cell-content">
-                      {renderCleanCell(column, doc, rowIndex)}
+              return (
+                <tr data-id={doc.id} key={doc.id ?? `row-${rowIndex}`}>
+                  {activeColumns.map((column, colIndex) => (
+                    <td className={`cell-${column.accessor.replace(/\./g, '__')}`} key={column.accessor ?? `td-${rowIndex}-${colIndex}`}>
+                      <div className="orienda-list-table__cell-content">
+                        {renderCleanCell(column, doc, rowIndex, docs)}
+                      </div>
+                    </td>
+                  ))}
+                  <td className="orienda-list-table__actions-cell">
+                    <div className="orienda-list-table__actions">
+                      <Link aria-label="View record" className="orienda-table-action orienda-table-action--view" href={docURL}>
+                        <Eye aria-hidden size={15} />
+                        {/* <span>View</span> */}
+                      </Link>
+                      <Link aria-label="Edit record" className="orienda-table-action orienda-table-action--edit" href={docURL}>
+                        <Pencil aria-hidden size={15} />
+                        {/* <span>Edit</span> */}
+                      </Link>
+                      <button
+                        aria-label="Delete record"
+                        className="orienda-table-action orienda-table-action--delete"
+                        disabled={!hasDeletePermission}
+                        onClick={() => void deleteDoc(doc)}
+                        type="button"
+                      >
+                        <Trash2 aria-hidden size={15} />
+                        {/* <span>Delete</span> */}
+                      </button>
                     </div>
                   </td>
-                ))}
-                <td className="orienda-list-table__actions-cell">
-                  <div className="orienda-list-table__actions">
-                    <Link aria-label="View record" className="orienda-table-action orienda-table-action--view" href={docURL}>
-                      <Eye aria-hidden size={15} />
-                      {/* <span>View</span> */}
-                    </Link>
-                    <Link aria-label="Edit record" className="orienda-table-action orienda-table-action--edit" href={docURL}>
-                      <Pencil aria-hidden size={15} />
-                      {/* <span>Edit</span> */}
-                    </Link>
-                    <button
-                      aria-label="Delete record"
-                      className="orienda-table-action orienda-table-action--delete"
-                      disabled={!hasDeletePermission}
-                      onClick={() => void deleteDoc(doc)}
-                      type="button"
-                    >
-                      <Trash2 aria-hidden size={15} />
-                      {/* <span>Delete</span> */}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -144,7 +156,7 @@ function getVisibleColumns(columns: Column[]) {
   })
 }
 
-function renderCleanCell(column: Column, doc: PayloadListDoc, rowIndex: number) {
+function renderCleanCell(column: Column, doc: PayloadListDoc, rowIndex: number, docs: PayloadListDoc[]) {
   if (column.accessor === '_status') {
     return <CleanPublicationStatus doc={doc} />
   }
@@ -153,7 +165,12 @@ function renderCleanCell(column: Column, doc: PayloadListDoc, rowIndex: number) 
     return <CleanPublicationStatus doc={doc} />
   }
 
-  return column.renderedCells[rowIndex]
+  const originalIndex = docs.findIndex((item) => item.id === doc.id)
+  if (originalIndex >= 0 && column.renderedCells[originalIndex]) {
+    return column.renderedCells[originalIndex]
+  }
+
+  return formatCellValue(getNestedValue(doc, column.accessor))
 }
 
 function CleanPublicationStatus({ doc }: { doc: PayloadListDoc }) {
@@ -164,6 +181,37 @@ function CleanPublicationStatus({ doc }: { doc: PayloadListDoc }) {
       {isPublished ? 'Published' : 'Draft'}
     </span>
   )
+}
+
+function getNestedValue(doc: PayloadListDoc, accessor: string) {
+  return accessor.split('.').reduce<unknown>((value, key) => {
+    if (!value || typeof value !== 'object') return undefined
+    return (value as Record<string, unknown>)[key]
+  }, doc)
+}
+
+function formatCellValue(value: unknown): string {
+  if (value === undefined || value === null || value === '') return '-'
+  if (typeof value === 'string') return formatMaybeDate(value)
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (Array.isArray(value)) return value.map(formatCellValue).join(', ')
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    return String(record.title || record.name || record.email || record.id || '-')
+  }
+  return String(value)
+}
+
+function formatMaybeDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}/.test(value)) return value
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat('en', {
+    dateStyle: 'medium',
+    timeStyle: value.includes('T') ? 'short' : undefined,
+  }).format(date)
 }
 
 export default OriendaListView

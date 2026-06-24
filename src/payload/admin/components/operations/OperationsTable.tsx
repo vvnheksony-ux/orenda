@@ -249,77 +249,79 @@ export default function OperationsTable({ config, initialRecords }: OperationsTa
       ) : null}
 
       <div className="orienda-list-table-wrap">
-        <table className="orienda-list-table">
-          <thead>
-            <tr>
-              {config.columns.map((column) => (
-                <th key={column.key} style={{ padding: 0 }}>
-                  {column.label}
-                </th>
-              ))}
-              <th className="orienda-list-table__actions-heading" style={{ padding: 0 }}>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.map((record) => (
-              <tr
-                className="cursor-pointer"
-                key={record.id}
-                onClick={() => openRecord(record.id)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    openRecord(record.id)
-                  }
-                }}
-                role="link"
-                tabIndex={0}
-              >
+        <div className="orienda-list-table-scroll">
+          <table className="orienda-list-table">
+            <thead>
+              <tr>
                 {config.columns.map((column) => (
-                  <td className={`cell-${column.key}`} key={column.key}>
-                    <div className="orienda-list-table__cell-content">
-                      {renderCell(record, column.key)}
+                  <th key={column.key} style={{ padding: 0 }}>
+                    {column.label}
+                  </th>
+                ))}
+                <th className="orienda-list-table__actions-heading" style={{ padding: 0 }}>
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((record) => (
+                <tr
+                  className="cursor-pointer"
+                  key={record.id}
+                  onClick={() => openRecord(record.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      openRecord(record.id)
+                    }
+                  }}
+                  role="link"
+                  tabIndex={0}
+                >
+                  {config.columns.map((column) => (
+                    <td className={`cell-${column.key}`} key={column.key}>
+                      <div className="orienda-list-table__cell-content">
+                        {renderCell(record, column.key)}
+                      </div>
+                    </td>
+                  ))}
+                  <td className="orienda-list-table__actions-cell">
+                    <div className="orienda-list-table__actions" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+                      <Link
+                        aria-label="View record details"
+                        className="orienda-table-action orienda-table-action--view"
+                        href={getOperationHref(config.slug, 'view', record.id)}
+                        title="View details"
+                      >
+                        <Eye aria-hidden size={15} />
+                      </Link>
+                      <Link
+                        aria-label="Edit record"
+                        className="orienda-table-action orienda-table-action--edit"
+                        href={getOperationHref(config.slug, 'edit', record.id)}
+                      >
+                        <Pencil aria-hidden size={15} />
+                      </Link>
+                      <button
+                        aria-label="Delete record"
+                        className="orienda-table-action orienda-table-action--delete"
+                        disabled={isPending}
+                        onClick={() => deleteRecord(record.id)}
+                        type="button"
+                      >
+                        <Trash2 aria-hidden size={15} />
+                      </button>
                     </div>
                   </td>
-                ))}
-                <td className="orienda-list-table__actions-cell">
-                  <div className="orienda-list-table__actions" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
-                    <Link
-                      aria-label="View record details"
-                      className="orienda-table-action orienda-table-action--view"
-                      href={getOperationHref(config.slug, 'view', record.id)}
-                      title="View details"
-                    >
-                      <Eye aria-hidden size={15} />
-                    </Link>
-                    <Link
-                      aria-label="Edit record"
-                      className="orienda-table-action orienda-table-action--edit"
-                      href={getOperationHref(config.slug, 'edit', record.id)}
-                    >
-                      <Pencil aria-hidden size={15} />
-                    </Link>
-                    <button
-                      aria-label="Delete record"
-                      className="orienda-table-action orienda-table-action--delete"
-                      disabled={isPending}
-                      onClick={() => deleteRecord(record.id)}
-                      type="button"
-                    >
-                      <Trash2 aria-hidden size={15} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <Pagination
           currentPage={safePage}
           totalPages={totalPages}
-          totalRecords={records.length}
+          totalRecords={filtered.length}
           onPageChange={setPage}
         />
       </div>

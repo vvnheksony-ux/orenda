@@ -50,6 +50,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const enableApiDocs =
   process.env.ENABLE_API_DOCS
+const ADMIN_TABLE_PAGE_SIZE = 10
 
 const oriendaListView = '@/payload/admin/components/list/OriendaListView'
 const oriendaEditView = '@/payload/admin/components/edit/OriendaEditView'
@@ -60,6 +61,11 @@ function withOriendaListView(collection: CollectionConfig): CollectionConfig {
     admin: {
       ...collection.admin,
       hideAPIURL: true,
+      pagination: {
+        ...collection.admin?.pagination,
+        defaultLimit: ADMIN_TABLE_PAGE_SIZE,
+        limits: [ADMIN_TABLE_PAGE_SIZE],
+      },
       components: {
         ...collection.admin?.components,
         views: {
