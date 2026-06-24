@@ -13,7 +13,7 @@ import { useLocale } from 'next-intl'
 interface Career {
   id: string; title: string; slug: string; department: string;
   employmentType: string; experienceLevel: string; salaryRange: string;
-  applicationDeadline: string | null; requirements: string;
+  applicationDeadline: string | null; description: string; requirements: string;
   thumbnail: string | null;
 }
 
@@ -22,8 +22,6 @@ function formatDeadline(iso: string | null) {
   return new Date(iso).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-const EMPLOYMENT_LABELS: Record<string, string> = { full_time: 'Full-time', part_time: 'Part-time', contract: 'Contract', visiting: 'Visiting' }
-const LEVEL_LABELS: Record<string, string> = { entry: 'Entry level', mid: 'Mid level', senior: 'Senior level' }
 
 function CareerCardSkeleton() {
   return (
@@ -150,26 +148,9 @@ export default function CareerPage() {
                         <p className="font-dm-sans font-medium text-[13px] sm:text-[15px] lg:text-[16px] text-gold-900 line-clamp-2">
                           {career.title}
                         </p>
-                        {(career.employmentType || career.experienceLevel) && (
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            {career.employmentType && (
-                              <span className="px-2 py-0.5 rounded-full bg-gold-50 border border-gold-200 font-dm-sans text-[10px] text-gold-800">
-                                {EMPLOYMENT_LABELS[career.employmentType] ?? career.employmentType}
-                              </span>
-                            )}
-                            {career.experienceLevel && (
-                              <span className="px-2 py-0.5 rounded-full bg-gold-50 border border-gold-200 font-dm-sans text-[10px] text-gold-800">
-                                {LEVEL_LABELS[career.experienceLevel] ?? career.experienceLevel}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {career.salaryRange && (
-                          <p className="font-dm-sans font-medium text-[11px] sm:text-[12px] text-gold-800">{career.salaryRange}</p>
-                        )}
-                        {career.requirements && (
+                        {(career.description || career.requirements) && (
                           <p className="font-dm-sans text-[10px] sm:text-[12px] text-gold-900 leading-[1.4] line-clamp-2">
-                            {career.requirements}
+                            {career.description || career.requirements}
                           </p>
                         )}
                       </div>

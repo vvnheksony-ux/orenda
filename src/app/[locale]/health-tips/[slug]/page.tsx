@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState, useEffect, use } from 'react'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
-import { Phone } from 'lucide-react'
+import { Phone, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import PageState from '@/components/shared/PageState'
 import ExploreMoreCarousel, { type ExploreMoreItem } from '@/components/shared/ExploreMoreCarousel'
@@ -14,6 +14,7 @@ interface HealthTipDetail {
   id: string; title: string; slug: string; body: string
   excerpt: string; thumbnail: string | null; publishedAt: string
   author: string; category: string; readingTime: number | null
+  images: string[]
 }
 interface ContentCard { id: string; title: string; slug: string; thumbnail: string | null; href: string }
 interface ListDoc { id: string; title: string; slug: string; thumbnail: string | null }
@@ -26,6 +27,9 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
   const [related, setRelated] = useState<ContentCard[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+
+  const images = tip?.images ?? []
 
   useEffect(() => {
     Promise.all([
@@ -124,6 +128,22 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
                     </div>
                   </div>
                 </div>
+
+                {images.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px] w-full">
+                    {images.map((src, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setLightboxIdx(i)}
+                        className="relative h-[220px] sm:h-[260px] rounded-[12px] overflow-hidden bg-[#f0ebe0] group cursor-zoom-in"
+                      >
+                        <Image src={src} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, 33vw" unoptimized />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <ExploreMoreCarousel
@@ -140,6 +160,47 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
 
         </div>
       </div>
+
+      {/* Image lightbox */}
+      {lightboxIdx !== null && images[lightboxIdx] && (
+        <div
+          className="fixed inset-0 z-[500] bg-black/92 backdrop-blur-sm flex items-center justify-center"
+          onClick={() => setLightboxIdx(null)}
+        >
+          <button
+            onClick={() => setLightboxIdx(null)}
+            className="absolute top-5 right-5 z-10 size-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          >
+            <X size={20} className="text-white" />
+          </button>
+          {lightboxIdx > 0 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIdx((i) => (i ?? 0) - 1) }}
+              className="absolute left-5 top-1/2 -translate-y-1/2 z-10 size-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            >
+              <ChevronLeft size={26} className="text-white" />
+            </button>
+          )}
+          {lightboxIdx < images.length - 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIdx((i) => (i ?? 0) + 1) }}
+              className="absolute right-5 top-1/2 -translate-y-1/2 z-10 size-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            >
+              <ChevronRight size={26} className="text-white" />
+            </button>
+          )}
+          <div
+            className="relative rounded-[12px] overflow-hidden"
+            style={{ width: 'min(90vw, 1200px)', height: 'min(80vh, 720px)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image src={images[lightboxIdx]} alt="" fill className="object-contain" sizes="90vw" unoptimized />
+          </div>
+          <p className="absolute bottom-5 left-1/2 -translate-x-1/2 font-dm-sans text-[13px] text-white/50">
+            {lightboxIdx + 1} / {images.length}
+          </p>
+        </div>
+      )}
     </SiteLayout>
   )
 }

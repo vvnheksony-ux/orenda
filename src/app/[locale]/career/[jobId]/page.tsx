@@ -25,6 +25,8 @@ type CareerDetail = {
   employmentType?: string | null
   experienceLevel?: string | null
   salaryRange?: string | null
+  description?: string | null
+  body?: string | null
   responsibilities?: string | null
   requirements?: string | null
   applicationDeadline?: string | null
@@ -65,6 +67,8 @@ export default async function CareerDetailPage({
   const title = career.title ?? ''
   const dept = career.department || null
   const location: string | null = null
+  const description = (career.description ?? '').trim()
+  const bodyParas = textToParagraphs(career.body ?? null)
   const responsibilities = textToParagraphs(career.responsibilities ?? null)
   const requirements = textToParagraphs(career.requirements ?? null)
   const expiry = formatDeadline(career.applicationDeadline ?? null)
@@ -92,7 +96,20 @@ export default async function CareerDetailPage({
             {title}
           </h1>
 
+          {description && (
+            <p className="font-dm-sans text-[16px] xl:text-[20px] text-[#3b2d17] leading-relaxed">{description}</p>
+          )}
+
           <Reveal className="font-dm-sans text-[16px] xl:text-[20px] text-[#3b2d17] leading-normal flex flex-col gap-4">
+
+            {bodyParas.length > 0 && (
+              <>
+                <p className="font-semibold">About This Role</p>
+                <div className="flex flex-col gap-3">
+                  {bodyParas.map((b, i) => <p key={i}>{b}</p>)}
+                </div>
+              </>
+            )}
 
             <p className="font-semibold">Job Details</p>
             <ul className="list-disc pl-8 flex flex-col gap-1">

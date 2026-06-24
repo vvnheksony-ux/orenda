@@ -34,15 +34,22 @@ export function mediaUrl(field: any): string | null {
   return null
 }
 
-/** Extract plain text from Payload Lexical richtext */
+/** Extract plain text from Payload Lexical richtext.
+ *  Inline text within a block is space-joined; each top-level block (paragraph,
+ *  heading, list…) is separated by a newline so the frontends' `.split('\n')`
+ *  renders proper paragraphs/bullets instead of one flattened blob. */
 export function lexicalToText(rt: any): string {
   if (!rt?.root?.children) return ''
-  function walk(nodes: any[]): string {
+  function inline(nodes: any[]): string {
     return nodes.flatMap(n => {
       if (n.type === 'text') return [n.text ?? '']
-      if (n.children) return [walk(n.children)]
+      if (n.children) return [inline(n.children)]
       return []
     }).join(' ').replace(/\s+/g, ' ').trim()
   }
-  return walk(rt.root.children)
+  return rt.root.children
+    .map((n: any) => (n.children ? inline(n.children) : ''))
+    .map((s: string) => s.trim())
+    .filter((s: string) => s.length > 0)
+    .join('\n')
 }

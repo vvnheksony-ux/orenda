@@ -23,6 +23,8 @@ export async function GET(req: Request) {
         c.application_deadline, c.created_at,
         COALESCE(cl.position, encl.position)                       AS position,
         COALESCE(cl.title, encl.title)                             AS title,
+        COALESCE(cl.excerpt, encl.excerpt)                         AS excerpt,
+        COALESCE(cl.body, encl.body)                               AS body,
         COALESCE(cl.salary_range, encl.salary_range)               AS salary_range,
         COALESCE(cl.career_requirements, encl.career_requirements) AS career_requirements,
         COALESCE(cl.responsibilities, encl.responsibilities)       AS responsibilities,
@@ -50,6 +52,8 @@ export async function GET(req: Request) {
       salaryRange:         row.salary_range ?? '',
       applicationDeadline: row.application_deadline ?? null,
       thumbnail:           mediaStorageUrl(row.thumb_filename, row.thumb_prefix),
+      description:         row.excerpt ?? '',
+      body:               lexicalToText(row.body),
       requirements:        lexicalToText(row.career_requirements),
       responsibilities:    lexicalToText(row.responsibilities),
     })

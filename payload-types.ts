@@ -678,6 +678,10 @@ export interface HealthTip {
   excerpt?: string | null;
   author?: string | null;
   slug: string;
+  /**
+   * Additional images shown in the article gallery (in order).
+   */
+  images?: (number | Media)[] | null;
   healthTipCategory?: ('nutrition' | 'exercise' | 'mentalHealth' | 'preventiveCare' | 'chronicDisease') | null;
   /**
    * Estimated reading time in minutes
@@ -1567,6 +1571,7 @@ export interface HealthTipsSelect<T extends boolean = true> {
   excerpt?: T;
   author?: T;
   slug?: T;
+  images?: T;
   healthTipCategory?: T;
   readingTime?: T;
   healthTipTags?:
