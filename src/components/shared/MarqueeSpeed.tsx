@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 // Single source of truth for how fast every auto-scroll marquee moves.
 // Speed is in pixels/second, so all marquees move at the SAME visual speed
 // regardless of how wide their content is (duration = distance / speed).
-const PX_PER_SEC = 40
+const PX_PER_SEC = 50
 
 /**
  * Mounted once (in SiteLayout). Finds every `.marquee-track` on the page and
