@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import SiteLayout from '@/components/layout/SiteLayout'
 import Reveal from '@/components/shared/Reveal'
+import ApplyButton from '@/components/career/ApplyButton'
 
 function textToParagraphs(text: string | null): string[] {
   return String(text || '')
@@ -70,7 +71,7 @@ export default async function CareerDetailPage({
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pb-[120px] pt-[82px] min-[1500px]:pt-[128px]" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen pb-[120px] pt-[90px] lg:pt-[150px]" style={{ background: 'var(--background)' }}>
         <div className="narrow-shell mb-10">
           <div className="relative w-full h-[320px] md:h-[460px] xl:h-[574px] rounded-[10px] overflow-hidden">
             <Image
@@ -129,13 +130,7 @@ export default async function CareerDetailPage({
           )}
 
           <div className="mt-4">
-            <a
-              href="mailto:hr@orienda.com"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-[12px] font-dm-sans font-medium text-[16px] text-white transition-opacity hover:opacity-90"
-              style={{ background: '#b89148' }}
-            >
-              Apply for this Position
-            </a>
+            <ApplyButton />
           </div>
 
         </div>

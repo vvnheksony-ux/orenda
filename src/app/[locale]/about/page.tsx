@@ -10,7 +10,7 @@ export default function AboutPage() {
   return (
     <SiteLayout>
       <div className="bg-[var(--background)] w-full">
-        <div className="page-shell flex flex-col gap-[56px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
+        <div className="page-shell flex flex-col gap-[56px] items-center pb-[120px] pt-[90px] lg:pt-[150px]">
           <AboutHero />
           <VisionMission />
           <OurClinics />

@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-5 pt-[100px] lg:pt-[212px] pb-20" style={{ background: 'var(--background)' }}>
+    <div className="min-h-screen flex items-center justify-center px-5 pt-[90px] lg:pt-[150px] pb-20" style={{ background: 'var(--background)' }}>
       <div className="w-full max-w-md">
 
         <div className="flex flex-col items-center mb-8">

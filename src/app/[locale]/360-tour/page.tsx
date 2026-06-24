@@ -159,7 +159,7 @@ export default function ThreeSixtyTourPage() {
       <div className="bg-[var(--background)] w-full">
 
         {/* Scene 1 — interactive 360° hero */}
-        <div className="page-shell pt-[100px] lg:pt-[212px]">
+        <div className="page-shell pt-[90px] lg:pt-[150px]">
           {loading ? (
             <div className="w-full h-[520px] rounded-[28px] bg-[#1a1308] animate-pulse" />
           ) : !scene1 ? (

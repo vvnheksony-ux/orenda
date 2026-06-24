@@ -14,7 +14,7 @@ export default async function TestimonialsPage() {
   return (
     <SiteLayout>
       <div className="bg-[var(--background)] w-full">
-        <div className="flex flex-col items-center pb-[120px] pt-[100px] lg:pt-[212px] w-full">
+        <div className="flex flex-col items-center pb-[120px] pt-[90px] lg:pt-[150px] w-full">
 
           <div className="page-shell flex flex-col gap-[80px] items-center">
             {/* Hero */}
