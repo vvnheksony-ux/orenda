@@ -39,7 +39,7 @@ export default function EmergencyPage() {
 
   if (status === 'success') return (
     <SiteLayout>
-      <div className="min-h-screen flex items-center justify-center pt-[100px] lg:pt-[212px]" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen flex items-center justify-center pt-[90px] lg:pt-[150px]" style={{ background: 'var(--background)' }}>
         <div className="text-center flex flex-col items-center gap-6 px-6">
           <div className="w-20 h-20 rounded-full flex items-center justify-center bg-red-600">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -54,16 +54,18 @@ export default function EmergencyPage() {
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-20 px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen pt-[90px] lg:pt-[150px] pb-20 px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]" style={{ background: 'var(--background)' }}>
         <div className="max-w-xl mx-auto">
 
           {/* Emergency banner */}
           <div className="bg-red-600 rounded-[16px] p-6 mb-10 text-center">
             <p className="font-dm-sans text-white text-[14px] mb-1">{t('callImmediately')}</p>
-            {emergencyPhone && (
+            {emergencyPhone ? (
               <a href={`tel:${emergencyPhone.replace(/\s/g, '')}`} className="font-cormorant font-bold text-[32px] text-white">
                 {emergencyPhone}
               </a>
+            ) : (
+              <div className="mx-auto h-[34px] w-[180px] rounded-[12px] bg-white/30 animate-pulse" aria-hidden="true" />
             )}
           </div>
 

@@ -51,7 +51,7 @@ export default function CentersOfExcellencePage() {
   return (
     <SiteLayout>
       <div className="bg-[var(--background)] w-full">
-        <div className="page-shell flex flex-col gap-[clamp(72px,6vw,96px)] items-center pb-[120px] pt-[100px] md:pt-[clamp(150px,14vw,212px)]">
+        <div className="page-shell flex flex-col gap-[clamp(72px,6vw,96px)] items-center pb-[120px] pt-[90px] lg:pt-[150px]">
 
           {/* ── Hero ── */}
           <div className="flex flex-col gap-[56px] w-full">

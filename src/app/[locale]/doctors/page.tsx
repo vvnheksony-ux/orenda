@@ -74,7 +74,7 @@ export default function DoctorsPage() {
   return (
     <SiteLayout>
       <div className="bg-[var(--background)] w-full">
-        <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[100px] lg:pt-[212px]">
+        <div className="page-shell flex flex-col gap-[80px] items-center pb-[120px] pt-[90px] lg:pt-[150px]">
 
           {/* Hero banner */}
           <div className="flex w-full flex-col gap-[16px] sm:hidden">

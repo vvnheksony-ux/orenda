@@ -19,7 +19,7 @@ export default async function PrivacyPolicyPage() {
   return (
     <SiteLayout>
       <div className="bg-[var(--background)] w-full">
-        <div className="narrow-shell flex flex-col gap-10 pb-[120px] pt-[100px] lg:pt-[212px]">
+        <div className="narrow-shell flex flex-col gap-10 pb-[120px] pt-[90px] lg:pt-[150px]">
           <Reveal className="flex flex-col gap-3">
             <h1 className="font-cormorant font-bold text-[40px] lg:text-[52px] text-[#3b2d17] leading-none">{t('heading')}</h1>
             <p className="font-dm-sans text-[15px] text-[#6b5836]">{t('subtitle')}</p>

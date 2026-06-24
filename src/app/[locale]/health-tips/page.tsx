@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { ChevronRight, Search } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Search } from 'lucide-react'
 import PageState from '@/components/shared/PageState'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import Reveal from '@/components/shared/Reveal'
@@ -43,6 +43,8 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+const PAGE_SIZE = 9
+
 export default function HealthTipsPage() {
   const locale = useLocale()
   const [tips, setTips] = useState<HealthTip[]>([])
@@ -51,6 +53,7 @@ export default function HealthTipsPage() {
   const [category, setCategory] = useState('')
   const [search, setSearch] = useState('')
   const [showAllCategories, setShowAllCategories] = useState(false)
+  const [page, setPage] = useState(0)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -85,13 +88,16 @@ export default function HealthTipsPage() {
   const displayed = tips.filter(t =>
     !search || [t.title, t.excerpt, t.category].some((value) => value.toLowerCase().includes(search.toLowerCase()))
   )
+  const pageCount = Math.max(1, Math.ceil(displayed.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount - 1)
+  const pagedTips = displayed.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE)
 
   const filterCategories = CATEGORIES.slice(1)
   const visibleCategories = showAllCategories ? filterCategories : filterCategories.slice(0, 5)
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen pt-[90px] lg:pt-[150px] pb-[120px]" style={{ background: 'var(--background)' }}>
         <div className="page-shell flex flex-col gap-[32px] lg:gap-[40px]">
 
           {/* Hero banner */}
@@ -115,7 +121,7 @@ export default function HealthTipsPage() {
                   className="flex-1 font-dm-sans text-[12px] text-[#3b2d17] placeholder:text-[rgba(89,69,34,0.3)] bg-transparent outline-none"
                   placeholder="What are we looking for?"
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  onChange={e => { setSearch(e.target.value); setPage(0) }}
                 />
                 <Search size={16} className="text-[rgba(89,69,34,0.4)] shrink-0" />
               </div>
@@ -125,7 +131,7 @@ export default function HealthTipsPage() {
                 {visibleCategories.map((cat, i) => (
                   <button
                     key={cat.value}
-                    onClick={() => setCategory(cat.value === category ? '' : cat.value)}
+                    onClick={() => { setCategory(cat.value === category ? '' : cat.value); setPage(0) }}
                     className={`w-full flex items-center gap-[12px] p-[24px] font-dm-sans text-[16px] text-[#3b2d17] text-left transition-colors ${
                       i < visibleCategories.length - 1 ? 'border-b border-[#ead6a4]/50' : ''
                     } ${cat.value === category ? 'bg-[rgba(184,145,72,0.12)]' : 'hover:bg-[var(--background)]'}`}
@@ -198,7 +204,7 @@ export default function HealthTipsPage() {
                 />
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[24px] lg:gap-[40px]">
-                  {displayed.map(tip => (
+                  {pagedTips.map(tip => (
                     <div
                       key={tip.id}
                       className="bg-white rounded-[12px] overflow-hidden shadow-[0px_4px_30px_12px_rgba(220,189,114,0.12)] flex h-full min-h-[360px] flex-col"
@@ -236,6 +242,31 @@ export default function HealthTipsPage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {!loading && !error && displayed.length > 0 && pageCount > 1 && (
+                <div className="flex items-center justify-center gap-[20px]">
+                  <button
+                    type="button"
+                    onClick={() => setPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                    aria-label="Previous"
+                    className="flex items-center justify-center size-[40px] rounded-full border border-[#b89148] text-[#594522] hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="font-dm-sans text-[14px] text-[#594522]">{currentPage + 1} / {pageCount}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPage(Math.min(pageCount - 1, currentPage + 1))}
+                    disabled={currentPage >= pageCount - 1}
+                    aria-label="Next"
+                    className="flex items-center justify-center size-[40px] rounded-full border border-[#b89148] text-[#594522] hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
               )}
             </div>

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { ChevronRight, Search, Play } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Search, Play } from 'lucide-react'
 import PageState from '@/components/shared/PageState'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import Reveal from '@/components/shared/Reveal'
@@ -33,6 +33,8 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+const PAGE_SIZE = 6
+
 export default function DoctorTalksPage() {
   const locale = useLocale()
   const t = useTranslations('DoctorTalks')
@@ -44,6 +46,7 @@ export default function DoctorTalksPage() {
   const [search, setSearch] = useState('')
   const [showMore, setShowMore] = useState(false)
   const [activeDepartment, setActiveDepartment] = useState('')
+  const [page, setPage] = useState(0)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -85,6 +88,8 @@ export default function DoctorTalksPage() {
   const normalizedSearch = search.trim().toLowerCase()
   useEffect(() => {
     const nextTalks = talks.filter((talk) => {
+      // Only show talks that have a video link — the card opens the video directly.
+      const hasVideo = Boolean(talk.meetingLink && talk.meetingLink.trim())
       const matchesDepartment = !activeDepartment || talk.featuredDoctor?.departmentName === activeDepartment
       const matchesSearch = !normalizedSearch || [
         talk.title,
@@ -95,7 +100,7 @@ export default function DoctorTalksPage() {
         talk.featuredDoctor?.departmentName ?? '',
       ].some((value) => value.toLowerCase().includes(normalizedSearch))
 
-      return matchesDepartment && matchesSearch
+      return hasVideo && matchesDepartment && matchesSearch
     })
 
     // Show a brief skeleton when search/filter changes so the UI does not snap between states.
@@ -103,6 +108,7 @@ export default function DoctorTalksPage() {
     setFiltering(true)
     const timer = window.setTimeout(() => {
       setFilteredTalks(nextTalks)
+      setPage(0)
       setFiltering(false)
     }, 180)
 
@@ -110,10 +116,13 @@ export default function DoctorTalksPage() {
   }, [talks, activeDepartment, normalizedSearch])
 
   const displayed = filteredTalks
+  const pageCount = Math.max(1, Math.ceil(displayed.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount - 1)
+  const pagedTalks = displayed.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE)
 
   return (
     <SiteLayout>
-      <div className="min-h-screen pt-[100px] lg:pt-[212px] pb-[120px]" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen pt-[90px] lg:pt-[150px] pb-[120px]" style={{ background: 'var(--background)' }}>
         <div className="page-shell flex flex-col gap-[32px] lg:gap-[40px]">
 
           {/* Hero banner */}
@@ -226,7 +235,7 @@ export default function DoctorTalksPage() {
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px] lg:gap-[40px]">
-                  {displayed.map(talk => {
+                  {pagedTalks.map(talk => {
                     const detailHref = `/doctor-talks/${talk.slug}` as '/'
                     const hasMeetingLink = Boolean(talk.meetingLink)
                     return (
@@ -298,6 +307,31 @@ export default function DoctorTalksPage() {
                       </div>
                     )
                   })}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {!loading && !filtering && !error && displayed.length > 0 && pageCount > 1 && (
+                <div className="flex items-center justify-center gap-[20px]">
+                  <button
+                    type="button"
+                    onClick={() => setPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                    aria-label="Previous"
+                    className="flex items-center justify-center size-[40px] rounded-full border border-[#b89148] text-[#594522] hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="font-dm-sans text-[14px] text-[#594522]">{currentPage + 1} / {pageCount}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPage(Math.min(pageCount - 1, currentPage + 1))}
+                    disabled={currentPage >= pageCount - 1}
+                    aria-label="Next"
+                    className="flex items-center justify-center size-[40px] rounded-full border border-[#b89148] text-[#594522] hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
               )}
             </div>

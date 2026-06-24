@@ -49,9 +49,56 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
       <div className="bg-[var(--background)] w-full">
 
         {loading && (
-          <div className="flex items-center justify-center h-screen">
-            <div className="w-12 h-12 border-4 border-[#b89148] border-t-transparent rounded-full animate-spin" />
-          </div>
+          <>
+            {/* Back arrow skeleton */}
+            <div className="relative z-10 px-4 sm:px-8 md:px-12 lg:px-[80px] pt-[100px] lg:pt-[160px] pb-[12px] animate-pulse">
+              <div className="h-[28px] w-[120px] rounded-[12px] bg-[#e7dcc7]" />
+            </div>
+
+            {/* Gold header banner skeleton */}
+            <div className="relative w-full bg-[#ead6a4] lg:h-[221px]">
+              <div className="relative lg:absolute left-1/2 lg:-translate-x-1/2 top-0 lg:-top-[54px] flex flex-col sm:flex-row gap-6 lg:gap-[239px] items-center sm:items-start lg:items-center px-4 sm:px-8 md:px-12 lg:px-[80px] py-8 lg:py-[40px] w-full animate-pulse">
+                {/* Photo skeleton */}
+                <div className="bg-[#e8d9b8] rounded-[24px] shrink-0" style={{ width: 250, height: 250, boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }} />
+                {/* Name + specialty skeleton */}
+                <div className="flex flex-col gap-[16px] items-center sm:items-start justify-center w-full max-w-[420px]">
+                  <div className="h-[48px] w-[80%] rounded-[12px] bg-[#e8d9b8]" />
+                  <div className="h-[30px] w-[60%] rounded-[12px] bg-[#e8d9b8]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Content skeleton */}
+            <div className="flex flex-col md:flex-row gap-[32px] lg:gap-[40px] items-start px-5 sm:px-8 md:px-16 lg:px-[120px] py-24 lg:py-[80px] animate-pulse">
+              {/* Left 58% */}
+              <div className="flex flex-col gap-[32px] lg:gap-[40px] w-full lg:w-auto" style={{ flex: '0 0 58%' }}>
+                {Array(2).fill(0).map((_, i) => (
+                  <div key={i} className="flex flex-col gap-[16px] w-full">
+                    <div className="h-[24px] w-[160px] rounded-[12px] bg-[#e7dcc7]" />
+                    <div className="h-[16px] w-full rounded-[12px] bg-[#f0ebe0]" />
+                    <div className="h-[16px] w-[92%] rounded-[12px] bg-[#f0ebe0]" />
+                    <div className="h-[16px] w-[78%] rounded-[12px] bg-[#f0ebe0]" />
+                  </div>
+                ))}
+                <div className="flex flex-col gap-[16px] w-full">
+                  {Array(4).fill(0).map((_, i) => (
+                    <div key={i} className="h-[18px] w-[55%] rounded-[12px] bg-[#f0ebe0]" />
+                  ))}
+                </div>
+              </div>
+
+              {/* Right 38% */}
+              <div className="flex flex-col gap-[26px] w-full lg:w-auto" style={{ flex: '0 0 38%' }}>
+                {Array(2).fill(0).map((_, i) => (
+                  <div key={i} className="bg-white flex flex-col gap-[21px] p-[24px] rounded-[12px] w-full" style={{ boxShadow: '0px 4px 8px rgba(122,95,44,0.12)' }}>
+                    <div className="h-[24px] w-[150px] rounded-[12px] bg-[#e7dcc7]" />
+                    <div className="h-[16px] w-full rounded-[12px] bg-[#f0ebe0]" />
+                    <div className="h-[48px] w-full rounded-[12px] bg-[#e8d9b8]" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         )}
 
         {!loading && !doctor && (
