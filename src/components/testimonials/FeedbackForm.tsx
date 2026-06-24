@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { DatePicker, CustomSelect } from '@/components/shared/FormControls'
 
@@ -29,6 +29,13 @@ export default function FeedbackForm() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const successRef = useRef<HTMLDivElement>(null)
+
+  // On success, the tall form collapses to a short "Thank You" box; scroll that
+  // confirmation into view so the page doesn't appear to jump down to the footer.
+  useEffect(() => {
+    if (submitted) successRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [submitted])
 
   const [form, setForm] = useState<FeedbackFormState>({
     date_of_birth: '',
@@ -80,7 +87,7 @@ export default function FeedbackForm() {
 
   if (submitted) {
     return (
-      <div className="bg-[#fbf7ee] flex flex-col items-center justify-center p-6 sm:p-[40px] rounded-[16px] w-full min-h-[200px] gap-[16px]" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
+      <div ref={successRef} className="scroll-mt-[120px] bg-[#fbf7ee] flex flex-col items-center justify-center p-6 sm:p-[40px] rounded-[16px] w-full min-h-[200px] gap-[16px]" style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}>
         <p className="font-cormorant font-bold text-[28px] sm:text-[32px] text-[#3b2d17] text-center">{t('thankYou')}</p>
         <p className="font-dm-sans text-[16px] sm:text-[18px] text-[#594522] text-center">{t('thankYouDesc')}</p>
       </div>

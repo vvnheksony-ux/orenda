@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { Phone } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
 import { DatePicker, CustomSelect } from '@/components/shared/FormControls'
 
 const INQUIRY_TYPES = ['General Inquiry', 'Appointment Request', 'Medical Record', 'Billing', 'Feedback', 'Other']
@@ -22,6 +22,7 @@ export default function InquiryPage() {
   const [consents, setConsents] = useState([false, false, false])
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
+  const [showTop, setShowTop] = useState(false)
 
   useEffect(() => {
     fetch('/api/branches')
@@ -29,6 +30,21 @@ export default function InquiryPage() {
       .then(d => { if (d.docs?.length) setHospitalNames(d.docs.map((b: { name: string }) => b.name)) })
       .catch(() => {})
   }, [])
+
+  // Show the scroll-to-top button once the user scrolls down.
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 400)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // After a successful submit, scroll up so the confirmation is in view.
+  useEffect(() => {
+    if (status === 'success') window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [status])
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
   const toggleConsent = (i: number) => setConsents(c => c.map((v, idx) => idx === i ? !v : v))
@@ -107,6 +123,15 @@ export default function InquiryPage() {
 
   return (
     <SiteLayout>
+      {showTop && (
+        <button
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+          className="fixed bottom-6 left-6 z-[100] flex h-12 w-12 items-center justify-center rounded-full bg-[#b89148] text-white shadow-[0_8px_24px_rgba(122,95,44,0.3)] transition-all hover:bg-[#a3803d]"
+        >
+          <ArrowUp size={22} />
+        </button>
+      )}
       <div className="min-h-screen pt-[90px] lg:pt-[150px] pb-[120px]" style={{ background: 'var(--background)' }}>
         <div className="content-shell flex flex-col gap-20">
 
@@ -119,16 +144,6 @@ export default function InquiryPage() {
               'We dedicated to providing safe and reliable medical services.',
               'Schedule and appointment to experience world-class healthcare.',
             ]}
-            cta={
-              <a
-                href="tel:016593789"
-                className="self-start flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2 lg:px-5 lg:py-3 rounded-[10px] lg:rounded-[12px] font-dm-sans text-[11px] sm:text-[13px] xl:text-[18px] text-white hover:opacity-90 transition-opacity"
-                style={{ background: '#b89148' }}
-              >
-                <Phone size={20} />
-                Contact Now
-              </a>
-            }
           />
 
           {/* ── Inquiry Form ── */}

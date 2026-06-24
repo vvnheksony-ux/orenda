@@ -58,6 +58,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   const { selectedBranch, ready } = useBranch()
 
   const [scene, setScene] = useState<TourScene | null>(null)
+  const [allScenes, setAllScenes] = useState<TourScene[]>([])
   const [expanded, setExpanded] = useState(false)
   // Lock background scroll while the fullscreen viewer is open.
   useScrollLock(expanded)
@@ -71,6 +72,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
     setLoading(true)
     fetchTourScenes(locale, selectedBranch?.id).then(scenes => {
       if (!active) return
+      setAllScenes(scenes)
       const found = scenes.find(s => String(s.sceneNumber) === roomId)
       setScene(found ?? null)
     }).catch(() => {}).finally(() => { if (active) setLoading(false) })
@@ -86,6 +88,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
 
   const panorama = scene?.panoramaUrl || scene?.thumbnailUrl || '/images/360-page-banner.jpg'
   const descParts = (scene?.description || '').split('\n\n').filter(Boolean)
+
 
   const handleHotspotClick = (targetSceneNumber: number | null) => {
     if (targetSceneNumber == null) return

@@ -57,15 +57,10 @@ function SceneCard({ scene }: { scene: TourScene }) {
       {/* Image */}
       <div className="relative h-[280px] sm:h-[clamp(320px,25vw,384px)] w-full bg-zinc-100 shrink-0 overflow-hidden">
         <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
-        <div className="absolute top-[14px] left-[14px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
-          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
-          <span className="font-dm-sans text-white text-[11px] tracking-wide">360°</span>
-        </div>
       </div>
       {/* Footer */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between p-5 sm:p-8 lg:p-10 w-full gap-4">
-        <div className="flex flex-col justify-center items-start gap-3 min-w-0">
+      <div className="flex flex-1 flex-col sm:flex-row sm:items-end justify-between p-5 sm:p-8 lg:p-10 w-full gap-4">
+        <div className="flex flex-col justify-end items-start gap-3 min-w-0">
           <p className="font-cormorant font-bold text-[32px] sm:text-[40px] lg:text-5xl text-[#3b2d17] leading-tight lg:leading-[48px] break-words">{scene.title}</p>
           <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-xl text-[#594522] leading-6 sm:leading-5">{scene.description.split('\n')[0].slice(0, 50)}</p>
         </div>
@@ -89,11 +84,6 @@ function SceneCardFull({ scene }: { scene: TourScene }) {
       {/* Left: 360° frozen view ~65% width */}
       <div className="relative shrink-0 overflow-hidden rounded-3xl w-full md:w-[65%] h-[280px] sm:h-[360px] md:h-[clamp(420px,35vw,536px)]">
         <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
-        <div className="absolute top-[16px] left-[16px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
-          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
-          <span className="font-dm-sans text-white text-[11px] tracking-wide">360°</span>
-        </div>
       </div>
       {/* Right: info panel */}
       <div className="flex flex-col justify-between p-5 sm:p-8 lg:p-10 flex-1 gap-6">

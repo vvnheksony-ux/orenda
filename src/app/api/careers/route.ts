@@ -65,6 +65,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ docs: rows.map(toDoc), totalDocs: rows.length }, { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } })
   } catch (err: any) {
     console.error('careers:', err.message)
-    return NextResponse.json({ docs: [], totalDocs: 0 })
+    // Fail with a real error status (NOT 200) so the client can tell a failed
+    // query apart from a genuinely empty result and retry instead of showing
+    // a misleading "No openings".
+    return NextResponse.json({ docs: [], totalDocs: 0, error: err.message }, { status: 503 })
   }
 }

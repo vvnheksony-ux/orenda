@@ -1,7 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendTelegramHtmlMessage } from '@/lib/telegram'
 
 export const runtime = 'nodejs'
+
+async function sendTelegram(data: Record<string, unknown>) {
+  const lines = [
+    '📬 <b>New Contact Message</b>',
+    '',
+    `👤 <b>Name:</b> ${data.name ?? '-'}`,
+    data.phone ? `📞 <b>Phone:</b> ${data.phone}` : null,
+    data.email ? `📧 <b>Email:</b> ${data.email}` : null,
+    data.message ? `💬 <b>Message:</b> ${data.message}` : null,
+  ].filter(Boolean).join('\n')
+
+  try {
+    await sendTelegramHtmlMessage(lines)
+  } catch (error) {
+    console.error('Telegram notify failed:', error)
+  }
+}
 
 function readTrimmedString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
@@ -39,11 +57,13 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
+    const message = readOptionalString(body.message)
+
     const { error } = await supabase.from('contact_messages').insert({
       name,
       email,
       phone,
-      message: readOptionalString(body.message),
+      message,
       branch_payload_id: branchPayloadId,
       locale: readTrimmedString(body.locale) || 'en',
     })
@@ -52,6 +72,8 @@ export async function POST(req: NextRequest) {
       console.error('contact insert error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    await sendTelegram({ name, email, phone, message })
 
     return NextResponse.json({ ok: true }, { status: 201 })
   } catch (error) {
