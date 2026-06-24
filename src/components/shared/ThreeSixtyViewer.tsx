@@ -97,10 +97,12 @@ export default function ThreeSixtyViewer({
       position: { yaw: `${h.yaw}deg`, pitch: `${h.pitch}deg` },
       html: numbered
         ? `<div class="tour-pin" role="button"><span class="tour-pin__num">${index + 1}</span></div>`
-        : `<div class="tour-pin" role="button" aria-label="${(h.label ?? 'Go to room').replace(/"/g, '')}"><span class="tour-pin__dot"></span></div>`,
+        : `<div class="tour-pin" role="button" aria-label="${(h.label ?? 'Go to room').replace(/"/g, '')}">${h.label ? `<span class="tour-pin__label">${h.label.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>` : ''}<span class="tour-pin__dot"></span></div>`,
       size: numbered ? { width: 48, height: 48 } : { width: 44, height: 44 },
       anchor: 'center center',
-      tooltip: h.label || undefined,
+      // Public pins show the name permanently (label above the dot); only the
+      // numbered admin pins keep the hover tooltip.
+      tooltip: numbered ? (h.label || undefined) : undefined,
       data: { targetSceneNumber: h.targetSceneNumber ?? null, index },
     }))
   }, [])
@@ -189,7 +191,15 @@ export default function ThreeSixtyViewer({
         }
         .tour-pin {
           width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
+          cursor: pointer; position: relative;
+        }
+        .tour-pin__label {
+          position: absolute; bottom: calc(50% + 16px); left: 50%; transform: translateX(-50%);
+          white-space: nowrap; pointer-events: none;
+          background: rgba(20,15,8,0.82); color: #fff;
+          padding: 3px 10px; border-radius: 8px;
+          font-size: 12px; font-weight: 600; line-height: 1.2;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.28);
         }
         .tour-pin__dot {
           width: 18px; height: 18px; border-radius: 9999px;
