@@ -4,14 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS=\"--max-old-space-size=4096\" next dev",
+    "dev:full": "PAYLOAD_ENABLED=true NODE_OPTIONS=\"--max-old-space-size=4096\" payload generate:importmap && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "payload:generate:types": "payload generate:types",
     "payload:generate:importmap": "payload generate:importmap",
     "payload:migrate:create": "payload migrate:create",
-    "payload:migrate": "payload migrate"
+    "payload:migrate": "payload migrate",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@google-analytics/data": "^6.1.0",
@@ -25,6 +27,7 @@
     "@react-google-maps/api": "^2.20.8",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
+    "@zealamic/payload-plugin-rbac": "^1.1.0",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
     "framer-motion": "^12.39.0",
@@ -53,7 +56,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
-    "playwright": "^1.60.0",
+    "patch-package": "^8.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

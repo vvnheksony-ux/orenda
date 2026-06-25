@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { quillRichTextAdmin } from '../fields/quillRichText'
-import { publishedOnly, isAdminOrEditor } from '../access'
+import { publishedOnlyFor, createRBACAccess } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 import { createAuditHooks } from '../hooks/auditTrail'
 
@@ -24,10 +24,10 @@ export const CentersOfExcellence: CollectionConfig = {
     drafts: true,
   },
   access: {
-    read: publishedOnly,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    read: publishedOnlyFor('centers-of-excellence'),
+    create: createRBACAccess('centers-of-excellence', 'create'),
+    update: createRBACAccess('centers-of-excellence', 'update'),
+    delete: createRBACAccess('centers-of-excellence', 'delete'),
   },
   fields: [
     {

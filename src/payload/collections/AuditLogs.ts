@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { createRBACAccess } from '../access'
 
 export const AuditLogs: CollectionConfig = {
   slug: 'auditLogs',
@@ -8,7 +8,7 @@ export const AuditLogs: CollectionConfig = {
     defaultColumns: ['action', 'collectionSlug', 'documentTitle', 'userName', 'timestamp'],
   },
   access: {
-    read: isAdmin,
+    read: createRBACAccess('auditLogs', 'read'),
     create: () => false,
     update: () => false,
     delete: () => false,
@@ -50,12 +50,7 @@ export const AuditLogs: CollectionConfig = {
     },
     {
       name: 'userRole',
-      type: 'select',
-      options: [
-        { label: 'Admin', value: 'admin' },
-        { label: 'Editor', value: 'editor' },
-        { label: 'Contributor', value: 'contributor' },
-      ],
+      type: 'text',
     },
     {
       name: 'changedFields',

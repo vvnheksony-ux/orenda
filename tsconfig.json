@@ -21,7 +21,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@payload-config": ["./payload.config.ts"]
-    }
+    },
+    "tsBuildInfoFile": ".next/cache/tsconfig.tsbuildinfo"
   },
   "include": [
     "next-env.d.ts",
@@ -31,5 +32,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "create-admin.ts", "supabase"]
+  "exclude": ["node_modules", "create-admin.ts", "supabase", "src/migrations", "patches"]
 }

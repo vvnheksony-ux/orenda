@@ -4,7 +4,7 @@ import { CONTENT_STATUS } from '../constants'
 export function createAuditHooks(collectionSlug: string) {
   const onChange: CollectionAfterChangeHook = async ({ doc, previousDoc, operation, req }) => {
     try {
-      const user = req.user as { id: string; email: string; role?: string } | null
+      const user = req.user as { id: string; email: string; role?: string; isSuperAdmin?: boolean } | null
       if (!user) return // Don't log if no user (e.g. initial seeding or automated scripts)
 
       let action: 'created' | 'updated' | 'published' | 'archived' = operation === 'create' ? 'created' : 'updated'
@@ -22,6 +22,9 @@ export function createAuditHooks(collectionSlug: string) {
 
       const documentTitle = (docRecord.title || docRecord.name || docRecord.question || docRecord.email || docRecord.id) as string
 
+      // Determine role label: super admin or legacy role string
+      const roleLabel = user.isSuperAdmin ? 'super-admin' : (user.role || undefined)
+
       await req.payload.create({
         collection: 'auditLogs',
         data: {
@@ -31,7 +34,7 @@ export function createAuditHooks(collectionSlug: string) {
           documentTitle: String(documentTitle),
           userId: user.id,
           userName: user.email,
-          userRole: (user.role as 'admin' | 'editor' | 'contributor') || undefined,
+          userRole: roleLabel,
           timestamp: new Date().toISOString(),
         },
       })
@@ -42,11 +45,13 @@ export function createAuditHooks(collectionSlug: string) {
 
   const onDelete: CollectionAfterDeleteHook = async ({ doc, req }) => {
     try {
-      const user = req.user as { id: string; email: string; role?: string } | null
+      const user = req.user as { id: string; email: string; role?: string; isSuperAdmin?: boolean } | null
       if (!user) return
 
       const docRecord = doc as Record<string, unknown>
       const documentTitle = (docRecord.title || docRecord.name || docRecord.question || docRecord.email || docRecord.id) as string
+
+      const roleLabel = user.isSuperAdmin ? 'super-admin' : (user.role || undefined)
 
       await req.payload.create({
         collection: 'auditLogs',
@@ -57,7 +62,7 @@ export function createAuditHooks(collectionSlug: string) {
           documentTitle: String(documentTitle),
           userId: user.id,
           userName: user.email,
-          userRole: (user.role as 'admin' | 'editor' | 'contributor') || undefined,
+          userRole: roleLabel,
           timestamp: new Date().toISOString(),
         },
       })

@@ -5,6 +5,16 @@ import type { NextConfig } from "next";
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: '.',
+  },
+  serverExternalPackages: [
+    'drizzle-kit',
+    'esbuild',
+    'sharp',
+    'libsql',
+    '@libsql/client',
+  ],
   images: {
     qualities: [75, 90],
     localPatterns: [
@@ -27,4 +37,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPayload(withNextIntl(nextConfig));
+const payloadEnabled = process.env.PAYLOAD_ENABLED === 'true'
+const config = withNextIntl(nextConfig)
+export default payloadEnabled ? withPayload(config) : config;

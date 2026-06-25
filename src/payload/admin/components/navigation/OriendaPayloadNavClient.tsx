@@ -14,27 +14,19 @@ type NavPreferences = {
   groups?: Record<string, { open?: boolean }>
 }
 
+type OperationLink = {
+  label: string
+  path: string
+}
+
 type OriendaPayloadNavClientProps = {
   groups: NavGroupType[]
   navPreferences: NavPreferences | null
   user?: { email?: unknown; name?: unknown } | null
+  operationLinks?: OperationLink[]
+  accessControlLinks?: OperationLink[]
 }
 
-const publicOperationLinks = [
-  { label: 'Appointments', path: '/operations/appointments' },
-  { label: 'Inquiries', path: '/operations/inquiries' },
-  { label: 'Promotion Purchases', path: '/operations/purchases' },
-  { label: 'Feedback', path: '/operations/feedback' },
-] as const
-
-const accessControlLinks = [
-  { label: 'Patients', path: '/operations/patients' },
-] as const
-
-const systemLinks = [
-  { label: 'AI Chat Bot', path: '/ai-chat-bot' },
-  { label: 'Settings', path: '/settings' },
-] as const
 
 const baseClass = 'nav'
 const navLinkClass =
@@ -49,6 +41,8 @@ export default function OriendaPayloadNavClient({
   groups,
   navPreferences,
   user,
+  operationLinks = [],
+  accessControlLinks = [],
 }: OriendaPayloadNavClientProps) {
   const pathname = usePathname()
   const { config } = useConfig()
@@ -56,7 +50,9 @@ export default function OriendaPayloadNavClient({
   const { hydrated, navOpen, navRef, setNavOpen, shouldAnimate } = useNav()
 
   const allGroups = [...groups]
-  if (!allGroups.some((group) => group.label === 'Operations')) {
+
+  // Only inject Operations group if there are operation links to show
+  if (operationLinks.length > 0 && !allGroups.some((group) => group.label === 'Operations')) {
     const hospitalIndex = allGroups.findIndex((g) => g.label === 'Hospital')
     if (hospitalIndex >= 0) {
       allGroups.splice(hospitalIndex + 1, 0, { entities: [], label: 'Operations' })
@@ -64,6 +60,12 @@ export default function OriendaPayloadNavClient({
       allGroups.push({ entities: [], label: 'Operations' })
     }
   }
+
+  // Only inject Access Control group if there are access control links to show
+  if (accessControlLinks.length > 0 && !allGroups.some((group) => group.label === 'Access Control')) {
+    allGroups.push({ entities: [], label: 'Access Control' })
+  }
+
   const { setPreference } = usePreferences()
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
@@ -138,8 +140,8 @@ export default function OriendaPayloadNavClient({
                 {isOpen ? (
                   <div className="flex flex-col pt-1">
                     {label === 'Operations'
-                      ? publicOperationLinks.map((link) => {
-                          const href = formatAdminURL({ adminRoute, path: link.path })
+                      ? operationLinks.map((link) => {
+                          const href = formatAdminURL({ adminRoute, path: link.path as `/${string}` })
                           const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
 
                           return (
@@ -157,7 +159,7 @@ export default function OriendaPayloadNavClient({
                       : null}
                     {label === 'Access Control'
                       ? accessControlLinks.map((link) => {
-                          const href = formatAdminURL({ adminRoute, path: link.path })
+                          const href = formatAdminURL({ adminRoute, path: link.path as `/${string}` })
                           const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
 
                           return (
@@ -165,24 +167,6 @@ export default function OriendaPayloadNavClient({
                               className={isActive ? activeNavLinkClass : navLinkClass}
                               href={href}
                               id={`nav-public-${link.path.replace(/\//g, '-')}`}
-                              key={link.path}
-                              prefetch={false}
-                            >
-                              {link.label}
-                            </Link>
-                          )
-                        })
-                      : null}
-                    {label === 'Systems'
-                      ? systemLinks.map((link) => {
-                          const href = formatAdminURL({ adminRoute, path: link.path })
-                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-
-                          return (
-                            <Link
-                              className={isActive ? activeNavLinkClass : navLinkClass}
-                              href={href}
-                              id={`nav-system-${link.path.replace(/\//g, '-')}`}
                               key={link.path}
                               prefetch={false}
                             >

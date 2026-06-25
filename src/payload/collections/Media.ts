@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdminOrEditor, publicRead } from '../access'
+import { publicRead, createRBACAccess } from '../access'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -9,9 +9,9 @@ export const Media: CollectionConfig = {
   },
   access: {
     read: publicRead,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    create: createRBACAccess('media', 'create'),
+    update: createRBACAccess('media', 'update'),
+    delete: createRBACAccess('media', 'delete'),
   },
   upload: {
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'application/pdf'],

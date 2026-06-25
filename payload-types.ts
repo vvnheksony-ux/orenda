@@ -92,6 +92,11 @@ export interface Config {
     kpiSnapshots: KpiSnapshot;
     gaReports: GaReport;
     auditLogs: AuditLog;
+    'permission-actions': PermissionAction;
+    'permission-features': PermissionFeature;
+    permissions: Permission;
+    roles: Role;
+    'roles-permissions': RolesPermission;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -128,6 +133,11 @@ export interface Config {
     kpiSnapshots: KpiSnapshotsSelect<false> | KpiSnapshotsSelect<true>;
     gaReports: GaReportsSelect<false> | GaReportsSelect<true>;
     auditLogs: AuditLogsSelect<false> | AuditLogsSelect<true>;
+    'permission-actions': PermissionActionsSelect<false> | PermissionActionsSelect<true>;
+    'permission-features': PermissionFeaturesSelect<false> | PermissionFeaturesSelect<true>;
+    permissions: PermissionsSelect<false> | PermissionsSelect<true>;
+    roles: RolesSelect<false> | RolesSelect<true>;
+    'roles-permissions': RolesPermissionsSelect<false> | RolesPermissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -183,8 +193,10 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  isSuperAdmin?: boolean | null;
+  roles?: (number | Role)[] | null;
+  createdBy?: string | null;
   name?: string | null;
-  role: 'admin' | 'editor' | 'contributor';
   avatar?: (number | null) | Media;
   lastLoginAt?: string | null;
   updatedAt: string;
@@ -205,6 +217,30 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roles".
+ */
+export interface Role {
+  id: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  status: 'active' | 'inactive';
+  dataScope: 'all' | 'own' | 'hierarchy';
+  permissionMatrixDraft?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  createdBy?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1146,7 +1182,7 @@ export interface AuditLog {
   documentTitle?: string | null;
   userId?: string | null;
   userName?: string | null;
-  userRole?: ('admin' | 'editor' | 'contributor') | null;
+  userRole?: string | null;
   changedFields?:
     | {
         [k: string]: unknown;
@@ -1157,6 +1193,60 @@ export interface AuditLog {
     | boolean
     | null;
   timestamp: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "permission-actions".
+ */
+export interface PermissionAction {
+  id: number;
+  code: string;
+  type: 'main' | 'sub';
+  sortOrder?: number | null;
+  status: 'active' | 'inactive';
+  createdBy?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "permission-features".
+ */
+export interface PermissionFeature {
+  id: number;
+  code: string;
+  sortOrder?: number | null;
+  status: 'active' | 'inactive';
+  createdBy?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "permissions".
+ */
+export interface Permission {
+  id: number;
+  name: string;
+  permissionFeature: number | PermissionFeature;
+  permissionAction: number | PermissionAction;
+  sortOrder?: number | null;
+  status: 'active' | 'inactive';
+  createdBy?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roles-permissions".
+ */
+export interface RolesPermission {
+  id: number;
+  role: number | Role;
+  permission: number | Permission;
+  enabled?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1283,6 +1373,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'auditLogs';
         value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'permission-actions';
+        value: number | PermissionAction;
+      } | null)
+    | ({
+        relationTo: 'permission-features';
+        value: number | PermissionFeature;
+      } | null)
+    | ({
+        relationTo: 'permissions';
+        value: number | Permission;
+      } | null)
+    | ({
+        relationTo: 'roles';
+        value: number | Role;
+      } | null)
+    | ({
+        relationTo: 'roles-permissions';
+        value: number | RolesPermission;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1331,8 +1441,10 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  isSuperAdmin?: T;
+  roles?: T;
+  createdBy?: T;
   name?: T;
-  role?: T;
   avatar?: T;
   lastLoginAt?: T;
   updatedAt?: T;
@@ -1924,6 +2036,71 @@ export interface AuditLogsSelect<T extends boolean = true> {
   userRole?: T;
   changedFields?: T;
   timestamp?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "permission-actions_select".
+ */
+export interface PermissionActionsSelect<T extends boolean = true> {
+  code?: T;
+  type?: T;
+  sortOrder?: T;
+  status?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "permission-features_select".
+ */
+export interface PermissionFeaturesSelect<T extends boolean = true> {
+  code?: T;
+  sortOrder?: T;
+  status?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "permissions_select".
+ */
+export interface PermissionsSelect<T extends boolean = true> {
+  name?: T;
+  permissionFeature?: T;
+  permissionAction?: T;
+  sortOrder?: T;
+  status?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roles_select".
+ */
+export interface RolesSelect<T extends boolean = true> {
+  code?: T;
+  name?: T;
+  description?: T;
+  status?: T;
+  dataScope?: T;
+  permissionMatrixDraft?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roles-permissions_select".
+ */
+export interface RolesPermissionsSelect<T extends boolean = true> {
+  role?: T;
+  permission?: T;
+  enabled?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isAdminOrEditor } from '../access'
+import { createRBACAccess } from '../access'
 
 export const SocialLinks: GlobalConfig = {
   slug: 'socialLinks',
@@ -9,7 +9,7 @@ export const SocialLinks: GlobalConfig = {
   },
   access: {
     read: () => true,
-    update: isAdminOrEditor,
+    update: createRBACAccess('socialLinks', 'update'),
   },
   fields: [
     {

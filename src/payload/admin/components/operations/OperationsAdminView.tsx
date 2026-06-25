@@ -3,33 +3,78 @@ import type { StepNavItem } from '@payloadcms/ui'
 
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { SetStepNav } from '@payloadcms/ui'
+import { getPermissionAccess } from '@zealamic/payload-plugin-rbac'
+import { notFound } from 'next/navigation'
 import { createServiceClient } from '@/utils/supabase/server'
+import { operationsTableFeatureMap } from '@/payload/access/featureMap'
 
 import OperationsDetail from './OperationsDetail'
 import OperationsTable from './OperationsTable'
-import { getOperationConfig, getOperationHref, getOperationTableName, parseOperationSegments, type OperationConfig, type OperationRecord, type PayloadCollectionSlug, type ReferenceOptionMap } from './operationsConfig'
+import { getOperationConfig, getOperationHref, getOperationTableName, isOperationTableSlug, parseOperationSegments, type OperationConfig, type OperationRecord, type PayloadCollectionSlug, type ReferenceOptionMap } from './operationsConfig'
 
 export const dynamic = 'force-dynamic'
 
 type AdminLocale = 'en' | 'km' | 'zh'
 
+async function checkTablePermission(
+  payload: Payload,
+  user: Record<string, unknown> | null | undefined,
+  table: string,
+): Promise<boolean> {
+  if (!user) return false
+  if (user.isSuperAdmin === true) return true
+  const featureCode = operationsTableFeatureMap[table]
+  if (!featureCode) return false
+  const check = getPermissionAccess({ featureCode, actionCode: 'read', mode: 'none' })
+  const result = await check({ req: { user, payload } } as { req: { user: typeof user; payload: Payload } })
+  return result === true
+}
+
 export default async function OperationsAdminView(props: AdminViewServerProps) {
-  const segments = Array.isArray(props.params?.segments) ? props.params.segments : []
-  const { id, mode: viewMode, table } = parseOperationSegments(segments)
+  const { locale, permissions, req } = props.initPageResult ?? {}
+  const routeParams = props.params as { segments?: string[]; table?: string } | undefined
+  const resolvedPath = resolveOperationPath(req?.url)
+  const segments = Array.isArray(routeParams?.segments)
+    ? routeParams.segments
+    : resolvedPath.split('/').filter(Boolean)
+  const explicitTable = typeof routeParams?.table === 'string' ? routeParams.table : undefined
+  const { id, mode: viewMode, table: parsedTable } = parseOperationSegments(segments)
+  const table = explicitTable ?? parsedTable
+  if (!isOperationTableSlug(table)) {
+    notFound()
+  }
   const config = getOperationConfig(table)
   const supabase = await createServiceClient()
-  const { locale, permissions, req } = props.initPageResult ?? {}
+  const authedUser = (req?.user ?? props.user) as ({ id?: number | string } & Record<string, unknown>) | null | undefined
+  const user = await resolveFullAdminUser(props.payload, authedUser)
   const templateProps = {
     ...props,
     locale: props.locale ?? locale,
     permissions: props.permissions ?? permissions,
     req,
-    user: props.user,
+    user: user ?? props.user,
     visibleEntities: props.visibleEntities ?? getAllVisibleEntities(props),
   }
 
   const payload = props.payload ?? (req as { payload?: Payload } | undefined)?.payload
   const localeCode = normalizeLocale(locale)
+
+  if (payload && !(await checkTablePermission(payload, user, table))) {
+    const nav: StepNavItem[] = [
+      { label: config.group },
+      { label: config.title },
+    ]
+    return (
+      <DefaultTemplate {...templateProps} className="operations-template">
+        <SetStepNav nav={nav} />
+        <main className="mx-auto flex w-full flex-col gap-6 px-19">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            You do not have permission to view {config.title.toLowerCase()}.
+          </div>
+        </main>
+      </DefaultTemplate>
+    )
+  }
 
   const listUrl = config.listHref ?? getOperationHref(config.slug)
 
@@ -114,6 +159,39 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
       </main>
     </DefaultTemplate>
   )
+}
+
+async function resolveFullAdminUser(
+  payload: Payload,
+  user: ({ id?: number | string } & Record<string, unknown>) | null | undefined,
+): Promise<Record<string, unknown> | null> {
+  if (!user?.id) return (user as Record<string, unknown> | null | undefined) ?? null
+
+  try {
+    const fullUser = await payload.findByID({
+      collection: 'users',
+      id: user.id,
+      depth: 1,
+      overrideAccess: true,
+    })
+
+    return fullUser as unknown as Record<string, unknown>
+  } catch {
+    return user
+  }
+}
+
+function resolveOperationPath(url: string | undefined): string {
+  if (!url) return ''
+
+  try {
+    const pathname = new URL(url, 'http://localhost').pathname
+    const operationsIndex = pathname.indexOf('/operations/')
+
+    return operationsIndex >= 0 ? pathname.slice(operationsIndex) : pathname
+  } catch {
+    return ''
+  }
 }
 
 async function enrichRecords(

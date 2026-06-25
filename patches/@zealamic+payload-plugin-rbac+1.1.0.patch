@@ -1,0 +1,13 @@
+diff --git a/node_modules/@zealamic/payload-plugin-rbac/dist/collections/roles/hooks/sync-permission-matrix-draft.js b/node_modules/@zealamic/payload-plugin-rbac/dist/collections/roles/hooks/sync-permission-matrix-draft.js
+index 3baa9f2..5c1b9ae 100644
+--- a/node_modules/@zealamic/payload-plugin-rbac/dist/collections/roles/hooks/sync-permission-matrix-draft.js
++++ b/node_modules/@zealamic/payload-plugin-rbac/dist/collections/roles/hooks/sync-permission-matrix-draft.js
+@@ -56,7 +56,7 @@ const isPermissionMatrixDraft = (value)=>{
+             collection: "roles-permissions",
+             data: {
+                 role: roleID,
+-                permission: permissionID,
++                permission: Number(permissionID),
+                 enabled
+             },
+             req

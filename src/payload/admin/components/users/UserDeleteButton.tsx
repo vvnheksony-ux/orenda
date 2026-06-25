@@ -10,8 +10,8 @@ export default function UserDeleteButton({ user }: { user: CombinedUser }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  // Safeguard: hide the delete button for admin users
-  if (user.role?.toLowerCase() === 'admin') return null
+  // Safeguard: hide the delete button for admin/super-admin users
+  if (user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'super-admin') return null
 
   const handleDelete = () => {
     if (!window.confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) return

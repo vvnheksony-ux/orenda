@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { CalendarDays, ExternalLink, RefreshCw } from 'lucide-react'
+import { headers } from 'next/headers'
+import { ExternalLink } from 'lucide-react'
+import { getPermissionAccess } from '@zealamic/payload-plugin-rbac'
 import AdminHeader from './AdminHeader'
 import AdminMetricCard, { type AnalyticsRow } from './AdminMetricCard'
 import AdminPanel from './AdminPanel'
@@ -19,9 +21,32 @@ const appointmentSeries: AnalyticsSeries[] = [
   { label: 'Appointments Confirmed', metricIndex: 1, color: '#6f4e18', strokeWidth: 3 },
 ]
 
+async function hasPermission(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  user: Record<string, unknown> | null | undefined,
+  headersList: ReturnType<typeof headers> extends Promise<infer H> ? H : never,
+  featureCode: string,
+  actionCode: string = 'read',
+): Promise<boolean> {
+  if (!user) return false
+  if (user.isSuperAdmin === true) return true
+  const check = getPermissionAccess({ featureCode, actionCode, mode: 'none' })
+  const result = await check({ req: { user, payload, headers: headersList } } as any)
+  return result === true
+}
+
 export default async function AdminDashboard() {
   const supabase = await createServiceClient()
   const payload = await getPayload({ config })
+  const headersList = await headers()
+  const { user } = await payload.auth({ headers: headersList })
+  const userRec = user as Record<string, unknown> | null
+
+  const [canAppointments, canPurchases, canAuditLogs] = await Promise.all([
+    hasPermission(payload, userRec, headersList, 'appointments'),
+    hasPermission(payload, userRec, headersList, 'purchases'),
+    hasPermission(payload, userRec, headersList, 'auditLogs'),
+  ])
 
   const since7 = sevenDaysAgoISO()
 
@@ -30,6 +55,7 @@ export default async function AdminDashboard() {
     purchResult,
     countResult,
     chartResult,
+    auditLogsResult,
     doctorsResult,
     callClicks,
     tourViews,
@@ -37,11 +63,24 @@ export default async function AdminDashboard() {
     recentEvents,
     gaReportsResult,
   ] = await Promise.all([
-    supabase.schema('public').from('appointments').select('*').order('created_at', { ascending: false }).limit(10),
-    supabase.schema('public').from('purchases').select('*').order('created_at', { ascending: false }).limit(10),
-    supabase.schema('public').from('appointments').select('*', { count: 'exact', head: true }).eq('status', 'confirmed'),
-    supabase.schema('public').from('appointments').select('preferred_date, status, created_at').gte('created_at', sixMonthsAgoISO()),
-    payload.find({ collection: 'doctors', limit: 200, depth: 0 }),
+    canAppointments
+      ? supabase.schema('public').from('appointments').select('*').order('created_at', { ascending: false }).limit(10)
+      : (Promise.resolve({ data: null }) as any),
+    canPurchases
+      ? supabase.schema('public').from('purchases').select('*').order('created_at', { ascending: false }).limit(10)
+      : (Promise.resolve({ data: null }) as any),
+    canAppointments
+      ? supabase.schema('public').from('appointments').select('*', { count: 'exact', head: true }).eq('status', 'confirmed')
+      : (Promise.resolve({ count: 0 }) as any),
+    canAppointments
+      ? supabase.schema('public').from('appointments').select('preferred_date, status, created_at').gte('created_at', sixMonthsAgoISO())
+      : (Promise.resolve({ data: null }) as any),
+    canAuditLogs
+      ? payload.find({ collection: 'auditLogs', limit: 10, sort: '-timestamp', depth: 0 })
+      : (Promise.resolve({ docs: [] }) as any),
+    canAppointments
+      ? payload.find({ collection: 'doctors', limit: 200, depth: 0 })
+      : (Promise.resolve({ docs: [] }) as any),
     payload.count({ collection: 'analyticsEvents', where: { event: { equals: 'call_click' } } }),
     payload.count({ collection: 'analyticsEvents', where: { event: { equals: 'tour_scene_view' } } }),
     payload.find({ collection: 'analyticsEvents', where: { event: { equals: 'language_switch' } }, limit: 5000, depth: 0 }),
@@ -52,7 +91,6 @@ export default async function AdminDashboard() {
       depth: 0,
       sort: 'timestamp',
     }),
-    // Single query for the GA report types we surface (keeps parallel connections low).
     payload.find({ collection: 'gaReports', where: { reportType: { in: ['overview', 'devices'] } }, sort: '-fetchedAt', limit: 10, depth: 0 }),
   ])
 
@@ -80,19 +118,28 @@ export default async function AdminDashboard() {
     doctorMap.set(String(doc.id), doc.name ?? `Doctor #${doc.id}`)
   }
 
-  const appointments = rawAppointments.slice(0, 4).map((a) => ({
+  const appointments = rawAppointments.slice(0, 4).map((a: any) => ({
     time: formatTime(a.preferred_time ?? a.slot_start ?? a.created_at),
     patient: a.patient_name ?? '-',
     doctor: a.doctor_payload_id ? (doctorMap.get(String(a.doctor_payload_id)) ?? `#${String(a.doctor_payload_id).slice(0, 8)}`) : '-',
     status: a.status ?? 'pending',
   }))
 
-  const purchases = rawPurchases.slice(0, 4).map((p) => ({
+  const purchases = rawPurchases.slice(0, 4).map((p: any) => ({
     patient: p.patient_name ?? '-',
     package: p.promotion_title ?? '-',
     status: p.status ?? 'pending',
   }))
 
+  const rawAuditLogs = auditLogsResult.docs ?? []
+
+  const activity = rawAuditLogs.slice(0, 5).map((log: any) => ({
+    timestamp: formatTimestamp(log.timestamp),
+    actor: log.userName ?? log.userId ?? 'system',
+    action: mapAuditAction(log.action),
+    resource: log.documentTitle ? `${log.collectionSlug}: ${log.documentTitle}` : log.collectionSlug,
+    action_btn: '',
+  }))
 
   const sixMonths = getLastSixMonths()
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -119,7 +166,7 @@ export default async function AdminDashboard() {
   const confirmedMetric = {
     label: 'Confirmed Appointments',
     value: confirmedCount.toLocaleString(),
-    change: `${rawChartData.filter((a) => a.status === 'confirmed').length} this period`,
+    change: `${rawChartData.filter((a: any) => a.status === 'confirmed').length} this period`,
     trendRows: analyticsRows('date', 'appointmentConfirmed', Array.from(monthMap.values()).map((m) => m.confirmed)),
   }
 
@@ -209,75 +256,78 @@ export default async function AdminDashboard() {
         <GenerateReportButton />
       </div>
 
-      {/* <section className="orienda-dashboard__toolbar mt-6 flex flex-wrap gap-3">
-        <ControlButton icon={CalendarDays} label="Last 7 Days" />
-        <ControlButton icon={RefreshCw} label="Refresh" />
-      </section> */}
-
       <section className="orienda-dashboard__stats mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <AdminMetricCard key={metric.label} metric={metric} />
         ))}
       </section>
 
-      <section className="orienda-dashboard__tables orienda-no-print mt-7 grid gap-6 xl:grid-cols-2">
-        <AdminDataTable
-          title="This Week's Appointments"
-          columns={[
-            { key: 'time', label: 'Time' },
-            { key: 'patient', label: 'Patient' },
-            { key: 'doctor', label: 'Doctor' },
-            { key: 'status', label: 'Status', kind: 'status' },
-            { key: 'action', label: '', kind: 'actions' },
-          ]}
-          rows={appointments}
-          actions={[
-            {
-              label: 'View Details',
-              tone: 'gold',
-              render: () => (
-                <Link href="/admin-panel/appointments" className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-[#b38531] transition hover:bg-[#fbf5e9]">
-                  View Details <ExternalLink className="size-3" />
-                </Link>
-              ),
-            },
-          ]}
-          footer="View All Appointments"
-          footerHref="/admin-panel/appointments"
-        />
-        <AdminDataTable
-          title="This Week's Purchases"
-          columns={[
-            { key: 'patient', label: 'Patient' },
-            { key: 'package', label: 'Promotion Package' },
-            { key: 'status', label: 'Status', kind: 'status' },
-            { key: 'action', label: '', kind: 'actions' },
-          ]}
-          rows={purchases}
-          actions={[
-            {
-              label: 'View Details',
-              tone: 'gold',
-              render: () => (
-                <Link href="/admin-panel/purchases" className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-[#b38531] transition hover:bg-[#fbf5e9]">
-                  View Details <ExternalLink className="size-3" />
-                </Link>
-              ),
-            },
-          ]}
-          footer="View All Purchases"
-          footerHref="/admin-panel/purchases"
-        />
-      </section>
+      {(canAppointments || canPurchases) && (
+        <section className="orienda-dashboard__tables orienda-no-print mt-7 grid gap-6 xl:grid-cols-2">
+          {canAppointments && (
+            <AdminDataTable
+              title="This Week's Appointments"
+              columns={[
+                { key: 'time', label: 'Time' },
+                { key: 'patient', label: 'Patient' },
+                { key: 'doctor', label: 'Doctor' },
+                { key: 'status', label: 'Status', kind: 'status' },
+                { key: 'action', label: '', kind: 'actions' },
+              ]}
+              rows={appointments}
+              actions={[
+                {
+                  label: 'View Details',
+                  tone: 'gold',
+                  render: () => (
+                    <Link href="/admin/operations/appointments" className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-[#b38531] transition hover:bg-[#fbf5e9]">
+                      View Details <ExternalLink className="size-3" />
+                    </Link>
+                  ),
+                },
+              ]}
+              footer="View All Appointments"
+              footerHref="/admin/operations/appointments"
+            />
+          )}
+          {canPurchases && (
+            <AdminDataTable
+              title="This Week's Purchases"
+              columns={[
+                { key: 'patient', label: 'Patient' },
+                { key: 'package', label: 'Promotion Package' },
+                { key: 'status', label: 'Status', kind: 'status' },
+                { key: 'action', label: '', kind: 'actions' },
+              ]}
+              rows={purchases}
+              actions={[
+                {
+                  label: 'View Details',
+                  tone: 'gold',
+                  render: () => (
+                    <Link href="/admin/operations/purchases" className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-[#b38531] transition hover:bg-[#fbf5e9]">
+                      View Details <ExternalLink className="size-3" />
+                    </Link>
+                  ),
+                },
+              ]}
+              footer="View All Purchases"
+              footerHref="/admin/operations/purchases"
+            />
+          )}
+        </section>
+      )}
 
-      <section className="orienda-dashboard__charts mt-7 grid gap-6 xl:grid-cols-[1fr_380px]">
-        <AdminPanel title="Appointment Booking" subtitle="Pending vs Confirmed Appointments">
-          <AnalyticsLineChart rows={appointmentBookingRows} series={appointmentSeries} />
-        </AdminPanel>
-        <AdminPanel title="Language Selection" subtitle="Distribution Breakdown">
-          <AnalyticsDonutChart rows={languageRows} />
-        </AdminPanel>
-      </section>
+      {canAppointments && (
+        <section className="orienda-dashboard__charts mt-7 grid gap-6 xl:grid-cols-[1fr_380px]">
+          <AdminPanel title="Appointment Booking" subtitle="Pending vs Confirmed Appointments">
+            <AnalyticsLineChart rows={appointmentBookingRows} series={appointmentSeries} />
+          </AdminPanel>
+          <AdminPanel title="Language Selection" subtitle="Distribution Breakdown">
+            <AnalyticsDonutChart rows={languageRows} />
+          </AdminPanel>
+        </section>
+      )}
 
       {mostVisitedRows.length > 0 ? (
         <section className="orienda-dashboard__most-visited mt-8">
@@ -300,6 +350,35 @@ export default async function AdminDashboard() {
         </>
       ) : null}
 
+      {canAuditLogs && (
+        <section className="orienda-dashboard__activity mt-7">
+          <AdminDataTable
+            title="Recent Activity"
+            columns={[
+              { key: 'timestamp', label: 'Timestamp' },
+              { key: 'actor', label: 'Actor' },
+              { key: 'action', label: 'Action', kind: 'status' },
+              { key: 'resource', label: 'Resource' },
+              { key: 'action_btn', label: '', kind: 'actions' },
+            ]}
+            rows={activity}
+            actions={[
+              {
+                label: 'View Details',
+                tone: 'gold',
+                render: () => (
+                  <Link href="/admin/collections/auditLogs" className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-[#b38531] transition hover:bg-[#fbf5e9]">
+                    View Details <ExternalLink className="size-3" />
+                  </Link>
+                ),
+              },
+            ]}
+            footer="View All Activities"
+            footerHref="/admin/collections/auditLogs"
+          />
+        </section>
+      )}
+
       <ReportDocument
         generatedAt={new Date().toLocaleString()}
         kpis={metrics.map((m) => ({ label: m.label, value: m.value, sub: m.change }))}
@@ -312,15 +391,6 @@ export default async function AdminDashboard() {
         languageRows={languageRows}
       />
     </div>
-  )
-}
-
-function ControlButton({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
-  return (
-    <button className="orienda-dashboard-control inline-flex h-11 items-center gap-3 rounded-xl border border-[#eee8dd] bg-white px-5 text-sm font-semibold text-[#6d675f] shadow-sm transition hover:border-[#d7c7a9] hover:text-[#8a672c]">
-      <Icon className="size-4" />
-      {label}
-    </button>
   )
 }
 
@@ -385,6 +455,26 @@ function formatDuration(seconds: number): string {
   if (h > 0) return `${h}h ${m}m`
   if (m > 0) return `${m}m ${s}s`
   return `${s}s`
+}
+
+function mapAuditAction(action: string): string {
+  const map: Record<string, string> = {
+    created: 'create',
+    updated: 'update',
+    deleted: 'delete',
+    published: 'published',
+    archived: 'archived',
+  }
+  return map[action] ?? action
+}
+
+function formatTimestamp(ts: string | null | undefined): string {
+  if (!ts) return '-'
+  try {
+    return new Date(ts).toISOString().replace('T', ' ').slice(0, 19)
+  } catch {
+    return String(ts)
+  }
 }
 
 function capitalize(s: string): string {

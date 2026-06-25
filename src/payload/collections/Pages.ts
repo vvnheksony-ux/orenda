@@ -2,7 +2,7 @@ import type { CollectionConfig, Block } from 'payload'
 import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { quillRichTextAdmin } from '../fields/quillRichText'
-import { publishedOnly, isAdminOrEditor } from '../access'
+import { publishedOnlyFor, createRBACAccess } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 import { createAuditHooks } from '../hooks/auditTrail'
 const webhookHooks = createWebhookHooks('pages')
@@ -82,10 +82,10 @@ export const Pages: CollectionConfig = {
     drafts: true,
   },
   access: {
-    read: publishedOnly,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    read: publishedOnlyFor('pages'),
+    create: createRBACAccess('pages', 'create'),
+    update: createRBACAccess('pages', 'update'),
+    delete: createRBACAccess('pages', 'delete'),
   },
   fields: [
     {

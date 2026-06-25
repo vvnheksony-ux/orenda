@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { createRBACAccess } from '../access'
 import { ANALYTICS_EVENT_OPTIONS } from '../constants'
 
 export const AnalyticsEvents: CollectionConfig = {
@@ -10,7 +10,7 @@ export const AnalyticsEvents: CollectionConfig = {
     defaultColumns: ['event', 'slug', 'locale', 'timestamp'],
   },
   access: {
-    read: isAdmin,
+    read: createRBACAccess('analyticsEvents', 'read'),
     create: () => false,
     update: () => false,
     delete: () => false,

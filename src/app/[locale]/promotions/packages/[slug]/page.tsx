@@ -34,7 +34,7 @@ export default async function PackageDetailPage({
   let pkg: PackageDetail | null = null
   try {
     const res = await fetch(
-      `${base}/api/packages?slug=${encodeURIComponent(slug)}&locale=${locale}`,
+      `${base}/api/service-packages?slug=${encodeURIComponent(slug)}&locale=${locale}`,
       { cache: 'no-store' }
     )
     if (res.ok) {

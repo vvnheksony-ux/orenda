@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { cormorantGaramond, dmSans, inter, greatVibes, khmerSerif, khmerSans, chineseSerif } from '@/lib/fonts'
+import { cormorantGaramond, dmSans, inter, khmerSerif, khmerSans, chineseSerif } from '@/lib/fonts'
 import { AuthProvider } from '@/lib/auth-context'
 import '../globals.css'
 import { NextIntlClientProvider } from 'next-intl'
@@ -51,7 +51,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${cormorantGaramond.variable} ${dmSans.variable} ${inter.variable} ${greatVibes.variable} ${khmerSerif.variable} ${khmerSans.variable} ${chineseSerif.variable} h-full antialiased`}
+      className={`${cormorantGaramond.variable} ${dmSans.variable} ${inter.variable} ${khmerSerif.variable} ${khmerSans.variable} ${chineseSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/*

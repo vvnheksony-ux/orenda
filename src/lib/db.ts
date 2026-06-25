@@ -1,20 +1,30 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pg = require('pg')
+import pg from 'pg'
 
-let _pool: any = null
+declare global {
+  var __rawPool: any
+}
 
-export function getRawPool(): any {
-  if (!_pool) {
-    _pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL || '',
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      max: 3,
+function getRawPool(): any {
+  if (!global.__rawPool) {
+    const connStr = (() => {
+      const url = new URL(process.env.DATABASE_URL || '')
+      url.searchParams.set('pgbouncer', 'true')
+      url.searchParams.set('prepare_threshold', '0')
+      return url.toString()
+    })()
+
+    global.__rawPool = new pg.Pool({
+      connectionString: connStr,
+      ssl: { rejectUnauthorized: false },
+      max: 1,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
     })
   }
-  return _pool
+  return global.__rawPool
 }
+
+export { getRawPool }
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const BUCKET = 'orienda-media'

@@ -4,7 +4,10 @@ export interface PayloadUser {
   id: string
   email: string
   name?: string
-  role: 'admin' | 'editor' | 'contributor'
+  isSuperAdmin?: boolean
+  roles?: Array<{ id: string; code?: string; name?: string }> | string[]
+  /** @deprecated Legacy role field — use isSuperAdmin + roles relationship */
+  role?: string
 }
 
 export interface InquiryFormBody {

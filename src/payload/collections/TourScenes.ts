@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { statusFields } from '../fields/status'
-import { publishedOnly, isAdminOrEditor } from '../access'
+import { publishedOnlyFor, createRBACAccess } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 import { createAuditHooks } from '../hooks/auditTrail'
 const webhookHooks = createWebhookHooks('tourScenes')
@@ -13,10 +13,10 @@ export const TourScenes: CollectionConfig = {
     useAsTitle: 'title',
   },
   access: {
-    read: publishedOnly,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    read: publishedOnlyFor('tourScenes'),
+    create: createRBACAccess('tourScenes', 'create'),
+    update: createRBACAccess('tourScenes', 'update'),
+    delete: createRBACAccess('tourScenes', 'delete'),
   },
   fields: [
     {

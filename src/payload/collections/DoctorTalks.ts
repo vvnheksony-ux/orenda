@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
-import { publishedOnly, isAdminOrEditor } from '../access'
+import { publishedOnlyFor, createRBACAccess } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 import { baseContentFields, createSearchIndexHooks } from '../content/searchIndex'
 
@@ -29,10 +29,10 @@ export const DoctorTalks: CollectionConfig = {
     drafts: true,
   },
   access: {
-    read: publishedOnly,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    read: publishedOnlyFor('doctor-talks'),
+    create: createRBACAccess('doctor-talks', 'create'),
+    update: createRBACAccess('doctor-talks', 'update'),
+    delete: createRBACAccess('doctor-talks', 'delete'),
   },
   fields: [
     ...baseContentFields(),

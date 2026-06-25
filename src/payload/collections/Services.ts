@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { quillRichTextAdmin } from '../fields/quillRichText'
-import { publishedOnly, isAdminOrEditor } from '../access'
+import { publishedOnlyFor, createRBACAccess } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 import { createAuditHooks } from '../hooks/auditTrail'
 const webhookHooks = createWebhookHooks('services')
@@ -20,10 +20,10 @@ export const Services: CollectionConfig = {
     drafts: true,
   },
   access: {
-    read: publishedOnly,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    read: publishedOnlyFor('services'),
+    create: createRBACAccess('services', 'create'),
+    update: createRBACAccess('services', 'update'),
+    delete: createRBACAccess('services', 'delete'),
   },
   fields: [
     {

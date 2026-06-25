@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { getSuperAdminAccess } from '@zealamic/payload-plugin-rbac'
+import { hasAnyMatrixPermission } from '../access/rbacAccess'
 import { createAuditHooks } from '../hooks/auditTrail'
 const auditHooks = createAuditHooks('users')
 
@@ -23,24 +24,6 @@ export const Users: CollectionConfig = {
       type: 'text',
     },
     {
-      name: 'role',
-      type: 'select',
-      required: true,
-      defaultValue: 'contributor',
-      options: [
-        { label: 'Admin', value: 'admin' },
-        { label: 'Editor', value: 'editor' },
-        { label: 'Contributor', value: 'contributor' },
-      ],
-      access: {
-        update: ({ req }) => {
-          const user = req.user as unknown as Record<string, unknown> | null
-          if (!user) return false
-          return user.role === 'admin'
-        },
-      },
-    },
-    {
       name: 'avatar',
       type: 'upload',
       relationTo: 'media',
@@ -55,15 +38,11 @@ export const Users: CollectionConfig = {
     },
   ],
   access: {
-    admin: ({ req }) => {
-      if (!req.user) return false
-      const user = req.user as unknown as Record<string, unknown>
-      return user.role === 'admin'
-    },
-    read: isAdmin,
-    create: isAdmin,
-    update: isAdmin,
-    delete: isAdmin,
+    admin: async ({ req }) => hasAnyMatrixPermission(req),
+    read: getSuperAdminAccess,
+    create: getSuperAdminAccess,
+    update: getSuperAdminAccess,
+    delete: getSuperAdminAccess,
   },
   hooks: {
     afterChange: [auditHooks.onChange],
