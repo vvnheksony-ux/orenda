@@ -31,6 +31,7 @@
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
     "next-intl": "^4.12.0",
+    "openai": "^6.45.0",
     "payload": "^3.85.0",
     "payload-oapi": "^0.2.5",
     "pg": "^8.21.0",
