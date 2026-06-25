@@ -89,7 +89,7 @@ export default function PromotionsPage() {
         setPromosError(err instanceof Error ? err.message : 'We could not load promotions right now.')
       })
       .finally(() => { if (active) setLoadingPromos(false) })
-    fetch(`/api/packages?locale=${locale}`)
+    fetch(`/api/service-packages?locale=${locale}`)
       .then(async (r) => {
         if (!r.ok) throw new Error('We could not load packages right now.')
         return r.json()

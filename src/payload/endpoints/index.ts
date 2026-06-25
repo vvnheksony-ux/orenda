@@ -1,5 +1,5 @@
 import type { Endpoint, PayloadRequest, Where } from 'payload'
-import { isAdmin } from '../access'
+import { createRBACAccess } from '../access'
 import {
   buildKpiWhere,
   parseAnalyticsEventBody,
@@ -11,6 +11,8 @@ import {
   serializeKpiCsv,
 } from './validation'
 import { getRawPool } from '../../lib/db'
+
+const kpiReadAccess = createRBACAccess('kpiSnapshots', 'read')
 
 function tryGetURL(req: PayloadRequest): URL {
   const urlStr = typeof req.url === 'string' ? req.url : ''
@@ -143,7 +145,7 @@ export const kpiEndpoint: Endpoint = {
   path: '/analytics/kpi',
   method: 'get',
   handler: async (req: PayloadRequest) => {
-    if (!isAdmin({ req })) {
+    if (!(await kpiReadAccess({ req }))) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -171,7 +173,7 @@ export const analyticsExportEndpoint: Endpoint = {
   path: '/analytics/export',
   method: 'get',
   handler: async (req: PayloadRequest) => {
-    if (!isAdmin({ req })) {
+    if (!(await kpiReadAccess({ req }))) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 

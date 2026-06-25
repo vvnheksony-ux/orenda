@@ -27,6 +27,9 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { default as default_4f8e48a1c50933d9d69dda40569b5dc3 } from '@/payload/admin/components/QuillRichTextField'
 import { default as default_fb430d8642b742ec80424862d3e6e3c1 } from '@/payload/admin/components/CustomEditHeader'
 import { default as default_7bf7cb5bd6b16dc3b1f617d992f6b72e } from '@/payload/admin/components/tour/HotspotEditorField'
+import { PermissionActionReorderClient as PermissionActionReorderClient_5f81c42974d0124cf31493820a53a6b4 } from '@zealamic/payload-plugin-rbac/client'
+import { PermissionFeatureReorderClient as PermissionFeatureReorderClient_5f81c42974d0124cf31493820a53a6b4 } from '@zealamic/payload-plugin-rbac/client'
+import { RolePermissionMatrixClient as RolePermissionMatrixClient_5f81c42974d0124cf31493820a53a6b4 } from '@zealamic/payload-plugin-rbac/client'
 import { default as default_d11c455656be5af330525b1244f818b0 } from '@/payload/admin/components/navigation/OriendaPayloadNav'
 import { default as default_ef1eabf80ecf74444fefc706293acda9 } from '@/payload/admin/components/NavIcon'
 import { default as default_77ade67ed561ea0ed29bd613ed636ea9 } from '@/payload/admin/components/providers/OriendaAdminStyle'
@@ -68,6 +71,9 @@ export const importMap = {
   "@/payload/admin/components/QuillRichTextField#default": default_4f8e48a1c50933d9d69dda40569b5dc3,
   "@/payload/admin/components/CustomEditHeader#default": default_fb430d8642b742ec80424862d3e6e3c1,
   "@/payload/admin/components/tour/HotspotEditorField#default": default_7bf7cb5bd6b16dc3b1f617d992f6b72e,
+  "@zealamic/payload-plugin-rbac/client#PermissionActionReorderClient": PermissionActionReorderClient_5f81c42974d0124cf31493820a53a6b4,
+  "@zealamic/payload-plugin-rbac/client#PermissionFeatureReorderClient": PermissionFeatureReorderClient_5f81c42974d0124cf31493820a53a6b4,
+  "@zealamic/payload-plugin-rbac/client#RolePermissionMatrixClient": RolePermissionMatrixClient_5f81c42974d0124cf31493820a53a6b4,
   "@/payload/admin/components/navigation/OriendaPayloadNav#default": default_d11c455656be5af330525b1244f818b0,
   "@/payload/admin/components/NavIcon#default": default_ef1eabf80ecf74444fefc706293acda9,
   "@/payload/admin/components/providers/OriendaAdminStyle#default": default_77ade67ed561ea0ed29bd613ed636ea9,

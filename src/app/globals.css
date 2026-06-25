@@ -18,7 +18,6 @@
   --font-cormorant: var(--cormorant-font), var(--khmer-serif), var(--chinese-serif);
   --font-dm-sans: var(--dm-sans-font), var(--khmer-sans), var(--chinese-serif);
   --font-inter: var(--inter-font), var(--khmer-sans), var(--chinese-serif);
-  --font-script: var(--script-font), var(--khmer-serif), var(--chinese-serif);
 }
 
 :root {

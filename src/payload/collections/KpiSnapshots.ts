@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { createRBACAccess } from '../access'
 import { KPI_METRIC_OPTIONS } from '../constants'
 
 export const KpiSnapshots: CollectionConfig = {
@@ -10,10 +10,10 @@ export const KpiSnapshots: CollectionConfig = {
     defaultColumns: ['date', 'metric', 'value', 'locale', 'granularity'],
   },
   access: {
-    read: isAdmin,
-    create: isAdmin,
-    update: isAdmin,
-    delete: isAdmin,
+    read: createRBACAccess('kpiSnapshots', 'read'),
+    create: createRBACAccess('kpiSnapshots', 'create'),
+    update: createRBACAccess('kpiSnapshots', 'update'),
+    delete: createRBACAccess('kpiSnapshots', 'delete'),
   },
   fields: [
     {

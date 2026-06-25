@@ -1,8 +1,9 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
+import { payloadPluginRBAC } from '@zealamic/payload-plugin-rbac'
 import path from 'path'
-import { buildConfig, type CollectionConfig } from 'payload'
+import { buildConfig, type CollectionConfig, type Config } from 'payload'
 import { payloadApiDocs } from './src/payload/plugins/payloadApiDocs'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
@@ -82,6 +83,33 @@ function withOriendaListView(collection: CollectionConfig): CollectionConfig {
         },
       },
     },
+  }
+}
+
+function removeParentFields(config: Config): Config {
+  return {
+    ...config,
+    collections: config.collections?.map((c) => {
+      if (c.slug !== 'users') return c
+
+      const fields = c.fields.filter(
+        (f) => !('name' in f) || (f.name !== 'parent' && f.name !== 'parentPath'),
+      )
+
+      const trimLast = (arr: any) =>
+        Array.isArray(arr) && arr.length > 0 ? arr.slice(0, -1) : arr
+
+      const hooks = c.hooks
+        ? {
+            ...c.hooks,
+            beforeChange: trimLast(c.hooks.beforeChange),
+            afterChange: trimLast(c.hooks.afterChange),
+            afterDelete: trimLast(c.hooks.afterDelete),
+          }
+        : undefined
+
+      return { ...c, fields, hooks }
+    }),
   }
 }
 
@@ -206,7 +234,7 @@ export default buildConfig({
         url.searchParams.set('prepare_threshold', '0')
         return url.toString()
       })(),
-      max: process.env.NODE_ENV === 'production' ? 10 : 3,
+      max: 3,
       idleTimeoutMillis: 60000,
       connectionTimeoutMillis: 15000,
       ssl: {
@@ -228,6 +256,61 @@ export default buildConfig({
     fallback: true,
   },
   plugins: [
+    (cfg) => removeParentFields(payloadPluginRBAC({
+      autoModifyUsersCollection: true,
+      translations: {
+        en: {
+          components: {
+            rolePermissionMatrix: {
+              features: {
+                users: 'Users',
+                media: 'Media',
+                pages: 'Pages',
+                doctors: 'Doctors',
+                departments: 'Departments',
+                branches: 'Branches',
+                'doctor-schedules': 'Doctor Schedules',
+                services: 'Services',
+                'service-packages': 'Service Packages',
+                news: 'News',
+                announcements: 'Announcements',
+                'health-tips': 'Health Tips',
+                careers: 'Careers',
+                'doctor-talks': 'Doctor Talks',
+                'insurance-updates': 'Insurance Updates',
+                'content-search-index': 'Content Search Index',
+                promotions: 'Promotions',
+                faqs: 'FAQs',
+                tourScenes: 'Tour Scenes',
+                 inquiries: 'Inquiries',
+                 appointments: 'Appointments',
+                 purchases: 'Promotion Purchases',
+                 feedback: 'Feedback',
+                 patients: 'Patients',
+                 profiles: 'Profiles',
+                 testimonials: 'Testimonials',
+                 analyticsEvents: 'Analytics Events',
+                kpiSnapshots: 'KPI Snapshots',
+                gaReports: 'GA Reports',
+                auditLogs: 'Audit Logs',
+                content: 'Content',
+                navigation: 'Navigation',
+                socialLinks: 'Social Links',
+                siteSettings: 'Site Settings',
+                operationalSettings: 'Operational Settings',
+              },
+              actions: {
+                create: 'Create',
+                read: 'Read',
+                update: 'Update',
+                delete: 'Delete',
+                viewDrafts: 'View Drafts',
+              },
+            },
+          },
+        },
+      },
+    })(cfg)),
     ...(enableApiDocs
       ? [
           payloadApiDocs({

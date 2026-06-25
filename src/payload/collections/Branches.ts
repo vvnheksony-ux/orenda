@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { slugField } from '../fields/slug'
 import { statusFields } from '../fields/status'
 import { quillRichTextAdmin } from '../fields/quillRichText'
-import { publishedOnly, isAdminOrEditor } from '../access'
+import { publishedOnlyFor, createRBACAccess } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 
 const webhookHooks = createWebhookHooks('branches')
@@ -18,10 +18,10 @@ export const Branches: CollectionConfig = {
     drafts: true,
   },
   access: {
-    read: publishedOnly,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    read: publishedOnlyFor('branches'),
+    create: createRBACAccess('branches', 'create'),
+    update: createRBACAccess('branches', 'update'),
+    delete: createRBACAccess('branches', 'delete'),
   },
   fields: [
     {

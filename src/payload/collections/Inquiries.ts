@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdminOrEditor } from '../access'
+import { createRBACAccess } from '../access'
 
 export const Inquiries: CollectionConfig = {
   slug: 'inquiries',
@@ -10,10 +10,10 @@ export const Inquiries: CollectionConfig = {
     defaultColumns: ['name', 'email', 'status', 'createdAt'],
   },
   access: {
-    read: isAdminOrEditor,
+    read: createRBACAccess('inquiries', 'read'),
     create: () => false,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    update: createRBACAccess('inquiries', 'update'),
+    delete: createRBACAccess('inquiries', 'delete'),
   },
   fields: [
     {

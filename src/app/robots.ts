@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin', '/admin-panel', '/api/'],
+      disallow: ['/admin', '/api/'],
     },
     sitemap: 'https://orienda.com/sitemap.xml',
   }

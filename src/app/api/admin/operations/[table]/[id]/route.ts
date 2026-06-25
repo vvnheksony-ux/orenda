@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { createServiceClient } from '@/utils/supabase/server'
+import { requireTablePermission } from '@/payload/access/requireTablePermission'
 
 const allowedTables = ['appointments', 'inquiries', 'purchases', 'patients', 'profiles', 'feedback', 'testimonials', 'contact_messages'] as const
 const allowedStatusByTable: Record<(typeof allowedTables)[number], string[]> = {
@@ -110,10 +111,17 @@ type RouteContext = {
 }
 
 export async function PATCH(req: NextRequest, context: RouteContext) {
-  const authError = await requirePayloadAdmin(req)
-  if (authError) return authError
+  const payload = await getPayload({ config })
+  const { user } = await payload.auth({ headers: req.headers })
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const { table, id } = await context.params
+  const permError = await requireTablePermission({ req, user, payload } as any, table, 'update')
+  if (permError) return permError
+
   if (!isAllowedTable(table)) return NextResponse.json({ error: 'Unknown operations table.' }, { status: 404 })
 
   const body = (await req.json().catch(() => null)) as { data?: Record<string, unknown>; status?: unknown } | null
@@ -202,10 +210,17 @@ function normalizeFieldValue(key: string, value: unknown) {
 }
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
-  const authError = await requirePayloadAdmin(req)
-  if (authError) return authError
+  const payload = await getPayload({ config })
+  const { user } = await payload.auth({ headers: req.headers })
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const { table, id } = await context.params
+  const permError = await requireTablePermission({ req, user, payload } as any, table, 'delete')
+  if (permError) return permError
+
   if (!isAllowedTable(table)) return NextResponse.json({ error: 'Unknown operations table.' }, { status: 404 })
 
   const supabase = await createServiceClient()
@@ -222,16 +237,4 @@ function isAllowedTable(value: string): value is (typeof allowedTables)[number] 
 
 function getDatabaseTable(table: (typeof allowedTables)[number]) {
   return table === 'patients' ? 'profiles' : table
-}
-
-async function requirePayloadAdmin(req: NextRequest) {
-  const payload = await getPayload({ config })
-  const { user } = await payload.auth({ headers: req.headers })
-  const role = user && typeof user === 'object' && 'role' in user ? user.role : null
-
-  if (role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  return null
 }

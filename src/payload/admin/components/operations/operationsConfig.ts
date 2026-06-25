@@ -34,6 +34,10 @@ export type ReferenceOptionMap = Record<string, Array<{ id: string; name: string
 
 export type OperationViewMode = 'create' | 'edit' | 'list' | 'view'
 
+export function isOperationTableSlug(slug: string | undefined): slug is OperationTableSlug {
+  return Boolean(slug && slug in operationConfigs)
+}
+
 export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
   patients: {
     slug: 'patients',
@@ -250,7 +254,7 @@ export const operationConfigs: Record<OperationTableSlug, OperationConfig> = {
 }
 
 export function getOperationConfig(slug: string | undefined) {
-  if (slug && slug in operationConfigs) {
+  if (isOperationTableSlug(slug)) {
     return operationConfigs[slug as OperationTableSlug]
   }
 

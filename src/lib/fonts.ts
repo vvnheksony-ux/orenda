@@ -1,4 +1,4 @@
-import { Cormorant_Garamond, DM_Sans, Inter, Great_Vibes, Suwannaphum, Kantumruy_Pro, Noto_Serif_SC } from 'next/font/google'
+import { Cormorant_Garamond, DM_Sans, Inter, Suwannaphum, Kantumruy_Pro, Noto_Serif_SC } from 'next/font/google'
 
 export const cormorantGaramond = Cormorant_Garamond({
   subsets: ['latin'],
@@ -21,18 +21,12 @@ export const inter = Inter({
   display: 'swap',
 })
 
-export const greatVibes = Great_Vibes({
-  subsets: ['latin'],
-  weight: ['400'],
-  variable: '--script-font',
-  display: 'swap',
-})
-
 export const khmerSerif = Suwannaphum({
   subsets: ['khmer'],
   weight: ['400', '700'],
   variable: '--khmer-serif',
   display: 'swap',
+  preload: false,
 })
 
 export const khmerSans = Kantumruy_Pro({
@@ -40,6 +34,7 @@ export const khmerSans = Kantumruy_Pro({
   weight: ['400', '500', '600', '700'],
   variable: '--khmer-sans',
   display: 'swap',
+  preload: false,
 })
 
 export const chineseSerif = Noto_Serif_SC({

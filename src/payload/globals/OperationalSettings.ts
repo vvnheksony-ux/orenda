@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isAdmin } from '../access'
+import { createRBACAccess } from '../access'
 
 export const OperationalSettings: GlobalConfig = {
   slug: 'operationalSettings',
@@ -8,8 +8,8 @@ export const OperationalSettings: GlobalConfig = {
     group: 'Systems',
   },
   access: {
-    read: isAdmin,
-    update: isAdmin,
+    read: createRBACAccess('operationalSettings', 'read'),
+    update: createRBACAccess('operationalSettings', 'update'),
   },
   fields: [
     {

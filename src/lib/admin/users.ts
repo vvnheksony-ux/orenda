@@ -5,6 +5,8 @@ type PayloadUserDoc = {
   name?: string | null
   email?: string | null
   role?: string | null
+  isSuperAdmin?: boolean | null
+  roles?: Array<{ id: string | number; code?: string | null; name?: string | null }> | null
   lastLoginAt?: string | null
   createdAt?: string | null
 }
@@ -30,24 +32,38 @@ export async function getPayloadUsers(payload: Payload) {
   try {
     const result = await payload.find({
       collection: 'users',
-      depth: 0,
+      depth: 1,
       limit: 200,
       sort: '-createdAt',
     })
 
     return {
-      users: (result.docs as PayloadUserDoc[]).map((user) => ({
-        id: String(user.id),
-        name: user.name || 'Payload user',
-        contact: user.email || '-',
-        role: user.role || '-',
-        status: 'active',
-        source: 'Payload',
-        lastLogin: formatDate(user.lastLoginAt),
-        dateOfBirth: '-',
-        created: formatDate(user.createdAt),
-        href: `/admin/collections/users/${user.id}`,
-      })),
+      users: (result.docs as PayloadUserDoc[]).map((user) => {
+        // Determine role display: super admin > roles relationship > legacy role string
+        let roleDisplay = '-'
+        if (user.isSuperAdmin) {
+          roleDisplay = 'super-admin'
+        } else if (user.roles && user.roles.length > 0) {
+          roleDisplay = user.roles
+            .map((r) => (typeof r === 'object' ? (r.name || r.code || String(r.id)) : String(r)))
+            .join(', ')
+        } else if (user.role) {
+          roleDisplay = user.role
+        }
+
+        return {
+          id: String(user.id),
+          name: user.name || 'Payload user',
+          contact: user.email || '-',
+          role: roleDisplay,
+          status: 'active',
+          source: 'Payload',
+          lastLogin: formatDate(user.lastLoginAt),
+          dateOfBirth: '-',
+          created: formatDate(user.createdAt),
+          href: `/admin/collections/users/${user.id}`,
+        }
+      }),
       error: null,
     }
   } catch (error) {

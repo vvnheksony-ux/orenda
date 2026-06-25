@@ -11,14 +11,19 @@ import * as migration_20260611_000000_drop_insurance_provider from './20260611_0
 import * as migration_20260611_120000_add_branch_to_tour_scenes from './20260611_120000_add_branch_to_tour_scenes';
 import * as migration_20260611_140000_drop_legacy_news_fields from './20260611_140000_drop_legacy_news_fields';
 import * as migration_20260611_150000_rename_health_tips_tags_table from './20260611_150000_rename_health_tips_tags_table';
+import * as migration_20260615_000000_add_rbac_plugin from './20260615_000000_add_rbac_plugin';
 import * as migration_20260616_000000_add_tour_scene_room_group from './20260616_000000_add_tour_scene_room_group';
 import * as migration_20260618_000000_add_mekong_otp_challenges from './20260618_000000_add_mekong_otp_challenges';
+import * as migration_20260619_000000_add_sale_role_and_features from './20260619_000000_add_sale_role_and_features';
 import * as migration_20260619_000000_lock_public_rls from './20260619_000000_lock_public_rls';
 import * as migration_20260619_010000_add_telegram_subscribers from './20260619_010000_add_telegram_subscribers';
+import * as migration_20260619_180000_drop_parent_fields from './20260619_180000_drop_parent_fields';
 import * as migration_20260624_000000_add_health_tips_images from './20260624_000000_add_health_tips_images';
 import * as migration_20260624_010000_add_tour_hotspot_target_scene from './20260624_010000_add_tour_hotspot_target_scene';
 import * as migration_20260624_064704_centers_of_excellence from './20260624_064704_centers_of_excellence';
 import * as migration_20260624_070000_add_promotion_price from './20260624_070000_add_promotion_price';
+import * as migration_20260625_000000_add_created_by_to_users from './20260625_000000_add_created_by_to_users';
+import * as migration_20260625_062041_rbac_created_by_columns from './20260625_062041_rbac_created_by_columns';
 
 export const migrations = [
   {
@@ -87,6 +92,11 @@ export const migrations = [
     name: '20260611_150000_rename_health_tips_tags_table',
   },
   {
+    up: migration_20260615_000000_add_rbac_plugin.up,
+    down: migration_20260615_000000_add_rbac_plugin.down,
+    name: '20260615_000000_add_rbac_plugin',
+  },
+  {
     up: migration_20260616_000000_add_tour_scene_room_group.up,
     down: migration_20260616_000000_add_tour_scene_room_group.down,
     name: '20260616_000000_add_tour_scene_room_group',
@@ -97,6 +107,11 @@ export const migrations = [
     name: '20260618_000000_add_mekong_otp_challenges',
   },
   {
+    up: migration_20260619_000000_add_sale_role_and_features.up,
+    down: migration_20260619_000000_add_sale_role_and_features.down,
+    name: '20260619_000000_add_sale_role_and_features',
+  },
+  {
     up: migration_20260619_000000_lock_public_rls.up,
     down: migration_20260619_000000_lock_public_rls.down,
     name: '20260619_000000_lock_public_rls',
@@ -105,6 +120,11 @@ export const migrations = [
     up: migration_20260619_010000_add_telegram_subscribers.up,
     down: migration_20260619_010000_add_telegram_subscribers.down,
     name: '20260619_010000_add_telegram_subscribers',
+  },
+  {
+    up: migration_20260619_180000_drop_parent_fields.up,
+    down: migration_20260619_180000_drop_parent_fields.down,
+    name: '20260619_180000_drop_parent_fields',
   },
   {
     up: migration_20260624_000000_add_health_tips_images.up,
@@ -119,11 +139,21 @@ export const migrations = [
   {
     up: migration_20260624_064704_centers_of_excellence.up,
     down: migration_20260624_064704_centers_of_excellence.down,
-    name: '20260624_064704_centers_of_excellence'
+    name: '20260624_064704_centers_of_excellence',
   },
   {
     up: migration_20260624_070000_add_promotion_price.up,
     down: migration_20260624_070000_add_promotion_price.down,
-    name: '20260624_070000_add_promotion_price'
+    name: '20260624_070000_add_promotion_price',
+  },
+  {
+    up: migration_20260625_000000_add_created_by_to_users.up,
+    down: migration_20260625_000000_add_created_by_to_users.down,
+    name: '20260625_000000_add_created_by_to_users',
+  },
+  {
+    up: migration_20260625_062041_rbac_created_by_columns.up,
+    down: migration_20260625_062041_rbac_created_by_columns.down,
+    name: '20260625_062041_rbac_created_by_columns'
   },
 ];

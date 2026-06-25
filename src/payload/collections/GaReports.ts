@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../access'
+import { createRBACAccess } from '../access'
 
 export const GaReports: CollectionConfig = {
   slug: 'gaReports',
@@ -9,10 +9,10 @@ export const GaReports: CollectionConfig = {
     defaultColumns: ['reportType', 'dateRange', 'fetchedAt'],
   },
   access: {
-    read: isAdmin,
-    create: isAdmin,
+    read: createRBACAccess('gaReports', 'read'),
+    create: createRBACAccess('gaReports', 'create'),
     update: () => false,
-    delete: isAdmin,
+    delete: createRBACAccess('gaReports', 'delete'),
   },
   fields: [
     {

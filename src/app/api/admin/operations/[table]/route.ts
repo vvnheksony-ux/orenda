@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { createServiceClient } from '@/utils/supabase/server'
+import { requireTablePermission } from '@/payload/access/requireTablePermission'
 
 const allowedTables = ['appointments', 'inquiries', 'purchases', 'patients', 'profiles', 'feedback', 'testimonials', 'contact_messages'] as const
 const allowedStatusByTable: Record<(typeof allowedTables)[number], string[]> = {
@@ -109,23 +110,32 @@ type RouteContext = {
 }
 
 export async function POST(req: NextRequest, context: RouteContext) {
-  const authError = await requirePayloadAdmin(req)
-  if (authError) return authError
+  const payload = await getPayload({ config })
+  const { user } = await payload.auth({ headers: req.headers })
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const { table } = await context.params
-  if (!isAllowedTable(table)) return NextResponse.json({ error: 'Unknown operations table.' }, { status: 404 })
+  const permError = await requireTablePermission({ req, user, payload } as any, table, 'create')
+  if (permError) return permError
 
   const body = (await req.json().catch(() => null)) as { data?: Record<string, unknown> } | null
   if (!body?.data || typeof body.data !== 'object') {
     return NextResponse.json({ error: 'Invalid create payload.' }, { status: 400 })
   }
 
-  const editableFields = editableFieldsByTable[table]
+  const editableFields = editableFieldsByTable[table as (typeof allowedTables)[number]]
+  if (!editableFields) {
+    return NextResponse.json({ error: 'Unknown operations table.' }, { status: 404 })
+  }
+
   const insertData: Record<string, string | number | boolean | null> = {}
 
   for (const [key, value] of Object.entries(body.data)) {
     if (!editableFields.includes(key)) continue
-    if (key === 'status' && (typeof value !== 'string' || !allowedStatusByTable[table].includes(value))) continue
+    if (key === 'status' && (typeof value !== 'string' || !allowedStatusByTable[table as (typeof allowedTables)[number]].includes(value))) continue
     insertData[key] = normalizeFieldValue(key, value)
   }
 
@@ -136,7 +146,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
   const supabase = await createServiceClient()
   const { data, error } = await supabase
     .schema('public')
-    .from(getDatabaseTable(table))
+    .from(getDatabaseTable(table as (typeof allowedTables)[number]))
     .insert(insertData)
     .select('id')
     .single()
@@ -168,16 +178,4 @@ function isAllowedTable(value: string): value is (typeof allowedTables)[number] 
 
 function getDatabaseTable(table: (typeof allowedTables)[number]) {
   return table === 'patients' ? 'profiles' : table
-}
-
-async function requirePayloadAdmin(req: NextRequest) {
-  const payload = await getPayload({ config })
-  const { user } = await payload.auth({ headers: req.headers })
-  const role = user && typeof user === 'object' && 'role' in user ? user.role : null
-
-  if (role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  return null
 }

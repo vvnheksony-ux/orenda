@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { publishedOnly, isAdminOrEditor } from '../access'
+import { publishedOnlyFor, createRBACAccess } from '../access'
 import { createWebhookHooks } from '../hooks/contentWebhooks'
 import { statusFields } from '../fields/status'
 
@@ -18,10 +18,10 @@ export const DoctorSchedules: CollectionConfig = {
     drafts: true,
   },
   access: {
-    read: publishedOnly,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    read: publishedOnlyFor('doctor-schedules'),
+    create: createRBACAccess('doctor-schedules', 'create'),
+    update: createRBACAccess('doctor-schedules', 'update'),
+    delete: createRBACAccess('doctor-schedules', 'delete'),
   },
   fields: [
     {

@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdminOrEditor } from '../access'
+import { createRBACAccess } from '../access'
 
 export const ContentSearchIndex: CollectionConfig = {
   slug: 'content-search-index',
@@ -10,7 +10,7 @@ export const ContentSearchIndex: CollectionConfig = {
     defaultColumns: ['title', 'contentType', 'locale', 'sourceCollection'],
   },
   access: {
-    read: isAdminOrEditor,
+    read: createRBACAccess('content-search-index', 'read'),
     create: () => false,
     update: () => false,
     delete: () => false,

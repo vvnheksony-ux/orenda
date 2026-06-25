@@ -83,7 +83,7 @@ export async function PATCH(req: NextRequest) {
       email: updated.email,
       id: updated.id,
       name: updated.name,
-      role: updated.role,
+      role: (updated as any).role ?? null,
       avatar: updated.avatar,
     },
   })
