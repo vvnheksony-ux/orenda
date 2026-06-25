@@ -8,7 +8,7 @@ import Reveal from '@/components/shared/Reveal'
 import { Link } from '@/i18n/routing'
 import { ChevronRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 interface Career {
   id: string; title: string; slug: string; department: string;
@@ -51,6 +51,7 @@ function CareerCardSkeleton() {
 
 export default function CareerPage() {
   const locale = useLocale()
+  const t = useTranslations('Career')
   const [careers, setCareers] = useState<Career[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -62,17 +63,17 @@ export default function CareerPage() {
     const load = async (attempt = 0) => {
       try {
         const r = await fetch(`/api/careers?locale=${locale}&limit=50`)
-        if (!r.ok) throw new Error('We could not load career opportunities right now.')
+        if (!r.ok) throw new Error('load-failed')
         const d = await r.json()
         if (!active) return
         setCareers(d.docs || [])
         setError('')
         setLoading(false)
-      } catch (err: unknown) {
+      } catch {
         if (!active) return
         if (attempt < 2) { setTimeout(() => { if (active) load(attempt + 1) }, 700 * (attempt + 1)); return }
         setCareers([])
-        setError(err instanceof Error ? err.message : 'We could not load career opportunities right now.')
+        setError(t('loadError'))
         setLoading(false)
       }
     }
@@ -94,10 +95,10 @@ export default function CareerPage() {
               { src: '/images/career-hero-bg.jpg', alt: 'Orienda Hospital career opportunities' },
               { src: '/images/career-hero-overlay2.jpg', alt: 'Orienda Hospital career opportunities' },
             ]}
-            title="Orienda International Hospital"
+            title={t('heroTitle')}
             lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule and appointment to experience world-class healthcare.',
+              t('heroLine1'),
+              t('heroLine2'),
             ]}
           />
 
@@ -105,10 +106,10 @@ export default function CareerPage() {
           <div className="flex flex-col gap-12">
             <Reveal className="text-center flex flex-col gap-3">
               <h2 className="font-cormorant font-bold text-[36px] xl:text-[48px] text-gold-900 leading-none">
-                Career Opportunities
+                {t('heading')}
               </h2>
               <p className="font-dm-sans text-[16px] xl:text-[20px] text-gold-800">
-                Join our team
+                {t('subtitle')}
               </p>
             </Reveal>
 
@@ -118,15 +119,15 @@ export default function CareerPage() {
               )) : error ? (
                 <div className="col-span-full">
                   <PageState
-                    title="Careers unavailable"
+                    title={t('unavailableTitle')}
                     message={error}
                   />
                 </div>
               ) : careers.length === 0 ? (
                 <div className="col-span-full">
                   <PageState
-                    title="No openings right now"
-                    message="There are no published roles at the moment. Please check back soon for new opportunities."
+                    title={t('emptyTitle')}
+                    message={t('emptyMessage')}
                   />
                 </div>
               ) : careers.map((career) => (
@@ -147,7 +148,7 @@ export default function CareerPage() {
                   <div className="flex flex-col flex-1 justify-between px-3.5 sm:px-5 lg:px-6 pt-3 pb-3.5 sm:pb-5 lg:pb-6 gap-3 sm:gap-5">
                     <div className="flex flex-col gap-2 sm:gap-3">
                       <p className="font-dm-sans font-light text-[10px] text-gold-900/70">
-                        Deadline: {formatDeadline(career.applicationDeadline)}
+                        {t('deadlineLabel')} {career.applicationDeadline ? formatDeadline(career.applicationDeadline) : t('deadlineOpen')}
                       </p>
                       <div className="flex flex-col gap-2">
                         <p className="font-dm-sans font-medium text-[13px] sm:text-[15px] lg:text-[16px] text-gold-900 line-clamp-2">
@@ -164,7 +165,7 @@ export default function CareerPage() {
                       href={`/career/${career.slug}` as '/'}
                       className="self-end flex items-center gap-1 px-2.5 py-1 rounded-[12px] border border-gold-500 font-dm-sans text-[10px] sm:text-[12px] text-gold-800 hover:bg-gold-50 transition-colors"
                     >
-                      Apply Now
+                      {t('applyNow')}
                       <ChevronRight size={14} />
                     </Link>
                   </div>

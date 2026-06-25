@@ -11,6 +11,7 @@ import SiteLayout from '@/components/layout/SiteLayout'
 import PageState from '@/components/shared/PageState'
 import ExploreMoreCarousel from '@/components/shared/ExploreMoreCarousel'
 import { useBranch } from '@/lib/branch-context'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface NewsDetail {
   id: string; title: string; slug: string; body: string
@@ -39,11 +40,8 @@ export default function NewsDetailPage({ params }: { params: Promise<{ newsId: s
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/news?locale=${locale}&slug=${encodeURIComponent(newsId)}`).then(async (r) => {
-        if (!r.ok) throw new Error('We could not load this article right now.')
-        return r.json()
-      }),
-      fetch(`/api/news?locale=${locale}&limit=10`).then(r => r.json()).catch(() => ({ docs: [] })),
+      fetchJsonRetry<any>(`/api/news?locale=${locale}&slug=${encodeURIComponent(newsId)}`),
+      fetchJsonRetry<any>(`/api/news?locale=${locale}&limit=10`).catch(() => ({ docs: [] })),
     ]).then(([art, newsList]) => {
       if (art) setArticle(art)
       setLoadError('')

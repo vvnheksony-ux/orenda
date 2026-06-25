@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
 import { useBranch } from '@/lib/branch-context'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 import { animate, motion, useMotionValue } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -183,8 +184,8 @@ export default function SpecialistSection() {
     }
     setLoading(true)
     setActiveIdx(2)
-    fetch(`/api/doctors?locale=${locale}&branch=${selectedBranch.id}`)
-      .then(r => r.json())
+    // Retries the flaky API so the skeleton stays up until doctors arrive.
+    fetchJsonRetry<any[]>(`/api/doctors?locale=${locale}&branch=${selectedBranch.id}`)
       .then((data: any[]) => {
         if (data?.length) {
           setDoctors(data.map(d => ({

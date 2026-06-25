@@ -9,6 +9,7 @@ import Reveal from '@/components/shared/Reveal'
 import { Link } from '@/i18n/routing'
 import { useLocale, useTranslations } from 'next-intl'
 import { useBranch } from '@/lib/branch-context'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface Department {
   id: string
@@ -85,8 +86,7 @@ export default function DepartmentsPage() {
     let active = true
     setLoading(true)
     const branchParam = selectedBranch ? `&branch=${selectedBranch.id}` : ''
-    fetch(`/api/departments?locale=${locale}${branchParam}`)
-      .then(r => r.json())
+    fetchJsonRetry<any>(`/api/departments?locale=${locale}${branchParam}`)
       .then(d => {
         if (!active) return
         if (d?.docs?.length) {

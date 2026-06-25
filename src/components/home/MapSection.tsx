@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import { useState, useEffect } from 'react'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface Branch { id: string; name: string; address: string; phone: string; hours: string; image: string | null; mapUrl?: string }
 
@@ -78,8 +79,7 @@ export default function MapSection() {
   const [branches, setBranches] = useState<Branch[] | null>(null)
 
   useEffect(() => {
-    fetch(`/api/branches?locale=${locale}`)
-      .then(r => r.json())
+    fetchJsonRetry<any>(`/api/branches?locale=${locale}`)
       .then(d => { if (d?.docs?.length) setBranches(d.docs) })
       .catch(() => {})
   }, [locale])

@@ -8,6 +8,8 @@ import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
 import LoginModal from '@/components/shared/LoginModal'
 import { useAuth } from '@/lib/auth-context'
 import { useScrollLock } from '@/lib/useScrollLock'
+import PatientIdCard from '@/components/shared/PatientIdCard'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface Appointment {
   id: string
@@ -65,8 +67,7 @@ export default function AppointmentsPage() {
   useEffect(() => {
     if (authLoading) return
     if (!user) return
-    fetch('/api/appointments')
-      .then(r => r.json())
+    fetchJsonRetry<any>('/api/appointments')
       .then(d => {
         const docs: Appointment[] = d.docs ?? []
         setAppointments(docs)
@@ -86,8 +87,7 @@ export default function AppointmentsPage() {
   useEffect(() => {
     if (!user) return
     const refetch = () => {
-      fetch('/api/appointments')
-        .then(r => r.json())
+      fetchJsonRetry<any>('/api/appointments')
         .then(d => setAppointments(d.docs ?? []))
         .catch(() => {})
     }
@@ -216,9 +216,14 @@ export default function AppointmentsPage() {
                       <p className="font-dm-sans text-[13px] text-[#7a5f2c] italic line-clamp-1">{appt.message}</p>
                     )}
                   </div>
-                  <p className="font-dm-sans text-[12px] text-[#b89148] shrink-0">
-                    {new Date(appt.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </p>
+                  <div className="flex flex-col sm:items-end gap-[6px] shrink-0">
+                    <span className="font-dm-sans text-[12px] font-semibold tracking-wider text-[#3b2d17] bg-[#f3ead2] rounded-full px-3 py-1 w-fit">
+                      Ref: {appt.id.slice(0, 8).toUpperCase()}
+                    </span>
+                    <p className="font-dm-sans text-[12px] text-[#b89148]">
+                      {new Date(appt.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -244,9 +249,10 @@ export default function AppointmentsPage() {
               </button>
             </div>
             <div className="px-[28px] py-[24px] flex flex-col gap-[18px]">
-              <div className="flex items-center justify-between">
+              {/* Patient ID card — name + HN code + scannable barcode */}
+              <PatientIdCard appt={selected} />
+              <div className="flex items-center">
                 <StatusBadge status={selected.status} />
-                <span className="font-dm-sans text-[12px] text-[#b89148]">{t('ref')}: {selected.id.slice(0, 8).toUpperCase()}</span>
               </div>
               <div className="flex flex-col gap-[14px]">
                 <DetailRow icon={<Stethoscope size={16} />} label={t('patient')} value={selected.patient_name} />

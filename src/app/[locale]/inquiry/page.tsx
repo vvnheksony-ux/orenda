@@ -1,18 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { ArrowUp } from 'lucide-react'
 import { DatePicker, CustomSelect } from '@/components/shared/FormControls'
 
-const INQUIRY_TYPES = ['General Inquiry', 'Appointment Request', 'Medical Record', 'Billing', 'Feedback', 'Other']
-const GENDERS = ['Male', 'Female', 'Other', 'Prefer not to say']
-const NATIONALITIES = ['Cambodian', 'Thai', 'Vietnamese', 'Chinese', 'Korean', 'Japanese', 'American', 'Other']
-const COUNTRIES = ['Cambodia', 'Thailand', 'Vietnam', 'China', 'Korea', 'Japan', 'United States', 'Other']
-
 export default function InquiryPage() {
+  const t = useTranslations('Inquiry')
+  const INQUIRY_TYPES = t.raw('inquiryTypes') as string[]
+  const GENDERS = t.raw('genders') as string[]
+  const NATIONALITIES = t.raw('nationalities') as string[]
+  const COUNTRIES = t.raw('countries') as string[]
   const [hospitalNames, setHospitalNames] = useState<string[]>([])
   const [form, setForm] = useState({
     condition: '', inquiryType: '', hospitalName: '', question: '',
@@ -51,9 +52,9 @@ export default function InquiryPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.firstName) { setError('First name is required.'); return }
-    if (!form.email && !form.phone) { setError('Please provide an email or phone number.'); return }
-    if (!consents[0]) { setError('Please accept the Terms of Service and Privacy Notice.'); return }
+    if (!form.firstName) { setError(t('errFirstName')); return }
+    if (!form.email && !form.phone) { setError(t('errContact')); return }
+    if (!consents[0]) { setError(t('errConsent')); return }
     const message = [
       form.condition   && `Condition/Treatment: ${form.condition}`,
       form.hospitalName && `Hospital: ${form.hospitalName}`,
@@ -63,7 +64,7 @@ export default function InquiryPage() {
       form.nationality && `Nationality: ${form.nationality}`,
       form.country     && `Country: ${form.country}`,
     ].filter(Boolean).join('\n')
-    if (!message) { setError('Please provide your inquiry details.'); return }
+    if (!message) { setError(t('errDetails')); return }
     setStatus('loading'); setError('')
 
     try {
@@ -95,9 +96,9 @@ export default function InquiryPage() {
     } catch (err: any) {
       setStatus('error')
       if (err.name === 'AbortError') {
-        setError('Request timed out. Please check your connection and try again.')
+        setError(t('errTimeout'))
       } else {
-        setError(err.message || 'Something went wrong. Please try again.')
+        setError(t('errGeneric'))
       }
     }
   }
@@ -111,10 +112,10 @@ export default function InquiryPage() {
               <path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h1 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none">Inquiry Sent</h1>
-          <p className="font-dm-sans text-[18px] text-gold-800 max-w-md">Thank you! We&apos;ve received your inquiry and will get back to you shortly.</p>
+          <h1 className="font-cormorant font-bold text-[48px] text-gold-900 leading-none">{t('successTitle')}</h1>
+          <p className="font-dm-sans text-[18px] text-gold-800 max-w-md">{t('successMessage')}</p>
           <Link href="/" className="mt-4 inline-flex items-center justify-center px-10 py-4 rounded-full font-dm-sans text-[16px] text-white" style={{ background: '#b89148' }}>
-            Back to Home
+            {t('backToHome')}
           </Link>
         </div>
       </div>
@@ -126,7 +127,7 @@ export default function InquiryPage() {
       {showTop && (
         <button
           onClick={scrollToTop}
-          aria-label="Scroll to top"
+          aria-label={t('scrollToTop')}
           className="fixed bottom-6 left-6 z-[100] flex h-12 w-12 items-center justify-center rounded-full bg-[#b89148] text-white shadow-[0_8px_24px_rgba(122,95,44,0.3)] transition-all hover:bg-[#a3803d]"
         >
           <ArrowUp size={22} />
@@ -138,11 +139,11 @@ export default function InquiryPage() {
           {/* ── Hero banner ── */}
           <PromotionStyleHero
             imageSrc="/images/inquiry-hero.jpg"
-            imageAlt="Orienda International Hospital"
-            title="Orienda International Hospital"
+            imageAlt={t('heroTitle')}
+            title={t('heroTitle')}
             lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule and appointment to experience world-class healthcare.',
+              t('heroLine1'),
+              t('heroLine2'),
             ]}
           />
 
@@ -155,23 +156,23 @@ export default function InquiryPage() {
 
               {/* Header */}
               <div className="text-center flex flex-col gap-2">
-                <h2 className="font-cormorant font-bold text-[28px] text-gold-900 leading-none">Send Inquiry</h2>
-                <p className="font-dm-sans text-[16px] text-gold-800">Book an appointment with us today</p>
+                <h2 className="font-cormorant font-bold text-[28px] text-gold-900 leading-none">{t('formHeading')}</h2>
+                <p className="font-dm-sans text-[16px] text-gold-800">{t('formSubtitle')}</p>
               </div>
 
               {/* Fields */}
               <div className="flex flex-col gap-6">
-                <Field label="Condition/Treatment of Interest" value={form.condition} onChange={v => set('condition', v)} placeholder="e.g. Cardiology, General Checkup" />
-                <CustomSelect label="Type of Inquiry" value={form.inquiryType} onChange={v => set('inquiryType', v)} options={INQUIRY_TYPES} placeholder="Select type" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
-                <CustomSelect label="Hospital Name" value={form.hospitalName} onChange={v => set('hospitalName', v)} options={hospitalNames} placeholder="Select hospital" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
+                <Field label={t('conditionLabel')} value={form.condition} onChange={v => set('condition', v)} placeholder={t('conditionPlaceholder')} />
+                <CustomSelect label={t('inquiryTypeLabel')} value={form.inquiryType} onChange={v => set('inquiryType', v)} options={INQUIRY_TYPES} placeholder={t('inquiryTypePlaceholder')} labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
+                <CustomSelect label={t('hospitalNameLabel')} value={form.hospitalName} onChange={v => set('hospitalName', v)} options={hospitalNames} placeholder={t('hospitalNamePlaceholder')} labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
 
                 {/* Your Question */}
                 <div className="flex flex-col gap-2">
-                  <label className="font-dm-sans font-medium text-[16px] text-gold-900">Your Question</label>
+                  <label className="font-dm-sans font-medium text-[16px] text-gold-900">{t('questionLabel')}</label>
                   <textarea
                     value={form.question}
                     onChange={e => set('question', e.target.value)}
-                    placeholder="Enter your message here"
+                    placeholder={t('questionPlaceholder')}
                     rows={6}
                     className="w-full px-4 py-3 rounded-[12px] border border-[#dcbd72] font-dm-sans text-[16px] text-gold-900 outline-none resize-none focus:border-gold-500 transition-colors bg-white"
                   />
@@ -179,35 +180,35 @@ export default function InquiryPage() {
 
                 {/* First + Last Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Field label="First Name" value={form.firstName} onChange={v => set('firstName', v)} placeholder="John" />
-                  <Field label="Last Name" value={form.lastName} onChange={v => set('lastName', v)} placeholder="Doe" />
+                  <Field label={t('firstNameLabel')} value={form.firstName} onChange={v => set('firstName', v)} placeholder={t('firstNamePlaceholder')} />
+                  <Field label={t('lastNameLabel')} value={form.lastName} onChange={v => set('lastName', v)} placeholder={t('lastNamePlaceholder')} />
                 </div>
 
                 {/* Email + Phone */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Field label="Email" type="email" value={form.email} onChange={v => set('email', v)} placeholder="your@email.com" />
-                  <Field label="Phone Number" type="tel" value={form.phone} onChange={v => set('phone', v)} placeholder="098 000 999" />
+                  <Field label={t('emailLabel')} type="email" value={form.email} onChange={v => set('email', v)} placeholder={t('emailPlaceholder')} />
+                  <Field label={t('phoneLabel')} type="tel" value={form.phone} onChange={v => set('phone', v)} placeholder={t('phonePlaceholder')} />
                 </div>
 
                 {/* DOB + Gender */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <DatePicker label="Date of Birth" value={form.dob} onChange={v => set('dob', v)} placeholder="Select date of birth" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
-                  <CustomSelect label="Gender" value={form.gender} onChange={v => set('gender', v)} options={GENDERS} placeholder="Select gender" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
+                  <DatePicker label={t('dobLabel')} value={form.dob} onChange={v => set('dob', v)} placeholder={t('dobPlaceholder')} labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
+                  <CustomSelect label={t('genderLabel')} value={form.gender} onChange={v => set('gender', v)} options={GENDERS} placeholder={t('genderPlaceholder')} labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
                 </div>
 
                 {/* Nationality + Country */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <CustomSelect label="Nationality" value={form.nationality} onChange={v => set('nationality', v)} options={NATIONALITIES} placeholder="Select nationality" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
-                  <CustomSelect label="Country of Residence" value={form.country} onChange={v => set('country', v)} options={COUNTRIES} placeholder="Select country" labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
+                  <CustomSelect label={t('nationalityLabel')} value={form.nationality} onChange={v => set('nationality', v)} options={NATIONALITIES} placeholder={t('nationalityPlaceholder')} labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
+                  <CustomSelect label={t('countryLabel')} value={form.country} onChange={v => set('country', v)} options={COUNTRIES} placeholder={t('countryPlaceholder')} labelCls="font-dm-sans font-medium text-[16px] text-gold-900" />
                 </div>
               </div>
 
               {/* Terms & Conditions */}
               <div className="flex flex-col gap-4">
                 {[
-                  "I have read and acknowledged the Hospital's Terms of Service and Privacy Notice.",
-                  "I confirm and certify that any of my personal information I have provided to the Hospital is true, correct and present. I also certify that I have a legal right to disclose any information of other individuals to the Hospital, or I have notified or obtained consent to the disclosure from the data subject thereof.",
-                  "I hereby consent the Hospital to send me information about products, services, advertisements, or promotional programs that will benefit me via all channels I have given to the Hospital.",
+                  t('consent1'),
+                  t('consent2'),
+                  t('consent3'),
                 ].map((text, i) => (
                   <label key={i} className="flex gap-4 items-start cursor-pointer">
                     <button
@@ -240,7 +241,7 @@ export default function InquiryPage() {
                   className="px-8 py-4 rounded-[12px] font-dm-sans font-semibold text-[20px] text-gold-50 hover:opacity-90 transition-opacity disabled:opacity-60"
                   style={{ background: '#b89148', minWidth: '232px' }}
                 >
-                  {status === 'loading' ? 'Sending...' : 'Send Inquiry'}
+                  {status === 'loading' ? t('submitting') : t('submit')}
                 </button>
               </div>
             </form>

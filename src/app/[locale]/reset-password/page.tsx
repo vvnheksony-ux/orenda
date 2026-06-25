@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
@@ -10,6 +11,7 @@ import { friendlyError } from '@/lib/auth-errors'
 const supabase = createClient()
 
 function ResetForm() {
+  const t = useTranslations('ResetPassword')
   const params = useSearchParams()
   const [password, setPassword]     = useState('')
   const [confirmPass, setConfirmPass] = useState('')
@@ -25,14 +27,14 @@ function ResetForm() {
     const errorDesc = params.get('error_description')
     if (error) {
       setInvalidLink(true)
-      setErrorMsg(errorDesc || 'This reset link is invalid or has expired.')
+      setErrorMsg(errorDesc || t('invalidLink'))
     }
   }, [params])
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (password !== confirmPass) { setErrorMsg('Passwords do not match'); return }
-    if (password.length < 8) { setErrorMsg('Password must be at least 8 characters'); return }
+    if (password !== confirmPass) { setErrorMsg(t('passwordMismatch')); return }
+    if (password.length < 8) { setErrorMsg(t('minLengthError')); return }
 
     setLoading(true); setErrorMsg('')
 
@@ -55,8 +57,8 @@ function ResetForm() {
 
         <div className="flex flex-col items-center mb-8">
           <Link href="/"><div className="relative w-[80px] h-[80px] mb-4"><Image src="/images/logo-emblem.png" alt="Orienda" fill className="object-cover rounded-full" sizes="80px" /></div></Link>
-          <h1 className="font-cormorant font-bold text-[40px] text-gold-900 leading-none">New Password</h1>
-          <p className="font-dm-sans text-[16px] text-gold-800 mt-2">Choose a strong password</p>
+          <h1 className="font-cormorant font-bold text-[40px] text-gold-900 leading-none">{t('title')}</h1>
+          <p className="font-dm-sans text-[16px] text-gold-800 mt-2">{t('subtitle')}</p>
         </div>
 
         <div className="bg-white rounded-[24px] shadow-[0px_4px_32px_rgba(122,95,44,0.10)] p-8 flex flex-col gap-5">
@@ -64,10 +66,10 @@ function ResetForm() {
           {done ? (
             <div className="flex flex-col items-center gap-4 py-4 text-center">
               <div className="text-[48px]">✅</div>
-              <h2 className="font-cormorant font-bold text-[24px] text-gold-900">Password updated!</h2>
-              <p className="font-dm-sans text-[15px] text-gold-800">You can now sign in with your new password.</p>
+              <h2 className="font-cormorant font-bold text-[24px] text-gold-900">{t('successTitle')}</h2>
+              <p className="font-dm-sans text-[15px] text-gold-800">{t('successMessage')}</p>
               <Link href="/login" className="w-full py-3 bg-[#b89148] hover:bg-[#a07d3a] transition-colors text-white rounded-[12px] font-bold font-dm-sans text-center mt-2">
-                Sign In
+                {t('signIn')}
               </Link>
             </div>
           ) : invalidLink ? (
@@ -75,23 +77,23 @@ function ResetForm() {
               <div className="text-[48px]">⚠️</div>
               <p className="font-dm-sans text-[15px] text-red-600">{errorMsg}</p>
               <Link href="/forgot-password" className="w-full py-3 bg-[#b89148] hover:bg-[#a07d3a] transition-colors text-white rounded-[12px] font-bold font-dm-sans text-center">
-                Request New Link
+                {t('requestNewLink')}
               </Link>
             </div>
           ) : (
             <form onSubmit={handleReset} className="flex flex-col gap-4">
               {errorMsg && <div className="p-3 bg-red-50 border border-red-100 rounded-[8px] text-red-600 text-[13px] font-dm-sans">⚠️ {errorMsg}</div>}
               <div className="flex flex-col gap-1">
-                <label className={labelCls}>New Password</label>
-                <input type="password" placeholder="Min. 8 characters" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} className={inputCls} />
+                <label className={labelCls}>{t('newPasswordLabel')}</label>
+                <input type="password" placeholder={t('newPasswordPlaceholder')} value={password} onChange={e => setPassword(e.target.value)} required minLength={8} className={inputCls} />
               </div>
               <div className="flex flex-col gap-1">
-                <label className={labelCls}>Confirm Password</label>
-                <input type="password" placeholder="Repeat password" value={confirmPass} onChange={e => setConfirmPass(e.target.value)} required className={inputCls} />
-                {confirmPass && password !== confirmPass && <p className="text-red-500 text-[12px] font-dm-sans">Passwords don&apos;t match</p>}
+                <label className={labelCls}>{t('confirmPasswordLabel')}</label>
+                <input type="password" placeholder={t('confirmPasswordPlaceholder')} value={confirmPass} onChange={e => setConfirmPass(e.target.value)} required className={inputCls} />
+                {confirmPass && password !== confirmPass && <p className="text-red-500 text-[12px] font-dm-sans">{t('passwordMismatch')}</p>}
               </div>
               <button disabled={loading || (!!confirmPass && password !== confirmPass)} type="submit" className="w-full py-3 bg-[#b89148] hover:bg-[#a07d3a] text-white rounded-[12px] font-bold font-dm-sans disabled:opacity-50">
-                {loading ? 'Updating...' : 'Update Password'}
+                {loading ? t('updating') : t('updatePassword')}
               </button>
             </form>
           )}

@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import PageState from '@/components/shared/PageState'
 import { useBranch } from '@/lib/branch-context'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface Promo { id: string; title: string; slug: string; image: string | null; validTo: string | null; price?: string; originalPrice?: string; description?: string }
 interface Package { id: string; slug: string; title: string; description: string; price: string; image: string | null }
@@ -73,11 +74,7 @@ export default function PromotionsPage() {
 
   useEffect(() => {
     let active = true
-    fetch(`/api/promotions?locale=${locale}&limit=20`)
-      .then(async (r) => {
-        if (!r.ok) throw new Error('We could not load promotions right now.')
-        return r.json()
-      })
+    fetchJsonRetry<any>(`/api/promotions?locale=${locale}&limit=20`)
       .then(d => {
         if (!active) return
         setPromos(d.docs || d || [])
@@ -89,11 +86,7 @@ export default function PromotionsPage() {
         setPromosError(err instanceof Error ? err.message : 'We could not load promotions right now.')
       })
       .finally(() => { if (active) setLoadingPromos(false) })
-    fetch(`/api/packages?locale=${locale}`)
-      .then(async (r) => {
-        if (!r.ok) throw new Error('We could not load packages right now.')
-        return r.json()
-      })
+    fetchJsonRetry<any>(`/api/packages?locale=${locale}`)
       .then(d => {
         if (!active) return
         setPackages(d || [])

@@ -1,13 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { ChevronDown, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
-const DAYS_SHORT = ['Su','Mo','Tu','We','Th','Fr','Sa']
-
 export function DatePicker({
-  label, value, onChange, placeholder = 'Select date', labelCls = '',
+  label, value, onChange, placeholder, labelCls = '',
 }: {
   label?: string
   value: string
@@ -15,6 +13,9 @@ export function DatePicker({
   placeholder?: string
   labelCls?: string
 }) {
+  const t = useTranslations('FormControls')
+  const MONTHS = t.raw('months') as string[]
+  const DAYS_SHORT = t.raw('daysShort') as string[]
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const today = new Date()
@@ -70,7 +71,7 @@ export function DatePicker({
         className="w-full border border-[#dcbd72] rounded-[12px] px-3.5 py-2.5 sm:px-[16px] sm:py-[12px] font-dm-sans text-[15px] sm:text-[16px] bg-transparent outline-none focus:border-[#b89148] transition-colors flex items-center justify-between gap-2 text-left"
         style={{ color: displayValue ? '#3b2d17' : 'rgba(59,45,23,0.4)' }}
       >
-        <span>{displayValue || placeholder}</span>
+        <span>{displayValue || placeholder || t('selectDate')}</span>
         <Calendar size={16} className="text-[#b89148] shrink-0" />
       </button>
 
@@ -143,7 +144,7 @@ export function DatePicker({
 }
 
 export function CustomSelect({
-  label, value, onChange, options, placeholder = 'Select...', labelCls = '',
+  label, value, onChange, options, placeholder, labelCls = '',
 }: {
   label?: string
   value: string
@@ -152,6 +153,7 @@ export function CustomSelect({
   placeholder?: string
   labelCls?: string
 }) {
+  const t = useTranslations('FormControls')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -177,7 +179,7 @@ export function CustomSelect({
           borderColor: open ? '#b89148' : '#dcbd72',
         }}
       >
-        <span className="truncate">{value || placeholder}</span>
+        <span className="truncate">{value || placeholder || t('selectPlaceholder')}</span>
         <ChevronDown
           size={16}
           className="text-[#b89148] shrink-0 transition-transform duration-200"

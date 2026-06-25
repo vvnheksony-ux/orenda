@@ -9,6 +9,9 @@ import { useAuth } from '@/lib/auth-context'
 import { setProfileComplete } from '@/lib/profile-status'
 import SignOutModal from '@/components/shared/SignOutModal'
 import { createClient } from '@/utils/supabase/client'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
+import { useScrollLock } from '@/lib/useScrollLock'
+import PatientIdCard from '@/components/shared/PatientIdCard'
 
 const supabase = createClient()
 
@@ -72,6 +75,9 @@ export default function ProfilePage() {
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
   const ITEMS_PER_PAGE = 5
+
+  // Lock background scroll while the appointment detail modal is open.
+  useScrollLock(!!selectedAppt)
   const totalPages = Math.ceil(appointments.length / ITEMS_PER_PAGE)
   const paginatedAppts = appointments.slice((apptPage - 1) * ITEMS_PER_PAGE, apptPage * ITEMS_PER_PAGE)
 
@@ -110,8 +116,7 @@ export default function ProfilePage() {
     if (authLoading || !user) return
     let cancelled = false
     setApptLoading(true)
-    fetch('/api/appointments')
-      .then(r => (r.ok ? r.json() : { docs: [] }))
+    fetchJsonRetry<any>('/api/appointments')
       .then(d => { if (!cancelled) { setAppointments(Array.isArray(d?.docs) ? d.docs : []); setApptPage(1) } })
       .catch(() => {})
       .finally(() => { if (!cancelled) setApptLoading(false) })
@@ -607,7 +612,7 @@ export default function ProfilePage() {
         <div className="fixed inset-0 z-[300] flex items-center justify-center px-4" onClick={() => setSelectedAppt(null)}>
           <div className="absolute inset-0 bg-black/50" />
           <div
-            className="relative bg-[var(--background)] rounded-[22px] shadow-[0_8px_40px_rgba(89,69,34,0.25)] p-6 sm:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="relative bg-[var(--background)] rounded-[22px] shadow-[0_8px_40px_rgba(89,69,34,0.25)] p-6 sm:p-8 w-full max-w-2xl max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -623,11 +628,16 @@ export default function ProfilePage() {
               <h3 className="font-cormorant font-bold text-[28px] text-[#3b2d17] leading-none">{t('detailTitle')}</h3>
             </div>
 
+            {/* Patient ID card — name + HN code + scannable barcode */}
+            <div className="mb-4">
+              <PatientIdCard appt={selectedAppt} />
+            </div>
+
             <span className={`inline-block px-3 py-1 rounded-full font-dm-sans text-[12px] font-medium capitalize mb-4 ${STATUS_STYLES[selectedAppt.status] || 'bg-[var(--background)] text-[#6b5836] border border-[#f0e6cc]'}`}>
               {selectedAppt.status || 'pending'}
             </span>
 
-            <div className="flex flex-col">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
               {[
                 { label: t('detailDate'), value: formatApptDate(selectedAppt.preferred_date), icon: <CalendarDays size={16} /> },
                 { label: t('detailTime'), value: selectedAppt.preferred_time, icon: <Clock size={16} /> },

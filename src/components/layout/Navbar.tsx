@@ -126,7 +126,7 @@ export default function Navbar() {
   const branchNumeral = ({ I: 'I', II: 'II', III: 'III' } as Record<string, string>)[
     selectedBranch?.name.trim().split(/\s+/).pop()?.toUpperCase() ?? ''
   ]
-  const branchLabel = branchNumeral ? `Branch ${branchNumeral}` : branchReady ? 'Branch' : 'Branch I'
+  const branchLabel = branchNumeral ? `${t('branch')} ${branchNumeral}` : branchReady ? t('branch') : `${t('branch')} I`
 
   // Switching branch changes branch-specific content site-wide, so show a brief
   // loading screen and send the user home where the new branch data loads.
@@ -312,10 +312,10 @@ export default function Navbar() {
             <div className="relative shrink-0" ref={langRef}>
               <button
                 onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center justify-center w-[54px] h-[54px] p-[3px] rounded-full bg-[#F5ECD4]/40 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:opacity-90 transition-all duration-200"
-                aria-label="Switch language"
+                className="flex items-center justify-center w-[54px] h-[54px] p-[5px] rounded-[14px] bg-[#F5ECD4]/40 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_rgba(122,95,44,0.08)] hover:opacity-90 transition-all duration-200"
+                aria-label={t('switchLanguage')}
               >
-                <div className="relative w-full h-full rounded-full overflow-hidden">
+                <div className="relative w-full h-full rounded-[9px] overflow-hidden border border-black/5">
                   <Image src={currentLang.flag} alt={currentLang.label} fill sizes="48px" className="object-cover" />
                 </div>
               </button>
@@ -334,7 +334,7 @@ export default function Navbar() {
                         onClick={() => { setLangOpen(false); trackLanguageSwitch(l.code as LocaleCode); startLocaleSwitch(() => router.replace(pathname, { locale: l.code })) }}
                         className={cn('flex items-center gap-3 px-4 py-2 hover:bg-gold-50 transition-colors w-full text-left', locale === l.code ? 'bg-gold-50/50' : '')}
                       >
-                        <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 shadow-sm border border-black/5">
+                        <div className="relative w-6 h-[18px] rounded-[3px] overflow-hidden shrink-0 shadow-sm border border-black/5">
                           <Image src={l.flag} alt={l.label} fill className="object-cover" />
                         </div>
                         <span className={cn('font-dm-sans text-[13px]', locale === l.code ? 'font-semibold text-gold-900' : 'font-medium text-gold-700')}>
@@ -506,7 +506,7 @@ export default function Navbar() {
                 >
                   <Building2 size={16} className="text-[#3b2d17] shrink-0" />
                   <span className="font-dm-sans text-[14px] text-[#3b2d17] leading-none flex-1 text-left truncate">
-                    {selectedBranch?.name ?? (branchReady ? 'Select Branch' : 'Loading branch...')}
+                    {selectedBranch?.name ?? (branchReady ? t('selectBranch') : t('loadingBranch'))}
                   </span>
                   <ChevronDown size={12} className="text-[#7a5f2c] shrink-0" />
                 </button>
@@ -614,8 +614,8 @@ export default function Navbar() {
                 <div className="relative">
                   <button
                     onClick={() => setMobileLangOpen(!mobileLangOpen)}
-                    className="relative w-[34px] h-[34px] rounded-full overflow-hidden ring-2 ring-[#b89148]/60 hover:ring-[#b89148] transition-all"
-                    aria-label="Switch language"
+                    className="relative w-[40px] h-[30px] rounded-[7px] overflow-hidden ring-2 ring-[#b89148]/60 hover:ring-[#b89148] transition-all"
+                    aria-label={t('switchLanguage')}
                   >
                     <Image src={currentLang.flag} alt={currentLang.label} fill className="object-cover" />
                   </button>
@@ -634,7 +634,7 @@ export default function Navbar() {
                             onClick={() => { setMobileLangOpen(false); setMobileOpen(false); trackLanguageSwitch(l.code as LocaleCode); startLocaleSwitch(() => router.replace(pathname, { locale: l.code })) }}
                             className={cn('flex items-center gap-3 px-4 py-2 hover:bg-gold-50 transition-colors w-full text-left', locale === l.code ? 'bg-gold-50/50' : '')}
                           >
-                            <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0 shadow-sm border border-black/5">
+                            <div className="relative w-6 h-[18px] rounded-[3px] overflow-hidden shrink-0 shadow-sm border border-black/5">
                               <Image src={l.flag} alt={l.label} fill className="object-cover" />
                             </div>
                             <span className={cn('font-dm-sans text-[13px]', locale === l.code ? 'font-semibold text-gold-900' : 'font-medium text-gold-700')}>
