@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import { useState, useEffect } from 'react'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { Link } from '@/i18n/routing'
+import { Link, useRouter } from '@/i18n/routing'
 import { useLocale } from 'next-intl'
 import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
 import { fetchTourScenes, type TourScene } from '@/lib/tour-cache'
@@ -123,6 +123,7 @@ function Skeleton() {
 
 export default function ThreeSixtyTourPage() {
   const locale = useLocale()
+  const router = useRouter()
   const { selectedBranch, ready } = useBranch()
   const [scenes, setScenes] = useState<TourScene[]>([])
   const [loading, setLoading] = useState(true)
@@ -143,6 +144,12 @@ export default function ThreeSixtyTourPage() {
   const groupSections = hasGroups ? buildGroups(scenes) : []
   const grid = scenes.length ? buildGrid(scenes) : null
   const hero = scene1?.panoramaUrl || scene1?.thumbnailUrl || '/images/360-page-banner.jpg'
+  // Sub-rooms of scene 1, shown as clickable dots on the hero. The label above
+  // each dot is the destination ROOM NAME (the linked scene's title).
+  const scene1Hotspots = (scene1?.hotspots ?? []).map(h => ({
+    ...h,
+    label: scenes.find(s => s.sceneNumber === h.targetSceneNumber)?.title || h.label,
+  }))
 
   return (
     <SiteLayout>
@@ -162,11 +169,17 @@ export default function ThreeSixtyTourPage() {
               style={{ boxShadow: '0 8px 60px 8px rgba(184,145,72,0.18)', border: '1px solid rgba(184,145,72,0.28)' }}
               onDoubleClick={() => setHeroLocked(false)}
             >
-              <ThreeSixtyViewer src={hero} height="100%" width="100%" interactive={!heroLocked} />
+              <ThreeSixtyViewer
+                src={hero}
+                height="100%"
+                width="100%"
+                interactive={!heroLocked}
+                hotspots={scene1Hotspots}
+                onHotspotClick={(t) => { if (t != null) router.push(`/360-tour/${t}?explore=1` as any) }}
+              />
               {heroLocked && (
-                <div className="absolute inset-0 z-30 bg-black/50 flex flex-col items-center justify-center gap-[12px] select-none backdrop-blur-[2px]">
-                  <span className="font-dm-sans text-[48px] text-white/90 font-bold tracking-widest">360°</span>
-                  <p className="font-dm-sans text-[16px] text-white/70 tracking-wide">Double-click to explore</p>
+                <div className="absolute top-[20px] left-1/2 -translate-x-1/2 z-30 pointer-events-none select-none rounded-full bg-black/45 backdrop-blur-[2px] px-4 py-1.5">
+                  <p className="font-dm-sans text-[12px] sm:text-[13px] text-white/85 tracking-wide">360° · double-click to drag · tap a room to enter</p>
                 </div>
               )}
                 <div className="absolute bottom-0 inset-x-0 pointer-events-none flex flex-col gap-[8px] px-5 sm:px-8 lg:px-[48px] pb-5 sm:pb-8 lg:pb-[40px]"

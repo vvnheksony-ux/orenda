@@ -155,9 +155,10 @@ export async function POST(req: NextRequest) {
   const serviceClient = await createServiceClient()
 
   // Availability guard (only when a specific doctor is chosen), via the
-  // get_doctor_availability RPC:
-  //   1. daily limit — a doctor accepts at most 3 bookings/day, then is locked
-  //   2. no double-booking the same time slot
+  // get_doctor_availability RPC. A slot is only blocked once an existing booking
+  // for it has been APPROVED (status = 'confirmed') by the admin. Pending requests
+  // do NOT lock a slot, so multiple patients may request the same time; the admin
+  // approves one. (No daily-booking limit.)
   if (insertBody.doctor_payload_id && insertBody.preferred_date) {
     try {
       const { data } = await serviceClient.rpc('get_doctor_availability', {
@@ -166,12 +167,6 @@ export async function POST(req: NextRequest) {
       })
       const row = Array.isArray(data) ? data[0] : data
       const booked: string[] = Array.isArray(row?.booked) ? row.booked : []
-      if (row?.is_full) {
-        return NextResponse.json(
-          { error: 'This doctor is fully booked on this date (max 3 per day). Please choose another date or doctor.' },
-          { status: 409 },
-        )
-      }
       if (insertBody.preferred_time && booked.includes(insertBody.preferred_time)) {
         return NextResponse.json(
           { error: 'This time slot is already booked for this doctor. Please choose another time or doctor.' },
