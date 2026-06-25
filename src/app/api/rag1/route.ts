@@ -6,6 +6,7 @@ import { detectIntent } from '@/lib/rag1/detect-intent'
 import { fetchHistory, formatHistory } from '@/lib/rag1/fetch-history'
 import { embedQuery, parallelSearch } from '@/lib/rag1/vector-search'
 import { buildMessages } from '@/lib/rag1/build-prompt'
+import { validateInput, isGreeting, greetingReply } from '@/lib/rag1/validate-input'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
@@ -15,6 +16,12 @@ export async function POST(req: NextRequest) {
 
   if (!message?.trim()) {
     return NextResponse.json({ error: 'Empty message' }, { status: 400 })
+  }
+
+  // Validate + spam check
+  const validation = validateInput(message)
+  if (!validation.valid) {
+    return NextResponse.json({ output: validation.reply }, { status: 200 })
   }
 
   // Upsert session + save user message
@@ -44,10 +51,22 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Greeting short-circuit — skip OpenAI entirely
+  const language = detectLanguage(message)
+  if (isGreeting(message)) {
+    const reply = greetingReply(language)
+    if (sessionId) {
+      try {
+        const db = await createServiceClient()
+        await db.from('ai_chat_messages').insert({ session_id: sessionId, role: 'assistant', content: reply })
+      } catch (e) { console.error('[rag1] greeting save error:', e) }
+    }
+    return NextResponse.json({ output: reply }, { status: 200 })
+  }
+
   // RAG pipeline
   let reply: string
   try {
-    const language = detectLanguage(message)
     const [history, intent, embedding] = await Promise.all([
       sessionId ? fetchHistory(sessionId) : Promise.resolve([]),
       Promise.resolve(detectIntent(message)),
