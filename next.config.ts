@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: '.',
   },
+  serverExternalPackages: [
+    'drizzle-kit',
+    'esbuild',
+    'sharp',
+    'libsql',
+    '@libsql/client',
+  ],
   images: {
     qualities: [75, 90],
     localPatterns: [

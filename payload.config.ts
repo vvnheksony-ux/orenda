@@ -234,7 +234,7 @@ export default buildConfig({
         url.searchParams.set('prepare_threshold', '0')
         return url.toString()
       })(),
-      max: 3,
+      max: 5,
       idleTimeoutMillis: 60000,
       connectionTimeoutMillis: 15000,
       ssl: {
@@ -258,6 +258,13 @@ export default buildConfig({
   plugins: [
     (cfg) => removeParentFields(payloadPluginRBAC({
       autoModifyUsersCollection: true,
+      collections: {
+        permissionActions: { admin: { group: 'Access Control' } },
+        permissionFeatures: { admin: { group: 'Access Control' } },
+        permissions: { admin: { group: 'Access Control' } },
+        roles: { admin: { group: 'Access Control' } },
+        rolesPermissions: { admin: { group: 'Access Control' } },
+      },
       translations: {
         en: {
           components: {
