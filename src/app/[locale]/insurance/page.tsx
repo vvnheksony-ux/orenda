@@ -3,6 +3,7 @@ export const metadata: Metadata = { title: 'Insurance' }
 
 import Image from 'next/image'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import SiteLayout from '@/components/layout/SiteLayout'
 import Reveal from '@/components/shared/Reveal'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
@@ -17,7 +18,7 @@ type InsuranceDoc = {
 
 async function getInsuranceUpdates(locale: string): Promise<{
   insurers: { id: string; name: string; logo: string | null }[]
-  error: string | null
+  error: boolean
 }> {
   // Fetch via the raw-pool API route (the working DB path) instead of Payload's
   // direct connection, which times out on serverless.
@@ -33,7 +34,7 @@ async function getInsuranceUpdates(locale: string): Promise<{
 
     const res = await fetch(`${base}/api/insurance-updates?locale=${locale}`, { cache: 'no-store' })
     if (!res.ok) {
-      return { insurers: [], error: 'We could not load insurance providers right now.' }
+      return { insurers: [], error: true }
     }
     const data = await res.json()
     const docs = (data.docs ?? []) as InsuranceDoc[]
@@ -43,10 +44,10 @@ async function getInsuranceUpdates(locale: string): Promise<{
         name: doc.insuranceProvider || doc.title || '',
         logo: doc.thumbnail ?? null,
       })),
-      error: null,
+      error: false,
     }
   } catch {
-    return { insurers: [], error: 'We could not load insurance providers right now.' }
+    return { insurers: [], error: true }
   }
 }
 
@@ -56,6 +57,7 @@ export default async function InsurancePage({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  const t = await getTranslations('Insurance')
   const { insurers, error } = await getInsuranceUpdates(locale)
 
   return (
@@ -66,11 +68,11 @@ export default async function InsurancePage({
           {/* Hero slider card */}
           <PromotionStyleHero
             imageSrc="/images/insurance/hero-3.jpg"
-            imageAlt="Orienda International Hospital"
-            title="Orienda International Hospital"
+            imageAlt={t('heroTitle')}
+            title={t('heroTitle')}
             lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule and appointment to experience world-class healthcare.',
+              t('heroLine1'),
+              t('heroLine2'),
             ]}
           />
 
@@ -78,17 +80,17 @@ export default async function InsurancePage({
           <div className="flex flex-col gap-[40px] items-center w-full">
             <Reveal className="flex flex-col gap-[12px] text-center w-full">
               <h2 className="font-cormorant font-bold text-[48px] text-[#3b2d17] leading-none w-full">
-                Insurance
+                {t('heading')}
               </h2>
               <p className="font-dm-sans text-[20px] text-[#594522] capitalize w-full">
-                What do we accept?
+                {t('subtitle')}
               </p>
             </Reveal>
 
             {error ? (
               <PageState
-                title="Insurance unavailable"
-                message={error}
+                title={t('unavailableTitle')}
+                message={t('loadError')}
               />
             ) : insurers.length > 0 ? (
               <div className="flex flex-wrap gap-5 lg:gap-[40px] items-stretch justify-center w-full">
@@ -124,8 +126,8 @@ export default async function InsurancePage({
               </div>
             ) : (
               <PageState
-                title="No insurance providers listed yet"
-                message="We do not have any insurance partners published right now."
+                title={t('emptyTitle')}
+                message={t('emptyMessage')}
               />
             )}
           </div>

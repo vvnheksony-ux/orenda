@@ -22,8 +22,8 @@ export default function UserDeleteButton({ user }: { user: CombinedUser }) {
       // If it's not Payload, we assume it's a Supabase operation (profiles)
       const opSlug = 'profiles'
 
-      const endpoint = isPayload 
-        ? `/api/users/${user.id}` 
+      const endpoint = isPayload
+        ? `/payload-api/users/${user.id}`
         : `/api/admin/operations/${opSlug}/${user.id}`
 
       const response = await fetch(endpoint, {

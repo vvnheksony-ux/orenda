@@ -86,7 +86,7 @@ export default function TourSection() {
         </svg>
         <p className="font-cormorant font-bold text-center leading-none mt-[10px]"
           style={{ fontSize: 36, color: '#fbf7ee' }}>
-          Orienda Chamkarmon Hospital
+          {t('hospitalName')}
         </p>
       </div>
 

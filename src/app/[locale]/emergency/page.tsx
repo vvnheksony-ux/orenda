@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import SiteLayout from '@/components/layout/SiteLayout'
 import Reveal from '@/components/shared/Reveal'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 export default function EmergencyPage() {
   const [form, setForm] = useState({ contact_info: '', message: '' })
@@ -13,8 +14,7 @@ export default function EmergencyPage() {
   const [emergencyPhone, setEmergencyPhone] = useState('')
 
   useEffect(() => {
-    fetch('/api/branches')
-      .then(r => r.json())
+    fetchJsonRetry<any>('/api/branches')
       .then(d => { if (d.docs?.[0]?.phone) setEmergencyPhone(d.docs[0].phone) })
       .catch(() => {})
   }, [])

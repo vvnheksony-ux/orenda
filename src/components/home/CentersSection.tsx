@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useBranch } from '@/lib/branch-context'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -24,8 +25,8 @@ export default function CentersSection() {
       setIdx(0)
       try {
         // Bound solely to the Centers of Excellence collection (CMS-managed).
-        const res = await fetch(`/api/centers-of-excellence?locale=${locale}`)
-        const data = await res.json().catch(() => ({}))
+        // Retries the flaky API so the skeleton stays up until data arrives.
+        const data = await fetchJsonRetry<{ docs?: any[] }>(`/api/centers-of-excellence?locale=${locale}`)
         const centers = Array.isArray(data?.docs) ? data.docs : []
         if (!active) return
         setSpecialties(centers.map((c: { id: string; slug?: string; title: string; icon?: string | null; successRate?: string; surgeries?: string; satisfactionsRate?: string }) => ({
@@ -75,7 +76,23 @@ export default function CentersSection() {
     </section>
   )
 
-  if (!selectedBranch || !active) return null
+  if (!selectedBranch) return null
+
+  // No Centers of Excellence records yet — still render the section header so the
+  // homepage keeps its structure; the interactive content shows once CoE records
+  // are published.
+  if (!active) return (
+    <section className="w-full" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="page-shell flex flex-col gap-[12px] lg:gap-[16px] items-center">
+        <h2 className="font-cormorant font-bold text-[36px] lg:text-[48px] text-[#3b2d17] leading-none text-center">
+          {t('title')}
+        </h2>
+        <p className="font-dm-sans text-[18px] lg:text-[20px] text-[#594522] leading-none text-center w-[299px] lg:w-full">
+          {t('subtitle')}
+        </p>
+      </div>
+    </section>
+  )
 
   const STATS = [
     { value: active.successRate       || '99%',  label: t('stat1') },
@@ -102,7 +119,7 @@ export default function CentersSection() {
 
         {/* Main image between L/R chevrons */}
         <div className="flex items-center gap-[12px] w-full">
-          <button onClick={prev} aria-label="Previous" className="shrink-0 w-[32px] h-[32px] flex items-center justify-center text-[#3b2d17] hover:opacity-70 transition-opacity">
+          <button onClick={prev} aria-label={t('prev')} className="shrink-0 w-[32px] h-[32px] flex items-center justify-center text-[#3b2d17] hover:opacity-70 transition-opacity">
             <ChevronLeft className="w-[32px] h-[32px]" strokeWidth={1.5} />
           </button>
 
@@ -119,7 +136,7 @@ export default function CentersSection() {
             </motion.div>
           </AnimatePresence>
 
-          <button onClick={next} aria-label="Next" className="shrink-0 w-[32px] h-[32px] flex items-center justify-center text-[#3b2d17] hover:opacity-70 transition-opacity">
+          <button onClick={next} aria-label={t('next')} className="shrink-0 w-[32px] h-[32px] flex items-center justify-center text-[#3b2d17] hover:opacity-70 transition-opacity">
             <ChevronRight className="w-[32px] h-[32px]" strokeWidth={1.5} />
           </button>
         </div>
@@ -156,7 +173,7 @@ export default function CentersSection() {
 
         {/* LEFT: chevron up + 3 stat bubbles + chevron down */}
         <div className="flex flex-col gap-[24px] xl:gap-[40px] items-center shrink-0">
-          <button onClick={prev} aria-label="Previous" className="w-[40px] h-[40px] flex items-center justify-center text-[#3b2d17] hover:opacity-70 transition-opacity">
+          <button onClick={prev} aria-label={t('prev')} className="w-[40px] h-[40px] flex items-center justify-center text-[#3b2d17] hover:opacity-70 transition-opacity">
             <ChevronUp className="w-[40px] h-[40px]" strokeWidth={1.5} />
           </button>
 
@@ -172,7 +189,7 @@ export default function CentersSection() {
             ))}
           </div>
 
-          <button onClick={next} aria-label="Next" className="w-[40px] h-[40px] flex items-center justify-center text-[#3b2d17] hover:opacity-70 transition-opacity">
+          <button onClick={next} aria-label={t('next')} className="w-[40px] h-[40px] flex items-center justify-center text-[#3b2d17] hover:opacity-70 transition-opacity">
             <ChevronDown className="w-[40px] h-[40px]" strokeWidth={1.5} />
           </button>
         </div>

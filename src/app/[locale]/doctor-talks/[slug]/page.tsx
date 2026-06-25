@@ -10,6 +10,7 @@ import SiteLayout from '@/components/layout/SiteLayout'
 import PageState from '@/components/shared/PageState'
 import ExploreMoreCarousel from '@/components/shared/ExploreMoreCarousel'
 import Reveal from '@/components/shared/Reveal'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface DoctorTalkDetail {
   id: string
@@ -59,11 +60,8 @@ export default function DoctorTalkDetailPage({ params }: { params: Promise<{ slu
     setLoadError('')
 
     Promise.all([
-      fetch(`/api/doctor-talks?locale=${locale}&slug=${encodeURIComponent(slug)}`, { cache: 'no-store', signal: controller.signal }).then(async (r) => {
-        if (!r.ok) throw new Error('We could not load this doctor talk right now.')
-        return r.json()
-      }),
-      fetch(`/api/doctor-talks?locale=${locale}&limit=8`, { cache: 'no-store', signal: controller.signal }).then((r) => r.json()).catch(() => ({ docs: [] })),
+      fetchJsonRetry<any>(`/api/doctor-talks?locale=${locale}&slug=${encodeURIComponent(slug)}`, { signal: controller.signal }),
+      fetchJsonRetry<any>(`/api/doctor-talks?locale=${locale}&limit=8`, { signal: controller.signal }).catch(() => ({ docs: [] })),
     ])
       .then(([detail, all]) => {
         if (controller.signal.aborted) return

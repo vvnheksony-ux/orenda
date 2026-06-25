@@ -26,7 +26,7 @@ async function checkTablePermission(
   const featureCode = operationsTableFeatureMap[table]
   if (!featureCode) return false
   const check = getPermissionAccess({ featureCode, actionCode: 'read', mode: 'none' })
-  const result = await check({ req: { user, payload } } as { req: { user: typeof user; payload: Payload } })
+  const result = await check({ req: { user, payload } } as unknown as Parameters<typeof check>[0])
   return result === true
 }
 
@@ -54,7 +54,7 @@ export default async function OperationsAdminView(props: AdminViewServerProps) {
     req,
     user: user ?? props.user,
     visibleEntities: props.visibleEntities ?? getAllVisibleEntities(props),
-  }
+  } as Parameters<typeof DefaultTemplate>[0]
 
   const payload = props.payload ?? (req as { payload?: Payload } | undefined)?.payload
   const localeCode = normalizeLocale(locale)

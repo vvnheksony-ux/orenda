@@ -9,6 +9,7 @@ import { ArrowRight, ChevronRight } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import Reveal from '@/components/shared/Reveal'
 import PageState from '@/components/shared/PageState'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface NewsItem {
   id: string
@@ -44,11 +45,7 @@ export default function NewsPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch(`/api/news?locale=${locale}&limit=30`)
-      .then(async (r) => {
-        if (!r.ok) throw new Error('We could not load the latest news right now.')
-        return r.json()
-      })
+    fetchJsonRetry<any>(`/api/news?locale=${locale}&limit=30`)
       .then(d => {
         setNews(d?.docs || [])
         setError('')

@@ -2,6 +2,8 @@
 // both render on the home page and previously each fired the same
 // /api/departments request — this dedupes them to a single in-flight fetch per
 // (locale, branch). Each consumer still does its own filtering on the raw docs.
+import { fetchJsonRetry } from './fetch-retry'
+
 export interface DepartmentListItem {
   id: string
   name: string
@@ -18,8 +20,7 @@ export function fetchDepartments(locale: string, branchId: number | string): Pro
   const key = `${locale}:${branchId}`
   let entry = cache.get(key)
   if (!entry) {
-    entry = fetch(`/api/departments?locale=${locale}&branch=${branchId}`)
-      .then(r => r.json())
+    entry = fetchJsonRetry<{ docs?: DepartmentListItem[] }>(`/api/departments?locale=${locale}&branch=${branchId}`)
       .then(d => (Array.isArray(d?.docs) ? d.docs : []) as DepartmentListItem[])
       .catch(() => {
         cache.delete(key) // allow a retry on the next mount

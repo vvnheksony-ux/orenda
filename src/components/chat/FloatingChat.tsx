@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { Send, X, Minimize2, Maximize2, Calendar, User, MapPin, FileText, Plus, ArrowLeft, MessageSquare } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/lib/auth-context'
 import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
 import LoginModal from '@/components/shared/LoginModal'
@@ -22,37 +23,11 @@ type Session = {
   messages: Message[]
 }
 
-const QUICK_ACTIONS: { icon: React.ReactNode; text: string; action: 'booking' | 'navigate' | 'message'; path?: string }[] = [
-  { icon: <Calendar size={11} strokeWidth={2} />, text: 'Book Appointment', action: 'booking' },
-  { icon: <User size={11} strokeWidth={2} />, text: 'Find a Doctor', action: 'navigate', path: '/doctors' },
-  { icon: <MapPin size={11} strokeWidth={2} />, text: 'Locations', action: 'navigate', path: '/contact' },
-  { icon: <FileText size={11} strokeWidth={2} />, text: 'Medical Records', action: 'message' },
-]
-
-const FAQ_GUEST = [
-  'What are your hospital opening hours?',
-  'Which insurance plans do you accept?',
-  'How much does a consultation cost?',
-  'Do you have emergency services 24/7?',
-  'What specialists are available?',
-  'Where are your hospital locations?',
-  'How do I book an appointment?',
-  'What documents do I need for my first visit?',
-  'Do you offer international patient services?',
-  'What languages do your doctors speak?',
-]
-
-const FAQ_USER = [
-  'How do I book an appointment?',
-  'Can I reschedule my appointment?',
-  'How do I view my upcoming appointments?',
-  'Where can I find my medical records?',
-  'How do I find a specialist for my condition?',
-  'What is the cost for a follow-up visit?',
-  'Do you have pharmacy services on site?',
-  'How do I request a referral to a specialist?',
-  'What should I bring to my appointment?',
-  'How do I contact my doctor directly?',
+const QUICK_ACTIONS: { icon: React.ReactNode; textKey: 'quickBooking' | 'quickFindDoctor' | 'quickLocations' | 'quickMedicalRecords'; action: 'booking' | 'navigate' | 'message'; path?: string }[] = [
+  { icon: <Calendar size={11} strokeWidth={2} />, textKey: 'quickBooking', action: 'booking' },
+  { icon: <User size={11} strokeWidth={2} />, textKey: 'quickFindDoctor', action: 'navigate', path: '/doctors' },
+  { icon: <MapPin size={11} strokeWidth={2} />, textKey: 'quickLocations', action: 'navigate', path: '/contact' },
+  { icon: <FileText size={11} strokeWidth={2} />, textKey: 'quickMedicalRecords', action: 'message' },
 ]
 
 const MAX_SESSIONS = 30
@@ -63,9 +38,9 @@ const COOLDOWN_MS = 3000
 const ICON_BTN = 'w-[26px] h-[26px] rounded-full flex items-center justify-center hover:bg-[#f5ecd4] transition-colors text-[#3b2d17]'
 
 const timeNow = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-const INIT_MSG = (): Message => ({
+const INIT_MSG = (content: string): Message => ({
   id: '1', role: 'ai',
-  content: "Hello! I'm your Orienda healthcare assistant. How can I help you today?",
+  content,
   timestamp: timeNow(),
 })
 
@@ -146,6 +121,9 @@ export default function FloatingChat() {
   const router = useRouter()
   const pathname = usePathname()
   const locale = pathname.split('/')[1] || 'en'
+  const t = useTranslations('FloatingChat')
+  const FAQ_GUEST = t.raw('faqGuest') as string[]
+  const FAQ_USER = t.raw('faqUser') as string[]
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [bookingOpen, setBookingOpen] = useState(false)
@@ -156,7 +134,7 @@ export default function FloatingChat() {
   }, [])
   const [view, setView] = useState<'chat' | 'history'>('chat')
   const [inputValue, setInputValue] = useState('')
-  const [messages, setMessages] = useState<Message[]>([INIT_MSG()])
+  const [messages, setMessages] = useState<Message[]>([INIT_MSG(t('greeting'))])
   const [isTyping, setIsTyping] = useState(false)
   const [lastSentAt, setLastSentAt] = useState(0)
   const [faqExpanded, setFaqExpanded] = useState(false)
@@ -246,7 +224,7 @@ export default function FloatingChat() {
   const handleClose = () => {
     saveCurrentSession()
     setIsOpen(false); setView('chat')
-    setMessages([INIT_MSG()]); setInputValue('')
+    setMessages([INIT_MSG(t('greeting'))]); setInputValue('')
   }
 
   const openHistory = () => {
@@ -258,7 +236,7 @@ export default function FloatingChat() {
 
   const handleNewChat = useCallback(() => {
     saveCurrentSession()
-    setMessages([INIT_MSG()])
+    setMessages([INIT_MSG(t('greeting'))])
     setInputValue('')
     const id = newId()
     setActiveSessionId(id)
@@ -306,33 +284,33 @@ export default function FloatingChat() {
               {view === 'chat' && (
                 <button
                   onClick={openHistory}
-                  title="View history"
+                  title={t('viewHistory')}
                   className={ICON_BTN}
                 ><ArrowLeft size={13} /></button>
               )}
               {view === 'history' && (
                 <button
                   onClick={() => setView('chat')}
-                  title="Back to chat"
+                  title={t('backToChat')}
                   className={ICON_BTN}
                 ><ArrowLeft size={13} /></button>
               )}
               <div className="flex flex-col gap-[3px]">
                 <span className="font-cormorant font-bold text-[#3b2d17] leading-none" style={{ fontSize: 20 }}>
-                  {view === 'history' ? 'Chat History' : 'Orienda AI Assistant'}
+                  {view === 'history' ? t('historyTitle') : t('assistantTitle')}
                 </span>
                 <span className="font-dm-sans text-[#7a5f2c] leading-none" style={{ fontSize: 10 }}>
                   {view === 'history'
-                    ? `${sessions.length} conversation${sessions.length !== 1 ? 's' : ''}`
-                    : (user ? `Signed in · ${user.email?.split('@')[0]}` : 'Always here to help')}
+                    ? t('conversations', { count: sessions.length })
+                    : (user ? t('signedIn', { name: user.email?.split('@')[0] ?? '' }) : t('alwaysHere'))}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-[6px]">
-              <button onClick={handleNewChat} title="New chat"
+              <button onClick={handleNewChat} title={t('newChat')}
                 className={ICON_BTN}
               ><Plus size={13} /></button>
-              <button onClick={() => setIsExpanded(v => !v)} title={isExpanded ? 'Shrink' : 'Expand'}
+              <button onClick={() => setIsExpanded(v => !v)} title={isExpanded ? t('shrink') : t('expand')}
                 className={ICON_BTN}
               >{isExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}</button>
               <button onClick={handleClose}
@@ -347,9 +325,9 @@ export default function FloatingChat() {
               {sessions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
                   <MessageSquare size={32} className="text-[#b89148]/30" />
-                  <p className="font-dm-sans text-[13px] text-[#7a5f2c]">No past conversations yet.</p>
+                  <p className="font-dm-sans text-[13px] text-[#7a5f2c]">{t('noConversations')}</p>
                   <button onClick={() => setView('chat')} className="font-dm-sans text-[12px] text-[#b89148] underline">
-                    Start a new chat
+                    {t('startNewChat')}
                   </button>
                 </div>
               ) : (
@@ -363,9 +341,9 @@ export default function FloatingChat() {
                           className="flex-1 text-left rounded-[10px] px-3 py-[10px] hover:bg-[#f5ecd4] transition-colors"
                           style={{ border: '1px solid rgba(184,145,72,0.15)' }}
                         >
-                          <p className="font-dm-sans text-[12px] text-[#3b2d17] font-medium truncate">{s.preview || 'Conversation'}</p>
+                          <p className="font-dm-sans text-[12px] text-[#3b2d17] font-medium truncate">{s.preview || t('conversation')}</p>
                           <p className="font-dm-sans text-[10px] text-[#7a5f2c]/60 mt-[2px]">
-                            {formatDate(s.date)} · {msgCount} message{msgCount !== 1 ? 's' : ''}
+                            {formatDate(s.date)} · {t('messages', { count: msgCount })}
                           </p>
                         </button>
                         <button
@@ -400,12 +378,12 @@ export default function FloatingChat() {
                       <button key={i} onClick={() => {
                         if (a.action === 'booking') { setBookingOpen(true) }
                         else if (a.action === 'navigate' && a.path) { router.push(`/${locale}${a.path}`) }
-                        else { sendMessage(a.text) }
+                        else { sendMessage(t(a.textKey)) }
                         setActiveActions([])
                       }}
                         className="flex items-center gap-[6px] shrink-0 font-dm-sans text-[#3b2d17] hover:opacity-80 transition-opacity whitespace-nowrap"
                         style={{ background: 'rgba(245,236,212,0.30)', borderRadius: 14, padding: '7px 10px', fontSize: 11, boxShadow: '0 1px 4px rgba(59,45,23,0.10)' }}
-                      >{a.icon}{a.text}</button>
+                      >{a.icon}{t(a.textKey)}</button>
                     )
                   })}
                 </div>
@@ -420,7 +398,7 @@ export default function FloatingChat() {
                   return (
                     <div className="flex flex-col gap-[5px] pb-[14px]">
                       <span className="font-dm-sans text-[#7a5f2c]/60 text-[10px] mb-[2px]">
-                        {user ? 'How can I help you today?' : 'Frequently asked'}
+                        {user ? t('howCanIHelp') : t('frequentlyAsked')}
                       </span>
                       {visible.map((q, i) => (
                         <button key={i} onClick={() => sendMessage(q)}
@@ -432,7 +410,7 @@ export default function FloatingChat() {
                         <button onClick={() => setFaqExpanded(v => !v)}
                           className="font-dm-sans text-[#b89148] hover:opacity-80 transition-opacity text-left"
                           style={{ fontSize: 11, padding: '3px 2px' }}
-                        >{faqExpanded ? '▲ Show less' : `▼ Show ${all.length - 5} more`}</button>
+                        >{faqExpanded ? t('showLess') : t('showMore', { count: all.length - 5 })}</button>
                       )}
                     </div>
                   )
@@ -456,7 +434,7 @@ export default function FloatingChat() {
               <div className="shrink-0 px-[18px] pb-[16px] pt-[10px]" style={{ background: 'rgba(249,249,249,0.30)' }}>
                 {userCount >= MAX_MESSAGES && (
                   <p className="font-dm-sans text-[10px] text-center text-[#7a5f2c] mb-1.5">
-                    Message limit reached. Start a new chat with +
+                    {t('messageLimit')}
                   </p>
                 )}
                 {!user && (
@@ -465,14 +443,14 @@ export default function FloatingChat() {
                     style={{ background: 'rgba(245,236,212,0.55)', border: '1px solid rgba(184,145,72,0.16)' }}
                   >
                     <p className="font-dm-sans text-[11px] leading-[1.45] text-[#7a5f2c]">
-                      Sign in to save this chat to your account and keep your history across visits.
+                      {t('signInPrompt')}
                     </p>
                     <button
                       onClick={() => setLoginOpen(true)}
                       className="shrink-0 rounded-full px-3 py-1.5 font-dm-sans text-[11px] font-medium text-white hover:opacity-90 transition-opacity"
                       style={{ background: 'rgba(184,145,72,0.95)' }}
                     >
-                      Sign In
+                      {t('signIn')}
                     </button>
                   </div>
                 )}
@@ -483,7 +461,7 @@ export default function FloatingChat() {
                     type="text" value={inputValue}
                     onChange={e => setInputValue(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSend() } }}
-                    placeholder={isTyping ? 'Waiting...' : 'Ask AI'}
+                    placeholder={isTyping ? t('waiting') : t('askAI')}
                     disabled={isTyping || userCount >= MAX_MESSAGES}
                     className="flex-1 bg-transparent border-none outline-none font-dm-sans text-[#3b2d17] placeholder:text-[#7a5f2c]/60 min-w-0 disabled:opacity-50"
                     style={{ fontSize: 12 }}
@@ -504,7 +482,7 @@ export default function FloatingChat() {
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         onSuccess={() => { setLoginOpen(false); setView('history') }}
-        message="Sign in to save this chat to your account and keep your history across visits."
+        message={t('signInPrompt')}
       />
 
       {/* Trigger pill */}

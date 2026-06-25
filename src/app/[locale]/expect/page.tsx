@@ -1,23 +1,24 @@
+import { getTranslations } from 'next-intl/server'
 import SiteLayout from '@/components/layout/SiteLayout'
 import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
 import Reveal from '@/components/shared/Reveal'
 import { ClipboardCheck, Stethoscope, BedDouble, FileText } from 'lucide-react'
 
-const STEPS = [
-  { icon: ClipboardCheck, title: '1. Registration & Check-in', desc: 'Upon arrival, our reception team will guide you through the registration process. Please have your ID and insurance information ready.' },
-  { icon: Stethoscope, title: '2. Consultation & Triage', desc: 'A nurse will take your vital signs before you meet with your specialist. During consultation, the doctor will review your history and recommend diagnostics if needed.' },
-  { icon: BedDouble, title: '3. Treatment or Admission', desc: 'For outpatient care, you will receive your prescription or treatment plan. For inpatient care, our team will prepare your comfortable recovery room.' },
-  { icon: FileText, title: '4. Billing & Pharmacy', desc: 'After your visit, proceed to the billing counter and pharmacy. Our staff will explain your medications and schedule any necessary follow-up appointments.' }
-]
+const STEP_ICONS = [ClipboardCheck, Stethoscope, BedDouble, FileText]
 
-export default function ExpectPage() {
+export default async function ExpectPage() {
+  const t = await getTranslations('Expect')
+  const STEPS = (t.raw('steps') as { title: string; desc: string }[]).map((step, i) => ({
+    icon: STEP_ICONS[i],
+    ...step,
+  }))
   return (
     <SiteLayout>
       <div className="min-h-screen pt-[90px] lg:pt-[150px] pb-20 px-4 sm:px-6 md:px-10 lg:px-14 xl:px-[80px]" style={{ background: 'var(--background)' }}>
         <div className="max-w-4xl mx-auto">
           <Reveal className="text-center mb-16">
-            <h1 className="font-cormorant font-bold text-[56px] text-gold-900 leading-none mb-3">What to Expect</h1>
-            <p className="font-dm-sans text-[18px] text-gold-800">Your patient journey at Orienda International Hospital.</p>
+            <h1 className="font-cormorant font-bold text-[56px] text-gold-900 leading-none mb-3">{t('heading')}</h1>
+            <p className="font-dm-sans text-[18px] text-gold-800">{t('subtitle')}</p>
           </Reveal>
 
           <div className="relative">
@@ -44,7 +45,7 @@ export default function ExpectPage() {
 
           <div className="mt-16 text-center">
             <BookAppointmentButton
-              label="Book an Appointment"
+              label={t('bookAppointment')}
               className="inline-block px-10 py-4 rounded-full bg-[#b89148] font-dm-sans text-[18px] font-medium text-white transition-opacity hover:opacity-90"
             />
           </div>

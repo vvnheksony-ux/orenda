@@ -1,4 +1,5 @@
-import pg from 'pg'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pg = require('pg')
 
 declare global {
   var __rawPool: any

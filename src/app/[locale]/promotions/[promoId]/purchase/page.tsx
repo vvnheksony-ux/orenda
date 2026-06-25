@@ -9,6 +9,7 @@ import { useLocale } from 'next-intl'
 import { useAuth } from '@/lib/auth-context'
 import LoginModal from '@/components/shared/LoginModal'
 import { useBranch } from '@/lib/branch-context'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface Promo {
   id: string
@@ -49,11 +50,8 @@ export default function PurchasePage({ params }: { params: Promise<{ promoId: st
       try {
         const isNumeric = /^\d+$/.test(promoId)
         const param = isNumeric ? `id=${promoId}` : `slug=${promoId}`
-        const res = await fetch(`/api/promotions?locale=${locale}&${param}`)
-        if (res.ok) {
-          const data = await res.json()
-          if (data) setPromo(data)
-        }
+        const data = await fetchJsonRetry<any>(`/api/promotions?locale=${locale}&${param}`)
+        if (data) setPromo(data)
       } catch {}
       setLoading(false)
     }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/utils/supabase/server'
 
 const WEBHOOK = 'https://n8n.new-wave.io/webhook/orienda_ai_agent'
-const TIMEOUT_MS = 25000
+const TIMEOUT_MS = 60000
 
 function timeFromIso(value: string | null) {
   if (!value) return ''

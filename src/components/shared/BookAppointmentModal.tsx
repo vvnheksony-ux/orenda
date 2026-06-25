@@ -74,9 +74,6 @@ function createInitialForm(defaultService = '') {
   }
 }
 
-const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
-const DAY_NAMES = ['S','M','T','W','T','F','S']
-
 function CustomSelect({ value, onChange, options, placeholder, disabled }: {
   value: string
   onChange: (v: string) => void
@@ -176,6 +173,9 @@ type Service = { id: string; title: string; department?: { id: string; name: str
 export default function BookAppointmentModal({ open, onClose, defaultService = '', defaultDoctorId = '', defaultDepartmentId = '', defaultBranchId = '' }: Props) {
   const locale = useLocale()
   const t = useTranslations('BookAppointmentModal')
+  const MONTH_NAMES = t.raw('months') as string[]
+  const DAY_NAMES = t.raw('dayNames') as string[]
+  const periodText = t.raw('timePeriods') as { label: string; range: string }[]
   const { user, loading: authLoading } = useAuth()
   // After a successful in-modal login, keep the booking modal open so it
   // re-renders into the form instead of closing.
@@ -189,8 +189,10 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [services, setServices] = useState<Service[]>([])
-  // Time slots already taken for the chosen doctor + date — those slots get locked.
-  const [bookedSlots, setBookedSlots] = useState<string[]>([])
+  // Per-slot availability for the chosen doctor + date, keyed by the slot's
+  // `time` value. Comes straight from /api/appointments/availability, which
+  // returns each slot's `available` boolean + reason ('booked' | 'full').
+  const [slotAvail, setSlotAvail] = useState<Record<string, { available: boolean; reason: string | null }>>({})
   // True when the chosen doctor has hit the daily booking limit (3/day) — locks the doctor.
   const [doctorFull, setDoctorFull] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
@@ -291,18 +293,22 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
   // Fetch the doctor's already-booked slots for the chosen date, so taken times get locked.
   useEffect(() => {
-    if (!open || !form.doctor_payload_id) { setBookedSlots([]); setDoctorFull(false); return }
+    if (!open || !form.doctor_payload_id) { setSlotAvail({}); setDoctorFull(false); return }
     const date = dateChoice === 'choose' ? form.preferred_date : getEarliestAppointment().date
-    if (!date) { setBookedSlots([]); setDoctorFull(false); return }
+    if (!date) { setSlotAvail({}); setDoctorFull(false); return }
     let active = true
     fetch(`/api/appointments/availability?doctor=${form.doctor_payload_id}&date=${date}`)
-      .then(r => (r.ok ? r.json() : { booked: [], full: false }))
-      .then(d => {
+      .then(r => (r.ok ? r.json() : { slots: [], full: false }))
+      .then((d: { slots?: { time: string; available: boolean; reason: string | null }[]; full?: boolean }) => {
         if (!active) return
-        setBookedSlots(Array.isArray(d.booked) ? d.booked : [])
+        const map: Record<string, { available: boolean; reason: string | null }> = {}
+        for (const s of (Array.isArray(d.slots) ? d.slots : [])) {
+          map[s.time] = { available: s.available, reason: s.reason ?? null }
+        }
+        setSlotAvail(map)
         setDoctorFull(Boolean(d.full))
       })
-      .catch(() => { if (active) { setBookedSlots([]); setDoctorFull(false) } })
+      .catch(() => { if (active) { setSlotAvail({}); setDoctorFull(false) } })
     return () => { active = false }
   }, [open, form.doctor_payload_id, form.preferred_date, dateChoice])
 
@@ -673,11 +679,14 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                           <ChevronDown size={24} className="text-[#3b2d17]" />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                          {TIME_PERIODS.map(p => {
+                          {TIME_PERIODS.map((p, idx) => {
                             const isActive = form.preferred_time === p.time
+                            const info = slotAvail[p.time]
                             // Locked when the doctor is already booked for this slot (busy).
-                            const isBooked = bookedSlots.includes(p.time)
-                            const available = availablePeriodsForDate(form.preferred_date).some(a => a.id === p.id) && !isBooked
+                            const isBooked = info?.reason === 'booked'
+                            // Server says available (booked/full) AND it's not a past slot today.
+                            const available = (info ? info.available : true)
+                              && availablePeriodsForDate(form.preferred_date).some(a => a.id === p.id)
                             return (
                               <button
                                 key={p.id}
@@ -695,9 +704,9 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
                                   outlineOffset: '-1.1px',
                                 }}
                               >
-                                <span className={`font-dm-sans font-bold text-[12px] leading-3 ${isActive ? 'text-white' : 'text-[#594522]'}`}>{p.label}</span>
+                                <span className={`font-dm-sans font-bold text-[12px] leading-3 ${isActive ? 'text-white' : 'text-[#594522]'}`}>{periodText[idx]?.label ?? p.label}</span>
                                 <span className={`font-dm-sans font-medium text-[10px] leading-3 ${isActive ? 'text-white/80' : 'text-stone-500'}`}>
-                                  {isBooked ? t('slotBooked') : p.range}
+                                  {isBooked ? t('slotBooked') : (periodText[idx]?.range ?? p.range)}
                                 </span>
                               </button>
                             )
@@ -723,7 +732,7 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
                   {doctorFull && (
                     <p className="font-dm-sans text-[14px] text-[#b45309] w-full rounded-[10px] bg-[#fef3e2] px-4 py-3">
-                      This doctor is fully booked on this date (max 3 per day). Please choose another date or doctor.
+                      {t('doctorFullNotice')}
                     </p>
                   )}
 

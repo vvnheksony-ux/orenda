@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useState, useEffect } from 'react'
 import Reveal from '@/components/shared/Reveal'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface NewsItem { id: string; title: string; slug: string; thumbnail: string | null; publishedAt: string }
 
@@ -20,8 +21,8 @@ export default function NewsSection() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/news?locale=${locale}&limit=5`)
-      .then(r => r.json())
+    // Retries the flaky API so the skeleton stays up until the news arrives.
+    fetchJsonRetry<{ docs?: NewsItem[] }>(`/api/news?locale=${locale}&limit=5`)
       .then(d => { if (d?.docs?.length) setNews(d.docs) })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -67,16 +68,16 @@ export default function NewsSection() {
         </Reveal>
 
         {/* Content row */}
-        <div className="flex flex-col md:flex-row gap-[24px] lg:gap-[37px] items-start w-full">
+        <div className="flex flex-col md:flex-row gap-[24px] lg:gap-[37px] items-start md:items-stretch w-full">
 
           {/* Featured card — whole card clickable */}
           <Link
             href={featured?.slug ? newsHref(featured.slug) : '/news'}
-            className="group block w-full md:flex-1 min-w-0 overflow-hidden bg-white rounded-2xl shadow-[0px_2px_8px_2px_rgba(122,95,44,0.12)] transition-shadow hover:shadow-[0px_4px_16px_4px_rgba(122,95,44,0.18)]"
+            className="group flex flex-col w-full md:flex-1 min-w-0 overflow-hidden bg-white rounded-2xl shadow-[0px_2px_8px_2px_rgba(122,95,44,0.12)] transition-shadow hover:shadow-[0px_4px_16px_4px_rgba(122,95,44,0.18)]"
           >
 
-            {/* Image */}
-            <div className="relative w-full h-[280px] lg:h-[440px]">
+            {/* Image — fills the height so the card matches the side column */}
+            <div className="relative w-full h-[280px] md:h-auto md:flex-1 md:min-h-[280px] lg:min-h-[440px]">
               <Image
                 src={featured?.thumbnail ?? '/images/figma-news-1.jpg'}
                 alt={featured?.title ?? t('featuredTitle')}

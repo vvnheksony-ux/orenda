@@ -117,7 +117,7 @@ export default function FeedbackForm() {
               label={t('clinicVisited')}
               value={form.clinic_visited}
               onChange={v => set('clinic_visited', v)}
-              options={['Spine', 'Obstetrics', 'Gynecology', 'General Medicine']}
+              options={t.raw('clinicOptions') as string[]}
               placeholder={t('selectClinic')}
               labelCls={labelCls}
             />
@@ -178,7 +178,7 @@ export default function FeedbackForm() {
               value={form.nationality}
               onChange={v => set('nationality', v)}
               options={[t('nationalityCambodian'), t('nationalityOther')]}
-              placeholder="Select nationality"
+              placeholder={t('selectNationality')}
               labelCls={labelCls}
             />
 
