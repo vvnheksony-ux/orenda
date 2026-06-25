@@ -2,7 +2,7 @@ import OpenAI from 'openai'
 import { createServiceClient } from '@/utils/supabase/server'
 import type { DocType } from './detect-intent'
 
-const EMBEDDING_MODEL = 'text-embedding-ada-002'
+const EMBEDDING_MODEL = 'text-embedding-3-small'
 
 export interface SearchResult {
   id: number
