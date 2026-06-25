@@ -3,12 +3,13 @@
 import Image from 'next/image'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import SiteLayout from '@/components/layout/SiteLayout'
 import Reveal from '@/components/shared/Reveal'
 import { Link } from '@/i18n/routing'
 import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
 import { DoctorProfileCard } from '@/components/shared/DoctorProfileCard'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 
 interface Doctor {
@@ -20,30 +21,28 @@ interface Doctor {
 
 export default function CentersOfExcellencePage() {
   const locale = useLocale()
+  const t = useTranslations('Centers')
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [doctorsLoading, setDoctorsLoading] = useState(true)
   const [testimonials, setTestimonials] = useState<Array<{ text: string; author: string }>>([])
   const [stats, setStats] = useState([
-    { value: '99%', label: 'Success Rate' },
-    { value: '20k+', label: 'Surgeries' },
-    { value: '100%', label: 'Satisfaction' },
+    { value: '99%', label: t('statSuccessRate') },
+    { value: '20k+', label: t('statSurgeries') },
+    { value: '100%', label: t('statSatisfaction') },
   ])
 
   useEffect(() => {
-    fetch(`/api/doctors?locale=${locale}`)
-      .then(r => r.json())
+    fetchJsonRetry<any>(`/api/doctors?locale=${locale}`)
       .then(d => {
         const docs = Array.isArray(d) ? d : (d?.docs || [])
         setDoctors(docs.slice(0, 4))
       })
       .catch(() => {})
       .finally(() => setDoctorsLoading(false))
-    fetch(`/api/testimonials?locale=${locale}`)
-      .then(r => r.json())
+    fetchJsonRetry<any>(`/api/testimonials?locale=${locale}`)
       .then(d => { if (d.docs?.length) setTestimonials(d.docs) })
       .catch(() => {})
-    fetch(`/api/why-stats?locale=${locale}`)
-      .then(r => r.json())
+    fetchJsonRetry<any>(`/api/why-stats?locale=${locale}`)
       .then(d => { if (d.docs?.length) setStats(d.docs.slice(0, 3)) })
       .catch(() => {})
   }, [locale])
@@ -62,17 +61,17 @@ export default function CentersOfExcellencePage() {
                 {/* Breadcrumb */}
                 <Link href="/departments" className="flex items-center gap-[12px] text-[#594522] hover:opacity-70 transition-opacity w-fit">
                   <ArrowLeft size={24} strokeWidth={1.5} />
-                  <span className="font-dm-sans text-[18px] leading-none">Centers of Excellence</span>
+                  <span className="font-dm-sans text-[18px] leading-none">{t('breadcrumb')}</span>
                 </Link>
 
                 {/* Title */}
                 <h1 className="font-cormorant font-bold text-[42px] min-[980px]:text-[clamp(52px,4.2vw,64px)] text-[#3b2d17] leading-none">
-                  Neurosurgery
+                  {t('title')}
                 </h1>
 
                 {/* Description */}
                 <p className="font-dm-sans text-[16px] min-[980px]:text-[clamp(17px,1.3vw,20px)] text-[#3b2d17] leading-relaxed max-w-[680px]">
-                  Our Neurosurgery Center of Excellence combines world-class surgical expertise with groundbreaking technology to treat complex conditions of the brain, spine, and nervous system. Here, advanced precision meets compassionate healing to help you reclaim your quality of life.
+                  {t('description')}
                 </p>
               </div>
 
@@ -80,7 +79,7 @@ export default function CentersOfExcellencePage() {
               <div className="relative shrink-0 w-full min-[980px]:w-[clamp(360px,34vw,520px)] h-[260px] sm:h-[340px] min-[980px]:h-[clamp(340px,29vw,440px)] rounded-[24px] overflow-hidden">
                 <Image
                   src="/images/centers/neurosurgery.jpg"
-                  alt="Neurosurgery"
+                  alt={t('title')}
                   fill
                   className="object-cover"
                   sizes="(max-width: 979px) 100vw, 34vw"
@@ -105,7 +104,7 @@ export default function CentersOfExcellencePage() {
                 ))}
               </div>
               <BookAppointmentButton
-                label="Book Appointment"
+                label={t('bookAppointment')}
                 className="flex items-center justify-center px-[24px] md:px-[clamp(24px,2.1vw,32px)] py-[16px] rounded-[12px] bg-[#b89148] hover:bg-[#9a7a3c] transition-colors font-dm-sans font-semibold text-[18px] md:text-[clamp(18px,1.3vw,20px)] text-[#fbf7ee]"
               />
             </div>
@@ -114,22 +113,22 @@ export default function CentersOfExcellencePage() {
           {/* ── Patient Testimonials ── */}
           <div className="flex flex-col gap-[52px] items-center w-full">
             <Reveal className="flex flex-col gap-[12px] text-center">
-              <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none">Patient Testimonials</h2>
-              <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">Hear from those we&apos;ve had the privilege to care for.</p>
+              <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none">{t('testimonialsHeading')}</h2>
+              <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">{t('testimonialsSubtitle')}</p>
             </Reveal>
 
             {/* 2-column staggered grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px] w-full max-w-[1180px]">
               {/* Left column — 3 cards */}
               <div className="flex flex-col gap-[24px]">
-                {testimonials.slice(0, 3).map((t, i) => (
-                  <TestimonialCard key={i} text={t.text} author={t.author} />
+                {testimonials.slice(0, 3).map((item, i) => (
+                  <TestimonialCard key={i} text={item.text} author={item.author} />
                 ))}
               </div>
               {/* Right column — 2 cards (Figma leaves bottom-right empty) */}
               <div className="flex flex-col gap-[24px]">
-                {testimonials.slice(3, 5).map((t, i) => (
-                  <TestimonialCard key={i} text={t.text} author={t.author} />
+                {testimonials.slice(3, 5).map((item, i) => (
+                  <TestimonialCard key={i} text={item.text} author={item.author} />
                 ))}
               </div>
             </div>
@@ -138,8 +137,8 @@ export default function CentersOfExcellencePage() {
           {/* ── Meet Our Specialist ── */}
           <div className="flex flex-col gap-[48px] items-center w-full">
             <Reveal className="flex flex-col gap-[12px] text-center">
-              <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none">Meet Our Specialist</h2>
-              <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">Meet Our Specialists in This Department</p>
+              <h2 className="font-cormorant font-bold text-[36px] sm:text-[42px] lg:text-[48px] text-[#3b2d17] leading-none">{t('specialistHeading')}</h2>
+              <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">{t('specialistSubtitle')}</p>
             </Reveal>
 
             <div className="grid w-full grid-cols-1 min-[520px]:grid-cols-2 min-[1180px]:grid-cols-4 justify-items-center gap-[18px] min-[1180px]:gap-[clamp(18px,1.85vw,28px)]">
@@ -149,7 +148,7 @@ export default function CentersOfExcellencePage() {
                   ))
                 : doctors.length > 0
                 ? doctors.map(doc => <DoctorProfileCard key={doc.id} id={doc.id} name={doc.name} specialty={doc.specialty} imageUrl={doc.image_url} />)
-                : <p className="font-dm-sans text-[18px] text-[#594522] py-8 text-center w-full">No specialists available.</p>
+                : <p className="font-dm-sans text-[18px] text-[#594522] py-8 text-center w-full">{t('noSpecialists')}</p>
               }
             </div>
 
@@ -157,7 +156,7 @@ export default function CentersOfExcellencePage() {
               href="/doctors"
               className="flex items-center gap-[8px] h-[44px] px-[24px] py-[10px] border border-[#b89148] rounded-[12px] hover:bg-[#b89148] hover:text-white transition-colors group"
             >
-              <span className="font-dm-sans text-[16px] text-[#5c4924] group-hover:text-white transition-colors">See More</span>
+              <span className="font-dm-sans text-[16px] text-[#5c4924] group-hover:text-white transition-colors">{t('seeMore')}</span>
               <ArrowRight size={18} className="text-[#5c4924] group-hover:text-white transition-colors" />
             </Link>
           </div>

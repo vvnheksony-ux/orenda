@@ -9,6 +9,7 @@ import SiteLayout from '@/components/layout/SiteLayout'
 import PageState from '@/components/shared/PageState'
 import ExploreMoreCarousel, { type ExploreMoreItem } from '@/components/shared/ExploreMoreCarousel'
 import { useBranch } from '@/lib/branch-context'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface HealthTipDetail {
   id: string; title: string; slug: string; body: string
@@ -33,11 +34,8 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/health-tips?locale=${locale}&slug=${encodeURIComponent(slug)}`).then(async (r) => {
-        if (!r.ok) throw new Error('We could not load this article right now.')
-        return r.json()
-      }),
-      fetch(`/api/health-tips?locale=${locale}&limit=10`).then(r => r.json()).catch(() => ({ docs: [] })),
+      fetchJsonRetry<any>(`/api/health-tips?locale=${locale}&slug=${encodeURIComponent(slug)}`),
+      fetchJsonRetry<any>(`/api/health-tips?locale=${locale}&limit=10`).catch(() => ({ docs: [] })),
     ]).then(([detail, tips]) => {
       if (detail) setTip(detail)
       setLoadError('')

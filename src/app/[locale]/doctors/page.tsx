@@ -11,6 +11,7 @@ import { useAnalytics } from '@/lib/use-analytics'
 import { useBranch } from '@/lib/branch-context'
 import { DoctorProfileCard } from '@/components/shared/DoctorProfileCard'
 import PageState from '@/components/shared/PageState'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface Doctor {
   id: string
@@ -35,9 +36,8 @@ export default function DoctorsPage() {
     async function fetchDoctors() {
       try {
         const url = `/api/doctors?locale=${encodeURIComponent(locale)}${selectedBranch ? `&branch=${selectedBranch.id}` : ''}`
-        const res = await fetch(url)
-        if (!res.ok) throw new Error('We could not load doctors right now.')
-        setDoctors(await res.json())
+        const data = await fetchJsonRetry<any>(url)
+        setDoctors(data)
         setError('')
       } catch (err) {
         console.error('Failed to fetch doctors:', err)

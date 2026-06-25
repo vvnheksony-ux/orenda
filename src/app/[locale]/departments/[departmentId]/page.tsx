@@ -11,6 +11,7 @@ import { Link } from '@/i18n/routing'
 import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
 import { useBranch } from '@/lib/branch-context'
 import Reveal from '@/components/shared/Reveal'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface Department {
   id: string; name: string; slug: string; icon: string | null; description?: string
@@ -47,8 +48,8 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ dep
     setLoading(true)
     const branchParam = selectedBranch ? `&branch=${selectedBranch.id}` : ''
     Promise.all([
-      fetch(`/api/departments?locale=${locale}${branchParam}`).then(r => r.json()).catch(() => null),
-      fetch(`/api/health-tips?locale=${locale}&limit=8`).then(r => r.json()).catch(() => null),
+      fetchJsonRetry<any>(`/api/departments?locale=${locale}${branchParam}`).catch(() => null),
+      fetchJsonRetry<any>(`/api/health-tips?locale=${locale}&limit=8`).catch(() => null),
     ]).then(([deptData, tipData]: [DepartmentResponse, HealthTipResponse]) => {
       if (!active) return
       const depts = (deptData?.docs || []).filter((dep) => dep.icon)

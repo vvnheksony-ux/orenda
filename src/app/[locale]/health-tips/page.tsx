@@ -2,13 +2,14 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import SiteLayout from '@/components/layout/SiteLayout'
 import { ChevronRight, ChevronLeft, Search } from 'lucide-react'
 import PageState from '@/components/shared/PageState'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import Reveal from '@/components/shared/Reveal'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface HealthTip {
   id: string
@@ -21,22 +22,7 @@ interface HealthTip {
   readingTime: number | null
 }
 
-const CATEGORIES = [
-  { label: 'All', value: '' },
-  { label: 'Nutrition', value: 'nutrition' },
-  { label: 'Exercise', value: 'exercise' },
-  { label: 'Mental Health', value: 'mentalHealth' },
-  { label: 'Preventive Care', value: 'preventiveCare' },
-  { label: 'Chronic Disease', value: 'chronicDisease' },
-]
-
-const POPULAR = [
-  { rank: 1, title: '8h Sleep', desc: 'Getting 8 hours of sleep is essential for feeling refreshed and energized.' },
-  { rank: 2, title: 'Morning Exercise', desc: 'Engaging in 30 minutes of morning exercise boosts metabolism and mood.' },
-  { rank: 3, title: 'Healthy Breakfast', desc: 'Eating a balanced breakfast helps maintain energy levels throughout the day.' },
-  { rank: 4, title: 'Hydration', desc: 'Drinking at least 8 glasses of water daily supports overall health and focus.' },
-  { rank: 5, title: 'Mindfulness Practice', desc: 'Spending 10 minutes on mindfulness or meditation reduces stress and improves clarity.' },
-]
+const CATEGORY_VALUES = ['', 'nutrition', 'exercise', 'mentalHealth', 'preventiveCare', 'chronicDisease']
 
 function formatDate(iso: string) {
   if (!iso) return ''
@@ -47,6 +33,9 @@ const PAGE_SIZE = 9
 
 export default function HealthTipsPage() {
   const locale = useLocale()
+  const t = useTranslations('HealthTips')
+  const CATEGORIES = CATEGORY_VALUES.map((value, i) => ({ value, label: (t.raw('categoryLabels') as string[])[i] }))
+  const POPULAR = (t.raw('popular') as { title: string; desc: string }[]).map((item, i) => ({ rank: i + 1, ...item }))
   const [tips, setTips] = useState<HealthTip[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -64,11 +53,7 @@ export default function HealthTipsPage() {
     setLoading(true)
     setError('')
 
-    fetch(`/api/health-tips?${params}`, { cache: 'no-store', signal: controller.signal })
-      .then(async (r) => {
-        if (!r.ok) throw new Error('We could not load health tips right now.')
-        return r.json()
-      })
+    fetchJsonRetry<any>(`/api/health-tips?${params}`, { signal: controller.signal })
       .then(d => {
         setTips(d?.docs || [])
         setError('')
@@ -76,7 +61,7 @@ export default function HealthTipsPage() {
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
         setTips([])
-        setError(err instanceof Error ? err.message : 'We could not load health tips right now.')
+        setError(t('loadError'))
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false)
@@ -85,8 +70,8 @@ export default function HealthTipsPage() {
     return () => controller.abort()
   }, [locale, category])
 
-  const displayed = tips.filter(t =>
-    !search || [t.title, t.excerpt, t.category].some((value) => value.toLowerCase().includes(search.toLowerCase()))
+  const displayed = tips.filter(item =>
+    !search || [item.title, item.excerpt, item.category].some((value) => value.toLowerCase().includes(search.toLowerCase()))
   )
   const pageCount = Math.max(1, Math.ceil(displayed.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount - 1)
@@ -102,10 +87,10 @@ export default function HealthTipsPage() {
 
           {/* Hero banner */}
           <PromotionStyleHero
-            title="Orienda International Hospital"
+            title={t('heroTitle')}
             lines={[
-              'We dedicated to providing safe and reliable medical services.',
-              'Schedule and appointment to experience world-class healthcare.',
+              t('heroLine1'),
+              t('heroLine2'),
             ]}
           />
 
@@ -119,7 +104,7 @@ export default function HealthTipsPage() {
               <div className="bg-white flex items-center gap-[12px] h-[42px] px-[12px] py-[8px] rounded-[12px] shadow-[0px_4px_15px_rgba(220,189,114,0.12)]">
                 <input
                   className="flex-1 font-dm-sans text-[12px] text-[#3b2d17] placeholder:text-[rgba(89,69,34,0.3)] bg-transparent outline-none"
-                  placeholder="What are we looking for?"
+                  placeholder={t('searchPlaceholder')}
                   value={search}
                   onChange={e => { setSearch(e.target.value); setPage(0) }}
                 />
@@ -144,7 +129,7 @@ export default function HealthTipsPage() {
                     onClick={() => setShowAllCategories(!showAllCategories)}
                     className="w-full flex items-center justify-between p-[24px] bg-[rgba(184,145,72,0.6)] font-dm-sans text-[16px] text-[#3b2d17]"
                   >
-                    <span>{showAllCategories ? 'Show Less' : 'See More'}</span>
+                    <span>{showAllCategories ? t('showLess') : t('seeMore')}</span>
                     <ChevronRight size={16} className={`transition-transform ${showAllCategories ? 'rotate-90' : ''}`} />
                   </button>
                 )}
@@ -152,7 +137,7 @@ export default function HealthTipsPage() {
 
               {/* Popular articles */}
               <div className="bg-white rounded-[16px] shadow-[0px_4px_16px_4px_rgba(122,95,44,0.12)] p-[24px] flex flex-col gap-[12px]">
-                <h3 className="font-cormorant font-semibold text-[24px] text-[#3b2d17] leading-none">Popular Article</h3>
+                <h3 className="font-cormorant font-semibold text-[24px] text-[#3b2d17] leading-none">{t('popularHeading')}</h3>
                 <div className="flex flex-col">
                   {POPULAR.map((item) => (
                     <div key={item.rank} className="flex gap-[8px] items-start py-[16px] border-b border-[#ead6a4]/30 last:border-0">
@@ -173,8 +158,8 @@ export default function HealthTipsPage() {
             <div className="flex-1 min-w-0 flex flex-col gap-[40px]">
               {/* Section heading */}
               <Reveal className="flex flex-col gap-[12px]">
-                <h2 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">Health Tips</h2>
-                <p className="font-dm-sans text-[16px] text-[#594522]">Article for health care tips</p>
+                <h2 className="font-cormorant font-bold text-[32px] text-[#3b2d17] leading-none">{t('heading')}</h2>
+                <p className="font-dm-sans text-[16px] text-[#594522]">{t('subtitle')}</p>
               </Reveal>
 
               {/* Cards grid */}
@@ -194,13 +179,13 @@ export default function HealthTipsPage() {
                 </div>
               ) : error ? (
                 <PageState
-                  title="Health tips unavailable"
+                  title={t('unavailableTitle')}
                   message={error}
                 />
               ) : displayed.length === 0 ? (
                 <PageState
-                  title="No articles found"
-                  message="There are no health tips matching this filter right now."
+                  title={t('emptyTitle')}
+                  message={t('emptyMessage')}
                 />
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[24px] lg:gap-[40px]">
@@ -236,7 +221,7 @@ export default function HealthTipsPage() {
                           href={`/health-tips/${tip.slug}` as '/'}
                           className="flex items-center gap-1 px-[12px] py-[8px] h-[32px] rounded-[12px] border border-[#b89148] font-dm-sans text-[12px] text-[#594522] hover:bg-[var(--background)] transition-colors shrink-0 self-end"
                         >
-                          Read More
+                          {t('readMore')}
                           <ChevronRight size={14} />
                         </Link>
                       </div>
@@ -252,7 +237,7 @@ export default function HealthTipsPage() {
                     type="button"
                     onClick={() => setPage(Math.max(0, currentPage - 1))}
                     disabled={currentPage === 0}
-                    aria-label="Previous"
+                    aria-label={t('prev')}
                     className="flex items-center justify-center size-[40px] rounded-full border border-[#b89148] text-[#594522] hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft size={18} />
@@ -262,7 +247,7 @@ export default function HealthTipsPage() {
                     type="button"
                     onClick={() => setPage(Math.min(pageCount - 1, currentPage + 1))}
                     disabled={currentPage >= pageCount - 1}
-                    aria-label="Next"
+                    aria-label={t('next')}
                     className="flex items-center justify-center size-[40px] rounded-full border border-[#b89148] text-[#594522] hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <ChevronRight size={18} />

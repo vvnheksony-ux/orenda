@@ -9,6 +9,7 @@ import PageState from '@/components/shared/PageState'
 import PromotionStyleHero from '@/components/shared/PromotionStyleHero'
 import Reveal from '@/components/shared/Reveal'
 import { Link } from '@/i18n/routing'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface DoctorTalk {
   id: string
@@ -55,11 +56,7 @@ export default function DoctorTalksPage() {
     setLoading(true)
     setError('')
 
-    fetch(`/api/doctor-talks?locale=${locale}&limit=20`, { cache: 'no-store', signal: controller.signal })
-      .then(async (r) => {
-        if (!r.ok) throw new Error('We could not load doctor talks right now.')
-        return r.json()
-      })
+    fetchJsonRetry<any>(`/api/doctor-talks?locale=${locale}&limit=20`, { signal: controller.signal })
       .then(d => {
         if (controller.signal.aborted) return
         setTalks(d?.docs || [])

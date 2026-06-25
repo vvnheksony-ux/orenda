@@ -1,3 +1,5 @@
+import { fetchJsonRetry } from './fetch-retry'
+
 export interface TourHotspot {
   pitch: number
   yaw: number
@@ -27,8 +29,9 @@ export async function fetchTourScenes(locale: string, branchId?: string | null):
   const key = branchId ? `${locale}:${branchId}` : locale
   if (tourCache[key]?.length) return tourCache[key]
   const qs = branchId ? `locale=${locale}&branch=${branchId}` : `locale=${locale}`
-  const res = await fetch(`/api/tour-scenes?${qs}`)
-  const data = await res.json()
+  // Keep retrying the (sometimes flaky) API until it returns, so callers keep
+  // their skeleton up instead of dropping to an empty/"not found" state.
+  const data = await fetchJsonRetry<unknown>(`/api/tour-scenes?${qs}`)
   const scenes: TourScene[] = Array.isArray(data) ? data : []
   if (scenes.length) {
     tourCache[key] = scenes

@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { Phone, MapPin } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import Reveal from '@/components/shared/Reveal'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface Branch { id: string; name: string; address: string; phone: string; hours: string; image: string | null; mapUrl?: string }
 
@@ -19,8 +20,7 @@ export default function ContactPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch(`/api/branches?locale=${locale}`)
-      .then(r => r.json())
+    fetchJsonRetry<any>(`/api/branches?locale=${locale}`)
       .then(d => { if (d?.docs?.length) setBranches(d.docs) })
       .catch(() => {})
   }, [locale])

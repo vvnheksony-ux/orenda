@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useState, useEffect } from 'react'
 import Reveal from '@/components/shared/Reveal'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface NewsItem { id: string; title: string; slug: string; thumbnail: string | null; publishedAt: string }
 
@@ -20,8 +21,8 @@ export default function NewsSection() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/news?locale=${locale}&limit=5`)
-      .then(r => r.json())
+    // Retries the flaky API so the skeleton stays up until the news arrives.
+    fetchJsonRetry<{ docs?: NewsItem[] }>(`/api/news?locale=${locale}&limit=5`)
       .then(d => { if (d?.docs?.length) setNews(d.docs) })
       .catch(() => {})
       .finally(() => setLoading(false))

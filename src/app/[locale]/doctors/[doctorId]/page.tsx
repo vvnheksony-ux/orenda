@@ -7,6 +7,7 @@ import { Link } from '@/i18n/routing'
 import { ArrowLeft } from 'lucide-react'
 import SiteLayout from '@/components/layout/SiteLayout'
 import BookAppointmentButton from '@/components/shared/BookAppointmentButton'
+import { fetchJsonRetry } from '@/lib/fetch-retry'
 
 interface Doctor {
   id: string
@@ -37,8 +38,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ doctor
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/doctors?id=${doctorId}&locale=${locale}`)
-      .then(r => r.json())
+    fetchJsonRetry<any>(`/api/doctors?id=${doctorId}&locale=${locale}`)
       .then(d => { if (d) setDoctor(d) })
       .catch(() => {})
       .finally(() => setLoading(false))
