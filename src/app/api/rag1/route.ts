@@ -18,8 +18,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Empty message' }, { status: 400 })
   }
 
+  // Detect language early — needed for validation replies
+  const language = detectLanguage(message)
+
   // Validate + spam check
-  const validation = validateInput(message)
+  const validation = validateInput(message, language)
   if (!validation.valid) {
     return NextResponse.json({ output: validation.reply }, { status: 200 })
   }
@@ -52,8 +55,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Greeting short-circuit — skip OpenAI entirely
-  const language = detectLanguage(message)
-  if (isGreeting(message)) {
+  if (isGreeting(message, language)) {
     const reply = greetingReply(language)
     if (sessionId) {
       try {
