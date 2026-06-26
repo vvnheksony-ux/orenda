@@ -32,8 +32,13 @@ const accessControlLinks = [
 ] as const
 
 const systemLinks = [
-  { label: 'AI Chat Bot', path: '/ai-chat-bot' },
   { label: 'Settings', path: '/settings' },
+] as const
+
+const aiChatBotLinks = [
+  { label: 'Upload File', path: '/ai-chat-bot/upload' },
+  { label: 'Price Lists', path: '/ai-chat-bot/price-lists' },
+  { label: 'Static Docs', path: '/ai-chat-bot/static-docs' },
 ] as const
 
 const baseClass = 'nav'
@@ -63,6 +68,9 @@ export default function OriendaPayloadNavClient({
     } else {
       allGroups.push({ entities: [], label: 'Operations' })
     }
+  }
+  if (!allGroups.some((group) => group.label === 'AI Chat Bot')) {
+    allGroups.push({ entities: [], label: 'AI Chat Bot' })
   }
   const { setPreference } = usePreferences()
 
@@ -165,6 +173,23 @@ export default function OriendaPayloadNavClient({
                               className={isActive ? activeNavLinkClass : navLinkClass}
                               href={href}
                               id={`nav-public-${link.path.replace(/\//g, '-')}`}
+                              key={link.path}
+                              prefetch={false}
+                            >
+                              {link.label}
+                            </Link>
+                          )
+                        })
+                      : null}
+                    {label === 'AI Chat Bot'
+                      ? aiChatBotLinks.map((link) => {
+                          const href = formatAdminURL({ adminRoute, path: link.path })
+                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
+                          return (
+                            <Link
+                              className={isActive ? activeNavLinkClass : navLinkClass}
+                              href={href}
+                              id={`nav-ai-chatbot-${link.path.replace(/\//g, '-')}`}
                               key={link.path}
                               prefetch={false}
                             >

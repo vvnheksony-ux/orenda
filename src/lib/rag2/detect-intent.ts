@@ -2,6 +2,7 @@ export type Rag2Collection =
   | 'doctors' | 'departments' | 'branches' | 'service_packages'
   | 'news' | 'health_tips' | 'careers' | 'doctor_talks'
   | 'promotions' | 'faqs' | 'price'
+  | 'about' | 'contact' | 'policy' | 'brand' | 'other'
 
 export type IntentTarget = { collection: Rag2Collection; topK: number }
 
@@ -17,6 +18,10 @@ const PATTERNS: Array<{ re: RegExp; collection: Rag2Collection; topK: number }> 
   { re: /promot|offer|discount|deal|special|sale|ប្រូម៉ូ|优惠|折扣/i, collection: 'promotions', topK: 4 },
   { re: /price|cost|fee|rate|how much|charge|budget|ថ្លៃ|តម្លៃ|价格|费用|多少钱/i, collection: 'price', topK: 6 },
   { re: /faq|question|how|what|why|when|who|answer|explain|tell me|ហ?ើ|什么|怎么|为什么|告诉/i, collection: 'faqs', topK: 5 },
+  { re: /about orienda|who is orienda|what is orienda|history|mission|vision|established|found|overview|background/i, collection: 'about', topK: 3 },
+  { re: /contact|phone number|hotline|how to reach|how to call|email address|call orienda|ទូរសព្ទ|연락|联系方式/i, collection: 'contact', topK: 3 },
+  { re: /policy|payment method|can i pay|insurance accept|refund|cancellation|how to book|regulation|rule/i, collection: 'policy', topK: 3 },
+  { re: /brand|tagline|slogan|our value|our mission|identity|brand story/i, collection: 'brand', topK: 3 },
 ]
 
 const FALLBACK: IntentTarget[] = [
