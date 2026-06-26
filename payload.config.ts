@@ -33,11 +33,13 @@ import { AnalyticsEvents } from './src/payload/collections/AnalyticsEvents'
 import { KpiSnapshots } from './src/payload/collections/KpiSnapshots'
 import { GaReports } from './src/payload/collections/GaReports'
 import { AuditLogs } from './src/payload/collections/AuditLogs'
+import { Partners } from './src/payload/collections/Partners'
 
 import { SiteSettings } from './src/payload/globals/SiteSettings'
 import { OperationalSettings } from './src/payload/globals/OperationalSettings'
 import { Navigation } from './src/payload/globals/Navigation'
 import { SocialLinks } from './src/payload/globals/SocialLinks'
+import { Hero } from './src/payload/globals/Hero'
 
 import {
   healthEndpoint,
@@ -207,6 +209,7 @@ export default buildConfig({
     KpiSnapshots,
     GaReports,
     AuditLogs,
+    Partners,
     // ],
   ].map(withOriendaListView),
   globals: [
@@ -214,6 +217,7 @@ export default buildConfig({
     OperationalSettings,
     Navigation,
     SocialLinks,
+    Hero,
   ].map((g) => ({
     ...g,
     admin: {

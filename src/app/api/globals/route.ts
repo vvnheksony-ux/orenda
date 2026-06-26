@@ -3,7 +3,7 @@ import { payloadFetch } from '@/lib/payload-api'
 
 export const runtime = 'nodejs'
 
-const ALLOWED = ['siteSettings', 'operationalSettings', 'navigation', 'socialLinks']
+const ALLOWED = ['siteSettings', 'operationalSettings', 'navigation', 'socialLinks', 'hero']
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)

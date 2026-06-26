@@ -28,11 +28,13 @@ export const collectionFeatureMap: Record<string, string> = {
   kpiSnapshots: 'kpiSnapshots',
   gaReports: 'gaReports',
   auditLogs: 'auditLogs',
+  partners: 'partners',
   content: 'content',
   navigation: 'navigation',
   socialLinks: 'socialLinks',
   siteSettings: 'siteSettings',
   operationalSettings: 'operationalSettings',
+  hero: 'hero',
 }
 
 /**

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { Send, Star } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from '@/i18n/routing'
 
@@ -13,9 +13,45 @@ function dispatchAskAI(message: string) {
 
 export default function HeroSection() {
   const t = useTranslations('HeroSection')
+  const locale = useLocale()
   const [query, setQuery] = useState('')
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  // Admin-editable hero content (Payload `hero` global). Falls back to the
+  // built-in video + translated text when unset, so the layout never changes.
+  type HeroData = {
+    backgroundType?: string
+    videoUrl?: string
+    imageUrl?: string
+    testimonialName?: string
+    testimonialRole?: string
+    testimonialQuote?: string
+  }
+  const [hero, setHero] = useState<HeroData | null>(null)
+  useEffect(() => {
+    let active = true
+    fetch(`/api/globals?type=hero&locale=${locale}`)
+      .then(r => r.json())
+      .then((d: Record<string, unknown> | null) => {
+        if (!active || !d || !Object.keys(d).length) return
+        const media = (v: unknown) => (v && typeof v === 'object' && 'url' in v ? (v as { url?: string }).url : undefined)
+        setHero({
+          backgroundType: typeof d.backgroundType === 'string' ? d.backgroundType : undefined,
+          videoUrl: media(d.backgroundVideo),
+          imageUrl: media(d.backgroundImage),
+          testimonialName: typeof d.testimonialName === 'string' ? d.testimonialName : undefined,
+          testimonialRole: typeof d.testimonialRole === 'string' ? d.testimonialRole : undefined,
+          testimonialQuote: typeof d.testimonialQuote === 'string' ? d.testimonialQuote : undefined,
+        })
+      })
+      .catch(() => {})
+    return () => { active = false }
+  }, [locale])
+
+  const heroVideoSrc = hero?.videoUrl || '/videos/hero.mp4'
+  const heroPoster = hero?.imageUrl || '/images/hero-poster.jpg'
+  const heroUseImage = hero?.backgroundType === 'image' && !!hero?.imageUrl
 
   // Pause the background video when the hero scrolls out of view — an
   // always-decoding autoplay video is a big source of scroll jank lower down.
@@ -47,18 +83,28 @@ export default function HeroSection() {
   return (
     <section className="relative w-full bg-[#dac4a8] z-[10] h-[440px] sm:h-[90vh] sm:min-h-[600px] lg:min-h-[750px] sm:max-h-[1000px]">
 
-      {/* Hero video background */}
-      <video
-        ref={videoRef}
-        src="/videos/hero.mp4"
-        poster="/images/hero-poster.jpg"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        className="absolute inset-0 w-full h-full object-cover object-center"
-      />
+      {/* Hero background — admin-editable video or image (falls back to default video) */}
+      {heroUseImage ? (
+        <Image
+          src={heroPoster}
+          alt=""
+          fill
+          priority
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          src={heroVideoSrc}
+          poster={heroPoster}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+      )}
 
       {/* Rating card — hidden on mobile */}
       <div
@@ -72,10 +118,10 @@ export default function HeroSection() {
         <div className="flex flex-col gap-[6px]">
           <div className="flex flex-col gap-[2px]">
             <p className="font-dm-sans text-[16px] font-medium text-[#2c241b] capitalize leading-normal">
-              {t('testimonialName')}
+              {hero?.testimonialName || t('testimonialName')}
             </p>
             <p className="font-dm-sans text-[14px] text-[#6b5a45] capitalize leading-normal">
-              {t('testimonialRole')}
+              {hero?.testimonialRole || t('testimonialRole')}
             </p>
           </div>
           <div className="flex items-center gap-[2px]">
@@ -85,7 +131,7 @@ export default function HeroSection() {
           </div>
         </div>
         <p className="font-dm-sans text-[12px] text-[#8c7454] capitalize leading-normal overflow-hidden text-ellipsis whitespace-nowrap pt-1">
-          {t('testimonialQuote')}
+          {hero?.testimonialQuote || t('testimonialQuote')}
         </p>
       </div>
 
