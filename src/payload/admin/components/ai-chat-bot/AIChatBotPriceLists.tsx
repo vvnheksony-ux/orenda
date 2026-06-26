@@ -191,17 +191,18 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
               <table className="w-full text-xs">
                 <thead className="bg-[#efebe4] text-[#716b60]">
                   <tr>
-                    <th className="px-3 py-2 text-left font-bold w-8">Col</th>
-                    <th className="px-3 py-2 text-left font-bold">Header name in row 1</th>
-                    <th className="px-3 py-2 text-left font-bold text-[#8c8982]">Note</th>
+                    <th className="px-3 py-2 text-left font-bold w-10">Col</th>
+                    <th className="px-3 py-2 text-left font-bold">Header · Note</th>
                   </tr>
                 </thead>
                 <tbody>
                   {COLUMNS.map(c => (
                     <tr className="border-t border-[#eee8dd]" key={c.col}>
-                      <td className="px-3 py-2 font-mono font-bold text-[#b89148]">{c.col}</td>
-                      <td className="px-3 py-2 font-medium text-[#393733]">{c.name}</td>
-                      <td className="px-3 py-2 text-[#8c8982]">{c.note}</td>
+                      <td className="px-3 py-2.5 font-mono font-bold text-[#b89148] align-top">{c.col}</td>
+                      <td className="px-3 py-2.5">
+                        <span className="font-semibold text-[#393733]">{c.name}</span>
+                        <span className="ml-2 text-[#8c8982]">— {c.note}</span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
