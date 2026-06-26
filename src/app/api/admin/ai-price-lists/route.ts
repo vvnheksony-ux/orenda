@@ -42,6 +42,12 @@ async function embedPrice(id: string, row: Record<string, unknown>) {
     metadata: {
       doc_type:                'price',
       source_collection:       'price',
+      title:                   row.service_name_en ?? null,
+      locale:                  'en',
+      locale_fallback:         false,
+      chunk_index:             0,
+      total_chunks:            1,
+      embed_model:             EMBEDDING_MODEL,
       service_en:              row.service_name_en ?? null,
       service_km:              row.service_name_km ?? null,
       department:              row.department ?? null,
@@ -49,8 +55,6 @@ async function embedPrice(id: string, row: Record<string, unknown>) {
       price_foreign:           row.price_foreign ?? null,
       price_emergency_khmer:   row.price_emergency_khmer ?? null,
       price_emergency_foreign: row.price_emergency_foreign ?? null,
-      locale:                  'en',
-      embed_model:             EMBEDDING_MODEL,
     },
     embedding: res.data[0].embedding,
   })

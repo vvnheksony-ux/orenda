@@ -104,11 +104,13 @@ export async function POST(req: NextRequest) {
         metadata: {
           doc_type:          'other',
           source_collection: 'other',
-          filename:          file.name,
+          title:             file.name.replace(/\.[^.]+$/, ''),
+          locale:            'en',
+          locale_fallback:   false,
           chunk_index:       i + j,
           total_chunks:      chunks.length,
-          locale:            'en',
           embed_model:       EMBEDDING_MODEL,
+          filename:          file.name,
         },
         embedding: res.data[j].embedding,
       })

@@ -66,14 +66,15 @@ export async function ingestRecord(
       locale,
       content:           text,
       metadata: {
-        doc_id:            docId,
-        collection:        config.sourceCollection,
+        doc_type:          config.sourceCollection,
         source_collection: config.sourceCollection,
         title,
         locale,
         locale_fallback:   isLocFallback,
         chunk_index:       0,
+        total_chunks:      1,
         embed_model:       EMBEDDING_MODEL,
+        doc_id:            docId,
       },
       embedding,
     })

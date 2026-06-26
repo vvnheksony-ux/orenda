@@ -63,8 +63,11 @@ export async function PUT(req: NextRequest) {
         metadata: {
           doc_type:          docType,
           source_collection: docType,
+          title:             docType.charAt(0).toUpperCase() + docType.slice(1),
           locale,
+          locale_fallback:   false,
           chunk_index:       0,
+          total_chunks:      1,
           embed_model:       EMBEDDING_MODEL,
         },
         embedding: res.data[0].embedding,
