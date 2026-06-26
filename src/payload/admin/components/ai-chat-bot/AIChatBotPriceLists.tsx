@@ -203,10 +203,14 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
             {/* Spreadsheet-style horizontal preview */}
             <div className="mb-5 rounded-xl border border-[#ccc5bb] overflow-x-auto">
               <table className="w-full min-w-[860px] text-sm border-collapse">
+                <colgroup>
+                  <col style={{ width: '28px', minWidth: '28px', maxWidth: '28px' }} />
+                  {COLUMNS.map(c => <col key={c.col} />)}
+                </colgroup>
                 {/* Column letter row */}
                 <thead>
                   <tr className="bg-[#3b2f1e] text-white">
-                    <th className="w-7 border-r border-white/20 px-1 py-2 text-[10px] font-normal text-white/40" />
+                    <th className="border-r border-white/20 px-0 py-2" />
                     {COLUMNS.map(c => (
                       <th className="border-r border-white/20 px-3 py-2 text-center font-bold last:border-r-0" key={c.col}>
                         {c.col}
@@ -217,7 +221,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
                 <tbody>
                   {/* Row 1: header names */}
                   <tr className="bg-[#f7f4ef]">
-                    <td className="border-r border-b border-[#ccc5bb] bg-[#ede8e1] px-1 py-3 text-center font-mono text-[9px] text-[#8c8982]">1</td>
+                    <td className="border-r border-b border-[#ccc5bb] bg-[#ede8e1] px-0 py-3 text-center font-mono text-[9px] text-[#8c8982]">1</td>
                     {COLUMNS.map(c => (
                       <td className="border-r border-b border-[#ccc5bb] px-3 py-3 last:border-r-0" key={c.col}>
                         <div className="font-bold text-[#2b2823]">{c.name}</div>
@@ -229,7 +233,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
                   {/* Example data rows */}
                   {EXAMPLE_ROWS.map((row, i) => (
                     <tr className="bg-white" key={i}>
-                      <td className="border-r border-b border-[#ccc5bb] bg-[#ede8e1] px-1 py-2.5 text-center font-mono text-[9px] text-[#8c8982]">{i + 2}</td>
+                      <td className="border-r border-b border-[#ccc5bb] bg-[#ede8e1] px-0 py-2.5 text-center font-mono text-[9px] text-[#8c8982]">{i + 2}</td>
                       {row.map((val, j) => (
                         <td className="border-r border-b border-[#ccc5bb] px-3 py-2.5 text-[#393733] last:border-r-0" key={j}>
                           {val}
