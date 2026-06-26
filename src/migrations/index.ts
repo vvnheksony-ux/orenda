@@ -24,6 +24,8 @@ import * as migration_20260624_064704_centers_of_excellence from './20260624_064
 import * as migration_20260624_070000_add_promotion_price from './20260624_070000_add_promotion_price';
 import * as migration_20260625_000000_add_created_by_to_users from './20260625_000000_add_created_by_to_users';
 import * as migration_20260625_062041_rbac_created_by_columns from './20260625_062041_rbac_created_by_columns';
+import * as migration_20260625_120000_add_operations_permission_matrix_features from './20260625_120000_add_operations_permission_matrix_features';
+import * as migration_20260626_063408_partners_hero from './20260626_063408_partners_hero';
 
 export const migrations = [
   {
@@ -154,6 +156,16 @@ export const migrations = [
   {
     up: migration_20260625_062041_rbac_created_by_columns.up,
     down: migration_20260625_062041_rbac_created_by_columns.down,
-    name: '20260625_062041_rbac_created_by_columns'
+    name: '20260625_062041_rbac_created_by_columns',
+  },
+  {
+    up: migration_20260625_120000_add_operations_permission_matrix_features.up,
+    down: migration_20260625_120000_add_operations_permission_matrix_features.down,
+    name: '20260625_120000_add_operations_permission_matrix_features',
+  },
+  {
+    up: migration_20260626_063408_partners_hero.up,
+    down: migration_20260626_063408_partners_hero.down,
+    name: '20260626_063408_partners_hero'
   },
 ];

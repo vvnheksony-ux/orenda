@@ -92,6 +92,7 @@ export interface Config {
     kpiSnapshots: KpiSnapshot;
     gaReports: GaReport;
     auditLogs: AuditLog;
+    partners: Partner;
     'permission-actions': PermissionAction;
     'permission-features': PermissionFeature;
     permissions: Permission;
@@ -133,6 +134,7 @@ export interface Config {
     kpiSnapshots: KpiSnapshotsSelect<false> | KpiSnapshotsSelect<true>;
     gaReports: GaReportsSelect<false> | GaReportsSelect<true>;
     auditLogs: AuditLogsSelect<false> | AuditLogsSelect<true>;
+    partners: PartnersSelect<false> | PartnersSelect<true>;
     'permission-actions': PermissionActionsSelect<false> | PermissionActionsSelect<true>;
     'permission-features': PermissionFeaturesSelect<false> | PermissionFeaturesSelect<true>;
     permissions: PermissionsSelect<false> | PermissionsSelect<true>;
@@ -152,12 +154,14 @@ export interface Config {
     operationalSettings: OperationalSetting;
     navigation: Navigation;
     socialLinks: SocialLink;
+    hero: Hero;
   };
   globalsSelect: {
     siteSettings: SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     operationalSettings: OperationalSettingsSelect<false> | OperationalSettingsSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     socialLinks: SocialLinksSelect<false> | SocialLinksSelect<true>;
+    hero: HeroSelect<false> | HeroSelect<true>;
   };
   locale: 'en' | 'km' | 'zh';
   widgets: {
@@ -1198,6 +1202,28 @@ export interface AuditLog {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "partners".
+ */
+export interface Partner {
+  id: number;
+  name: string;
+  logo: number | Media;
+  /**
+   * Optional link to the partner website.
+   */
+  website?: string | null;
+  /**
+   * Lower numbers appear first.
+   */
+  order?: number | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "permission-actions".
  */
 export interface PermissionAction {
@@ -1373,6 +1399,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'auditLogs';
         value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'partners';
+        value: number | Partner;
       } | null)
     | ({
         relationTo: 'permission-actions';
@@ -2041,6 +2071,21 @@ export interface AuditLogsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "partners_select".
+ */
+export interface PartnersSelect<T extends boolean = true> {
+  name?: T;
+  logo?: T;
+  website?: T;
+  order?: T;
+  status?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "permission-actions_select".
  */
 export interface PermissionActionsSelect<T extends boolean = true> {
@@ -2225,6 +2270,30 @@ export interface SocialLink {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hero".
+ */
+export interface Hero {
+  id: number;
+  /**
+   * Choose whether the homepage hero shows a background video or a still image.
+   */
+  backgroundType?: ('video' | 'image') | null;
+  /**
+   * Background video (used when type is Video). Leave empty to keep the default.
+   */
+  backgroundVideo?: (number | null) | Media;
+  /**
+   * Background image (used when type is Image, or as the video poster).
+   */
+  backgroundImage?: (number | null) | Media;
+  testimonialName?: string | null;
+  testimonialRole?: string | null;
+  testimonialQuote?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "siteSettings_select".
  */
 export interface SiteSettingsSelect<T extends boolean = true> {
@@ -2298,6 +2367,21 @@ export interface SocialLinksSelect<T extends boolean = true> {
   instagram?: T;
   youtube?: T;
   tiktok?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hero_select".
+ */
+export interface HeroSelect<T extends boolean = true> {
+  backgroundType?: T;
+  backgroundVideo?: T;
+  backgroundImage?: T;
+  testimonialName?: T;
+  testimonialRole?: T;
+  testimonialQuote?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

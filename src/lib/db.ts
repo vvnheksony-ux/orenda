@@ -1,5 +1,10 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pg = require('pg')
+// `pg` ships an "exports" field without types, so bundler module-resolution
+// can't pick up @types/pg for a normal import; and the project is ESM
+// ("type":"module"), so a bare require() is undefined at runtime in the Payload
+// CLI. createRequire works in both the bundled Next build and the ESM CLI.
+import { createRequire } from 'node:module'
+const nodeRequire = createRequire(import.meta.url)
+const pg = nodeRequire('pg')
 
 declare global {
   var __rawPool: any
