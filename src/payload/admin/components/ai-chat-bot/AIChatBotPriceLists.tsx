@@ -180,7 +180,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
       {/* Upload modal */}
       {showUploadModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2" onClick={e => { if (e.target === e.currentTarget) setShowUploadModal(false) }}>
-          <div className="relative w-full max-w-6xl rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="relative w-[95vw] max-w-[1400px] rounded-2xl bg-white p-6 shadow-2xl">
             <button
               className="absolute right-4 top-4 rounded-lg border-none bg-transparent p-1 text-[#8c8982] hover:text-[#393733]"
               onClick={() => setShowUploadModal(false)}
@@ -200,7 +200,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
                 {/* Column letter row */}
                 <thead>
                   <tr className="bg-[#3b2f1e] text-white">
-                    <th className="w-10 border-r border-white/20 px-3 py-2" />
+                    <th className="w-5 border-r border-white/20 px-1 py-2" />
                     {COLUMNS.map(c => (
                       <th className="border-r border-white/20 px-3 py-2 text-center font-bold last:border-r-0" key={c.col}>
                         {c.col}
@@ -211,7 +211,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
                 <tbody>
                   {/* Row 1: header names */}
                   <tr className="bg-[#f7f4ef]">
-                    <td className="border-r border-t border-[#e7dfd5] px-3 py-2 text-center font-mono text-xs text-[#8c8982]">1</td>
+                    <td className="border-r border-t border-[#e7dfd5] px-1 py-2 text-center font-mono text-[10px] text-[#8c8982]">1</td>
                     {COLUMNS.map(c => (
                       <td className="border-r border-t border-[#e7dfd5] px-3 py-3 last:border-r-0" key={c.col}>
                         <div className="font-bold text-[#2b2823]">{c.name}</div>
@@ -222,7 +222,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
                   </tr>
                   {/* Row 2: example values */}
                   <tr className="bg-white">
-                    <td className="border-r border-t border-[#e7dfd5] px-3 py-2 text-center font-mono text-xs text-[#8c8982]">2</td>
+                    <td className="border-r border-t border-[#e7dfd5] px-1 py-2 text-center font-mono text-[10px] text-[#8c8982]">2</td>
                     {COLUMNS.map(c => (
                       <td className="border-r border-t border-[#e7dfd5] px-3 py-3 text-[#393733] last:border-r-0" key={c.col}>
                         {c.example}
