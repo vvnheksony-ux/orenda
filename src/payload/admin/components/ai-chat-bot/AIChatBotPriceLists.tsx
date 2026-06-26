@@ -196,13 +196,13 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
 
             {/* Spreadsheet-style horizontal preview */}
             <div className="mb-5 rounded-xl border border-[#e7dfd5] overflow-hidden">
-              <table className="w-full text-[11px] border-collapse table-fixed">
+              <table className="w-full text-sm border-collapse">
                 {/* Column letter row */}
                 <thead>
-                  <tr className="bg-[#efebe4]">
-                    <th className="w-6 border-r border-[#e7dfd5] px-1 py-1.5" />
+                  <tr className="bg-[#3b2f1e] text-white">
+                    <th className="w-10 border-r border-white/20 px-3 py-2" />
                     {COLUMNS.map(c => (
-                      <th className="border-r border-[#e7dfd5] px-1 py-1.5 text-center font-bold text-[#b89148] last:border-r-0" key={c.col}>
+                      <th className="border-r border-white/20 px-3 py-2 text-center font-bold last:border-r-0" key={c.col}>
                         {c.col}
                       </th>
                     ))}
@@ -211,20 +211,20 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
                 <tbody>
                   {/* Row 1: header names */}
                   <tr className="bg-[#f7f4ef]">
-                    <td className="border-r border-t border-[#e7dfd5] px-1 py-1 text-center font-mono text-[#8c8982] text-[10px]">1</td>
+                    <td className="border-r border-t border-[#e7dfd5] px-3 py-2 text-center font-mono text-xs text-[#8c8982]">1</td>
                     {COLUMNS.map(c => (
-                      <td className="border-r border-t border-[#e7dfd5] px-1.5 py-1.5 last:border-r-0" key={c.col}>
-                        <div className="font-bold text-[#393733] leading-tight">{c.name}</div>
-                        {'sub' in c && <div className="text-[#716b60] leading-tight mt-0.5">{c.sub}</div>}
-                        <div className="text-[#8c8982] leading-tight mt-0.5 italic">{c.note}</div>
+                      <td className="border-r border-t border-[#e7dfd5] px-3 py-3 last:border-r-0" key={c.col}>
+                        <div className="font-bold text-[#2b2823]">{c.name}</div>
+                        {'sub' in c && <div className="text-[#716b60] text-xs mt-0.5">{c.sub}</div>}
+                        <div className="text-[#8c8982] text-xs mt-1 italic">{c.note}</div>
                       </td>
                     ))}
                   </tr>
                   {/* Row 2: example values */}
                   <tr className="bg-white">
-                    <td className="border-r border-t border-[#e7dfd5] px-1 py-1 text-center font-mono text-[#8c8982] text-[10px]">2</td>
+                    <td className="border-r border-t border-[#e7dfd5] px-3 py-2 text-center font-mono text-xs text-[#8c8982]">2</td>
                     {COLUMNS.map(c => (
-                      <td className="border-r border-t border-[#e7dfd5] px-1.5 py-2 text-[#393733] last:border-r-0" key={c.col}>
+                      <td className="border-r border-t border-[#e7dfd5] px-3 py-3 text-[#393733] last:border-r-0" key={c.col}>
                         {c.example}
                       </td>
                     ))}
