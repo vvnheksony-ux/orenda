@@ -17,6 +17,12 @@ async function extractText(buffer: Buffer, filename: string): Promise<string> {
     const result = await pdfParse(buffer)
     return result.text
   }
+  if (ext === 'docx' || ext === 'doc') {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mammoth = require('mammoth')
+    const result = await mammoth.extractRawText({ buffer })
+    return result.value
+  }
   return buffer.toString('utf-8')
 }
 

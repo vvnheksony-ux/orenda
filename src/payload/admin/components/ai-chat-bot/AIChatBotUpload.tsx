@@ -48,7 +48,7 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
       <div className="rounded-2xl border-2 border-dashed border-[#e7dfd5] bg-white p-10 text-center">
         <FileText className="mx-auto mb-3 text-[#c2b49d]" size={40} />
         <p className="mb-1 text-sm font-bold text-[#2b2823]">Upload a miscellaneous document</p>
-        <p className="mb-4 text-xs text-[#716b60]">PDF, TXT, MD · max 10MB · tagged as &quot;other&quot; in AI search</p>
+        <p className="mb-4 text-xs text-[#716b60]">PDF, DOCX, DOC, TXT, MD · max 10MB · tagged as &quot;other&quot; in AI search</p>
         <button
           className="inline-flex h-12 items-center gap-2 rounded-xl border-none bg-[#b89148] px-6 text-sm font-bold text-white hover:bg-[#a37d3e] disabled:opacity-60"
           disabled={isPending}
@@ -57,7 +57,7 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
         >
           <Upload size={16} /> {isPending ? 'Uploading...' : 'Choose File'}
         </button>
-        <input accept=".pdf,.txt,.md" className="hidden" onChange={onFileSelect} ref={fileInputRef} type="file" />
+        <input accept=".pdf,.txt,.md,.docx,.doc" className="hidden" onChange={onFileSelect} ref={fileInputRef} type="file" />
       </div>
 
       {uploads.length > 0 ? (
