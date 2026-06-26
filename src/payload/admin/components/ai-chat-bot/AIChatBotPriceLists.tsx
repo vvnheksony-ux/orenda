@@ -179,8 +179,8 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
 
       {/* Upload modal */}
       {showUploadModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={e => { if (e.target === e.currentTarget) setShowUploadModal(false) }}>
-          <div className="relative w-full max-w-5xl rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2" onClick={e => { if (e.target === e.currentTarget) setShowUploadModal(false) }}>
+          <div className="relative w-full max-w-6xl rounded-2xl bg-white p-6 shadow-2xl">
             <button
               className="absolute right-4 top-4 rounded-lg border-none bg-transparent p-1 text-[#8c8982] hover:text-[#393733]"
               onClick={() => setShowUploadModal(false)}
@@ -195,8 +195,8 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
             </p>
 
             {/* Spreadsheet-style horizontal preview */}
-            <div className="mb-5 rounded-xl border border-[#e7dfd5] overflow-hidden">
-              <table className="w-full text-sm border-collapse">
+            <div className="mb-5 rounded-xl border border-[#e7dfd5] overflow-x-auto">
+              <table className="w-full min-w-[860px] text-sm border-collapse">
                 {/* Column letter row */}
                 <thead>
                   <tr className="bg-[#3b2f1e] text-white">
