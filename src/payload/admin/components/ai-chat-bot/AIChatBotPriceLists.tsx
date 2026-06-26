@@ -58,6 +58,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
   const [editing, setEditing] = useState<PriceRow | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [importMsg, setImportMsg] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
@@ -132,20 +133,23 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
     XLSX.writeFile(wb, 'orienda-price-list.xlsx')
   }
 
-  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (!window.confirm(`Upload "${file.name}"?\n\nThis will REPLACE ALL existing prices with data from this file.`)) {
-      e.target.value = ''; return
-    }
-    setShowUploadModal(false)
-    setError(null); setImportMsg(null); setImporting(true)
-    const fd = new FormData(); fd.append('file', file)
-    const res = await fetch('/api/admin/ai-price-lists/import', { method: 'POST', credentials: 'include', body: fd })
+    setPendingFile(file)
+    e.target.value = ''
+  }
+
+  async function runImport(replace: boolean) {
+    if (!pendingFile) return
+    setError(null); setImportMsg(null); setImporting(true); setPendingFile(null); setShowUploadModal(false)
+    const fd = new FormData(); fd.append('file', pendingFile)
+    const url = `/api/admin/ai-price-lists/import${replace ? '?replace=true' : ''}`
+    const res = await fetch(url, { method: 'POST', credentials: 'include', body: fd })
     const data = await res.json().catch(() => null)
-    setImporting(false); e.target.value = ''
+    setImporting(false)
     if (!res.ok) { setError(data?.error || 'Import failed'); return }
-    setImportMsg(`Imported ${data.imported} prices — reloading...`)
+    setImportMsg(`${replace ? 'Replaced' : 'Added'} ${data.imported} prices — reloading...`)
     setTimeout(() => window.location.reload(), 1200)
   }
 
@@ -154,7 +158,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       {importMsg ? <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-700">{importMsg}</div> : null}
 
-      <input accept=".xlsx" className="hidden" onChange={handleImport} ref={fileRef} type="file" />
+      <input accept=".xlsx" className="hidden" onChange={handleFileSelect} ref={fileRef} type="file" />
 
       <div className="flex flex-wrap justify-end gap-2">
         {prices.length > 0 ? (
@@ -241,22 +245,56 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
               </table>
             </div>
 
-            <div className="flex flex-wrap gap-3 mt-6">
-              <button
-                className="inline-flex items-center gap-2 rounded-xl border border-[#e7dfd5] bg-[#f7f4ef] px-5 py-3 text-sm font-bold text-[#716b60] hover:bg-[#efebe4]"
-                onClick={downloadTemplate}
-                type="button"
-              >
-                <FileSpreadsheet size={15} /> Download Template
-              </button>
-              <button
-                className="inline-flex items-center gap-2 rounded-xl border-none bg-[#b89148] px-5 py-3 text-sm font-bold text-white hover:bg-[#a37d3e]"
-                onClick={() => fileRef.current?.click()}
-                type="button"
-              >
-                <Upload size={15} /> Choose File & Upload
-              </button>
-            </div>
+            {pendingFile ? (
+              /* Styled confirm panel — replaces browser confirm() */
+              <div className="mt-6 rounded-2xl border border-[#e7dfd5] bg-[#f7f4ef] p-5">
+                <p className="mb-1 text-sm font-bold text-[#2b2823]">Ready to import:</p>
+                <p className="mb-4 text-sm text-[#716b60]">
+                  <span className="font-mono font-bold text-[#393733]">{pendingFile.name}</span>
+                  {' '}· {(pendingFile.size / 1024).toFixed(0)} KB
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    className="rounded-xl border-none bg-[#b89148] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#a37d3e]"
+                    onClick={() => runImport(false)}
+                    type="button"
+                  >
+                    Add to Existing Prices
+                  </button>
+                  <button
+                    className="rounded-xl border border-red-200 bg-red-50 px-5 py-2.5 text-sm font-bold text-red-600 hover:bg-red-100"
+                    onClick={() => runImport(true)}
+                    type="button"
+                  >
+                    Replace All Prices
+                  </button>
+                  <button
+                    className="rounded-xl border border-[#e7dfd5] bg-white px-5 py-2.5 text-sm font-bold text-[#716b60] hover:bg-[#f4f0eb]"
+                    onClick={() => setPendingFile(null)}
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-3 mt-6">
+                <button
+                  className="inline-flex items-center gap-2 rounded-xl border border-[#e7dfd5] bg-[#f7f4ef] px-5 py-3 text-sm font-bold text-[#716b60] hover:bg-[#efebe4]"
+                  onClick={downloadTemplate}
+                  type="button"
+                >
+                  <FileSpreadsheet size={15} /> Download Template
+                </button>
+                <button
+                  className="inline-flex items-center gap-2 rounded-xl border-none bg-[#b89148] px-5 py-3 text-sm font-bold text-white hover:bg-[#a37d3e]"
+                  onClick={() => fileRef.current?.click()}
+                  type="button"
+                >
+                  <Upload size={15} /> Choose File & Upload
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ) : null}

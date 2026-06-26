@@ -68,13 +68,15 @@ export async function POST(req: NextRequest) {
   if (dataRows.length === 0) return NextResponse.json({ error: 'No data rows found in file' }, { status: 400 })
 
   const db = await createServiceClient()
+  const replace = req.nextUrl.searchParams.get('replace') === 'true'
 
-  // Delete all existing price_lists + their embeddings
-  const { data: existing } = await db.from('price_lists').select('id')
-  if (existing?.length) {
-    const ids = existing.map((r: { id: string }) => r.id)
-    await db.from('ai_rag2_documents').delete().in('source_id', ids).eq('source_collection', 'price')
-    await db.from('price_lists').delete().in('id', ids)
+  if (replace) {
+    const { data: existing } = await db.from('price_lists').select('id')
+    if (existing?.length) {
+      const ids = existing.map((r: { id: string }) => r.id)
+      await db.from('ai_rag2_documents').delete().in('source_id', ids).eq('source_collection', 'price')
+      await db.from('price_lists').delete().in('id', ids)
+    }
   }
 
   // Build insert rows — A(r[0])=row# skip, B=km, C=en, D=price_kh, E=price_fo, F=emerg_kh, G=emerg_fo
