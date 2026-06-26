@@ -20,30 +20,24 @@ export async function GET(req: NextRequest) {
   const XLSX = require('xlsx')
 
   const headers = [
-    'Service Name (EN)',
-    'Service Name (KM)',
-    'Khmer Price',
-    'Foreign Price',
-    'Emergency Khmer Price',
-    'Emergency Foreign Price',
-    'Department',
+    'ល.រ',
+    'លេខាភាសាខ្មែរ (Khmer Name)',
+    'លេខាភាសាអង់គ្លេស (English Name)',
+    'ផ្នែកដាតិខ្មែរ (Khmer Price)',
+    'ផ្នែកបរទេស (Foreign Price)',
+    'ផ្នែកដាតិខ្មែរ សម្រាប់បន្ទាន់ (Emergency KH)',
+    'ផ្នែកបរទេស សម្រាប់បន្ទាន់ (Emergency FO)',
   ]
 
-  const example = [
-    'Consultation ER (less than 20 min)',
-    'ការពិគ្រោះ (តិចជាង ២០ នាទី)',
-    15,
-    15,
-    15,
-    15,
-    'Emergency',
+  const examples = [
+    [1, 'ការពិគ្រោះជំងឺ (< ២០ នាទី)', 'Consultation ER (less than 20 min)', 15, 15, 15, 15],
+    [2, 'ការពិគ្រោះជំងឺ (> ២០ នាទី)', 'Consultation ER (more than 20 min)', 35, 35, 35, 35],
+    [3, 'ការថែទាំស្បែក', 'Consultation Dermatology', 25, 25, 25, 25],
   ]
 
-  const ws = XLSX.utils.aoa_to_sheet([headers, example])
-
-  // Style header row width
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...examples])
   ws['!cols'] = [
-    { wch: 45 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 22 }, { wch: 22 }, { wch: 20 },
+    { wch: 6 }, { wch: 38 }, { wch: 40 }, { wch: 20 }, { wch: 20 }, { wch: 28 }, { wch: 28 },
   ]
 
   const wb = XLSX.utils.book_new()

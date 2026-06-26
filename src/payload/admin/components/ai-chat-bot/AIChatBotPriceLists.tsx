@@ -37,13 +37,13 @@ function rowToForm(row: PriceRow): PriceForm {
 }
 
 const COLUMNS = [
-  { col: 'A', name: 'Service Name (EN)', note: 'Required — English service name' },
-  { col: 'B', name: 'Service Name (KM)', note: 'Optional — Khmer name' },
-  { col: 'C', name: 'Khmer Price', note: 'Number (USD)' },
-  { col: 'D', name: 'Foreign Price', note: 'Number (USD)' },
-  { col: 'E', name: 'Emergency Khmer Price', note: 'Number (USD)' },
-  { col: 'F', name: 'Emergency Foreign Price', note: 'Number (USD)' },
-  { col: 'G', name: 'Department', note: 'e.g. Emergency, Dermatology' },
+  { col: 'A', name: 'ល.រ', note: 'Row number — skip, ignored on import' },
+  { col: 'B', name: 'Khmer Name / លេខាភាសាខ្មែរ', note: 'Khmer service name' },
+  { col: 'C', name: 'English Name / លេខាភាសាអង់គ្លេស', note: 'Required — English service name' },
+  { col: 'D', name: 'Khmer Price / ផ្នែកដាតិខ្មែរ', note: 'Number (USD)' },
+  { col: 'E', name: 'Foreign Price / ផ្នែកបរទេស', note: 'Number (USD)' },
+  { col: 'F', name: 'Emergency Khmer / ផ្នែកដាតិខ្មែរ សម្រាប់បន្ទាន់', note: 'Number (USD)' },
+  { col: 'G', name: 'Emergency Foreign / ផ្នែកបរទេស សម្រាប់បន្ទាន់', note: 'Number (USD)' },
 ]
 
 export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: PriceRow[] }) {
@@ -101,18 +101,26 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
 
   async function exportPrices() {
     const XLSX = await import('xlsx')
-    const headers = COLUMNS.map(c => c.name)
-    const rows = prices.map(r => [
-      r.service_name_en ?? '',
+    const headers = [
+      'ល.រ',
+      'លេខាភាសាខ្មែរ (Khmer Name)',
+      'លេខាភាសាអង់គ្លេស (English Name)',
+      'ផ្នែកដាតិខ្មែរ (Khmer Price)',
+      'ផ្នែកបរទេស (Foreign Price)',
+      'ផ្នែកដាតិខ្មែរ សម្រាប់បន្ទាន់ (Emergency KH)',
+      'ផ្នែកបរទេស សម្រាប់បន្ទាន់ (Emergency FO)',
+    ]
+    const rows = prices.map((r, i) => [
+      i + 1,
       r.service_name_km ?? '',
+      r.service_name_en ?? '',
       r.price_khmer ?? '',
       r.price_foreign ?? '',
       r.price_emergency_khmer ?? '',
       r.price_emergency_foreign ?? '',
-      r.department ?? '',
     ])
     const ws = XLSX.utils.aoa_to_sheet([headers, ...rows])
-    ws['!cols'] = [{ wch: 45 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 22 }, { wch: 22 }, { wch: 20 }]
+    ws['!cols'] = [{ wch: 6 }, { wch: 38 }, { wch: 40 }, { wch: 20 }, { wch: 20 }, { wch: 28 }, { wch: 28 }]
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Price List')
     XLSX.writeFile(wb, 'orienda-price-list.xlsx')

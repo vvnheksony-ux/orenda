@@ -59,7 +59,11 @@ export async function POST(req: NextRequest) {
   const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null })
 
   // Rows start from index 1 (index 0 = header)
-  const dataRows = rows.slice(1).filter((r: unknown[]) => r[0] != null && String(r[0]).trim() !== '')
+  // Column layout: A=row#(skip) B=km_name C=en_name D=price_kh E=price_fo F=emerg_kh G=emerg_fo
+  const dataRows = rows.slice(1).filter((r: unknown[]) => {
+    const en = r[2]; const km = r[1]
+    return (en != null && String(en).trim() !== '') || (km != null && String(km).trim() !== '')
+  })
 
   if (dataRows.length === 0) return NextResponse.json({ error: 'No data rows found in file' }, { status: 400 })
 
@@ -73,15 +77,14 @@ export async function POST(req: NextRequest) {
     await db.from('price_lists').delete().in('id', ids)
   }
 
-  // Build insert rows
+  // Build insert rows — A(r[0])=row# skip, B=km, C=en, D=price_kh, E=price_fo, F=emerg_kh, G=emerg_fo
   const insertRows = dataRows.map((r: unknown[]) => ({
-    service_name_en: toStr(r[0]),
-    service_name_km:  toStr(r[1]),
-    price_khmer:              toNum(r[2]),
-    price_foreign:            toNum(r[3]),
-    price_emergency_khmer:    toNum(r[4]),
-    price_emergency_foreign:  toNum(r[5]),
-    department:               toStr(r[6]),
+    service_name_km:          toStr(r[1]),
+    service_name_en:          toStr(r[2]),
+    price_khmer:              toNum(r[3]),
+    price_foreign:            toNum(r[4]),
+    price_emergency_khmer:    toNum(r[5]),
+    price_emergency_foreign:  toNum(r[6]),
   }))
 
   const { data: inserted, error: insertErr } = await db
