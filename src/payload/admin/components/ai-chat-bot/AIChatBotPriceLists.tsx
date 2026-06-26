@@ -152,13 +152,13 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
           <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
             <thead className="bg-[#efebe4] text-[#716b60]">
               <tr>
-                <th className="px-4 py-3 font-bold w-[260px]">Service (EN)</th>
+                <th className="px-4 py-3 font-bold w-[240px]">Service Name</th>
                 <th className="px-4 py-3 font-bold w-[160px]">Khmer Name</th>
-                <th className="px-4 py-3 font-bold w-[70px]">KH $</th>
-                <th className="px-4 py-3 font-bold w-[70px]">FO $</th>
-                <th className="px-4 py-3 font-bold w-[80px]">EM-KH $</th>
-                <th className="px-4 py-3 font-bold w-[80px]">EM-FO $</th>
-                <th className="px-4 py-3 font-bold w-[140px]">Department</th>
+                <th className="px-4 py-3 font-bold w-[90px]">Khmer Price</th>
+                <th className="px-4 py-3 font-bold w-[100px]">Foreign Price</th>
+                <th className="px-4 py-3 font-bold w-[110px]">Emergency (KH)</th>
+                <th className="px-4 py-3 font-bold w-[110px]">Emergency (FO)</th>
+                <th className="px-4 py-3 font-bold w-[130px]">Department</th>
                 <th className="px-4 py-3 text-right font-bold w-[80px]">Actions</th>
               </tr>
             </thead>
