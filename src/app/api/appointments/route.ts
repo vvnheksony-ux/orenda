@@ -3,10 +3,6 @@ import { createClient, createServiceClient } from '@/utils/supabase/server'
 import { getRawPool } from '@/lib/db'
 import { sendTelegramHtmlMessage } from '@/lib/telegram'
 
-// Max confirmed appointments per doctor per day. Mirrors DAILY_LIMIT in
-// src/app/api/appointments/availability/route.ts — keep the two in sync.
-const APPOINTMENT_DAILY_LIMIT = 3
-
 function readTrimmedString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
 }
@@ -162,7 +158,7 @@ export async function POST(req: NextRequest) {
   // get_doctor_availability RPC. A slot is only blocked once an existing booking
   // for it has been APPROVED (status = 'confirmed') by the admin. Pending requests
   // do NOT lock a slot, so multiple patients may request the same time; the admin
-  // approves one. Also caps a doctor at DAILY_LIMIT confirmed appointments/day.
+  // approves one. There is no per-day cap — only the specific confirmed slot locks.
   if (insertBody.doctor_payload_id && insertBody.preferred_date) {
     try {
       const { data } = await serviceClient.rpc('get_doctor_availability', {
@@ -171,14 +167,6 @@ export async function POST(req: NextRequest) {
       })
       const row = Array.isArray(data) ? data[0] : data
       const booked: string[] = Array.isArray(row?.booked) ? row.booked : []
-      // Daily cap: enforced here off the RPC's confirmed count (keeps the UI's
-      // "max 3 per day" promise real even against a direct API call).
-      if (typeof row?.booked_count === 'number' && row.booked_count >= APPOINTMENT_DAILY_LIMIT) {
-        return NextResponse.json(
-          { error: 'This doctor is fully booked on this date. Please choose another date or doctor.' },
-          { status: 409 },
-        )
-      }
       if (insertBody.preferred_time && booked.includes(insertBody.preferred_time)) {
         return NextResponse.json(
           { error: 'This time slot is already booked for this doctor. Please choose another time or doctor.' },

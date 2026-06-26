@@ -191,10 +191,8 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
   const [services, setServices] = useState<Service[]>([])
   // Per-slot availability for the chosen doctor + date, keyed by the slot's
   // `time` value. Comes straight from /api/appointments/availability, which
-  // returns each slot's `available` boolean + reason ('booked' | 'full').
+  // returns each slot's `available` boolean + reason ('booked').
   const [slotAvail, setSlotAvail] = useState<Record<string, { available: boolean; reason: string | null }>>({})
-  // True when the chosen doctor has hit the daily booking limit (3/day) — locks the doctor.
-  const [doctorFull, setDoctorFull] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
@@ -293,22 +291,21 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
   // Fetch the doctor's already-booked slots for the chosen date, so taken times get locked.
   useEffect(() => {
-    if (!open || !form.doctor_payload_id) { setSlotAvail({}); setDoctorFull(false); return }
+    if (!open || !form.doctor_payload_id) { setSlotAvail({}); return }
     const date = dateChoice === 'choose' ? form.preferred_date : getEarliestAppointment().date
-    if (!date) { setSlotAvail({}); setDoctorFull(false); return }
+    if (!date) { setSlotAvail({}); return }
     let active = true
     fetch(`/api/appointments/availability?doctor=${form.doctor_payload_id}&date=${date}`)
-      .then(r => (r.ok ? r.json() : { slots: [], full: false }))
-      .then((d: { slots?: { time: string; available: boolean; reason: string | null }[]; full?: boolean }) => {
+      .then(r => (r.ok ? r.json() : { slots: [] }))
+      .then((d: { slots?: { time: string; available: boolean; reason: string | null }[] }) => {
         if (!active) return
         const map: Record<string, { available: boolean; reason: string | null }> = {}
         for (const s of (Array.isArray(d.slots) ? d.slots : [])) {
           map[s.time] = { available: s.available, reason: s.reason ?? null }
         }
         setSlotAvail(map)
-        setDoctorFull(Boolean(d.full))
       })
-      .catch(() => { if (active) { setSlotAvail({}); setDoctorFull(false) } })
+      .catch(() => { if (active) setSlotAvail({}) })
     return () => { active = false }
   }, [open, form.doctor_payload_id, form.preferred_date, dateChoice])
 
@@ -730,16 +727,10 @@ export default function BookAppointmentModal({ open, onClose, defaultService = '
 
                   {error && <p className="font-dm-sans text-[14px] text-red-400 w-full">{error}</p>}
 
-                  {doctorFull && (
-                    <p className="font-dm-sans text-[14px] text-[#b45309] w-full rounded-[10px] bg-[#fef3e2] px-4 py-3">
-                      {t('doctorFullNotice')}
-                    </p>
-                  )}
-
                   {/* Submit — matches Figma: full width, h-64px, rgba(184,145,72,0.7) */}
                   <button
                     type="submit"
-                    disabled={status === 'loading' || doctorFull}
+                    disabled={status === 'loading'}
                     className="w-full h-[64px] rounded-[12px] font-dm-sans text-[16px] text-[#f9f9f9] disabled:opacity-60 transition-opacity hover:opacity-90"
                     style={{
                       background: requiredReady ? '#b89148' : 'rgba(184,145,72,0.7)',

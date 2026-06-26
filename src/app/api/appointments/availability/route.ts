@@ -3,11 +3,6 @@ import { createServiceClient } from '@/utils/supabase/server'
 
 export const runtime = 'nodejs'
 
-// Max confirmed appointments per doctor per day. When reached, the doctor is
-// "full" and every slot is locked. Enforced here in JS off the RPC's count, so
-// no DB change is needed (the RPC's own is_full stays false).
-const DAILY_LIMIT = 3
-
 // Canonical bookable periods — MIRRORS TIME_PERIODS in BookAppointmentModal.tsx
 // and the period table in get_doctor_availability.sql. Keep all three in sync.
 // `time` is the value stored as appointments.preferred_time; start/end are the
@@ -27,12 +22,13 @@ type Slot = {
   start: string
   end: string
   available: boolean
-  reason: 'booked' | 'full' | null
+  reason: 'booked' | null
 }
 
-// Decide availability per slot. Priority: full (whole doctor) → booked. The
-// "past time" rule is intentionally left to the client, which knows "now".
-function buildSlots(booked: string[], full: boolean): Slot[] {
+// Decide availability per slot. A slot is locked only when it is individually
+// confirmed-booked. The "past time" rule is intentionally left to the client,
+// which knows "now".
+function buildSlots(booked: string[]): Slot[] {
   return PERIODS.map((p) => {
     const isBooked = booked.includes(p.time)
     return {
@@ -40,8 +36,8 @@ function buildSlots(booked: string[], full: boolean): Slot[] {
       time: p.time,
       start: p.start,
       end: p.end,
-      available: !full && !isBooked,
-      reason: full ? 'full' : isBooked ? 'booked' : null,
+      available: !isBooked,
+      reason: isBooked ? 'booked' : null,
     }
   })
 }
@@ -56,7 +52,7 @@ export async function GET(req: NextRequest) {
   const date = searchParams.get('date')
 
   if (!doctor || !date || !Number.isInteger(Number(doctor))) {
-    return NextResponse.json({ slots: buildSlots([], false), booked: [], count: 0, full: false })
+    return NextResponse.json({ slots: buildSlots([]), booked: [], count: 0, full: false })
   }
 
   try {
@@ -69,12 +65,12 @@ export async function GET(req: NextRequest) {
     const row = Array.isArray(data) ? data[0] : data
     const booked = Array.isArray(row?.booked) ? row.booked.filter(Boolean) : []
     const count = row?.booked_count ?? 0
-    const full = count >= DAILY_LIMIT
-    // `booked` and `full` are kept for backward compatibility alongside `slots`.
-    return NextResponse.json({ slots: buildSlots(booked, full), booked, count, full })
+    // `booked` and `count` are kept for backward compatibility alongside `slots`.
+    // `full` is always false now — no per-day cap; only individually-booked slots lock.
+    return NextResponse.json({ slots: buildSlots(booked), booked, count, full: false })
   } catch (e) {
     console.error('availability check failed:', (e as Error).message)
     // Fail open — never block the form if the check itself errors.
-    return NextResponse.json({ slots: buildSlots([], false), booked: [], count: 0, full: false })
+    return NextResponse.json({ slots: buildSlots([]), booked: [], count: 0, full: false })
   }
 }
