@@ -37,13 +37,13 @@ function rowToForm(row: PriceRow): PriceForm {
 }
 
 const COLUMNS = [
-  { col: 'A', name: 'ល.រ', note: 'Row number — skip, ignored on import' },
-  { col: 'B', name: 'Khmer Name / លេខាភាសាខ្មែរ', note: 'Khmer service name' },
-  { col: 'C', name: 'English Name / លេខាភាសាអង់គ្លេស', note: 'Required — English service name' },
-  { col: 'D', name: 'Khmer Price / ផ្នែកដាតិខ្មែរ', note: 'Number (USD)' },
-  { col: 'E', name: 'Foreign Price / ផ្នែកបរទេស', note: 'Number (USD)' },
-  { col: 'F', name: 'Emergency Khmer / ផ្នែកដាតិខ្មែរ សម្រាប់បន្ទាន់', note: 'Number (USD)' },
-  { col: 'G', name: 'Emergency Foreign / ផ្នែកបរទេស សម្រាប់បន្ទាន់', note: 'Number (USD)' },
+  { col: 'A', name: 'ល.រ', note: 'Row number — ignored on import', example: '1' },
+  { col: 'B', name: 'Khmer Name / លេខាភាសាខ្មែរ', note: 'Khmer service name', example: 'ការពិគ្រោះ (< ២០ នាទី)' },
+  { col: 'C', name: 'English Name / លេខាភាសាអង់គ្លេស', note: 'Required', example: 'Consultation ER (less than 20 min)' },
+  { col: 'D', name: 'Khmer Price / ផ្នែកដាតិខ្មែរ', note: 'Number in USD', example: '15' },
+  { col: 'E', name: 'Foreign Price / ផ្នែកបរទេស', note: 'Number in USD', example: '15' },
+  { col: 'F', name: 'Emergency Khmer / ផ្នែកដាតិខ្មែរ សម្រាប់បន្ទាន់', note: 'Number in USD', example: '15' },
+  { col: 'G', name: 'Emergency Foreign / ផ្នែកបរទេស សម្រាប់បន្ទាន់', note: 'Number in USD', example: '15' },
 ]
 
 export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: PriceRow[] }) {
@@ -199,18 +199,20 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
               <table className="w-full text-xs">
                 <thead className="bg-[#efebe4] text-[#716b60]">
                   <tr>
-                    <th className="px-3 py-2 text-left font-bold w-10">Col</th>
-                    <th className="px-3 py-2 text-left font-bold">Header · Note</th>
+                    <th className="px-3 py-2 text-left font-bold w-8">Col</th>
+                    <th className="px-3 py-2 text-left font-bold">Header name</th>
+                    <th className="px-3 py-2 text-left font-bold text-[#b89148]">Example value</th>
                   </tr>
                 </thead>
                 <tbody>
                   {COLUMNS.map(c => (
                     <tr className="border-t border-[#eee8dd]" key={c.col}>
-                      <td className="px-3 py-2.5 font-mono font-bold text-[#b89148] align-top">{c.col}</td>
-                      <td className="px-3 py-2.5">
-                        <span className="font-semibold text-[#393733]">{c.name}</span>
-                        <span className="ml-2 text-[#8c8982]">— {c.note}</span>
+                      <td className="px-3 py-2 font-mono font-bold text-[#b89148] align-top">{c.col}</td>
+                      <td className="px-3 py-2 align-top">
+                        <div className="font-semibold text-[#393733]">{c.name}</div>
+                        <div className="text-[#8c8982]">{c.note}</div>
                       </td>
+                      <td className="px-3 py-2 text-[#393733] align-top font-mono">{c.example}</td>
                     </tr>
                   ))}
                 </tbody>
