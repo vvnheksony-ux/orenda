@@ -202,15 +202,11 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
 
             {/* Spreadsheet-style horizontal preview */}
             <div className="mb-5 rounded-xl border border-[#ccc5bb] overflow-x-auto">
-              <table className="w-full min-w-[860px] text-sm border-collapse">
-                <colgroup>
-                  <col style={{ width: '28px', minWidth: '28px', maxWidth: '28px' }} />
-                  {COLUMNS.map(c => <col key={c.col} />)}
-                </colgroup>
+              <table className="w-full min-w-[860px] text-sm border-collapse table-fixed">
                 {/* Column letter row */}
                 <thead>
                   <tr className="bg-[#3b2f1e] text-white">
-                    <th className="border-r border-white/20 px-0 py-2" />
+                    <th style={{ width: '24px' }} className="border-r border-white/20 px-0 py-2" />
                     {COLUMNS.map(c => (
                       <th className="border-r border-white/20 px-3 py-2 text-center font-bold last:border-r-0" key={c.col}>
                         {c.col}
