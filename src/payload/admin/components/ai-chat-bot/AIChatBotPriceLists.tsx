@@ -37,13 +37,13 @@ function rowToForm(row: PriceRow): PriceForm {
 }
 
 const COLUMNS = [
-  { col: 'A', name: 'ល.រ', note: 'Row number — ignored on import', example: '1' },
-  { col: 'B', name: 'Khmer Name / លេខាភាសាខ្មែរ', note: 'Khmer service name', example: 'ការពិគ្រោះ (< ២០ នាទី)' },
-  { col: 'C', name: 'English Name / លេខាភាសាអង់គ្លេស', note: 'Required', example: 'Consultation ER (less than 20 min)' },
-  { col: 'D', name: 'Khmer Price / ផ្នែកដាតិខ្មែរ', note: 'Number in USD', example: '15' },
-  { col: 'E', name: 'Foreign Price / ផ្នែកបរទេស', note: 'Number in USD', example: '15' },
-  { col: 'F', name: 'Emergency Khmer / ផ្នែកដាតិខ្មែរ សម្រាប់បន្ទាន់', note: 'Number in USD', example: '15' },
-  { col: 'G', name: 'Emergency Foreign / ផ្នែកបរទេស សម្រាប់បន្ទាន់', note: 'Number in USD', example: '15' },
+  { col: 'A', name: 'ល.រ', note: 'Row # (ignored)', example: '1' },
+  { col: 'B', name: 'Khmer Name', sub: 'លេខាភាសាខ្មែរ', note: 'Khmer service name', example: 'ការពិគ្រោះ (< ២០ នាទី)' },
+  { col: 'C', name: 'English Name', sub: 'លេខាភាសាអង់គ្លេស', note: 'Required', example: 'Consultation ER (less than 20 min)' },
+  { col: 'D', name: 'Khmer Price', sub: 'ផ្នែកដាតិខ្មែរ', note: 'USD number', example: '15' },
+  { col: 'E', name: 'Foreign Price', sub: 'ផ្នែកបរទេស', note: 'USD number', example: '15' },
+  { col: 'F', name: 'Emrg. Khmer', sub: 'ផ្នែកដាតិខ្មែរ បន្ទាន់', note: 'USD number', example: '15' },
+  { col: 'G', name: 'Emrg. Foreign', sub: 'ផ្នែកបរទេស បន្ទាន់', note: 'USD number', example: '15' },
 ]
 
 export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: PriceRow[] }) {
@@ -180,7 +180,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
       {/* Upload modal */}
       {showUploadModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={e => { if (e.target === e.currentTarget) setShowUploadModal(false) }}>
-          <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="relative w-full max-w-5xl rounded-2xl bg-white p-6 shadow-2xl">
             <button
               className="absolute right-4 top-4 rounded-lg border-none bg-transparent p-1 text-[#8c8982] hover:text-[#393733]"
               onClick={() => setShowUploadModal(false)}
@@ -195,35 +195,36 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
             </p>
 
             {/* Spreadsheet-style horizontal preview */}
-            <div className="mb-5 overflow-x-auto rounded-xl border border-[#e7dfd5]">
-              <table className="min-w-full text-xs border-collapse">
-                {/* Row 1: column letters */}
+            <div className="mb-5 rounded-xl border border-[#e7dfd5] overflow-hidden">
+              <table className="w-full text-[11px] border-collapse table-fixed">
+                {/* Column letter row */}
                 <thead>
                   <tr className="bg-[#efebe4]">
-                    <th className="w-8 border-r border-[#e7dfd5] px-2 py-1.5" />
+                    <th className="w-6 border-r border-[#e7dfd5] px-1 py-1.5" />
                     {COLUMNS.map(c => (
-                      <th className="border-r border-[#e7dfd5] px-3 py-1.5 text-center font-bold text-[#b89148] last:border-r-0" key={c.col}>
+                      <th className="border-r border-[#e7dfd5] px-1 py-1.5 text-center font-bold text-[#b89148] last:border-r-0" key={c.col}>
                         {c.col}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Row 2: header names (row 1 in Excel) */}
+                  {/* Row 1: header names */}
                   <tr className="bg-[#f7f4ef]">
-                    <td className="border-r border-t border-[#e7dfd5] px-2 py-1.5 text-center font-mono text-[#8c8982]">1</td>
+                    <td className="border-r border-t border-[#e7dfd5] px-1 py-1 text-center font-mono text-[#8c8982] text-[10px]">1</td>
                     {COLUMNS.map(c => (
-                      <td className="border-r border-t border-[#e7dfd5] px-3 py-2 last:border-r-0 min-w-[100px]" key={c.col}>
-                        <div className="font-semibold text-[#393733] leading-tight">{c.name}</div>
-                        <div className="text-[#8c8982] mt-0.5">{c.note}</div>
+                      <td className="border-r border-t border-[#e7dfd5] px-1.5 py-1.5 last:border-r-0" key={c.col}>
+                        <div className="font-bold text-[#393733] leading-tight">{c.name}</div>
+                        {'sub' in c && <div className="text-[#716b60] leading-tight mt-0.5">{c.sub}</div>}
+                        <div className="text-[#8c8982] leading-tight mt-0.5 italic">{c.note}</div>
                       </td>
                     ))}
                   </tr>
-                  {/* Row 3: example data (row 2 in Excel) */}
+                  {/* Row 2: example values */}
                   <tr className="bg-white">
-                    <td className="border-r border-t border-[#e7dfd5] px-2 py-1.5 text-center font-mono text-[#8c8982]">2</td>
+                    <td className="border-r border-t border-[#e7dfd5] px-1 py-1 text-center font-mono text-[#8c8982] text-[10px]">2</td>
                     {COLUMNS.map(c => (
-                      <td className="border-r border-t border-[#e7dfd5] px-3 py-2 text-[#393733] last:border-r-0" key={c.col}>
+                      <td className="border-r border-t border-[#e7dfd5] px-1.5 py-2 text-[#393733] last:border-r-0" key={c.col}>
                         {c.example}
                       </td>
                     ))}
