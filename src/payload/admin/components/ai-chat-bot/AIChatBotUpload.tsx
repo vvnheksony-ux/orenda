@@ -2,11 +2,13 @@
 
 import { FileText, Trash2, Upload } from 'lucide-react'
 import { useRef, useState, useTransition } from 'react'
+import ConfirmModal from '../ui/ConfirmModal'
 import type { UploadRecord } from './AIChatBotUploadView'
 
 export default function AIChatBotUpload({ initialUploads }: { initialUploads: UploadRecord[] }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploads, setUploads] = useState(initialUploads)
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -33,16 +35,19 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
   }
 
   function deleteUpload(id: string, filename: string | null) {
-    if (!window.confirm(`Delete "${filename || 'this file'}"?`)) return
-    startTransition(async () => {
-      const res = await fetch(`/api/admin/ai-upload/${id}`, { method: 'DELETE', credentials: 'include' })
-      if (!res.ok) { const d = await res.json().catch(() => null); setError(d?.error || 'Delete failed'); return }
-      setUploads(curr => curr.filter(u => u.id !== id))
+    setConfirm({
+      message: `Delete "${filename || 'this file'}"? This cannot be undone.`,
+      onConfirm: () => startTransition(async () => {
+        const res = await fetch(`/api/admin/ai-upload/${id}`, { method: 'DELETE', credentials: 'include' })
+        if (!res.ok) { const d = await res.json().catch(() => null); setError(d?.error || 'Delete failed'); return }
+        setUploads(curr => curr.filter(u => u.id !== id))
+      }),
     })
   }
 
   return (
     <section className="flex flex-col gap-5 pb-10">
+      {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" danger onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
       <div className="rounded-2xl border-2 border-dashed border-[#e7dfd5] bg-white p-10 text-center">

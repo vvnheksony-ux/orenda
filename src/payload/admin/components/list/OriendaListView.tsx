@@ -6,7 +6,9 @@ import type { StepNavItem } from '@payloadcms/ui'
 import { DefaultListView, SetStepNav, useConfig, useListQuery, useTableColumns } from '@payloadcms/ui'
 import { Eye, Pencil, Trash2 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+
+import ConfirmModal from '../ui/ConfirmModal'
 
 const ADMIN_TABLE_PAGE_SIZE = 10
 
@@ -66,6 +68,7 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
   const { columns } = useTableColumns()
   const docs = (data?.docs || []) as PayloadListDoc[]
   const activeColumns = getVisibleColumns(columns || [])
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void; danger?: boolean } | null>(null)
 
   useEffect(() => {
     if (query?.limit === ADMIN_TABLE_PAGE_SIZE) return
@@ -73,18 +76,21 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
     void refineListData({ limit: ADMIN_TABLE_PAGE_SIZE, page: 1 }, false)
   }, [query?.limit, refineListData])
 
-  async function deleteDoc(doc: PayloadListDoc) {
+  function deleteDoc(doc: PayloadListDoc) {
     if (!hasDeletePermission) return
-    if (!window.confirm('Delete this record?')) return
+    setConfirm({
+      message: 'Delete this record?',
+      onConfirm: async () => {
+        const response = await fetch(`/payload-api/${collectionSlug}/${doc.id}`, {
+          credentials: 'include',
+          method: 'DELETE',
+        })
 
-    const response = await fetch(`/payload-api/${collectionSlug}/${doc.id}`, {
-      credentials: 'include',
-      method: 'DELETE',
+        if (response.ok) {
+          await refineListData(query)
+        }
+      },
     })
-
-    if (response.ok) {
-      await refineListData(query)
-    }
   }
 
   if (!docs.length) {
@@ -92,7 +98,9 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
   }
 
   return (
-    <div className="orienda-list-table-wrap">
+    <>
+      {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" danger onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
+      <div className="orienda-list-table-wrap">
       <div className="orienda-list-table-scroll">
         <table className="orienda-list-table">
           <thead>
@@ -145,6 +153,7 @@ function OriendaListTable({ collectionSlug, hasDeletePermission }: OriendaListTa
         </table>
       </div>
     </div>
+    </>
   )
 }
 

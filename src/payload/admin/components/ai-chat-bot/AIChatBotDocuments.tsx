@@ -2,6 +2,7 @@
 
 import { Eye, FileText, Pencil, Search, Trash2, Upload } from 'lucide-react'
 import { useMemo, useRef, useState, useTransition } from 'react'
+import ConfirmModal from '../ui/ConfirmModal'
 
 import type { AITrainingDocument } from './AIChatBotAdminView'
 
@@ -25,6 +26,7 @@ export default function AIChatBotDocuments({ initialDocuments }: { initialDocume
   const [file, setFile] = useState<File | null>(null)
   const [editing, setEditing] = useState<AITrainingDocument | null>(null)
   const [viewing, setViewing] = useState<AITrainingDocument | null>(null)
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -86,9 +88,9 @@ export default function AIChatBotDocuments({ initialDocuments }: { initialDocume
   }
 
   function deleteDocument(doc: AITrainingDocument) {
-    if (!window.confirm(`Delete ${getTitle(doc)}?`)) return
-    setError(null)
-    startTransition(async () => {
+    setConfirm({
+      message: `Delete "${getTitle(doc)}"? This cannot be undone.`,
+      onConfirm: () => { setError(null); startTransition(async () => {
       const response = await fetch(`/api/admin/ai-documents/${doc.id}`, {
         credentials: 'include',
         method: 'DELETE',
@@ -102,11 +104,13 @@ export default function AIChatBotDocuments({ initialDocuments }: { initialDocume
 
       setDocuments((current) => current.filter((item) => item.id !== doc.id))
       if (viewing?.id === doc.id) setViewing(null)
+    }) },
     })
   }
 
   return (
     <section className="flex flex-col gap-5 pb-10">
+      {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" danger onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

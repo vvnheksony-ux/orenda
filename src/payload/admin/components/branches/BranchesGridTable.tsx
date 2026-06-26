@@ -1,6 +1,7 @@
 'use client'
 
 import { useListQuery } from '@payloadcms/ui'
+import ConfirmModal from '../ui/ConfirmModal'
 import { Eye, Pencil, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -80,6 +81,7 @@ function BranchesGridTable() {
   const { data, query, refineListData } = useListQuery()
   const docs = (data?.docs || []) as BranchDoc[]
   const [imageLookup, setImageLookup] = useState<Record<string, MediaDoc>>({})
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void; danger?: boolean } | null>(null)
 
   useEffect(() => {
     const imageIds = Array.from(new Set(docs.map(getImageId).filter((id): id is string => Boolean(id))))
@@ -113,21 +115,26 @@ function BranchesGridTable() {
     }
   }, [docs, imageLookup])
 
-  async function deleteBranch(id: BranchDoc['id']) {
-    if (!window.confirm('Delete this branch?')) return
+  function deleteBranch(id: BranchDoc['id']) {
+    setConfirm({
+      message: 'Delete this branch?',
+      onConfirm: async () => {
+        const response = await fetch(`/payload-api/branches/${id}`, {
+          credentials: 'include',
+          method: 'DELETE',
+        })
 
-    const response = await fetch(`/payload-api/branches/${id}`, {
-      credentials: 'include',
-      method: 'DELETE',
+        if (response.ok) {
+          await refineListData(query)
+        }
+      },
     })
-
-    if (response.ok) {
-      await refineListData(query)
-    }
   }
 
   return (
-    <div className="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-4 gap-[1.25rem]">
+    <>
+      {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" danger onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
+      <div className="grid grid-cols-4 md:grid-cols-2 lg:grid-cols-4 gap-[1.25rem]">
       {docs.map((branch) => {
         const editURL = `${adminBase}/${branch.id}`
         const image = getImageDoc(branch, imageLookup)
@@ -221,6 +228,7 @@ function BranchesGridTable() {
         )
       })}
     </div>
+    </>
   )
 }
 

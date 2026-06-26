@@ -2,6 +2,7 @@
 
 import { FileSpreadsheet, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
 import { useRef, useState, useTransition } from 'react'
+import ConfirmModal from '../ui/ConfirmModal'
 import type { PriceRow } from './AIChatBotPriceListsView'
 
 type PriceForm = {
@@ -59,6 +60,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
   const [showForm, setShowForm] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void; danger?: boolean } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [importMsg, setImportMsg] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
@@ -89,11 +91,14 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
   }
 
   function deleteRow(row: PriceRow) {
-    if (!window.confirm(`Delete "${row.service_name_en}"?`)) return
-    startTransition(async () => {
-      const res = await fetch(`/api/admin/ai-price-lists/${row.id}`, { method: 'DELETE', credentials: 'include' })
-      if (!res.ok) { const d = await res.json().catch(() => null); setError(d?.error || 'Delete failed'); return }
-      setPrices(curr => curr.filter(p => p.id !== row.id))
+    setConfirm({
+      message: `Delete "${row.service_name_en}"? This cannot be undone.`,
+      danger: true,
+      onConfirm: () => startTransition(async () => {
+        const res = await fetch(`/api/admin/ai-price-lists/${row.id}`, { method: 'DELETE', credentials: 'include' })
+        if (!res.ok) { const d = await res.json().catch(() => null); setError(d?.error || 'Delete failed'); return }
+        setPrices(curr => curr.filter(p => p.id !== row.id))
+      }),
     })
   }
 
@@ -155,6 +160,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
 
   return (
     <section className="flex flex-col gap-5 pb-10">
+      {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       {importMsg ? <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-700">{importMsg}</div> : null}
 
