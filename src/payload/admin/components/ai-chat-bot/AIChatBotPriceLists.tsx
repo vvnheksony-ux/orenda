@@ -154,7 +154,8 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
     const data = await res.json().catch(() => null)
     setImporting(false)
     if (!res.ok) { setError(data?.error || 'Import failed'); return }
-    setImportMsg(`${replace ? 'Replaced' : 'Added'} ${data.imported} prices — reloading...`)
+    const total = data.total ?? data.imported ?? 0
+    setImportMsg(replace ? `Replaced all — ${total} prices loaded. Reloading...` : `${total} prices updated/added (duplicates merged). Reloading...`)
     setTimeout(() => window.location.reload(), 1200)
   }
 

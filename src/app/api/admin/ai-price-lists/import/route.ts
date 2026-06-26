@@ -41,6 +41,15 @@ function formatPrice(row: Record<string, unknown>): string {
   ].filter(Boolean).join(' | ')
 }
 
+type PriceRow = {
+  service_name_km: string | null
+  service_name_en: string | null
+  price_khmer: number | null
+  price_foreign: number | null
+  price_emergency_khmer: number | null
+  price_emergency_foreign: number | null
+}
+
 export async function POST(req: NextRequest) {
   const auth = await getPayloadAdmin(req)
   if (auth instanceof NextResponse) return auth
@@ -70,59 +79,94 @@ export async function POST(req: NextRequest) {
   const db = await createServiceClient()
   const replace = req.nextUrl.searchParams.get('replace') === 'true'
 
+  // Build payload rows — A(r[0])=row# skip, B=km, C=en, D=price_kh, E=price_fo, F=emerg_kh, G=emerg_fo
+  const payloadRows: PriceRow[] = dataRows.map((r: unknown[]) => ({
+    service_name_km:         toStr(r[1]),
+    service_name_en:         toStr(r[2]),
+    price_khmer:             toNum(r[3]),
+    price_foreign:           toNum(r[4]),
+    price_emergency_khmer:   toNum(r[5]),
+    price_emergency_foreign: toNum(r[6]),
+  }))
+
+  const allChanged: Record<string, unknown>[] = []
+
   if (replace) {
+    // Delete everything first, then bulk insert
     const { data: existing } = await db.from('price_lists').select('id')
     if (existing?.length) {
       const ids = existing.map((r: { id: string }) => r.id)
       await db.from('ai_rag2_documents').delete().in('source_id', ids).eq('source_collection', 'price')
       await db.from('price_lists').delete().in('id', ids)
     }
+    const { data: inserted, error: insertErr } = await db.from('price_lists').insert(payloadRows).select()
+    if (insertErr || !inserted) return NextResponse.json({ error: insertErr?.message || 'Insert failed' }, { status: 500 })
+    allChanged.push(...(inserted as Record<string, unknown>[]))
+  } else {
+    // Append mode: upsert by service_name_en (case-insensitive) — update existing, insert new
+    const { data: existing } = await db.from('price_lists').select('id, service_name_en')
+    const existingMap = new Map<string, string>(
+      (existing ?? []).map((r: { id: string; service_name_en: string | null }) =>
+        [String(r.service_name_en ?? '').toLowerCase().trim(), r.id]
+      )
+    )
+
+    const toInsert: PriceRow[] = []
+    const toUpdate: { id: string; row: PriceRow }[] = []
+
+    for (const row of payloadRows) {
+      const key = String(row.service_name_en ?? '').toLowerCase().trim()
+      const existingId = key ? existingMap.get(key) : null
+      if (existingId) {
+        toUpdate.push({ id: existingId, row })
+      } else {
+        toInsert.push(row)
+      }
+    }
+
+    if (toInsert.length) {
+      const { data: inserted, error: insertErr } = await db.from('price_lists').insert(toInsert).select()
+      if (insertErr) return NextResponse.json({ error: insertErr.message }, { status: 500 })
+      allChanged.push(...(inserted as Record<string, unknown>[]))
+    }
+
+    for (const { id, row } of toUpdate) {
+      await db.from('ai_rag2_documents').delete().eq('source_id', id).eq('source_collection', 'price')
+      const { data: updated } = await db.from('price_lists').update(row).eq('id', id).select().single()
+      if (updated) allChanged.push(updated as Record<string, unknown>)
+    }
   }
 
-  // Build insert rows — A(r[0])=row# skip, B=km, C=en, D=price_kh, E=price_fo, F=emerg_kh, G=emerg_fo
-  const insertRows = dataRows.map((r: unknown[]) => ({
-    service_name_km:          toStr(r[1]),
-    service_name_en:          toStr(r[2]),
-    price_khmer:              toNum(r[3]),
-    price_foreign:            toNum(r[4]),
-    price_emergency_khmer:    toNum(r[5]),
-    price_emergency_foreign:  toNum(r[6]),
-  }))
+  if (!allChanged.length) return NextResponse.json({ imported: 0, updated: 0, skipped: 0 })
 
-  const { data: inserted, error: insertErr } = await db
-    .from('price_lists')
-    .insert(insertRows)
-    .select()
-
-  if (insertErr || !inserted) return NextResponse.json({ error: insertErr?.message || 'Insert failed' }, { status: 500 })
-
-  // Embed all rows in batches of 50
-  const texts = inserted.map(r => formatPrice(r as Record<string, unknown>))
+  // Embed all changed rows in batches of 50
+  const texts = allChanged.map(r => formatPrice(r))
   const embedRows: object[] = []
 
   for (let i = 0; i < texts.length; i += 50) {
     const batch = texts.slice(i, i + 50)
     const res = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: batch })
     for (let j = 0; j < batch.length; j++) {
+      const row = allChanged[i + j]
       embedRows.push({
-        source_id:         inserted[i + j].id,
+        source_id:         row.id,
         source_collection: 'price',
         locale:            'en',
         content:           batch[j],
         metadata: {
           doc_type:                'price',
           source_collection:       'price',
-          service_en:              inserted[i + j].service_name_en ?? null,
-          service_km:              inserted[i + j].service_name_km ?? null,
-          department:              inserted[i + j].department ?? null,
-          price_khmer:             inserted[i + j].price_khmer ?? null,
-          price_foreign:           inserted[i + j].price_foreign ?? null,
-          price_emergency_khmer:   inserted[i + j].price_emergency_khmer ?? null,
-          price_emergency_foreign: inserted[i + j].price_emergency_foreign ?? null,
+          service_en:              row.service_name_en ?? null,
+          service_km:              row.service_name_km ?? null,
+          department:              row.department ?? null,
+          price_khmer:             row.price_khmer ?? null,
+          price_foreign:           row.price_foreign ?? null,
+          price_emergency_khmer:   row.price_emergency_khmer ?? null,
+          price_emergency_foreign: row.price_emergency_foreign ?? null,
           locale:                  'en',
           embed_model:             EMBEDDING_MODEL,
         },
-        embedding:         res.data[j].embedding,
+        embedding: res.data[j].embedding,
       })
     }
   }
@@ -130,5 +174,5 @@ export async function POST(req: NextRequest) {
   const { error: embedErr } = await db.from('ai_rag2_documents').insert(embedRows)
   if (embedErr) console.error('[price-lists/import] embed error:', embedErr)
 
-  return NextResponse.json({ imported: inserted.length })
+  return NextResponse.json({ total: allChanged.length })
 }
