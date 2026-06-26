@@ -194,27 +194,40 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
               File must follow the exact column format below. Download the template, fill it in, then upload. Uploading will <strong>replace all existing prices</strong>.
             </p>
 
-            {/* Column format table */}
-            <div className="mb-5 overflow-hidden rounded-xl border border-[#e7dfd5]">
-              <table className="w-full text-xs">
-                <thead className="bg-[#efebe4] text-[#716b60]">
-                  <tr>
-                    <th className="px-3 py-2 text-left font-bold w-8">Col</th>
-                    <th className="px-3 py-2 text-left font-bold">Header name</th>
-                    <th className="px-3 py-2 text-left font-bold text-[#b89148]">Example value</th>
+            {/* Spreadsheet-style horizontal preview */}
+            <div className="mb-5 overflow-x-auto rounded-xl border border-[#e7dfd5]">
+              <table className="min-w-full text-xs border-collapse">
+                {/* Row 1: column letters */}
+                <thead>
+                  <tr className="bg-[#efebe4]">
+                    <th className="w-8 border-r border-[#e7dfd5] px-2 py-1.5" />
+                    {COLUMNS.map(c => (
+                      <th className="border-r border-[#e7dfd5] px-3 py-1.5 text-center font-bold text-[#b89148] last:border-r-0" key={c.col}>
+                        {c.col}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {COLUMNS.map(c => (
-                    <tr className="border-t border-[#eee8dd]" key={c.col}>
-                      <td className="px-3 py-2 font-mono font-bold text-[#b89148] align-top">{c.col}</td>
-                      <td className="px-3 py-2 align-top">
-                        <div className="font-semibold text-[#393733]">{c.name}</div>
-                        <div className="text-[#8c8982]">{c.note}</div>
+                  {/* Row 2: header names (row 1 in Excel) */}
+                  <tr className="bg-[#f7f4ef]">
+                    <td className="border-r border-t border-[#e7dfd5] px-2 py-1.5 text-center font-mono text-[#8c8982]">1</td>
+                    {COLUMNS.map(c => (
+                      <td className="border-r border-t border-[#e7dfd5] px-3 py-2 last:border-r-0 min-w-[100px]" key={c.col}>
+                        <div className="font-semibold text-[#393733] leading-tight">{c.name}</div>
+                        <div className="text-[#8c8982] mt-0.5">{c.note}</div>
                       </td>
-                      <td className="px-3 py-2 text-[#393733] align-top font-mono">{c.example}</td>
-                    </tr>
-                  ))}
+                    ))}
+                  </tr>
+                  {/* Row 3: example data (row 2 in Excel) */}
+                  <tr className="bg-white">
+                    <td className="border-r border-t border-[#e7dfd5] px-2 py-1.5 text-center font-mono text-[#8c8982]">2</td>
+                    {COLUMNS.map(c => (
+                      <td className="border-r border-t border-[#e7dfd5] px-3 py-2 text-[#393733] last:border-r-0" key={c.col}>
+                        {c.example}
+                      </td>
+                    ))}
+                  </tr>
                 </tbody>
               </table>
             </div>
