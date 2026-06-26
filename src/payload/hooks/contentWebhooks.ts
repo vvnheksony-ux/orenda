@@ -38,6 +38,8 @@ async function fireWebhooks(
   if (!secret) return
 
   const targets = await getWebhookTargets(payload)
+  const envTarget = process.env.RAG2_INGEST_URL
+  if (envTarget && !targets.includes(envTarget)) targets.push(envTarget)
   if (targets.length === 0) return
 
   const webhookPayload = {
