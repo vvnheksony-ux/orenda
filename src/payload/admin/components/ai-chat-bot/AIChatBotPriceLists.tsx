@@ -186,7 +186,7 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
       {/* Upload modal */}
       {showUploadModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2" onClick={e => { if (e.target === e.currentTarget) setShowUploadModal(false) }}>
-          <div className="relative w-[95vw] max-w-[1400px] rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="relative w-[95vw] max-w-[1400px] rounded-2xl bg-white p-10 shadow-2xl">
             <button
               className="absolute right-4 top-4 rounded-lg border-none bg-transparent p-1 text-[#8c8982] hover:text-[#393733]"
               onClick={() => setShowUploadModal(false)}
@@ -195,8 +195,8 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
               <X size={18} />
             </button>
 
-            <h2 className="mb-1 mt-0 text-lg font-bold text-[#2b2823]">Upload Price List</h2>
-            <p className="mb-4 mt-0 text-sm text-[#716b60]">
+            <h2 className="mb-2 mt-0 text-xl font-bold text-[#2b2823]">Upload Price List</h2>
+            <p className="mb-6 mt-0 text-sm text-[#716b60]">
               File must follow the exact column format below. Download the template, fill it in, then upload. Uploading will <strong>replace all existing prices</strong>.
             </p>
 
@@ -241,16 +241,16 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
               </table>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 mt-6">
               <button
-                className="inline-flex items-center gap-2 rounded-xl border border-[#e7dfd5] bg-[#f7f4ef] px-4 py-2.5 text-sm font-bold text-[#716b60] hover:bg-[#efebe4]"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#e7dfd5] bg-[#f7f4ef] px-5 py-3 text-sm font-bold text-[#716b60] hover:bg-[#efebe4]"
                 onClick={downloadTemplate}
                 type="button"
               >
                 <FileSpreadsheet size={15} /> Download Template
               </button>
               <button
-                className="inline-flex items-center gap-2 rounded-xl border-none bg-[#b89148] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#a37d3e]"
+                className="inline-flex items-center gap-2 rounded-xl border-none bg-[#b89148] px-5 py-3 text-sm font-bold text-white hover:bg-[#a37d3e]"
                 onClick={() => fileRef.current?.click()}
                 type="button"
               >
