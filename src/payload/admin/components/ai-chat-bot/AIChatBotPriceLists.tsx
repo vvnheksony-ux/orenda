@@ -149,17 +149,17 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
 
       <div className="overflow-hidden rounded-2xl border border-[#e7dfd5] bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
             <thead className="bg-[#efebe4] text-[#716b60]">
               <tr>
-                <th className="px-4 py-3 font-bold">Service (EN)</th>
-                <th className="px-4 py-3 font-bold">Khmer Name</th>
-                <th className="px-4 py-3 font-bold">KH $</th>
-                <th className="px-4 py-3 font-bold">FO $</th>
-                <th className="px-4 py-3 font-bold">EM-KH $</th>
-                <th className="px-4 py-3 font-bold">EM-FO $</th>
-                <th className="px-4 py-3 font-bold">Dept</th>
-                <th className="px-4 py-3 text-right font-bold">Actions</th>
+                <th className="px-4 py-3 font-bold w-[260px]">Service (EN)</th>
+                <th className="px-4 py-3 font-bold w-[160px]">Khmer Name</th>
+                <th className="px-4 py-3 font-bold w-[70px]">KH $</th>
+                <th className="px-4 py-3 font-bold w-[70px]">FO $</th>
+                <th className="px-4 py-3 font-bold w-[80px]">EM-KH $</th>
+                <th className="px-4 py-3 font-bold w-[80px]">EM-FO $</th>
+                <th className="px-4 py-3 font-bold w-[140px]">Department</th>
+                <th className="px-4 py-3 text-right font-bold w-[80px]">Actions</th>
               </tr>
             </thead>
             <tbody>

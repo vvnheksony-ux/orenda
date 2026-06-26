@@ -76,19 +76,19 @@ export async function POST(req: NextRequest) {
 
   const uploadId: string = uploadRecord.id
 
-  let text: string
+  let text = ''
   try {
     text = await extractText(buffer, file.name)
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    await db.from('ai_rag2_uploads').update({ status: 'error', error: msg }).eq('id', uploadId)
-    return NextResponse.json({ error: 'Text extraction failed' }, { status: 500 })
+  } catch {
+    // extraction failed (e.g. scanned/image PDF) — still save the upload record but skip embedding
+    await db.from('ai_rag2_uploads').update({ status: 'error', error: 'Text extraction failed. File may be image-based or encrypted.' }).eq('id', uploadId)
+    return NextResponse.json({ error: 'Could not extract text from this file. If it is a scanned or image-based PDF, no text can be read from it.' }, { status: 422 })
   }
 
   const chunks = chunkText(text)
   if (chunks.length === 0) {
-    await db.from('ai_rag2_uploads').update({ status: 'error', error: 'No text found' }).eq('id', uploadId)
-    return NextResponse.json({ error: 'No text content found' }, { status: 400 })
+    await db.from('ai_rag2_uploads').update({ status: 'error', error: 'No text found — file may be image-based' }).eq('id', uploadId)
+    return NextResponse.json({ error: 'No text found in file. If this is a scanned PDF or image, it cannot be embedded.' }, { status: 422 })
   }
 
   const rows: object[] = []

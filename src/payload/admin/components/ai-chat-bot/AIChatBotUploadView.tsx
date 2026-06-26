@@ -33,7 +33,7 @@ export default async function AIChatBotUploadView(props: AdminViewServerProps) {
   `)
   const uploads = getRows<UploadRecord>(result)
 
-  const nav: StepNavItem[] = [{ label: 'AI Chat Bot' }, { label: 'Upload File' }]
+  const nav: StepNavItem[] = [{ label: 'Upload File' }]
 
   return (
     <DefaultTemplate {...templateProps} className="operations-template">
@@ -41,7 +41,7 @@ export default async function AIChatBotUploadView(props: AdminViewServerProps) {
       <main className="mx-auto flex w-full flex-col gap-6 px-6 py-6 md:px-10 lg:px-19">
         <header>
           <h1 className="m-0 text-[20px] font-bold text-[#2b2823]">Upload File</h1>
-          <p className="mb-0 mt-1 text-sm text-[#716b60]">AI Chat Bot &gt; Upload File · PDF, TXT, MD — for miscellaneous content</p>
+          <p className="mb-0 mt-1 text-sm text-[#716b60]">PDF, DOCX, DOC, TXT, MD — for miscellaneous content</p>
         </header>
         <AIChatBotUpload initialUploads={uploads} />
       </main>

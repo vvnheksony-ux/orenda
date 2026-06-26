@@ -31,7 +31,7 @@ export default async function AIChatBotStaticDocsView(props: AdminViewServerProp
   `)
   const docs = getRows<StaticDoc>(result)
 
-  const nav: StepNavItem[] = [{ label: 'AI Chat Bot' }, { label: 'Static Docs' }]
+  const nav: StepNavItem[] = [{ label: 'Static Docs' }]
 
   return (
     <DefaultTemplate {...templateProps} className="operations-template">
@@ -39,7 +39,7 @@ export default async function AIChatBotStaticDocsView(props: AdminViewServerProp
       <main className="mx-auto flex w-full flex-col gap-6 px-6 py-6 md:px-10 lg:px-19">
         <header>
           <h1 className="m-0 text-[20px] font-bold text-[#2b2823]">Static Docs</h1>
-          <p className="mb-0 mt-1 text-sm text-[#716b60]">AI Chat Bot &gt; Static Docs · Edit About, Contact, Policy, Brand</p>
+          <p className="mb-0 mt-1 text-sm text-[#716b60]">Edit About, Contact, Policy, Brand content for the AI chatbot</p>
         </header>
         <AIChatBotStaticDocs initialDocs={docs} />
       </main>
