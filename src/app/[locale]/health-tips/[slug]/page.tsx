@@ -119,10 +119,12 @@ export default function HealthTipDetailPage({ params }: { params: Promise<{ slug
                       <p className="font-dm-sans text-[16px] text-[#2a2620] leading-[1.8]">
                         {selectedBranch?.phone || ''}
                       </p>
-                      <button className="w-full h-[48px] bg-[#b89148] rounded-[12px] flex items-center justify-center gap-[8px] font-dm-sans text-[18px] text-white hover:bg-[#c8a25a] transition-colors">
+                      <a
+                        href={`tel:${(selectedBranch?.phone || '').replace(/\s+/g, '')}`}
+                        className="w-full h-[48px] bg-[#b89148] rounded-[12px] flex items-center justify-center gap-[8px] font-dm-sans text-[18px] text-white hover:bg-[#c8a25a] transition-colors">
                         <Phone size={20} />
                         Contact Now
-                      </button>
+                      </a>
                     </div>
                   </div>
                 </div>
