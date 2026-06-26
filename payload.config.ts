@@ -134,10 +134,6 @@ export default buildConfig({
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/testimonials/:mode?/:id?',
         },
-        aiChatBot: {
-          Component: '@/payload/admin/components/ai-chat-bot/AIChatBotAdminView',
-          path: '/ai-chat-bot',
-        },
         aiChatBotUpload: {
           Component: '@/payload/admin/components/ai-chat-bot/AIChatBotUploadView',
           path: '/ai-chat-bot/upload',
