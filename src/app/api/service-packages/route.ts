@@ -65,7 +65,7 @@ export async function GET(req: Request) {
       slug:       row.slug ?? '',
       title:      row.title ?? '',
       description: lexicalToText(row.description),
-      priceLabel: row.price_label ?? '',
+      price:      row.price_label ?? '',
       image:      mediaStorageUrl(row.img_filename, row.img_prefix),
       department: row.dept_id
         ? { id: String(row.dept_id), name: row.dept_name ?? '' }
