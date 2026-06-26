@@ -13,6 +13,10 @@ export const Partners: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'order', 'status'],
   },
+  versions: {
+    maxPerDoc: 20,
+    drafts: true,
+  },
   access: {
     read: publishedOnlyFor('partners'),
     create: createRBACAccess('partners', 'create'),
