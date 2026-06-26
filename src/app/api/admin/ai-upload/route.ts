@@ -101,7 +101,15 @@ export async function POST(req: NextRequest) {
         source_collection: 'other',
         locale: 'en',
         content: batch[j],
-        metadata: { doc_type: 'other', filename: file.name, chunk_index: i + j },
+        metadata: {
+          doc_type:          'other',
+          source_collection: 'other',
+          filename:          file.name,
+          chunk_index:       i + j,
+          total_chunks:      chunks.length,
+          locale:            'en',
+          embed_model:       EMBEDDING_MODEL,
+        },
         embedding: res.data[j].embedding,
       })
     }

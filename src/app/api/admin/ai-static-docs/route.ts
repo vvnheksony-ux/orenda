@@ -60,7 +60,13 @@ export async function PUT(req: NextRequest) {
         source_collection: docType,
         locale,
         content,
-        metadata: { doc_type: docType, locale },
+        metadata: {
+          doc_type:          docType,
+          source_collection: docType,
+          locale,
+          chunk_index:       0,
+          embed_model:       EMBEDDING_MODEL,
+        },
         embedding: res.data[0].embedding,
       })
     } catch (e) {

@@ -109,7 +109,19 @@ export async function POST(req: NextRequest) {
         source_collection: 'price',
         locale:            'en',
         content:           batch[j],
-        metadata:          { doc_type: 'price', service: inserted[i + j].service_name_en },
+        metadata: {
+          doc_type:                'price',
+          source_collection:       'price',
+          service_en:              inserted[i + j].service_name_en ?? null,
+          service_km:              inserted[i + j].service_name_km ?? null,
+          department:              inserted[i + j].department ?? null,
+          price_khmer:             inserted[i + j].price_khmer ?? null,
+          price_foreign:           inserted[i + j].price_foreign ?? null,
+          price_emergency_khmer:   inserted[i + j].price_emergency_khmer ?? null,
+          price_emergency_foreign: inserted[i + j].price_emergency_foreign ?? null,
+          locale:                  'en',
+          embed_model:             EMBEDDING_MODEL,
+        },
         embedding:         res.data[j].embedding,
       })
     }

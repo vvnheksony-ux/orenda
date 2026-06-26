@@ -49,11 +49,15 @@ export async function ingestRecord(
 
   for (const locale of LOCALES) {
     let text = enText
+    let locRow: any = enRow
     if (locale !== 'en') {
-      const locRow = await config.fetchRow(docId, locale)
+      locRow = await config.fetchRow(docId, locale)
       const locText = locRow ? config.formatText(locRow).trim() : ''
       if (locText) text = locText
     }
+
+    const isLocFallback = locale !== 'en' && text === enText
+    const title = config.getTitle(locRow ?? enRow)
 
     const embedding = await embedText(text, openai)
     rows.push({
@@ -63,8 +67,13 @@ export async function ingestRecord(
       content:           text,
       metadata: {
         doc_id:            docId,
+        collection:        config.sourceCollection,
         source_collection: config.sourceCollection,
+        title,
         locale,
+        locale_fallback:   isLocFallback,
+        chunk_index:       0,
+        embed_model:       EMBEDDING_MODEL,
       },
       embedding,
     })

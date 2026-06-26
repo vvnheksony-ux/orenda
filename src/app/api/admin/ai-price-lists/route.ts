@@ -39,7 +39,19 @@ async function embedPrice(id: string, row: Record<string, unknown>) {
     source_collection: 'price',
     locale: 'en',
     content: text,
-    metadata: { doc_type: 'price', service: row.service_name_en },
+    metadata: {
+      doc_type:                'price',
+      source_collection:       'price',
+      service_en:              row.service_name_en ?? null,
+      service_km:              row.service_name_km ?? null,
+      department:              row.department ?? null,
+      price_khmer:             row.price_khmer ?? null,
+      price_foreign:           row.price_foreign ?? null,
+      price_emergency_khmer:   row.price_emergency_khmer ?? null,
+      price_emergency_foreign: row.price_emergency_foreign ?? null,
+      locale:                  'en',
+      embed_model:             EMBEDDING_MODEL,
+    },
     embedding: res.data[0].embedding,
   })
 }
