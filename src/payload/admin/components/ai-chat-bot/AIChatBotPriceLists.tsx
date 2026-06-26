@@ -37,13 +37,19 @@ function rowToForm(row: PriceRow): PriceForm {
 }
 
 const COLUMNS = [
-  { col: 'A', name: 'ល.រ', note: 'Row # (ignored)', example: '1' },
-  { col: 'B', name: 'Khmer Name', sub: 'លេខាភាសាខ្មែរ', note: 'Khmer service name', example: 'ការពិគ្រោះ (< ២០ នាទី)' },
-  { col: 'C', name: 'English Name', sub: 'លេខាភាសាអង់គ្លេស', note: 'Required', example: 'Consultation ER (less than 20 min)' },
-  { col: 'D', name: 'Khmer Price', sub: 'ផ្នែកដាតិខ្មែរ', note: 'USD number', example: '15' },
-  { col: 'E', name: 'Foreign Price', sub: 'ផ្នែកបរទេស', note: 'USD number', example: '15' },
-  { col: 'F', name: 'Emrg. Khmer', sub: 'ផ្នែកដាតិខ្មែរ បន្ទាន់', note: 'USD number', example: '15' },
-  { col: 'G', name: 'Emrg. Foreign', sub: 'ផ្នែកបរទេស បន្ទាន់', note: 'USD number', example: '15' },
+  { col: 'A', name: 'ល.រ', note: 'Row # (ignored)' },
+  { col: 'B', name: 'Khmer Name', sub: 'លេខាភាសាខ្មែរ', note: 'Khmer service name' },
+  { col: 'C', name: 'English Name', sub: 'លេខាភាសាអង់គ្លេស', note: 'Required' },
+  { col: 'D', name: 'Khmer Price', sub: 'ផ្នែកដាតិខ្មែរ', note: 'USD number' },
+  { col: 'E', name: 'Foreign Price', sub: 'ផ្នែកបរទេស', note: 'USD number' },
+  { col: 'F', name: 'Emrg. Khmer', sub: 'ផ្នែកដាតិខ្មែរ បន្ទាន់', note: 'USD number' },
+  { col: 'G', name: 'Emrg. Foreign', sub: 'ផ្នែកបរទេស បន្ទាន់', note: 'USD number' },
+]
+
+const EXAMPLE_ROWS = [
+  ['1', 'ការពិគ្រោះ (< ២០ នាទី)',  'Consultation ER (less than 20 min)',  '15', '15', '15', '15'],
+  ['2', 'ការពិគ្រោះ (> ២០ នាទី)',  'Consultation ER (more than 20 min)',  '35', '35', '35', '35'],
+  ['3', 'ការថែទាំស្បែក',           'Consultation Dermatology',            '25', '25', '25', '25'],
 ]
 
 export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: PriceRow[] }) {
@@ -195,12 +201,12 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
             </p>
 
             {/* Spreadsheet-style horizontal preview */}
-            <div className="mb-5 rounded-xl border border-[#e7dfd5] overflow-x-auto">
+            <div className="mb-5 rounded-xl border border-[#ccc5bb] overflow-x-auto">
               <table className="w-full min-w-[860px] text-sm border-collapse">
                 {/* Column letter row */}
                 <thead>
                   <tr className="bg-[#3b2f1e] text-white">
-                    <th className="w-5 border-r border-white/20 px-1 py-2" />
+                    <th className="w-7 border-r border-white/20 px-1 py-2 text-[10px] font-normal text-white/40" />
                     {COLUMNS.map(c => (
                       <th className="border-r border-white/20 px-3 py-2 text-center font-bold last:border-r-0" key={c.col}>
                         {c.col}
@@ -211,24 +217,26 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
                 <tbody>
                   {/* Row 1: header names */}
                   <tr className="bg-[#f7f4ef]">
-                    <td className="border-r border-t border-[#e7dfd5] px-1 py-2 text-center font-mono text-[10px] text-[#8c8982]">1</td>
+                    <td className="border-r border-b border-[#ccc5bb] bg-[#ede8e1] px-1 py-3 text-center font-mono text-[9px] text-[#8c8982]">1</td>
                     {COLUMNS.map(c => (
-                      <td className="border-r border-t border-[#e7dfd5] px-3 py-3 last:border-r-0" key={c.col}>
+                      <td className="border-r border-b border-[#ccc5bb] px-3 py-3 last:border-r-0" key={c.col}>
                         <div className="font-bold text-[#2b2823]">{c.name}</div>
                         {'sub' in c && <div className="text-[#716b60] text-xs mt-0.5">{c.sub}</div>}
                         <div className="text-[#8c8982] text-xs mt-1 italic">{c.note}</div>
                       </td>
                     ))}
                   </tr>
-                  {/* Row 2: example values */}
-                  <tr className="bg-white">
-                    <td className="border-r border-t border-[#e7dfd5] px-1 py-2 text-center font-mono text-[10px] text-[#8c8982]">2</td>
-                    {COLUMNS.map(c => (
-                      <td className="border-r border-t border-[#e7dfd5] px-3 py-3 text-[#393733] last:border-r-0" key={c.col}>
-                        {c.example}
-                      </td>
-                    ))}
-                  </tr>
+                  {/* Example data rows */}
+                  {EXAMPLE_ROWS.map((row, i) => (
+                    <tr className="bg-white" key={i}>
+                      <td className="border-r border-b border-[#ccc5bb] bg-[#ede8e1] px-1 py-2.5 text-center font-mono text-[9px] text-[#8c8982]">{i + 2}</td>
+                      {row.map((val, j) => (
+                        <td className="border-r border-b border-[#ccc5bb] px-3 py-2.5 text-[#393733] last:border-r-0" key={j}>
+                          {val}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
