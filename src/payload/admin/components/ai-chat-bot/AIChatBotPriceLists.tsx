@@ -1,7 +1,7 @@
 'use client'
 
-import { Pencil, Plus, Trash2 } from 'lucide-react'
-import { useState, useTransition } from 'react'
+import { Download, Pencil, Plus, Trash2, Upload } from 'lucide-react'
+import { useRef, useState, useTransition } from 'react'
 import type { PriceRow } from './AIChatBotPriceListsView'
 
 type PriceForm = {
@@ -42,7 +42,10 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
   const [editing, setEditing] = useState<PriceRow | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [importMsg, setImportMsg] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const fileRef = useRef<HTMLInputElement>(null)
 
   function beginAdd() {
     setEditing(null)
@@ -98,13 +101,59 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
     })
   }
 
+  async function downloadTemplate() {
+    const res = await fetch('/api/admin/ai-price-lists/template', { credentials: 'include' })
+    if (!res.ok) { setError('Download failed'); return }
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = 'price-list-template.xlsx'; a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!window.confirm(`Upload "${file.name}"? This will REPLACE all existing prices with data from this file.`)) {
+      e.target.value = ''; return
+    }
+    setError(null); setImportMsg(null); setImporting(true)
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/admin/ai-price-lists/import', { method: 'POST', credentials: 'include', body: fd })
+    const data = await res.json().catch(() => null)
+    setImporting(false)
+    e.target.value = ''
+    if (!res.ok) { setError(data?.error || 'Import failed'); return }
+    setImportMsg(`Imported ${data.imported} prices — page will reload`)
+    setTimeout(() => window.location.reload(), 1200)
+  }
+
   return (
     <section className="flex flex-col gap-5 pb-10">
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+      {importMsg ? <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 font-bold">{importMsg}</div> : null}
 
-      <div className="flex justify-end">
+      <input accept=".xlsx" className="hidden" onChange={handleImport} ref={fileRef} type="file" />
+
+      <div className="flex flex-wrap justify-end gap-2">
         <button
-          className="inline-flex h-12 items-center gap-2 rounded-xl border-none bg-[#b89148] px-5 text-sm font-bold text-white hover:bg-[#a37d3e]"
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#e7dfd5] bg-white px-4 text-sm font-bold text-[#716b60] hover:bg-[#f4f0eb]"
+          onClick={downloadTemplate}
+          type="button"
+        >
+          <Download size={15} /> Download Template
+        </button>
+        <button
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#e7dfd5] bg-white px-4 text-sm font-bold text-[#716b60] hover:bg-[#f4f0eb] disabled:opacity-50"
+          disabled={importing}
+          onClick={() => fileRef.current?.click()}
+          type="button"
+        >
+          <Upload size={15} /> {importing ? 'Importing...' : 'Upload XLSX'}
+        </button>
+        <button
+          className="inline-flex h-10 items-center gap-2 rounded-xl border-none bg-[#b89148] px-5 text-sm font-bold text-white hover:bg-[#a37d3e]"
           onClick={beginAdd}
           type="button"
         >
