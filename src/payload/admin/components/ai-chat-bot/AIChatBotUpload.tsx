@@ -1,6 +1,6 @@
 'use client'
 
-import { FileText, Trash2, Upload, X } from 'lucide-react'
+import { ExternalLink, FileText, Trash2, Upload, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { ConfirmationModal, useModal } from '@payloadcms/ui'
 import { useRouter } from 'next/navigation'
@@ -12,6 +12,7 @@ const LEAVE_MODAL_SLUG = 'upload-leave-without-saving'
 export default function AIChatBotUpload({ initialUploads }: { initialUploads: UploadRecord[] }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploads, setUploads] = useState(initialUploads)
+  const [preview, setPreview] = useState<{ url: string; filename: string; title: string } | null>(null)
   const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -124,6 +125,7 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
 
   return (
     <section className="flex flex-col gap-5 pb-10">
+      {preview ? <FilePreviewModal {...preview} onClose={() => setPreview(null)} /> : null}
       <ConfirmationModal
         body="Your upload has not been completed. If you leave now, your progress will be lost."
         cancelLabel="Stay on this page"
@@ -230,17 +232,22 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
                 {uploads.map(u => (
                   <tr className="border-t border-[#eee8dd] text-[#393733]" key={u.id}>
                     <td className="px-5 py-3 max-w-xs">
-                      <div className="flex items-start gap-2">
+                      <button
+                        type="button"
+                        className="flex items-start gap-2 bg-transparent border-none p-0 text-left w-full cursor-pointer group"
+                        onClick={() => u.url ? setPreview({ url: u.url, filename: u.filename || '', title: u.title || u.filename || '' }) : null}
+                        disabled={!u.url}
+                      >
                         <FileText className="mt-0.5 shrink-0 text-[#2f80ed]" size={18} />
                         <div className="min-w-0">
-                          <p className="truncate font-bold text-[#2b2823]">{u.title || u.filename || '-'}</p>
+                          <p className="truncate font-bold text-[#2b2823] group-hover:text-[#2f80ed] transition-colors">{u.title || u.filename || '-'}</p>
                           <p className="truncate text-xs text-[#8c8982]">{u.filename}</p>
                           {u.description ? <p className="mt-0.5 line-clamp-2 text-xs text-[#716b60]">{u.description}</p> : null}
                           {u.status === 'error' && u.error ? (
                             <p className="mt-1 text-xs text-red-600">⚠ {u.error}</p>
                           ) : null}
                         </div>
-                      </div>
+                      </button>
                     </td>
                     <td className="px-5 py-3">
                       <StatusPill status={u.status} />
@@ -268,6 +275,72 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
         <p className="text-center text-sm text-[#8c8982]">No files uploaded yet.</p>
       )}
     </section>
+  )
+}
+
+function FilePreviewModal({ url, filename, title, onClose }: { url: string; filename: string; title: string; onClose: () => void }) {
+  const ext = filename.split('.').pop()?.toLowerCase() ?? ''
+  const [txtContent, setTxtContent] = useState<string | null>(null)
+  const [txtLoading, setTxtLoading] = useState(false)
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  useEffect(() => {
+    if (ext === 'txt' || ext === 'md') {
+      setTxtLoading(true)
+      fetch(url).then(r => r.text()).then(t => { setTxtContent(t); setTxtLoading(false) }).catch(() => { setTxtContent('Could not load file.'); setTxtLoading(false) })
+    }
+  }, [url, ext])
+
+  let body: React.ReactNode
+  if (ext === 'pdf') {
+    body = <iframe src={url} className="w-full h-full border-none" title={title} />
+  } else if (ext === 'docx' || ext === 'doc') {
+    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`
+    body = <iframe src={viewerUrl} className="w-full h-full border-none" title={title} />
+  } else if (ext === 'txt' || ext === 'md') {
+    body = txtLoading
+      ? <div className="flex h-full items-center justify-center text-sm text-[#8c8982]">Loading...</div>
+      : <pre className="h-full overflow-auto whitespace-pre-wrap break-words p-6 text-sm text-[#2b2823] font-mono leading-relaxed">{txtContent}</pre>
+  } else {
+    body = (
+      <div className="flex h-full flex-col items-center justify-center gap-4 text-[#716b60]">
+        <FileText size={48} className="text-[#c8bfb3]" />
+        <p className="text-sm">Preview not available for this file type.</p>
+        <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-xl bg-[#b89148] px-4 py-2 text-sm font-bold text-white no-underline hover:bg-[#a37d3e]">
+          <ExternalLink size={14} /> Open file
+        </a>
+      </div>
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="flex h-[88vh] w-[90vw] max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex shrink-0 items-center gap-3 border-b border-[#e7dfd5] px-5 py-3.5">
+          <FileText size={18} className="shrink-0 text-[#2f80ed]" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-bold text-[#2b2823] text-sm">{title}</p>
+            <p className="truncate text-xs text-[#8c8982]">{filename}</p>
+          </div>
+          <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-[#716b60] no-underline hover:bg-[#f7f0e4] hover:text-[#b89148] transition-colors">
+            <ExternalLink size={13} /> Open
+          </a>
+          <button type="button" onClick={onClose} className="flex items-center justify-center rounded-full w-8 h-8 border-none bg-transparent text-[#8c8982] hover:bg-[#f7f0e4] hover:text-[#2b2823] cursor-pointer transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+        {/* Content */}
+        <div className="flex-1 overflow-hidden bg-[#fafaf9]">
+          {body}
+        </div>
+      </div>
+    </div>
   )
 }
 
