@@ -1,13 +1,63 @@
 import OpenAI from 'openai'
 import { createServiceClient } from '@/utils/supabase/server'
 import { getCollectionConfig } from './format/index'
+import { getRawPool } from '@/lib/db'
 
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const LOCALES = ['en', 'km', 'zh'] as const
+const DOCTORS_SUMMARY_ID = 'doctors-summary'
 
 async function embedText(text: string, openai: OpenAI): Promise<number[]> {
   const res = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: text })
   return res.data[0].embedding
+}
+
+export async function rebuildDoctorsSummary(openai: OpenAI): Promise<void> {
+  const pool = getRawPool()
+  const { rows } = await pool.query(`
+    SELECT
+      COALESCE(dl.name, endll.name)           AS name,
+      COALESCE(dl.specialty, endll.specialty) AS specialty,
+      doc.department_id
+    FROM payload.doctors doc
+    LEFT JOIN payload.doctors_locales dl    ON dl._parent_id = doc.id AND dl._locale = 'en'
+    LEFT JOIN payload.doctors_locales endll ON endll._parent_id = doc.id AND endll._locale = 'en'
+    WHERE doc._status = 'published'
+    ORDER BY doc.id
+  `)
+
+  const count = rows.length
+  const list = rows
+    .map((r: any, i: number) => `${i + 1}. ${r.name ?? 'Unknown'}${r.specialty ? ` — ${r.specialty}` : ''}`)
+    .join('\n')
+  const content = count > 0
+    ? `Orienda has ${count} doctor${count === 1 ? '' : 's'}:\n${list}`
+    : 'Orienda currently has no published doctors.'
+
+  const db = await createServiceClient()
+  await db.from('ai_rag2_documents').delete().eq('source_id', DOCTORS_SUMMARY_ID)
+
+  if (count === 0) return
+
+  const embedding = await embedText(content, openai)
+  await db.from('ai_rag2_documents').insert({
+    source_id:         DOCTORS_SUMMARY_ID,
+    source_collection: 'doctors',
+    locale:            'en',
+    content,
+    metadata: {
+      doc_type:          'doctors',
+      source_collection: 'doctors',
+      title:             'All Doctors Summary',
+      locale:            'en',
+      locale_fallback:   false,
+      chunk_index:       0,
+      total_chunks:      1,
+      embed_model:       EMBEDDING_MODEL,
+    },
+    embedding,
+  })
+  console.log(`[rag2] rebuilt doctors summary: ${count} doctors`)
 }
 
 export async function deleteRecord(sourceId: string): Promise<void> {

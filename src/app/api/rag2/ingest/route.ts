@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { verifyWebhookSignature } from '@/lib/rag2/verify-webhook'
-import { ingestRecord, deleteRecord } from '@/lib/rag2/ingest-record'
+import { ingestRecord, deleteRecord, rebuildDoctorsSummary } from '@/lib/rag2/ingest-record'
 
 export const runtime = 'nodejs'
 
@@ -32,6 +32,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       await ingestRecord(openai, collection, docId)
     } else if (event === 'deleted') {
       await deleteRecord(String(docId))
+    }
+    // Rebuild doctors summary after any doctor change so AI can count accurately
+    if (collection === 'doctors') {
+      await rebuildDoctorsSummary(openai)
     }
   } catch (err: any) {
     console.error('[rag2/ingest] error:', err?.message ?? err)
