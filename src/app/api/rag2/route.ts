@@ -12,11 +12,19 @@ export const runtime = 'nodejs'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-async function saveAssistantMessage(sessionId: string, content: string) {
+async function saveAssistantMessage(sessionId: string, content: string): Promise<string | null> {
   try {
     const db = await createServiceClient()
-    await db.from('ai_chat_messages').insert({ session_id: sessionId, role: 'assistant', content })
-  } catch (e) { console.error('[rag2] assistant msg insert error:', e) }
+    const { data } = await db
+      .from('ai_chat_messages')
+      .insert({ session_id: sessionId, role: 'assistant', content })
+      .select('id')
+      .single()
+    return data?.id ?? null
+  } catch (e) {
+    console.error('[rag2] assistant msg insert error:', e)
+    return null
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -63,13 +71,8 @@ export async function POST(req: NextRequest) {
 
   if (isGreeting(message, language)) {
     const reply = greetingReply(language)
-    if (sessionId) {
-      try {
-        const db = await createServiceClient()
-        await db.from('ai_chat_messages').insert({ session_id: sessionId, role: 'assistant', content: reply })
-      } catch (e) { console.error('[rag2] greeting save error:', e) }
-    }
-    return NextResponse.json({ output: reply }, { status: 200 })
+    const messageId = sessionId ? await saveAssistantMessage(sessionId, reply) : null
+    return NextResponse.json({ output: reply, ...(messageId ? { message_id: messageId } : {}) }, { status: 200 })
   }
 
   // Build context (shared between streaming and non-streaming)
@@ -105,9 +108,12 @@ export async function POST(req: NextRequest) {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`))
             }
           }
+          if (sid && fullReply) {
+            const msgId = await saveAssistantMessage(sid, fullReply)
+            if (msgId) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ message_id: msgId })}\n\n`))
+          }
           controller.enqueue(encoder.encode('data: [DONE]\n\n'))
           controller.close()
-          if (sid && fullReply) await saveAssistantMessage(sid, fullReply)
         } catch (err: any) {
           console.error('[rag2] stream error:', err?.message ?? err)
           const fallback = "Sorry, I couldn't get a response right now. Please try again."
@@ -145,7 +151,7 @@ export async function POST(req: NextRequest) {
     reply = "Sorry, I couldn't get a response right now. Please try again in a moment."
   }
 
-  if (sessionId && reply) await saveAssistantMessage(sessionId, reply)
+  const messageId = sessionId && reply ? await saveAssistantMessage(sessionId, reply) : null
 
-  return NextResponse.json({ output: reply }, { status: 200 })
+  return NextResponse.json({ output: reply, ...(messageId ? { message_id: messageId } : {}) }, { status: 200 })
 }

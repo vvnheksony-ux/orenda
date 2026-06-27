@@ -293,7 +293,7 @@ export default function FloatingChat() {
       if (!contentType.includes('text/event-stream')) {
         const data = await res.json().catch(() => null)
         const reply = data?.output ?? "Sorry, I couldn't get a response right now. Please try again."
-        setMessages(prev => [...prev, { id: aiMsgId, role: 'ai', content: reply, timestamp: timeNow() }])
+        setMessages(prev => [...prev, { id: aiMsgId, role: 'ai', content: reply, dbId: data?.message_id ?? undefined, timestamp: timeNow() }])
         setIsTyping(false)
         return
       }
@@ -321,9 +321,11 @@ export default function FloatingChat() {
           const payload = line.slice(6).trim()
           if (payload === '[DONE]') { streamDone = true; break }
           try {
-            const { text: chunk } = JSON.parse(payload)
-            if (chunk) {
-              fullText += chunk
+            const parsed = JSON.parse(payload)
+            if (parsed.message_id) {
+              setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, dbId: parsed.message_id } : m))
+            } else if (parsed.text) {
+              fullText += parsed.text
               setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: fullText } : m))
             }
           } catch {}
