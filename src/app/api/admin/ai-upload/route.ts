@@ -52,6 +52,8 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData().catch(() => null)
   const file = formData?.get('file') as File | null
   if (!file) return NextResponse.json({ error: 'file required' }, { status: 400 })
+  const userTitle = (formData?.get('title') as string | null)?.trim() || file.name.replace(/\.[^.]+$/, '')
+  const userDescription = (formData?.get('description') as string | null)?.trim() || null
   if (file.size > MAX_FILE_BYTES) return NextResponse.json({ error: 'File exceeds 10MB' }, { status: 400 })
 
   const buffer = Buffer.from(await file.arrayBuffer())
@@ -104,7 +106,8 @@ export async function POST(req: NextRequest) {
         metadata: {
           doc_type:          'other',
           source_collection: 'other',
-          title:             file.name.replace(/\.[^.]+$/, ''),
+          title:             userTitle,
+          description:       userDescription ?? undefined,
           locale:            'en',
           locale_fallback:   false,
           chunk_index:       i + j,
