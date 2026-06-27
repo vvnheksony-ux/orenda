@@ -2,8 +2,9 @@
 
 import { Pencil } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import { useState } from 'react'
-import { ConfirmationModal, useModal, usePreventLeave } from '@payloadcms/ui'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ConfirmationModal, useModal } from '@payloadcms/ui'
+import { useRouter } from 'next/navigation'
 import type { StaticDoc } from './AIChatBotStaticDocsView'
 
 const LEAVE_MODAL_SLUG = 'static-docs-leave-without-saving'
@@ -29,8 +30,11 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
   const [savedKeys, setSavedKeys] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [hasAccepted, setHasAccepted] = useState(false)
+
   const { openModal, closeModal } = useModal()
+  const router = useRouter()
+  const pendingHref = useRef<string | null>(null)
+  const isDirtyRef = useRef(false)
 
   const draftKey = `${activeDoc}:${locale}`
   const storedContent = getContent(docs, activeDoc, locale)
@@ -39,12 +43,38 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
   const isEditing = editingKeys[draftKey] !== undefined ? editingKeys[draftKey] : !storedContent
   const justSaved = savedKeys[draftKey] && !isDirty
 
-  usePreventLeave({
-    hasAccepted,
-    onAccept: () => setHasAccepted(false),
-    onPrevent: () => openModal(LEAVE_MODAL_SLUG),
-    prevent: isDirty,
-  })
+  useEffect(() => { isDirtyRef.current = isDirty }, [isDirty])
+
+  // Block browser close/reload
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!isDirtyRef.current) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [])
+
+  // Intercept SPA link clicks
+  const handleClick = useCallback((e: MouseEvent) => {
+    if (!isDirtyRef.current) return
+    let el = e.target as HTMLElement | null
+    while (el && el.tagName.toLowerCase() !== 'a') el = el.parentElement
+    if (!el) return
+    const anchor = el as HTMLAnchorElement
+    const href = anchor.href
+    if (!href || href === window.location.href || anchor.target === '_blank' || anchor.download) return
+    e.preventDefault()
+    e.stopPropagation()
+    pendingHref.current = href
+    openModal(LEAVE_MODAL_SLUG)
+  }, [openModal])
+
+  useEffect(() => {
+    document.addEventListener('click', handleClick, true)
+    return () => document.removeEventListener('click', handleClick, true)
+  }, [handleClick])
 
   function startEdit() {
     setEditingKeys(k => ({ ...k, [draftKey]: true }))
@@ -87,6 +117,12 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
     setSavedKeys(k => ({ ...k, [draftKey]: true }))
   }
 
+  function leaveAnyway() {
+    closeModal(LEAVE_MODAL_SLUG)
+    const href = pendingHref.current
+    if (href) router.push(href)
+  }
+
   return (
     <section className="flex flex-col gap-5 pb-10">
       <ConfirmationModal
@@ -96,7 +132,7 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
         heading="Leave without saving"
         modalSlug={LEAVE_MODAL_SLUG}
         onCancel={() => closeModal(LEAVE_MODAL_SLUG)}
-        onConfirm={() => { setHasAccepted(true); closeModal(LEAVE_MODAL_SLUG) }}
+        onConfirm={leaveAnyway}
       />
 
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
