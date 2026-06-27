@@ -1,10 +1,10 @@
 'use client'
 
 import { getTranslation } from '@payloadcms/translations'
-import { Hamburger, Link, useConfig, useNav, usePreferences, useTranslation } from '@payloadcms/ui'
+import { Link, useConfig, useNav, usePreferences, useTranslation } from '@payloadcms/ui'
 import type { NavGroupType } from '@payloadcms/ui/shared'
 import { EntityType } from '@payloadcms/ui/shared'
-import { ChevronRight, LogOut } from 'lucide-react'
+import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { formatAdminURL, PREFERENCE_KEYS } from 'payload/shared'
@@ -109,7 +109,7 @@ export default function OriendaPayloadNavClient({
   }
 
   return (
-    <aside className={navClassName} inert={!navOpen ? true : undefined}>
+    <aside className={navClassName} style={{ overflow: 'visible' }} inert={!navOpen ? true : undefined}>
       <div className={`${baseClass}__scroll flex h-screen flex-col overflow-hidden`} ref={navRef}>
         <div className="flex min-h-[106px] flex-col items-center gap-1.5 bg-[#5a431f] text-center">
           <Image
@@ -267,19 +267,16 @@ export default function OriendaPayloadNavClient({
           </Link>
         </footer>
 
-        <div className={`${baseClass}__header`}>
-          <div className={`${baseClass}__header-content`}>
-            <button
-              className={`${baseClass}__mobile-close`}
-              onClick={() => setNavOpen(false)}
-              tabIndex={!navOpen ? -1 : undefined}
-              type="button"
-            >
-              <Hamburger isActive />
-            </button>
-          </div>
-        </div>
       </div>
+      {/* Sidebar collapse/expand toggle on right edge */}
+      <button
+        type="button"
+        onClick={() => setNavOpen(!navOpen)}
+        className="absolute -right-3.5 top-20 z-50 flex h-7 w-7 items-center justify-center rounded-full border border-[#d3c2a6]/40 bg-white shadow-md hover:bg-[#f7f0e4]"
+        aria-label={navOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+      >
+        {navOpen ? <ChevronLeft size={14} color="#5a431f" /> : <ChevronRight size={14} color="#5a431f" />}
+      </button>
     </aside>
   )
 }
