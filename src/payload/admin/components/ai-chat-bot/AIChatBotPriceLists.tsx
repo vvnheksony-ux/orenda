@@ -1,9 +1,13 @@
 'use client'
 
 import { FileSpreadsheet, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
-import { useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { ConfirmationModal, useModal } from '@payloadcms/ui'
+import { useRouter } from 'next/navigation'
 import ConfirmModal from '../ui/ConfirmModal'
 import type { PriceRow } from './AIChatBotPriceListsView'
+
+const LEAVE_MODAL_SLUG = 'price-lists-leave-without-saving'
 
 type PriceForm = {
   service_name_en: string
@@ -66,6 +70,46 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
   const [importing, setImporting] = useState(false)
   const [isPending, startTransition] = useTransition()
   const fileRef = useRef<HTMLInputElement>(null)
+  const { openModal, closeModal } = useModal()
+  const router = useRouter()
+  const pendingHref = useRef<string | null>(null)
+  const isDirtyRef = useRef(false)
+
+  // Dirty = form open with unsaved changes
+  const isDirty = showForm && (
+    editing
+      ? JSON.stringify(form) !== JSON.stringify(rowToForm(editing))
+      : Object.values(form).some(v => v !== '')
+  )
+
+  useEffect(() => { isDirtyRef.current = isDirty }, [isDirty])
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!isDirtyRef.current) return
+      e.preventDefault(); e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [])
+
+  const handleNavClick = useCallback((e: MouseEvent) => {
+    if (!isDirtyRef.current) return
+    let el = e.target as HTMLElement | null
+    while (el && el.tagName.toLowerCase() !== 'a') el = el.parentElement
+    if (!el) return
+    const anchor = el as HTMLAnchorElement
+    const href = anchor.href
+    if (!href || href === window.location.href || anchor.target === '_blank' || anchor.download) return
+    e.preventDefault(); e.stopPropagation()
+    pendingHref.current = href
+    openModal(LEAVE_MODAL_SLUG)
+  }, [openModal])
+
+  useEffect(() => {
+    document.addEventListener('click', handleNavClick, true)
+    return () => document.removeEventListener('click', handleNavClick, true)
+  }, [handleNavClick])
 
   function beginAdd() { setEditing(null); setForm(emptyForm); setShowForm(true); setError(null) }
   function beginEdit(row: PriceRow) { setEditing(row); setForm(rowToForm(row)); setShowForm(true); setError(null) }
@@ -161,6 +205,15 @@ export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: 
 
   return (
     <section className="flex flex-col gap-5 pb-10">
+      <ConfirmationModal
+        body="Your changes have not been saved. If you leave now, you will lose your changes."
+        cancelLabel="Stay on this page"
+        confirmLabel="Leave anyway"
+        heading="Leave without saving"
+        modalSlug={LEAVE_MODAL_SLUG}
+        onCancel={() => closeModal(LEAVE_MODAL_SLUG)}
+        onConfirm={() => { closeModal(LEAVE_MODAL_SLUG); const href = pendingHref.current; if (href) router.push(href) }}
+      />
       {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       {importMsg ? <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-700">{importMsg}</div> : null}
