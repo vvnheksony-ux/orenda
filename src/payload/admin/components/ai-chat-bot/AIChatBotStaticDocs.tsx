@@ -126,31 +126,33 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
     window.location.href = href
   }
 
+  if (pendingNav) {
+    return (
+      <div className="flex h-[70vh] flex-col items-center justify-center gap-4">
+        <h2 className="text-2xl font-bold text-[#2b2823]">Leave without saving</h2>
+        <p className="text-sm text-[#716b60]">Your changes have not been saved. If you leave now, you will lose your changes.</p>
+        <div className="flex gap-3 mt-2">
+          <button
+            className="rounded-xl border border-[#e7dfd5] bg-white px-5 py-2.5 text-sm font-bold text-[#2b2823] hover:bg-[#f4f0eb]"
+            onClick={stayOnPage}
+            type="button"
+          >
+            Stay on this page
+          </button>
+          <button
+            className="rounded-xl border-none bg-[#b89148] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#a37d3e]"
+            onClick={leaveAnyway}
+            type="button"
+          >
+            Leave anyway
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <section className="flex flex-col gap-5 pb-10">
-      {/* Payload-style unsaved changes overlay */}
-      {pendingNav ? (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white">
-          <h2 className="mb-2 text-2xl font-bold text-[#2b2823]">Leave without saving</h2>
-          <p className="mb-8 text-sm text-[#716b60]">Your changes have not been saved. If you leave now, you will lose your changes.</p>
-          <div className="flex gap-3">
-            <button
-              className="rounded-xl border border-[#e7dfd5] bg-white px-5 py-2.5 text-sm font-bold text-[#2b2823] hover:bg-[#f4f0eb]"
-              onClick={stayOnPage}
-              type="button"
-            >
-              Stay on this page
-            </button>
-            <button
-              className="rounded-xl border-none bg-[#b89148] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#a37d3e]"
-              onClick={leaveAnyway}
-              type="button"
-            >
-              Leave anyway
-            </button>
-          </div>
-        </div>
-      ) : null}
 
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
