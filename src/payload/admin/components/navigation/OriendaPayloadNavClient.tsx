@@ -72,6 +72,12 @@ export default function OriendaPayloadNavClient({
   if (!allGroups.some((group) => group.label === 'AI Chat Bot')) {
     allGroups.push({ entities: [], label: 'AI Chat Bot' })
   }
+  // Systems always last
+  const systemsIdx = allGroups.findIndex(g => g.label === 'Systems')
+  if (systemsIdx >= 0 && systemsIdx !== allGroups.length - 1) {
+    const [systems] = allGroups.splice(systemsIdx, 1)
+    allGroups.push(systems)
+  }
   const { setPreference } = usePreferences()
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
