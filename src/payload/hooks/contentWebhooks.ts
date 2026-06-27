@@ -84,13 +84,18 @@ export function createWebhookHooks(collectionSlug: string) {
     const docRecord = doc as WebhookDocument
     const prevDoc = previousDoc as WebhookDocument | undefined
 
-    const shouldFirePublished =
-      (operation === 'create' && docRecord.status === CONTENT_STATUS.PUBLISHED) ||
-      (operation === 'update' && prevDoc?.status !== CONTENT_STATUS.PUBLISHED && docRecord.status === CONTENT_STATUS.PUBLISHED)
+    const nowPublished = docRecord.status === CONTENT_STATUS.PUBLISHED
+    const wasPublished = prevDoc?.status === CONTENT_STATUS.PUBLISHED
 
-    if (shouldFirePublished) {
+    if (nowPublished) {
+      // create-as-published, draft→published, or published→published (re-save/edit)
+      // ingestRecord deletes old embedding first then re-embeds
       void fireWebhooks(req.payload, 'published', collectionSlug, docRecord)
+    } else if (wasPublished && !nowPublished) {
+      // published→draft (unpublish): remove embedding, no re-embed
+      void fireWebhooks(req.payload, 'deleted', collectionSlug, docRecord)
     }
+    // draft→draft: no action
   }
 
   const onDelete: CollectionAfterDeleteHook = async ({ doc, req }) => {
