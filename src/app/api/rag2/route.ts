@@ -12,9 +12,21 @@ export const runtime = 'nodejs'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
+async function saveAssistantMessage(sessionId: string, content: string) {
+  try {
+    const db = await createServiceClient()
+    await db.from('ai_chat_messages').insert({ session_id: sessionId, role: 'assistant', content })
+  } catch (e) { console.error('[rag2] assistant msg insert error:', e) }
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json()
   const { message, session_key, locale, user_id } = body
+
+  // stream=true in query param or Accept: text/event-stream header enables SSE streaming
+  const wantsStream =
+    req.nextUrl.searchParams.get('stream') === 'true' ||
+    req.headers.get('accept')?.includes('text/event-stream')
 
   if (!message?.trim()) {
     return NextResponse.json({ error: 'Empty message' }, { status: 400 })
@@ -60,17 +72,66 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ output: reply }, { status: 200 })
   }
 
+  // Build context (shared between streaming and non-streaming)
+  const intent = detectRag2Intent(message)
+  const searchLocale = language === 'km' ? 'km' : language === 'zh' ? 'zh' : 'en'
+  const [history, embedding] = await Promise.all([
+    sessionId ? fetchHistory(sessionId) : Promise.resolve([]),
+    embedQuery(message, openai),
+  ])
+  const chunks = await parallelSearch(embedding, intent, searchLocale)
+  const msgs = buildMessages(message, language, formatHistory(history), chunks)
+
+  // ── Streaming path ────────────────────────────────────────────────────────
+  if (wantsStream) {
+    const encoder = new TextEncoder()
+    const sid = sessionId
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        let fullReply = ''
+        try {
+          const completion = await openai.chat.completions.create({
+            model: 'gpt-4.1-mini',
+            messages: msgs,
+            temperature: 0.3,
+            max_tokens: 800,
+            stream: true,
+          })
+          for await (const chunk of completion) {
+            const text = chunk.choices[0]?.delta?.content ?? ''
+            if (text) {
+              fullReply += text
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`))
+            }
+          }
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+          controller.close()
+          if (sid && fullReply) await saveAssistantMessage(sid, fullReply)
+        } catch (err: any) {
+          console.error('[rag2] stream error:', err?.message ?? err)
+          const fallback = "Sorry, I couldn't get a response right now. Please try again."
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: fallback })}\n\n`))
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+          controller.close()
+          if (sid) await saveAssistantMessage(sid, fallback)
+        }
+      },
+    })
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      },
+    })
+  }
+
+  // ── Non-streaming path (n8n / default) ───────────────────────────────────
   let reply: string
   try {
-    const intent = detectRag2Intent(message)
-    const searchLocale = language === 'km' ? 'km' : language === 'zh' ? 'zh' : 'en'
-    const [history, embedding] = await Promise.all([
-      sessionId ? fetchHistory(sessionId) : Promise.resolve([]),
-      embedQuery(message, openai),
-    ])
-    const chunks = await parallelSearch(embedding, intent, searchLocale)
-    const msgs = buildMessages(message, language, formatHistory(history), chunks)
-
     const completion = await openai.chat.completions.create({
       model: 'gpt-4.1-mini',
       messages: msgs,
@@ -84,12 +145,7 @@ export async function POST(req: NextRequest) {
     reply = "Sorry, I couldn't get a response right now. Please try again in a moment."
   }
 
-  if (sessionId && reply) {
-    try {
-      const db = await createServiceClient()
-      await db.from('ai_chat_messages').insert({ session_id: sessionId, role: 'assistant', content: reply })
-    } catch (e) { console.error('[rag2] assistant msg insert error:', e) }
-  }
+  if (sessionId && reply) await saveAssistantMessage(sessionId, reply)
 
   return NextResponse.json({ output: reply }, { status: 200 })
 }

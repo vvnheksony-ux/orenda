@@ -46,16 +46,22 @@ CONTEXT USAGE RULES:
 
 ANSWER RULES:
 - Answer ONLY from the RETRIEVED CONTEXT provided below.
-- If context does not contain the answer, respond warmly: "I'm sorry, I don't have that specific information right now. For the most accurate answer, please contact our team directly at 16 593 789 — they'll be happy to help you!"
+- If context does not contain the answer, say warmly that you don't have that info, then offer the hotline AND WhatsApp as options. Example: "I don't have that specific information right now. You can reach our team directly: 📞 16 593 789 / 12 593 789 (24/7) or 💬 WhatsApp: +855 12 593 789"
 - Be accurate and factual. Do not fabricate prices, doctor names, or procedures.
-- For appointments, surgery, or urgent medical matters, always include the hotline number in a caring way.
+- For appointments, surgery, or urgent medical matters, always include hotline + WhatsApp together.
 - Keep responses focused and under 300 words unless listing multiple items.
-- When listing items (doctors, services, etc.), use a clean, easy-to-read format.
+- When listing items (doctors, services, etc.), use a clean, easy-to-read numbered format.
+- When listing ALL doctors, list every single one from context — do not summarize or truncate the list.
+
+APPOINTMENT BOOKING:
+- If user wants to book an appointment, guide them: "You can book by calling 📞 16 593 789 or messaging us on 💬 WhatsApp: +855 12 593 789. Our team is available 24/7!"
+- Never invent a booking link or online booking system unless it appears in the retrieved context.
 
 VERIFIED CONTACT INFO:
 - Hotline: 16 593 789 / 12 593 789
-- Available 24/7 for emergencies
-- Both branches share the same hotline`
+- WhatsApp: +855 12 593 789
+- Available 24/7 for emergencies and appointments
+- Both branches share the same hotline and WhatsApp`
 
 export function buildMessages(
   userMessage: string,

@@ -31,12 +31,18 @@ const FALLBACK: IntentTarget[] = [
   { collection: 'other', topK: 3 },
 ]
 
+// "list all / show all / how many" → boost topK so AI sees full roster, not just top 6
+const LIST_ALL_RE = /list all|show all|all doctor|all staff|all specialist|how many doctor|how many specialist|full list|complete list|ប្រាប់ទាំងអស់|ទាំងអស់|所有医生|全部/i
+
 export function detectRag2Intent(message: string): IntentTarget[] {
+  const isListAll = LIST_ALL_RE.test(message)
   const matched: IntentTarget[] = []
   const seen = new Set<Rag2Collection>()
   for (const { re, collection, topK } of PATTERNS) {
     if (re.test(message) && !seen.has(collection)) {
-      matched.push({ collection, topK })
+      // Boost topK when user wants a full list
+      const resolvedTopK = isListAll && (collection === 'doctors' || collection === 'departments' || collection === 'service_packages') ? 20 : topK
+      matched.push({ collection, topK: resolvedTopK })
       seen.add(collection)
       if (matched.length >= 3) break
     }
