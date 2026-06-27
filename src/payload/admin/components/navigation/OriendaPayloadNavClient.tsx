@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { formatAdminURL, PREFERENCE_KEYS } from 'payload/shared'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 type NavPreferences = {
@@ -47,6 +47,13 @@ const navLinkClass =
   'flex min-h-10 items-center rounded-xl px-3.5 py-3 text-md text-[#c2b49d] no-underline transition-colors hover:bg-white/[0.08] hover:text-white'
 const activeNavLinkClass = `${navLinkClass} bg-[#f7f0e4] font-bold text-black hover:bg-[#f7f0e4] hover:text-[#7d612d]`
 
+const SIDEBAR_SCROLL_KEY = 'orienda-admin-sidebar-scroll'
+
+// Matches /path exactly OR /path/anything — prevents false match on /collections/faq vs /collections/faqs
+function isRouteActive(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(href + '/')
+}
+
 function getUserInitial(name: string, email: string) {
   return (name || email || 'A').trim().charAt(0).toUpperCase()
 }
@@ -79,7 +86,9 @@ export default function OriendaPayloadNavClient({
     const [systems] = allGroups.splice(systemsIdx, 1)
     allGroups.push(systems)
   }
+
   const { setPreference } = usePreferences()
+  const adminRoute = config.routes.admin
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(allGroups.map(({ label }) => [label, navPreferences?.groups?.[label]?.open ?? true]))
@@ -87,7 +96,67 @@ export default function OriendaPayloadNavClient({
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
-  const adminRoute = config.routes.admin
+  // Ref for the inner <nav> which is the actual scrollable element (overflow-y-auto)
+  const innerNavRef = useRef<HTMLElement | null>(null)
+
+  // Auto-expand any group whose collection matches the current route
+  useEffect(() => {
+    const groupsToOpen: string[] = []
+    for (const { entities, label } of allGroups) {
+      for (const { slug, type } of entities) {
+        const href = formatAdminURL({
+          adminRoute,
+          path: type === EntityType.collection ? `/collections/${slug}` : `/globals/${slug}`,
+        })
+        if (isRouteActive(pathname, href)) {
+          groupsToOpen.push(label)
+          break
+        }
+      }
+    }
+    if (groupsToOpen.length > 0) {
+      setOpenGroups(current => {
+        const next = { ...current }
+        let changed = false
+        for (const lbl of groupsToOpen) {
+          if (!next[lbl]) { next[lbl] = true; changed = true }
+        }
+        return changed ? next : current
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
+
+  // Save scroll position on every scroll event
+  useEffect(() => {
+    const el = innerNavRef.current
+    if (!el) return
+    const save = () => sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(el.scrollTop))
+    el.addEventListener('scroll', save, { passive: true })
+    return () => el.removeEventListener('scroll', save)
+  }, [])
+
+  // Restore scroll after route changes — useLayoutEffect runs before paint
+  useLayoutEffect(() => {
+    const el = innerNavRef.current
+    if (!el) return
+    const saved = Number(sessionStorage.getItem(SIDEBAR_SCROLL_KEY) || 0)
+    requestAnimationFrame(() => {
+      el.scrollTop = saved
+      // If active item is outside viewport, scroll it into view without jumping to center
+      const active = el.querySelector('[data-nav-active="true"]') as HTMLElement | null
+      if (active) {
+        const elRect = el.getBoundingClientRect()
+        const activeRect = active.getBoundingClientRect()
+        const isAbove = activeRect.top < elRect.top
+        const isBelow = activeRect.bottom > elRect.bottom
+        if (isAbove || isBelow) {
+          active.scrollIntoView({ block: 'nearest', behavior: 'auto' })
+        }
+      }
+    })
+  }, [pathname])
+
   const logoutHref = formatAdminURL({ adminRoute, path: config.admin.routes.logout })
   const name = typeof user?.name === 'string' ? user.name : 'Admin Username'
   const email = typeof user?.email === 'string' ? user.email : 'admin'
@@ -102,13 +171,30 @@ export default function OriendaPayloadNavClient({
     .join(' ')
 
   const dashboardHref = formatAdminURL({ adminRoute, path: '/' })
-  const dashboardActive = pathname === dashboardHref || pathname === `${dashboardHref}/`
+  const dashboardActive = isRouteActive(pathname, dashboardHref)
+
   const toggleGroup = (label: string) => {
     setOpenGroups((current) => {
       const next = !current[label]
       setPreference(PREFERENCE_KEYS.NAV, { groups: { [label]: { open: next } } }, true)
       return { ...current, [label]: next }
     })
+  }
+
+  function renderLink(href: string, label: string, id: string) {
+    const active = isRouteActive(pathname, href)
+    return (
+      <Link
+        className={active ? activeNavLinkClass : navLinkClass}
+        href={href}
+        id={id}
+        key={href}
+        prefetch={false}
+        data-nav-active={active ? 'true' : undefined}
+      >
+        {label}
+      </Link>
+    )
   }
 
   return (
@@ -127,11 +213,15 @@ export default function OriendaPayloadNavClient({
           <p className="-mt-5 text-md font-medium text-[#d4c5ad] mb-4.5">Admin Portal</p>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 py-5">
+        <nav
+          className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 py-5"
+          ref={el => { innerNavRef.current = el }}
+        >
           <Link
             className={dashboardActive ? activeNavLinkClass : navLinkClass}
             href={dashboardHref}
             prefetch={false}
+            data-nav-active={dashboardActive ? 'true' : undefined}
           >
             Dashboard
           </Link>
@@ -158,72 +248,25 @@ export default function OriendaPayloadNavClient({
                     {label === 'Operations'
                       ? publicOperationLinks.map((link) => {
                           const href = formatAdminURL({ adminRoute, path: link.path })
-                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-
-                          return (
-                            <Link
-                              className={isActive ? activeNavLinkClass : navLinkClass}
-                              href={href}
-                              id={`nav-public-${link.path.replace(/\//g, '-')}`}
-                              key={link.path}
-                              prefetch={false}
-                            >
-                              {link.label}
-                            </Link>
-                          )
+                          return renderLink(href, link.label, `nav-public-${link.path.replace(/\//g, '-')}`)
                         })
                       : null}
                     {label === 'Access Control'
                       ? accessControlLinks.map((link) => {
                           const href = formatAdminURL({ adminRoute, path: link.path })
-                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-
-                          return (
-                            <Link
-                              className={isActive ? activeNavLinkClass : navLinkClass}
-                              href={href}
-                              id={`nav-public-${link.path.replace(/\//g, '-')}`}
-                              key={link.path}
-                              prefetch={false}
-                            >
-                              {link.label}
-                            </Link>
-                          )
+                          return renderLink(href, link.label, `nav-access-${link.path.replace(/\//g, '-')}`)
                         })
                       : null}
                     {label === 'AI Chat Bot'
                       ? aiChatBotLinks.map((link) => {
                           const href = formatAdminURL({ adminRoute, path: link.path })
-                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-                          return (
-                            <Link
-                              className={isActive ? activeNavLinkClass : navLinkClass}
-                              href={href}
-                              id={`nav-ai-chatbot-${link.path.replace(/\//g, '-')}`}
-                              key={link.path}
-                              prefetch={false}
-                            >
-                              {link.label}
-                            </Link>
-                          )
+                          return renderLink(href, link.label, `nav-ai-chatbot-${link.path.replace(/\//g, '-')}`)
                         })
                       : null}
                     {label === 'Systems'
                       ? systemLinks.map((link) => {
                           const href = formatAdminURL({ adminRoute, path: link.path })
-                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-
-                          return (
-                            <Link
-                              className={isActive ? activeNavLinkClass : navLinkClass}
-                              href={href}
-                              id={`nav-system-${link.path.replace(/\//g, '-')}`}
-                              key={link.path}
-                              prefetch={false}
-                            >
-                              {link.label}
-                            </Link>
-                          )
+                          return renderLink(href, link.label, `nav-system-${link.path.replace(/\//g, '-')}`)
                         })
                       : null}
                     {entities.map(({ label: entityLabel, slug, type }) => {
@@ -231,15 +274,15 @@ export default function OriendaPayloadNavClient({
                         adminRoute,
                         path: type === EntityType.collection ? `/collections/${slug}` : `/globals/${slug}`,
                       })
-                      const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-
+                      const active = isRouteActive(pathname, href)
                       return (
                         <Link
-                          className={isActive ? activeNavLinkClass : navLinkClass}
+                          className={active ? activeNavLinkClass : navLinkClass}
                           href={href}
                           id={type === EntityType.collection ? `nav-${slug}` : `nav-global-${slug}`}
                           key={`${type}-${slug}`}
                           prefetch={false}
+                          data-nav-active={active ? 'true' : undefined}
                         >
                           {getTranslation(entityLabel, i18n)}
                         </Link>
