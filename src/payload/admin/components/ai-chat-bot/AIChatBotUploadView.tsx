@@ -10,10 +10,13 @@ export const dynamic = 'force-dynamic'
 export type UploadRecord = {
   id: string
   filename: string | null
+  title: string | null
+  description: string | null
   url: string | null
   doc_type: string | null
   size_bytes: number | null
   status: string | null
+  error: string | null
   created_at: string | null
 }
 

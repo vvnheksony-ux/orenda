@@ -154,7 +154,7 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
             <table className="w-full border-collapse text-left text-sm">
               <thead className="bg-[#efebe4] text-[#716b60]">
                 <tr>
-                  <th className="px-5 py-3 font-bold">Filename</th>
+                  <th className="px-5 py-3 font-bold">Document</th>
                   <th className="px-5 py-3 font-bold">Status</th>
                   <th className="px-5 py-3 font-bold">Size</th>
                   <th className="px-5 py-3 text-right font-bold">Actions</th>
@@ -163,10 +163,17 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
               <tbody>
                 {uploads.map(u => (
                   <tr className="border-t border-[#eee8dd] text-[#393733]" key={u.id}>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2">
-                        <FileText className="shrink-0 text-[#2f80ed]" size={18} />
-                        <span className="font-medium">{u.filename || '-'}</span>
+                    <td className="px-5 py-3 max-w-xs">
+                      <div className="flex items-start gap-2">
+                        <FileText className="mt-0.5 shrink-0 text-[#2f80ed]" size={18} />
+                        <div className="min-w-0">
+                          <p className="truncate font-bold text-[#2b2823]">{u.title || u.filename || '-'}</p>
+                          <p className="truncate text-xs text-[#8c8982]">{u.filename}</p>
+                          {u.description ? <p className="mt-0.5 line-clamp-2 text-xs text-[#716b60]">{u.description}</p> : null}
+                          {u.status === 'error' && u.error ? (
+                            <p className="mt-1 text-xs text-red-600">⚠ {u.error}</p>
+                          ) : null}
+                        </div>
                       </div>
                     </td>
                     <td className="px-5 py-3">

@@ -70,7 +70,15 @@ export async function POST(req: NextRequest) {
 
   const { data: uploadRecord, error: insertErr } = await db
     .from('ai_rag2_uploads')
-    .insert({ filename: file.name, url: fileUrl, doc_type: 'other', size_bytes: file.size, status: 'pending' })
+    .insert({
+      filename:    file.name,
+      url:         fileUrl,
+      doc_type:    'other',
+      size_bytes:  file.size,
+      status:      'pending',
+      title:       userTitle,
+      description: userDescription,
+    })
     .select('id')
     .single()
 
@@ -82,15 +90,20 @@ export async function POST(req: NextRequest) {
   try {
     text = await extractText(buffer, file.name)
   } catch {
-    // extraction failed (e.g. scanned/image PDF) — still save the upload record but skip embedding
-    await db.from('ai_rag2_uploads').update({ status: 'error', error: 'Text extraction failed. File may be image-based or encrypted.' }).eq('id', uploadId)
-    return NextResponse.json({ error: 'Could not extract text from this file. If it is a scanned or image-based PDF, no text can be read from it.' }, { status: 422 })
+    await db.from('ai_rag2_uploads').update({
+      status: 'error',
+      error:  'Text extraction failed — file may be image-based, scanned, or password-protected.',
+    }).eq('id', uploadId)
+    return NextResponse.json({ error: 'Could not extract text. Scanned/image PDFs cannot be read. Try a text-based PDF or copy-paste content into a .txt file.' }, { status: 422 })
   }
 
   const chunks = chunkText(text)
   if (chunks.length === 0) {
-    await db.from('ai_rag2_uploads').update({ status: 'error', error: 'No text found — file may be image-based' }).eq('id', uploadId)
-    return NextResponse.json({ error: 'No text found in file. If this is a scanned PDF or image, it cannot be embedded.' }, { status: 422 })
+    await db.from('ai_rag2_uploads').update({
+      status: 'error',
+      error:  'No readable text found — file may be image-based or empty.',
+    }).eq('id', uploadId)
+    return NextResponse.json({ error: 'No text found in file. Scanned PDFs or image files cannot be embedded.' }, { status: 422 })
   }
 
   const rows: object[] = []
