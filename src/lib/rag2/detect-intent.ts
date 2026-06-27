@@ -31,9 +31,6 @@ const FALLBACK: IntentTarget[] = [
   { collection: 'other', topK: 3 },
 ]
 
-// 'other' = uploaded files (misc PDFs/DOCX). Can't predict keywords so always search it.
-const OTHER_TARGET: IntentTarget = { collection: 'other', topK: 3 }
-
 export function detectRag2Intent(message: string): IntentTarget[] {
   const matched: IntentTarget[] = []
   const seen = new Set<Rag2Collection>()
@@ -44,10 +41,5 @@ export function detectRag2Intent(message: string): IntentTarget[] {
       if (matched.length >= 3) break
     }
   }
-  const targets = matched.length > 0 ? matched : FALLBACK
-  // Always append 'other' unless already in list
-  if (!targets.some(t => t.collection === 'other')) {
-    targets.push(OTHER_TARGET)
-  }
-  return targets
+  return matched.length > 0 ? matched : FALLBACK
 }
