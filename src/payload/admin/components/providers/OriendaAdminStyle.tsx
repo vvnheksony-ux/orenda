@@ -38,11 +38,6 @@ export default function OriendaAdminStyle({ children }: { children: React.ReactN
     <>
       <style>{`
         .app-header__account { display: none !important; }
-        /* Hide mobile nav toggle buttons on desktop */
-        .nav__header,
-        .nav__mobile-close,
-        .hamburger-menu-button,
-        button.hamburger { display: none !important; }
         /* Remove all breadcrumbs across the admin panel (bong kaneka request). */
         .step-nav,
         nav.step-nav,

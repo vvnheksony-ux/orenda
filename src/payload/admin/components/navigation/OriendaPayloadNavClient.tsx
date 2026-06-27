@@ -111,7 +111,7 @@ export default function OriendaPayloadNavClient({
   return (
     <aside className={navClassName} inert={!navOpen ? true : undefined}>
       <div className={`${baseClass}__scroll flex h-screen flex-col overflow-hidden`} ref={navRef}>
-        <div className="flex min-h-[106px] flex-col items-center gap-1.5 bg-[#5a431f] text-center">
+        <div className="relative flex min-h-[106px] flex-col items-center gap-1.5 bg-[#5a431f] text-center">
           <Image
             className="h-auto w-auto object-contain"
             src="/logo.png"
@@ -121,6 +121,16 @@ export default function OriendaPayloadNavClient({
             priority
           />
           <p className="-mt-5 text-md font-medium text-[#d4c5ad] mb-4.5">Admin Portal</p>
+          {/* Mobile close button — only visible on small screens */}
+          <button
+            className="nav__mobile-close absolute right-3 top-3 flex size-8 items-center justify-center rounded-lg border-none bg-white/10 text-white md:hidden"
+            onClick={() => setNavOpen(false)}
+            tabIndex={!navOpen ? -1 : undefined}
+            type="button"
+            aria-label="Close navigation"
+          >
+            <Hamburger isActive />
+          </button>
         </div>
 
         <nav className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 py-5">
