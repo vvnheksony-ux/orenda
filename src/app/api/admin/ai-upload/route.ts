@@ -66,7 +66,10 @@ export async function POST(req: NextRequest) {
     .from('ai-docs')
     .upload(uploadPath, buffer, { contentType: file.type || 'application/octet-stream', upsert: false })
 
-  if (storageErr) return NextResponse.json({ error: 'Storage upload failed' }, { status: 500 })
+  if (storageErr) {
+    console.error('[ai-upload] storage error:', JSON.stringify(storageErr))
+    return NextResponse.json({ error: 'Storage upload failed', detail: storageErr.message }, { status: 500 })
+  }
 
   const { data: { publicUrl: fileUrl } } = db.storage.from('ai-docs').getPublicUrl(uploadPath)
 
@@ -84,7 +87,10 @@ export async function POST(req: NextRequest) {
     .select('id')
     .single()
 
-  if (insertErr || !uploadRecord) return NextResponse.json({ error: 'Failed to save upload record' }, { status: 500 })
+  if (insertErr || !uploadRecord) {
+    console.error('[ai-upload] insert error:', JSON.stringify(insertErr))
+    return NextResponse.json({ error: 'Failed to save upload record', detail: insertErr?.message }, { status: 500 })
+  }
 
   const uploadId: string = uploadRecord.id
 
@@ -145,8 +151,9 @@ export async function POST(req: NextRequest) {
 
   const { error: embedErr } = await db.from('ai_rag2_documents').insert(rows)
   if (embedErr) {
+    console.error('[ai-upload] embed error:', JSON.stringify(embedErr))
     await db.from('ai_rag2_uploads').update({ status: 'error', error: embedErr.message }).eq('id', uploadId)
-    return NextResponse.json({ error: 'Embedding failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Embedding failed', detail: embedErr.message }, { status: 500 })
   }
 
   await db.from('ai_rag2_uploads').update({ status: 'embedded' }).eq('id', uploadId)
