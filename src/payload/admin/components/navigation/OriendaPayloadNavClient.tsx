@@ -8,7 +8,8 @@ import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { formatAdminURL, PREFERENCE_KEYS } from 'payload/shared'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 type NavPreferences = {
   groups?: Record<string, { open?: boolean }>
@@ -83,6 +84,8 @@ export default function OriendaPayloadNavClient({
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(allGroups.map(({ label }) => [label, navPreferences?.groups?.[label]?.open ?? true]))
   )
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   const adminRoute = config.routes.admin
   const logoutHref = formatAdminURL({ adminRoute, path: config.admin.routes.logout })
@@ -109,7 +112,7 @@ export default function OriendaPayloadNavClient({
   }
 
   return (
-    <aside className={navClassName} style={{ overflow: 'visible' }} inert={!navOpen ? true : undefined}>
+    <aside className={navClassName} inert={!navOpen ? true : undefined}>
       <div className={`${baseClass}__scroll flex h-screen flex-col overflow-hidden`} ref={navRef}>
         <div className="flex min-h-[106px] flex-col items-center gap-1.5 bg-[#5a431f] text-center">
           <Image
@@ -268,15 +271,36 @@ export default function OriendaPayloadNavClient({
         </footer>
 
       </div>
-      {/* Sidebar collapse/expand toggle on right edge */}
+    </aside>
+    {mounted && createPortal(
       <button
         type="button"
-        onClick={() => setNavOpen(!navOpen)}
-        className="absolute -right-3.5 top-20 z-50 flex h-7 w-7 items-center justify-center rounded-full border border-[#d3c2a6]/40 bg-white shadow-md hover:bg-[#f7f0e4]"
+        onClick={() => setNavOpen(v => !v)}
         aria-label={navOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        style={{
+          position: 'fixed',
+          left: navOpen ? 'calc(275px - 14px)' : '8px',
+          top: '80px',
+          zIndex: 9999,
+          width: '28px',
+          height: '28px',
+          borderRadius: '50%',
+          background: '#fff',
+          border: '1.5px solid #b89148',
+          boxShadow: '0 2px 10px rgba(59,42,20,0.22)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          transition: 'left 0.15s ease',
+          padding: 0,
+        }}
       >
-        {navOpen ? <ChevronLeft size={14} color="#5a431f" /> : <ChevronRight size={14} color="#5a431f" />}
-      </button>
-    </aside>
+        {navOpen
+          ? <ChevronLeft size={13} color="#5a431f" strokeWidth={2.5} />
+          : <ChevronRight size={13} color="#5a431f" strokeWidth={2.5} />}
+      </button>,
+      document.body
+    )}
   )
 }
