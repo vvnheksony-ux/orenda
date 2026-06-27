@@ -38,6 +38,8 @@ export default function OriendaAdminStyle({ children }: { children: React.ReactN
     <>
       <style>{`
         .app-header__account { display: none !important; }
+        /* Hide Payload's default NavHamburger (replaced by custom right-edge pill) */
+        .nav-toggler { display: none !important; }
         /* Remove all breadcrumbs across the admin panel (bong kaneka request). */
         .step-nav,
         nav.step-nav,
