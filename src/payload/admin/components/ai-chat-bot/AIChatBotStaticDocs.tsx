@@ -2,9 +2,11 @@
 
 import { Pencil } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
+import { ConfirmationModal, useModal, usePreventLeave } from '@payloadcms/ui'
 import type { StaticDoc } from './AIChatBotStaticDocsView'
 
+const LEAVE_MODAL_SLUG = 'static-docs-leave-without-saving'
 const DOC_TYPES = ['about', 'contact', 'policy', 'brand'] as const
 type DocType = (typeof DOC_TYPES)[number]
 const DOC_LABELS: Record<DocType, string> = { about: 'About', contact: 'Contact', policy: 'Policy', brand: 'Brand' }
@@ -27,8 +29,8 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
   const [savedKeys, setSavedKeys] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [pendingNav, setPendingNav] = useState<string | null>(null)
-  const pendingNavRef = useRef<string | null>(null)
+  const [hasAccepted, setHasAccepted] = useState(false)
+  const { openModal, closeModal } = useModal()
 
   const draftKey = `${activeDoc}:${locale}`
   const storedContent = getContent(docs, activeDoc, locale)
@@ -37,37 +39,12 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
   const isEditing = editingKeys[draftKey] !== undefined ? editingKeys[draftKey] : !storedContent
   const justSaved = savedKeys[draftKey] && !isDirty
 
-  // Track isDirty in ref for event listeners
-  const isDirtyRef = useRef(isDirty)
-  useEffect(() => { isDirtyRef.current = isDirty }, [isDirty])
-  useEffect(() => { pendingNavRef.current = pendingNav }, [pendingNav])
-
-  // Browser close/reload guard
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (!isDirtyRef.current) return
-      e.preventDefault()
-      e.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [])
-
-  // Intercept internal SPA link clicks
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (!isDirtyRef.current) return
-      const anchor = (e.target as Element).closest('a')
-      if (!anchor) return
-      const href = anchor.getAttribute('href')
-      if (!href || href.startsWith('#') || href === window.location.pathname) return
-      e.preventDefault()
-      e.stopPropagation()
-      setPendingNav(href)
-    }
-    document.addEventListener('click', handler, true)
-    return () => document.removeEventListener('click', handler, true)
-  }, [])
+  usePreventLeave({
+    hasAccepted,
+    onAccept: () => setHasAccepted(false),
+    onPrevent: () => openModal(LEAVE_MODAL_SLUG),
+    prevent: isDirty,
+  })
 
   function startEdit() {
     setEditingKeys(k => ({ ...k, [draftKey]: true }))
@@ -87,72 +64,40 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
     setError(null)
   }
 
-  async function doSave(content: string, docType: DocType): Promise<boolean> {
+  async function save() {
     setIsSaving(true)
     setError(null)
     const res = await fetch('/api/admin/ai-static-docs', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ doc_type: docType, locale, content }),
+      body: JSON.stringify({ doc_type: activeDoc, locale, content: currentContent }),
     })
     const data = await res.json().catch(() => null)
     setIsSaving(false)
-    if (!res.ok || !data?.doc) {
-      setError(data?.error || 'Save failed')
-      return false
-    }
+    if (!res.ok || !data?.doc) { setError(data?.error || 'Save failed'); return }
     setDocs(curr => {
-      const exists = curr.find(d => d.doc_type === docType && d.locale === locale)
+      const exists = curr.find(d => d.doc_type === activeDoc && d.locale === locale)
       return exists
-        ? curr.map(d => d.doc_type === docType && d.locale === locale ? data.doc : d)
+        ? curr.map(d => d.doc_type === activeDoc && d.locale === locale ? data.doc : d)
         : [...curr, data.doc]
     })
-    const key = `${docType}:${locale}`
-    setDrafts(d => { const n = { ...d }; delete n[key]; return n })
-    setEditingKeys(k => ({ ...k, [key]: false }))
-    setSavedKeys(k => ({ ...k, [key]: true }))
-    return true
-  }
-
-  function save() { void doSave(currentContent, activeDoc) }
-
-  function stayOnPage() { setPendingNav(null) }
-
-  function leaveAnyway() {
-    const href = pendingNav
-    if (!href) return
-    setDrafts({})
-    window.location.href = href
-  }
-
-  if (pendingNav) {
-    return (
-      <div className="flex h-[70vh] flex-col items-center justify-center gap-4">
-        <h2 className="text-2xl font-bold text-[#2b2823]">Leave without saving</h2>
-        <p className="text-sm text-[#716b60]">Your changes have not been saved. If you leave now, you will lose your changes.</p>
-        <div className="flex gap-3 mt-2">
-          <button
-            className="rounded-xl border border-[#e7dfd5] bg-white px-5 py-2.5 text-sm font-bold text-[#2b2823] hover:bg-[#f4f0eb]"
-            onClick={stayOnPage}
-            type="button"
-          >
-            Stay on this page
-          </button>
-          <button
-            className="rounded-xl border-none bg-[#b89148] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#a37d3e]"
-            onClick={leaveAnyway}
-            type="button"
-          >
-            Leave anyway
-          </button>
-        </div>
-      </div>
-    )
+    setDrafts(d => { const n = { ...d }; delete n[draftKey]; return n })
+    setEditingKeys(k => ({ ...k, [draftKey]: false }))
+    setSavedKeys(k => ({ ...k, [draftKey]: true }))
   }
 
   return (
     <section className="flex flex-col gap-5 pb-10">
+      <ConfirmationModal
+        body="Your changes have not been saved. If you leave now, you will lose your changes."
+        cancelLabel="Stay on this page"
+        confirmLabel="Leave anyway"
+        heading="Leave without saving"
+        modalSlug={LEAVE_MODAL_SLUG}
+        onCancel={() => closeModal(LEAVE_MODAL_SLUG)}
+        onConfirm={() => { setHasAccepted(true); closeModal(LEAVE_MODAL_SLUG) }}
+      />
 
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
@@ -160,7 +105,6 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
         Current locale: <strong className="text-[#2b2823]">{localeLabel}</strong> — change using the &ldquo;Locale&rdquo; dropdown in the top right corner. Content saved separately per language.
       </div>
 
-      {/* Doc type tabs */}
       <div className="flex gap-2 flex-wrap">
         {DOC_TYPES.map(dt => (
           <button
@@ -177,7 +121,6 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
         ))}
       </div>
 
-      {/* Content card */}
       <div className="rounded-2xl border border-[#e7dfd5] bg-white p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-bold text-[#716b60]">{DOC_LABELS[activeDoc]} · {localeLabel}</span>
