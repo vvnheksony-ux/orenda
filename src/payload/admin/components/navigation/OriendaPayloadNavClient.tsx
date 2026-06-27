@@ -112,6 +112,7 @@ export default function OriendaPayloadNavClient({
   }
 
   return (
+    <>
     <aside className={navClassName} inert={!navOpen ? true : undefined}>
       <div className={`${baseClass}__scroll flex h-screen flex-col overflow-hidden`} ref={navRef}>
         <div className="flex min-h-[106px] flex-col items-center gap-1.5 bg-[#5a431f] text-center">
@@ -302,5 +303,6 @@ export default function OriendaPayloadNavClient({
       </button>,
       document.body
     )}
+    </>
   )
 }
