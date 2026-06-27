@@ -1,8 +1,8 @@
 'use client'
 
-import { Pencil } from 'lucide-react'
+import { Pencil, Upload } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { ConfirmationModal, useModal } from '@payloadcms/ui'
 import { useRouter } from 'next/navigation'
 import type { StaticDoc } from './AIChatBotStaticDocsView'
@@ -30,6 +30,8 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
   const [savedKeys, setSavedKeys] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [isExtracting, startExtract] = useTransition()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { openModal, closeModal } = useModal()
   const router = useRouter()
@@ -88,6 +90,30 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
     setError(null)
   }
 
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!fileInputRef.current) return
+    fileInputRef.current.value = ''
+    if (!file) return
+    setError(null)
+    startExtract(async () => {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch('/api/admin/ai-static-docs/extract', { method: 'POST', credentials: 'include', body: form })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) { setError(data?.error || 'Text extraction failed'); return }
+      const extracted: string = data.text ?? ''
+      // Append to existing content with a newline separator
+      setDrafts(d => {
+        const existing = d[draftKey] !== undefined ? d[draftKey] : storedContent
+        const joined = existing ? `${existing}\n\n${extracted}` : extracted
+        return { ...d, [draftKey]: joined }
+      })
+      setEditingKeys(k => ({ ...k, [draftKey]: true }))
+      setSavedKeys(k => ({ ...k, [draftKey]: false }))
+    })
+  }
+
   function handleChange(value: string) {
     setDrafts(d => ({ ...d, [draftKey]: value }))
     setSavedKeys(k => ({ ...k, [draftKey]: false }))
@@ -125,6 +151,13 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
 
   return (
     <section className="flex flex-col gap-5 pb-10">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.docx,.doc,.txt,.md"
+        className="hidden"
+        onChange={handleFileSelect}
+      />
       <ConfirmationModal
         body="Your changes have not been saved. If you leave now, you will lose your changes."
         cancelLabel="Stay on this page"
@@ -163,6 +196,15 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
           <div className="flex items-center gap-3">
             {justSaved ? <span className="text-xs font-bold text-[#178348]">✓ Saved &amp; embedded</span> : null}
             {isDirty ? <span className="text-xs font-medium text-[#b89148]">Unsaved changes</span> : null}
+            <button
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#e7dfd5] bg-white px-3 py-1.5 text-xs font-bold text-[#2b2823] hover:bg-[#f4f0eb] disabled:opacity-50"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isExtracting || isSaving}
+              type="button"
+              title="Extract text from file and append to this doc"
+            >
+              <Upload size={12} /> {isExtracting ? 'Extracting...' : 'Append from file'}
+            </button>
             {!isEditing && storedContent ? (
               <button
                 className="inline-flex items-center gap-1.5 rounded-xl border border-[#e7dfd5] bg-white px-3 py-1.5 text-xs font-bold text-[#2b2823] hover:bg-[#f4f0eb]"
