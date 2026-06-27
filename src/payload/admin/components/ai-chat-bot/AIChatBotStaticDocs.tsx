@@ -27,7 +27,7 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
   const [activeDoc, setActiveDoc] = useState<DocType>('about')
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [editingKeys, setEditingKeys] = useState<Record<string, boolean>>({})
-  const [savedKeys, setSavedKeys] = useState<Record<string, boolean>>({})
+  const [savedKeys, setSavedKeys] = useState<Record<string, { embedded: boolean }>>({})
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isExtracting, startExtract] = useTransition()
@@ -43,7 +43,7 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
   const currentContent = drafts[draftKey] !== undefined ? drafts[draftKey] : storedContent
   const isDirty = drafts[draftKey] !== undefined && drafts[draftKey] !== storedContent
   const isEditing = editingKeys[draftKey] !== undefined ? editingKeys[draftKey] : !storedContent
-  const justSaved = savedKeys[draftKey] && !isDirty
+  const justSaved = savedKeys[draftKey] != null && !isDirty
 
   useEffect(() => { isDirtyRef.current = isDirty }, [isDirty])
 
@@ -80,7 +80,7 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
 
   function startEdit() {
     setEditingKeys(k => ({ ...k, [draftKey]: true }))
-    setSavedKeys(k => ({ ...k, [draftKey]: false }))
+    setSavedKeys(k => { const n = { ...k }; delete n[draftKey]; return n })
     setError(null)
   }
 
@@ -110,13 +110,13 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
         return { ...d, [draftKey]: joined }
       })
       setEditingKeys(k => ({ ...k, [draftKey]: true }))
-      setSavedKeys(k => ({ ...k, [draftKey]: false }))
+      setSavedKeys(k => { const n = { ...k }; delete n[draftKey]; return n })
     })
   }
 
   function handleChange(value: string) {
     setDrafts(d => ({ ...d, [draftKey]: value }))
-    setSavedKeys(k => ({ ...k, [draftKey]: false }))
+    setSavedKeys(k => { const n = { ...k }; delete n[draftKey]; return n })
     setError(null)
   }
 
@@ -140,7 +140,7 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
     })
     setDrafts(d => { const n = { ...d }; delete n[draftKey]; return n })
     setEditingKeys(k => ({ ...k, [draftKey]: false }))
-    setSavedKeys(k => ({ ...k, [draftKey]: true }))
+    setSavedKeys(k => ({ ...k, [draftKey]: { embedded: !!data.embedded } }))
   }
 
   function leaveAnyway() {
@@ -194,7 +194,11 @@ export default function AIChatBotStaticDocs({ initialDocs }: { initialDocs: Stat
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-bold text-[#716b60]">{DOC_LABELS[activeDoc]} · {localeLabel}</span>
           <div className="flex items-center gap-3">
-            {justSaved ? <span className="text-xs font-bold text-[#178348]">✓ Saved &amp; embedded</span> : null}
+            {justSaved
+              ? savedKeys[draftKey]?.embedded
+                ? <span className="text-xs font-bold text-[#178348]">✓ Saved &amp; embedded</span>
+                : <span className="text-xs font-bold text-[#716b60]">✓ Saved (cleared — no embedding)</span>
+              : null}
             {isDirty ? <span className="text-xs font-medium text-[#b89148]">Unsaved changes</span> : null}
             <button
               className="inline-flex items-center gap-1.5 rounded-xl border border-[#e7dfd5] bg-white px-3 py-1.5 text-xs font-bold text-[#2b2823] hover:bg-[#f4f0eb] disabled:opacity-50"

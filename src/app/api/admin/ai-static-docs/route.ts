@@ -50,10 +50,12 @@ export async function PUT(req: NextRequest) {
 
   if (error || !data) return NextResponse.json({ error: error?.message || 'Upsert failed' }, { status: 500 })
 
-  // Re-embed
+  // Always delete existing embeddings first (handles clear-and-save correctly)
+  await db.from('ai_rag2_documents').delete().eq('source_id', String(data.id)).eq('source_collection', docType).eq('locale', locale)
+
+  let embedded = false
   if (content.trim()) {
     try {
-      await db.from('ai_rag2_documents').delete().eq('source_id', String(data.id)).eq('source_collection', docType).eq('locale', locale)
       const res = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: content })
       await db.from('ai_rag2_documents').insert({
         source_id: String(data.id),
@@ -72,10 +74,11 @@ export async function PUT(req: NextRequest) {
         },
         embedding: res.data[0].embedding,
       })
+      embedded = true
     } catch (e) {
       console.error('[ai-static-docs] embed error:', e)
     }
   }
 
-  return NextResponse.json({ doc: data })
+  return NextResponse.json({ doc: data, embedded })
 }
