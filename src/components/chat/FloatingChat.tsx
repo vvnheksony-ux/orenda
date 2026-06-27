@@ -273,10 +273,12 @@ export default function FloatingChat() {
   const sendMessage = async (text: string) => {
     if (!text.trim() || isTyping || Date.now() - lastSentAt < COOLDOWN_MS || userCount >= MAX_MESSAGES) return
     setLastSentAt(Date.now())
-    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: text.trim(), timestamp: timeNow() }])
-    setIsTyping(true)
 
-    const aiId = (Date.now() + 1).toString()
+    const userMsgId = `u-${Date.now()}`
+    const aiMsgId = `a-${Date.now()}`
+
+    setMessages(prev => [...prev, { id: userMsgId, role: 'user', content: text.trim(), timestamp: timeNow() }])
+    setIsTyping(true)
 
     try {
       const res = await fetch('/api/ai-chat?stream=true', {
@@ -285,18 +287,30 @@ export default function FloatingChat() {
         body: JSON.stringify({ message: text.trim(), session_key: sessionId, locale, user_id: user?.id ?? null }),
       })
 
+      const contentType = res.headers.get('content-type') ?? ''
+
+      // Non-SSE response (greeting shortcut, validation rejection) — parse as JSON
+      if (!contentType.includes('text/event-stream')) {
+        const data = await res.json().catch(() => null)
+        const reply = data?.output ?? "Sorry, I couldn't get a response right now. Please try again."
+        setMessages(prev => [...prev, { id: aiMsgId, role: 'ai', content: reply, timestamp: timeNow() }])
+        setIsTyping(false)
+        return
+      }
+
       if (!res.body) throw new Error('no body')
 
-      // Add empty AI bubble — will fill as stream arrives
-      setMessages(prev => [...prev, { id: aiId, role: 'ai', content: '', timestamp: timeNow() }])
+      // Add empty AI bubble — fills as stream arrives
+      setMessages(prev => [...prev, { id: aiMsgId, role: 'ai', content: '', timestamp: timeNow() }])
       setIsTyping(false)
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let fullText = ''
       let buffer = ''
+      let streamDone = false
 
-      while (true) {
+      while (!streamDone) {
         const { done, value } = await reader.read()
         if (done) break
         buffer += decoder.decode(value, { stream: true })
@@ -305,26 +319,28 @@ export default function FloatingChat() {
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue
           const payload = line.slice(6).trim()
-          if (payload === '[DONE]') break
+          if (payload === '[DONE]') { streamDone = true; break }
           try {
             const { text: chunk } = JSON.parse(payload)
             if (chunk) {
               fullText += chunk
-              setMessages(prev => prev.map(m => m.id === aiId ? { ...m, content: fullText } : m))
+              setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: fullText } : m))
             }
           } catch {}
         }
       }
 
       if (!fullText) {
-        setMessages(prev => prev.map(m => m.id === aiId ? { ...m, content: "Sorry, I couldn't get a response right now. Please try again." } : m))
+        setMessages(prev => prev.map(m => m.id === aiMsgId
+          ? { ...m, content: "Sorry, I couldn't get a response right now. Please try again." }
+          : m))
       }
     } catch {
       setIsTyping(false)
       setMessages(prev => {
-        const hasAi = prev.some(m => m.id === aiId)
-        const errMsg = { id: aiId, role: 'ai' as const, content: 'Sorry, I could not reach the server. Please try again.', timestamp: timeNow() }
-        return hasAi ? prev.map(m => m.id === aiId ? errMsg : m) : [...prev, errMsg]
+        const hasAi = prev.some(m => m.id === aiMsgId)
+        const errMsg = { id: aiMsgId, role: 'ai' as const, content: 'Sorry, I could not reach the server. Please try again.', timestamp: timeNow() }
+        return hasAi ? prev.map(m => m.id === aiMsgId ? errMsg : m) : [...prev, errMsg]
       })
     }
   }

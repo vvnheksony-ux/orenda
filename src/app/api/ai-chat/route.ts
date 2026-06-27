@@ -135,7 +135,8 @@ export async function POST(req: NextRequest) {
   try {
     const rag2Base = new URL('/api/rag2', req.nextUrl.origin).toString()
 
-    // Streaming path — pipe SSE from /api/rag2 directly through
+    // Streaming path — pipe response from /api/rag2 directly through
+    // rag2 may return SSE (normal query) OR JSON (greeting shortcut) — pass content-type through
     if (wantsStream) {
       const upstream = await fetch(`${rag2Base}?stream=true`, {
         method: 'POST',
@@ -144,14 +145,14 @@ export async function POST(req: NextRequest) {
         signal: controller.signal,
       })
       clearTimeout(timer)
-      return new Response(upstream.body, {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-          'X-Accel-Buffering': 'no',
-        },
-      })
+      const upstreamContentType = upstream.headers.get('content-type') ?? 'application/json'
+      const responseHeaders: Record<string, string> = { 'Content-Type': upstreamContentType }
+      if (upstreamContentType.includes('text/event-stream')) {
+        responseHeaders['Cache-Control'] = 'no-cache'
+        responseHeaders['Connection'] = 'keep-alive'
+        responseHeaders['X-Accel-Buffering'] = 'no'
+      }
+      return new Response(upstream.body, { headers: responseHeaders })
     }
 
     // Non-streaming path
