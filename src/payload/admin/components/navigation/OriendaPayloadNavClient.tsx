@@ -276,30 +276,14 @@ export default function OriendaPayloadNavClient({
     {mounted && createPortal(
       <button
         type="button"
-        onClick={() => setNavOpen(v => !v)}
+        onClick={() => setNavOpen(!navOpen)}
         aria-label={navOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-        style={{
-          position: 'fixed',
-          left: navOpen ? 'calc(275px - 14px)' : '8px',
-          top: '80px',
-          zIndex: 50,
-          width: '28px',
-          height: '28px',
-          borderRadius: '50%',
-          background: '#fff',
-          border: '1.5px solid #b89148',
-          boxShadow: '0 2px 10px rgba(59,42,20,0.22)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          transition: 'left 0.15s ease',
-          padding: 0,
-        }}
+        className="orienda-sidebar-toggle"
+        style={{ left: navOpen ? 'calc(275px - 14px)' : '8px' }}
       >
         {navOpen
-          ? <ChevronLeft size={13} color="#5a431f" strokeWidth={2.5} />
-          : <ChevronRight size={13} color="#5a431f" strokeWidth={2.5} />}
+          ? <ChevronLeft size={14} color="#5a431f" strokeWidth={2.5} />
+          : <ChevronRight size={14} color="#5a431f" strokeWidth={2.5} />}
       </button>,
       document.body
     )}
