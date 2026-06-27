@@ -18,8 +18,22 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (auth instanceof NextResponse) return auth
   const { id } = await params
   const db = await createServiceClient()
+
+  // Get the storage URL before deleting so we can remove the file
+  const { data: record } = await db.from('ai_rag2_uploads').select('url').eq('id', id).single()
+
+  // Delete embeddings + DB record
   await db.from('ai_rag2_documents').delete().eq('source_id', id).eq('source_collection', 'other')
   const { error } = await db.from('ai_rag2_uploads').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Delete file from Supabase Storage — extract path after /object/public/ai-docs/
+  if (record?.url) {
+    const match = record.url.match(/\/object\/(?:public\/)?ai-docs\/(.+)$/)
+    if (match?.[1]) {
+      await db.storage.from('ai-docs').remove([decodeURIComponent(match[1])])
+    }
+  }
+
   return NextResponse.json({ ok: true })
 }
