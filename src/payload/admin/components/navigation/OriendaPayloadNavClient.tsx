@@ -282,7 +282,7 @@ export default function OriendaPayloadNavClient({
           position: 'fixed',
           left: navOpen ? 'calc(275px - 14px)' : '8px',
           top: '80px',
-          zIndex: 9999,
+          zIndex: 50,
           width: '28px',
           height: '28px',
           borderRadius: '50%',
