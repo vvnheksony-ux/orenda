@@ -59,14 +59,16 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(await file.arrayBuffer())
   const db = await createServiceClient()
 
-  const uploadPath = `other/${crypto.randomUUID()}/${file.name}`
+  // Sanitize filename for storage path — spaces/special chars break URLs
+  const safeFilename = file.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '_')
+  const uploadPath = `other/${crypto.randomUUID()}/${safeFilename}`
   const { error: storageErr } = await db.storage
     .from('ai-docs')
     .upload(uploadPath, buffer, { contentType: file.type || 'application/octet-stream', upsert: false })
 
   if (storageErr) return NextResponse.json({ error: 'Storage upload failed' }, { status: 500 })
 
-  const fileUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/ai-docs/${uploadPath}`
+  const { data: { publicUrl: fileUrl } } = db.storage.from('ai-docs').getPublicUrl(uploadPath)
 
   const { data: uploadRecord, error: insertErr } = await db
     .from('ai_rag2_uploads')

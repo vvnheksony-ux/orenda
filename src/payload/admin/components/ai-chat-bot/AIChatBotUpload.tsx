@@ -1,9 +1,13 @@
 'use client'
 
 import { FileText, Trash2, Upload, X } from 'lucide-react'
-import { useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { ConfirmationModal, useModal } from '@payloadcms/ui'
+import { useRouter } from 'next/navigation'
 import ConfirmModal from '../ui/ConfirmModal'
 import type { UploadRecord } from './AIChatBotUploadView'
+
+const LEAVE_MODAL_SLUG = 'upload-leave-without-saving'
 
 export default function AIChatBotUpload({ initialUploads }: { initialUploads: UploadRecord[] }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -14,6 +18,44 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
 
   // Staged file waiting for title/description input before upload
   const [staged, setStaged] = useState<{ file: File; title: string; description: string } | null>(null)
+
+  const { openModal, closeModal } = useModal()
+  const router = useRouter()
+  const pendingHref = useRef<string | null>(null)
+  const isDirtyRef = useRef(false)
+
+  // isDirty when staged (file selected but not yet uploaded) or uploading in progress
+  const isDirty = staged !== null || isPending
+  useEffect(() => { isDirtyRef.current = isDirty }, [isDirty])
+
+  // Block browser close/reload
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!isDirtyRef.current) return
+      e.preventDefault(); e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [])
+
+  // Intercept SPA link clicks
+  const handleClick = useCallback((e: MouseEvent) => {
+    if (!isDirtyRef.current) return
+    let el = e.target as HTMLElement | null
+    while (el && el.tagName.toLowerCase() !== 'a') el = el.parentElement
+    if (!el) return
+    const anchor = el as HTMLAnchorElement
+    const href = anchor.href
+    if (!href || href === window.location.href || anchor.target === '_blank' || anchor.download) return
+    e.preventDefault(); e.stopPropagation()
+    pendingHref.current = href
+    openModal(LEAVE_MODAL_SLUG)
+  }, [openModal])
+
+  useEffect(() => {
+    document.addEventListener('click', handleClick, true)
+    return () => document.removeEventListener('click', handleClick, true)
+  }, [handleClick])
 
   function pickFile() {
     fileInputRef.current?.click()
@@ -65,8 +107,23 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
     })
   }
 
+  function leaveAnyway() {
+    closeModal(LEAVE_MODAL_SLUG)
+    const href = pendingHref.current
+    if (href) router.push(href)
+  }
+
   return (
     <section className="flex flex-col gap-5 pb-10">
+      <ConfirmationModal
+        body="Your upload has not been completed. If you leave now, your progress will be lost."
+        cancelLabel="Stay on this page"
+        confirmLabel="Leave anyway"
+        heading="Leave without saving"
+        modalSlug={LEAVE_MODAL_SLUG}
+        onCancel={() => closeModal(LEAVE_MODAL_SLUG)}
+        onConfirm={leaveAnyway}
+      />
       {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" danger onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
