@@ -10,6 +10,7 @@ import {
   RequestValidationError,
   serializeKpiCsv,
 } from './validation'
+import { getRawPool } from '../../lib/db'
 
 function tryGetURL(req: PayloadRequest): URL {
   const urlStr = typeof req.url === 'string' ? req.url : ''
@@ -66,22 +67,27 @@ export const eventEndpoint: Endpoint = {
   handler: async (req: PayloadRequest) => {
     try {
       const body = parseAnalyticsEventBody(await readJsonBody(req))
-      const doc = await req.payload.create({
-        collection: 'analyticsEvents',
-        overrideAccess: true,
-        data: {
-          event: body.event,
-          slug: body.slug,
-          locale: body.locale,
-          scene: body.scene,
-          sessionId: body.sessionId,
-          ipHash: body.ipHash,
-          referrer: body.referrer,
-          userAgent: body.userAgent,
-          timestamp: new Date().toISOString(),
-        },
-      })
-      return Response.json({ ok: true, id: doc.id }, { status: 201 })
+      // Raw insert instead of payload.create() — analyticsEvents has no versions
+      // and no hooks, so nothing is skipped, and this is ~10x faster (frees the
+      // DB connection in ~150ms instead of ~1.5s, which the page's own queries need).
+      const pool = getRawPool()
+      const { rows } = await pool.query(
+        `insert into payload.analytics_events
+           ("event", slug, locale, scene, session_id, ip_hash, referrer, user_agent, "timestamp", updated_at, created_at)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, now(), now(), now())
+         returning id`,
+        [
+          body.event,
+          body.slug ?? null,
+          body.locale ?? null,
+          body.scene ?? null,
+          body.sessionId ?? null,
+          body.ipHash ?? null,
+          body.referrer ?? null,
+          body.userAgent ?? null,
+        ],
+      )
+      return Response.json({ ok: true, id: rows[0]?.id }, { status: 201 })
     } catch (err: unknown) {
       return validationResponse(err)
     }

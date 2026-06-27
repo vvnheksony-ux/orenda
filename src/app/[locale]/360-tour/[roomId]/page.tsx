@@ -1,6 +1,6 @@
 'use client'
 
-import { Maximize2, X, ArrowLeft, ChevronRight } from 'lucide-react'
+import { X, ArrowLeft, ChevronRight } from 'lucide-react'
 import { useState, useEffect, use } from 'react'
 import Image from 'next/image'
 import SiteLayout from '@/components/layout/SiteLayout'
@@ -58,6 +58,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   const { selectedBranch, ready } = useBranch()
 
   const [scene, setScene] = useState<TourScene | null>(null)
+  const [allScenes, setAllScenes] = useState<TourScene[]>([])
   const [expanded, setExpanded] = useState(false)
   // Lock background scroll while the fullscreen viewer is open.
   useScrollLock(expanded)
@@ -71,6 +72,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
     setLoading(true)
     fetchTourScenes(locale, selectedBranch?.id).then(scenes => {
       if (!active) return
+      setAllScenes(scenes)
       const found = scenes.find(s => String(s.sceneNumber) === roomId)
       setScene(found ?? null)
     }).catch(() => {}).finally(() => { if (active) setLoading(false) })
@@ -84,15 +86,45 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
       .catch(() => {})
   }, [locale])
 
+  // Arrived via a dot click (?explore=1) → start interactive, no double-click.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('explore') === '1') {
+      setLocked(false)
+    }
+  }, [])
+
   const panorama = scene?.panoramaUrl || scene?.thumbnailUrl || '/images/360-page-banner.jpg'
   const descParts = (scene?.description || '').split('\n\n').filter(Boolean)
+
 
   const handleHotspotClick = (targetSceneNumber: number | null) => {
     if (targetSceneNumber == null) return
     trackTourView(targetSceneNumber)
     setExpanded(false)
-    router.push(`/360-tour/${targetSceneNumber}` as any)
+    const target = allScenes.find(s => s.sceneNumber === targetSceneNumber)
+    if (target) {
+      // Swap the panorama in-place — the viewer fades to the new room (no full
+      // reload / white screen) — and arrive already interactive, since the user
+      // clicked a dot (no double-click needed).
+      setScene(target)
+      setLocked(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      // NOTE: we intentionally do NOT update the URL here. Calling
+      // history.replaceState to /360-tour/{n} makes Next re-sync the [roomId]
+      // param, which re-suspends use(params) and REMOUNTS this subtree — that
+      // remount is what caused the 360 viewer to reload with a white flash.
+      // Keeping the URL static lets the panorama cross-fade in place.
+    } else {
+      router.push(`/360-tour/${targetSceneNumber}` as any)
+    }
   }
+
+  // The label above each dot is the destination ROOM NAME (the title of the
+  // scene the hotspot links to), not the raw hotspot label.
+  const hotspotsWithNames = (scene?.hotspots ?? []).map(h => ({
+    ...h,
+    label: allScenes.find(s => s.sceneNumber === h.targetSceneNumber)?.title || h.label,
+  }))
 
   return (
     <SiteLayout>
@@ -137,36 +169,37 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
                 <ThreeSixtyViewer
                   src={panorama}
                   interactive={!locked}
-                  hotspots={!locked ? scene.hotspots : undefined}
+                  hotspots={hotspotsWithNames}
                   onHotspotClick={handleHotspotClick}
+                  enableMarkers
                 />
 
-                {/* Lock overlay — subtle dark tint with hint */}
+                {/* Top hint pill — image stays fully visible (no dark tint) */}
                 {locked && (
-                  <div className="absolute inset-0 z-30 bg-black/50 flex flex-col items-center justify-center gap-[16px] select-none backdrop-blur-[2px]">
-                    <div className="flex flex-col items-center gap-[12px]">
-                      <span className="font-dm-sans text-[48px] text-white/90 font-bold tracking-widest">360°</span>
-                      <p className="font-dm-sans text-[16px] text-white/70 tracking-wide">Double-click to explore</p>
-                    </div>
+                  <div className="absolute top-[20px] left-1/2 -translate-x-1/2 z-30 pointer-events-none select-none rounded-full bg-black/45 backdrop-blur-[2px] px-4 py-1.5">
+                    <p className="font-dm-sans text-[12px] sm:text-[13px] text-white/85 tracking-wide">360° · double-click to drag · tap a room to enter</p>
                   </div>
                 )}
 
-                {/* 360 badge */}
-                {!locked && (
-                  <div className="absolute top-[20px] left-[20px] z-10 flex items-center gap-[6px] px-[12px] h-[32px] rounded-full bg-black/50 backdrop-blur border border-white/20">
-                    <span className="font-dm-sans text-[12px] text-white font-bold tracking-widest">360°</span>
-                  </div>
-                )}
+                {/* Full View (fullscreen) button top-right */}
+                <button
+                  onClick={() => setExpanded(true)}
+                  className="absolute top-[20px] right-[20px] z-20 flex items-center gap-[8px] px-[18px] py-[10px] rounded-[10px] font-dm-sans text-[14px] text-[#3b2d17] hover:bg-[#c8a25a] transition-colors"
+                  style={{ background: 'rgba(184,145,72,0.92)', backdropFilter: 'blur(6px)' }}
+                  aria-label="Open fullscreen"
+                >
+                  Full View →
+                </button>
 
-                {/* Expand button bottom-right */}
-                {!locked && (
-                  <button
-                    onClick={() => setExpanded(true)}
-                    className="absolute bottom-[24px] right-[24px] z-20 size-[60px] rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors shadow-[0px_4px_16px_rgba(122,95,44,0.25)] flex items-center justify-center border border-white/60"
-                    aria-label="Expand fullscreen"
+                {/* Bottom gradient with room title (locked) */}
+                {locked && (
+                  <div
+                    className="absolute bottom-0 inset-x-0 z-20 pointer-events-none flex flex-col gap-[8px] px-5 sm:px-8 lg:px-[48px] pb-5 sm:pb-8 lg:pb-[40px]"
+                    style={{ background: 'linear-gradient(0deg, rgba(10,8,4,0.80) 0%, transparent 55%)' }}
                   >
-                    <Maximize2 size={22} className="text-[#3b2d17]" strokeWidth={1.5} />
-                  </button>
+                    <p className="font-dm-sans text-[13px] text-[#e8cc88] tracking-[3px] uppercase">Drag to explore</p>
+                    <p className="font-cormorant font-bold text-white text-[28px] sm:text-[36px] lg:text-[42px] leading-none break-words">{scene.title}</p>
+                  </div>
                 )}
               </div>
 
@@ -242,7 +275,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
             </button>
           </div>
           <div className="flex-1 relative" onClick={e => e.stopPropagation()}>
-            <ThreeSixtyViewer src={panorama} hotspots={scene.hotspots} onHotspotClick={handleHotspotClick} />
+            <ThreeSixtyViewer src={panorama} hotspots={hotspotsWithNames} onHotspotClick={handleHotspotClick} />
           </div>
         </div>
       )}

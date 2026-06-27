@@ -185,7 +185,7 @@ export default function NewsPage() {
                      <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-[20px] text-[#594522]">{t('publishedSubtitle')}</p>
                    </Reveal>
 
-                  <div className="marquee-bleed py-[4px]">
+                  <div className="marquee-bleed self-start py-[4px]">
                     <div className="marquee-track gap-[16px] sm:gap-[40px] animate-marquee">
                     {[...news, ...news].map((item, i) => (
                       <Link

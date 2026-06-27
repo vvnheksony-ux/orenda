@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { formatAdminURL } from 'payload/shared'
 import { useState, type MouseEvent } from 'react'
+import ConfirmModal from './ui/ConfirmModal'
 import { toast } from 'sonner'
 import {
   useConfig,
@@ -55,6 +56,7 @@ function formatAdminDate(value: unknown) {
 
 export default function CustomEditHeader() {
   const [workingAction, setWorkingAction] = useState<string | null>(null)
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void; danger?: boolean } | null>(null)
   const { submit, setModified } = useForm()
   const processing = useFormProcessing()
   const router = useRouter()
@@ -129,40 +131,44 @@ export default function CustomEditHeader() {
       toast.success('Item reverted to draft')
     })
 
-  const deletePermanently = () =>
-    runAction('delete', async () => {
-      if (!collectionSlug || !id) return
+  const deletePermanently = () => {
+    if (!collectionSlug || !id) return
+    setConfirm({
+      message: `Permanently delete "${title || id}"? This cannot be undone.`,
+      onConfirm: () => {
+        void runAction('delete', async () => {
+          const res = await fetch(formatAdminURL({ apiRoute, path: `/${collectionSlug}/${id}` }), {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            method: 'DELETE',
+          })
+          const json = await res.json().catch(() => null)
 
-      const confirmed = window.confirm(`Permanently delete "${title || id}"? This cannot be undone.`)
-      if (!confirmed) return
+          if (!res.ok) {
+            throw new Error(json?.errors?.[0]?.message || json?.message || 'Could not delete item')
+          }
 
-      const res = await fetch(formatAdminURL({ apiRoute, path: `/${collectionSlug}/${id}` }), {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'DELETE',
-      })
-      const json = await res.json().catch(() => null)
+          toast.success('Item permanently deleted')
+          setModified(false)
 
-      if (!res.ok) {
-        throw new Error(json?.errors?.[0]?.message || json?.message || 'Could not delete item')
-      }
-
-      toast.success('Item permanently deleted')
-      setModified(false)
-
-      if (redirectAfterDelete !== false) {
-        startRouteTransition(() => {
-          router.push(formatAdminURL({ adminRoute, path: collectionPath as AdminPath }))
+          if (redirectAfterDelete !== false) {
+            startRouteTransition(() => {
+              router.push(formatAdminURL({ adminRoute, path: collectionPath as AdminPath }))
+            })
+          }
         })
-      }
+      },
     })
+  }
 
   const stopMenuClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation()
   }
 
   return (
-    <div className="orienda-custom-edit-header w-full" onClick={stopMenuClick}>
+    <>
+      {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" danger onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
+      <div className="orienda-custom-edit-header w-full" onClick={stopMenuClick}>
       <style jsx global>{`
         .doc-controls__content {
           display: none !important;
@@ -279,5 +285,6 @@ export default function CustomEditHeader() {
         </div>
       </div>
     </div>
+    </>
   )
 }

@@ -38,6 +38,60 @@ export default function OriendaAdminStyle({ children }: { children: React.ReactN
     <>
       <style>{`
         .app-header__account { display: none !important; }
+        /* Hide Payload's default NavHamburger (replaced by custom right-edge pill) */
+        .nav-toggler { display: none !important; }
+        /* Sidebar collapse/expand toggle pill */
+        .orienda-sidebar-toggle {
+          position: fixed;
+          top: 80px;
+          /* Payload z-index scale: --z-nav:20  --z-modal:30  --z-status:40  --z-popup:60
+             Toggle sits at 21 — above nav, BELOW every Payload overlay.
+             CSS :has() rules below are the primary guard; z-index is belt-and-suspenders. */
+          z-index: 21;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: #ffffff;
+          border: 1.5px solid #b89148;
+          box-shadow: 0 2px 10px rgba(59, 42, 20, 0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          padding: 0;
+          transition:
+            left 0.15s ease,
+            opacity 0.12s ease,
+            visibility 0.12s ease,
+            background-color 0.12s ease,
+            box-shadow 0.12s ease;
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
+        }
+        .orienda-sidebar-toggle:hover {
+          background: #fdf8f0;
+          box-shadow: 0 4px 16px rgba(59, 42, 20, 0.28);
+        }
+        .orienda-sidebar-toggle:focus-visible {
+          outline: 2px solid #b89148;
+          outline-offset: 2px;
+        }
+        /*
+          Hide toggle whenever ANY overlay is open.
+          Payload modals:  .payload__modal-item gets --enter/--enterActive/--enterDone via CSSTransition
+          Payload drawers: .drawer gets --is-open when open
+          Custom modals:   .orienda-modal-overlay class on ConfirmModal + FilePreviewModal (both portaled to body)
+        */
+        body:has(.payload__modal-item--enter) .orienda-sidebar-toggle,
+        body:has(.payload__modal-item--enterActive) .orienda-sidebar-toggle,
+        body:has(.payload__modal-item--enterDone) .orienda-sidebar-toggle,
+        body:has(.drawer--is-open) .orienda-sidebar-toggle,
+        body:has(.orienda-modal-overlay) .orienda-sidebar-toggle {
+          opacity: 0 !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+        }
         /* Remove all breadcrumbs across the admin panel (bong kaneka request). */
         .step-nav,
         nav.step-nav,

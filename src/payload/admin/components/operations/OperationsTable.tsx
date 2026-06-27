@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 
+import ConfirmModal from '../ui/ConfirmModal'
 import Pagination, { PAGE_SIZE } from '../shared/Pagination'
 import { getOperationHref, statusColor, type OperationConfig, type OperationRecord } from './operationsConfig'
 
@@ -58,6 +59,7 @@ export default function OperationsTable({ config, initialRecords }: OperationsTa
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void; danger?: boolean } | null>(null)
 
   const isAppointmentsTable = config.slug === 'appointments'
   const isPromotionPurchasesTable = config.slug === 'purchases'
@@ -177,21 +179,24 @@ export default function OperationsTable({ config, initialRecords }: OperationsTa
   }
 
   function deleteRecord(id: string) {
-    if (!window.confirm('Delete this public record?')) return
+    setConfirm({
+      message: 'Delete this public record?',
+      onConfirm: () => {
+        setError(null)
+        startTransition(async () => {
+          const response = await fetch(`/api/admin/operations/${config.slug}/${id}`, {
+            credentials: 'include',
+            method: 'DELETE',
+          })
 
-    setError(null)
-    startTransition(async () => {
-      const response = await fetch(`/api/admin/operations/${config.slug}/${id}`, {
-        credentials: 'include',
-        method: 'DELETE',
-      })
+          if (!response.ok) {
+            setError(await getErrorMessage(response))
+            return
+          }
 
-      if (!response.ok) {
-        setError(await getErrorMessage(response))
-        return
-      }
-
-      setRecords((current) => current.filter((record) => record.id !== id))
+          setRecords((current) => current.filter((record) => record.id !== id))
+        })
+      },
     })
   }
 
@@ -202,6 +207,7 @@ export default function OperationsTable({ config, initialRecords }: OperationsTa
   if (!filtered.length) {
     return (
       <section className="flex flex-col mt-0 pb-10">
+        {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" danger onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
         {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
         <label className="relative block w-full mt-4 mb-5">
           <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#8c8982]" />
@@ -244,6 +250,7 @@ export default function OperationsTable({ config, initialRecords }: OperationsTa
 
   return (
     <section className="flex flex-col mt-0 pb-10">
+      {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" danger onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
       {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       <label className="relative block w-full mt-4 mb-5">
         <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#8c8982]" />

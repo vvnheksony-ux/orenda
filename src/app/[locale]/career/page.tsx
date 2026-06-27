@@ -57,22 +57,27 @@ export default function CareerPage() {
 
   useEffect(() => {
     let active = true
-    fetch(`/api/careers?locale=${locale}&limit=50`)
-      .then(async (r) => {
+    // Auto-retry transient failures (slow/timed-out query → 503) so a flaky
+    // load self-heals instead of showing a misleading "No openings" until refresh.
+    const load = async (attempt = 0) => {
+      try {
+        const r = await fetch(`/api/careers?locale=${locale}&limit=50`)
         if (!r.ok) throw new Error('We could not load career opportunities right now.')
-        return r.json()
-      })
-      .then(d => {
+        const d = await r.json()
         if (!active) return
         setCareers(d.docs || [])
         setError('')
-      })
-      .catch((err: unknown) => {
+        setLoading(false)
+      } catch (err: unknown) {
         if (!active) return
+        if (attempt < 2) { setTimeout(() => { if (active) load(attempt + 1) }, 700 * (attempt + 1)); return }
         setCareers([])
         setError(err instanceof Error ? err.message : 'We could not load career opportunities right now.')
-      })
-      .finally(() => { if (active) setLoading(false) })
+        setLoading(false)
+      }
+    }
+    setLoading(true)
+    load()
     return () => {
       active = false
     }

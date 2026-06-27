@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import { useState, useEffect } from 'react'
 import SiteLayout from '@/components/layout/SiteLayout'
-import { Link } from '@/i18n/routing'
+import { Link, useRouter } from '@/i18n/routing'
 import { useLocale } from 'next-intl'
 import ThreeSixtyViewer from '@/components/shared/ThreeSixtyViewer'
 import { fetchTourScenes, type TourScene } from '@/lib/tour-cache'
@@ -57,15 +57,10 @@ function SceneCard({ scene }: { scene: TourScene }) {
       {/* Image */}
       <div className="relative h-[280px] sm:h-[clamp(320px,25vw,384px)] w-full bg-zinc-100 shrink-0 overflow-hidden">
         <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
-        <div className="absolute top-[14px] left-[14px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
-          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
-          <span className="font-dm-sans text-white text-[11px] tracking-wide">360°</span>
-        </div>
       </div>
       {/* Footer */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between p-5 sm:p-8 lg:p-10 w-full gap-4">
-        <div className="flex flex-col justify-center items-start gap-3 min-w-0">
+      <div className="flex flex-1 flex-col sm:flex-row sm:items-end justify-between p-5 sm:p-8 lg:p-10 w-full gap-4">
+        <div className="flex flex-col justify-end items-start gap-3 min-w-0">
           <p className="font-cormorant font-bold text-[32px] sm:text-[40px] lg:text-5xl text-[#3b2d17] leading-tight lg:leading-[48px] break-words">{scene.title}</p>
           <p className="font-dm-sans text-[16px] sm:text-[18px] lg:text-xl text-[#594522] leading-6 sm:leading-5">{scene.description.split('\n')[0].slice(0, 50)}</p>
         </div>
@@ -89,11 +84,6 @@ function SceneCardFull({ scene }: { scene: TourScene }) {
       {/* Left: 360° frozen view ~65% width */}
       <div className="relative shrink-0 overflow-hidden rounded-3xl w-full md:w-[65%] h-[280px] sm:h-[360px] md:h-[clamp(420px,35vw,536px)]">
         <ThreeSixtyViewer src={src} height="100%" width="100%" interactive={false} />
-        <div className="absolute top-[16px] left-[16px] z-20 flex items-center gap-[6px] px-[10px] py-[5px] rounded-full pointer-events-none"
-          style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
-          <span className="font-dm-sans text-white text-[11px] tracking-wide">360°</span>
-        </div>
       </div>
       {/* Right: info panel */}
       <div className="flex flex-col justify-between p-5 sm:p-8 lg:p-10 flex-1 gap-6">
@@ -133,6 +123,7 @@ function Skeleton() {
 
 export default function ThreeSixtyTourPage() {
   const locale = useLocale()
+  const router = useRouter()
   const { selectedBranch, ready } = useBranch()
   const [scenes, setScenes] = useState<TourScene[]>([])
   const [loading, setLoading] = useState(true)
@@ -153,6 +144,12 @@ export default function ThreeSixtyTourPage() {
   const groupSections = hasGroups ? buildGroups(scenes) : []
   const grid = scenes.length ? buildGrid(scenes) : null
   const hero = scene1?.panoramaUrl || scene1?.thumbnailUrl || '/images/360-page-banner.jpg'
+  // Sub-rooms of scene 1, shown as clickable dots on the hero. The label above
+  // each dot is the destination ROOM NAME (the linked scene's title).
+  const scene1Hotspots = (scene1?.hotspots ?? []).map(h => ({
+    ...h,
+    label: scenes.find(s => s.sceneNumber === h.targetSceneNumber)?.title || h.label,
+  }))
 
   return (
     <SiteLayout>
@@ -172,11 +169,17 @@ export default function ThreeSixtyTourPage() {
               style={{ boxShadow: '0 8px 60px 8px rgba(184,145,72,0.18)', border: '1px solid rgba(184,145,72,0.28)' }}
               onDoubleClick={() => setHeroLocked(false)}
             >
-              <ThreeSixtyViewer src={hero} height="100%" width="100%" interactive={!heroLocked} />
+              <ThreeSixtyViewer
+                src={hero}
+                height="100%"
+                width="100%"
+                interactive={!heroLocked}
+                hotspots={scene1Hotspots}
+                onHotspotClick={(t) => { if (t != null) router.push(`/360-tour/${t}?explore=1` as any) }}
+              />
               {heroLocked && (
-                <div className="absolute inset-0 z-30 bg-black/50 flex flex-col items-center justify-center gap-[12px] select-none backdrop-blur-[2px]">
-                  <span className="font-dm-sans text-[48px] text-white/90 font-bold tracking-widest">360°</span>
-                  <p className="font-dm-sans text-[16px] text-white/70 tracking-wide">Double-click to explore</p>
+                <div className="absolute top-[20px] left-1/2 -translate-x-1/2 z-30 pointer-events-none select-none rounded-full bg-black/45 backdrop-blur-[2px] px-4 py-1.5">
+                  <p className="font-dm-sans text-[12px] sm:text-[13px] text-white/85 tracking-wide">360° · double-click to drag · tap a room to enter</p>
                 </div>
               )}
                 <div className="absolute bottom-0 inset-x-0 pointer-events-none flex flex-col gap-[8px] px-5 sm:px-8 lg:px-[48px] pb-5 sm:pb-8 lg:pb-[40px]"

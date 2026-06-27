@@ -75,7 +75,23 @@ export default function CentersSection() {
     </section>
   )
 
-  if (!selectedBranch || !active) return null
+  if (!selectedBranch) return null
+
+  // No Centers of Excellence records yet — still render the section header so the
+  // homepage keeps its structure; the interactive content shows once CoE records
+  // are published.
+  if (!active) return (
+    <section className="w-full" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="page-shell flex flex-col gap-[12px] lg:gap-[16px] items-center">
+        <h2 className="font-cormorant font-bold text-[36px] lg:text-[48px] text-[#3b2d17] leading-none text-center">
+          {t('title')}
+        </h2>
+        <p className="font-dm-sans text-[18px] lg:text-[20px] text-[#594522] leading-none text-center w-[299px] lg:w-full">
+          {t('subtitle')}
+        </p>
+      </div>
+    </section>
+  )
 
   const STATS = [
     { value: active.successRate       || '99%',  label: t('stat1') },
