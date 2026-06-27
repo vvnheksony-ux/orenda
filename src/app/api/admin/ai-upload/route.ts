@@ -89,25 +89,32 @@ export async function POST(req: NextRequest) {
   const uploadId: string = uploadRecord.id
 
   let text = ''
+  let contentSource: 'extracted' | 'user_description' = 'extracted'
+
   try {
-    text = await extractText(buffer, file.name)
+    text = (await extractText(buffer, file.name)).trim()
   } catch {
-    await db.from('ai_rag2_uploads').update({
-      status: 'error',
-      error:  'Text extraction failed — file may be image-based, scanned, or password-protected.',
-    }).eq('id', uploadId)
-    return NextResponse.json({ error: 'Could not extract text. Scanned/image PDFs cannot be read. Try a text-based PDF or copy-paste content into a .txt file.' }, { status: 422 })
+    text = ''
+  }
+
+  // Fallback: if no text extracted, use title + description provided by user
+  if (!text) {
+    if (userDescription) {
+      text = `${userTitle}\n\n${userDescription}`
+      contentSource = 'user_description'
+    } else {
+      await db.from('ai_rag2_uploads').update({
+        status: 'error',
+        error:  'No text could be extracted (scanned/image PDF). Re-upload and add a description so AI can still find this document.',
+      }).eq('id', uploadId)
+      return NextResponse.json({
+        error: 'Could not extract text from this file (scanned or image-based PDF). Please re-upload and fill in the Description field so the AI can still find this document.',
+        code:  'needs_description',
+      }, { status: 422 })
+    }
   }
 
   const chunks = chunkText(text)
-  if (chunks.length === 0) {
-    await db.from('ai_rag2_uploads').update({
-      status: 'error',
-      error:  'No readable text found — file may be image-based or empty.',
-    }).eq('id', uploadId)
-    return NextResponse.json({ error: 'No text found in file. Scanned PDFs or image files cannot be embedded.' }, { status: 422 })
-  }
-
   const rows: object[] = []
   for (let i = 0; i < chunks.length; i += 50) {
     const batch = chunks.slice(i, i + 50)
@@ -123,6 +130,7 @@ export async function POST(req: NextRequest) {
           source_collection: 'other',
           title:             userTitle,
           description:       userDescription ?? undefined,
+          content_source:    contentSource,
           locale:            'en',
           locale_fallback:   false,
           chunk_index:       i + j,

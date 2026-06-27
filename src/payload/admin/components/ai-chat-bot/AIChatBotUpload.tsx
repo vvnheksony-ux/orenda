@@ -89,7 +89,16 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
       if (description.trim()) form.set('description', description.trim())
       const res = await fetch('/api/admin/ai-upload', { method: 'POST', credentials: 'include', body: form })
       const data = await res.json().catch(() => null)
-      if (!res.ok) { setError(data?.error || 'Upload failed'); return }
+      if (!res.ok) {
+        if (data?.code === 'needs_description') {
+          // Re-open staged form with same file so user can add description
+          setStaged({ file, title, description })
+          setError('This appears to be a scanned or image-based PDF — no text could be extracted. Add a description below so the AI can still find and reference this document.')
+        } else {
+          setError(data?.error || 'Upload failed')
+        }
+        return
+      }
       const listRes = await fetch('/api/admin/ai-upload', { credentials: 'include' })
       const listData = await listRes.json().catch(() => null)
       if (listData?.uploads) setUploads(listData.uploads)
@@ -173,11 +182,11 @@ export default function AIChatBotUpload({ initialUploads }: { initialUploads: Up
 
             <div>
               <label className="mb-1.5 block text-xs font-bold text-[#716b60]">
-                Description <span className="text-[#aaa6a0]">(optional)</span>
+                Description <span className="text-[#aaa6a0]">(optional — required for scanned PDFs)</span>
               </label>
               <textarea
                 className="w-full resize-none rounded-xl border border-[#e7dfd5] px-4 py-2.5 text-sm text-[#2b2823] outline-none focus:border-[#b89148]"
-                placeholder="Briefly describe what this document is about so the AI can use it as context..."
+                placeholder="Briefly describe what this document is about. For scanned/image PDFs this is the only content the AI can search."
                 rows={3}
                 value={staged.description}
                 onChange={e => setStaged(s => s ? { ...s, description: e.target.value } : s)}
