@@ -1,6 +1,7 @@
 'use client'
 
 import { X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 type Props = {
   message: string
@@ -11,9 +12,11 @@ type Props = {
 }
 
 export default function ConfirmModal({ message, confirmLabel = 'Confirm', danger = false, onConfirm, onCancel }: Props) {
-  return (
+  // Render in document.body so z-index is in root stacking context (not trapped by Payload layout ancestors)
+  if (typeof document === 'undefined') return null
+  return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4"
+      className="orienda-modal-overlay fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4"
       onClick={e => { if (e.target === e.currentTarget) onCancel() }}
     >
       <div className="relative w-full max-w-sm rounded-2xl bg-white p-7 shadow-2xl">
@@ -44,6 +47,7 @@ export default function ConfirmModal({ message, confirmLabel = 'Confirm', danger
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -2,6 +2,7 @@
 
 import { ExternalLink, FileText, Trash2, Upload, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { createPortal } from 'react-dom'
 import { ConfirmationModal, useModal } from '@payloadcms/ui'
 import { useRouter } from 'next/navigation'
 import ConfirmModal from '../ui/ConfirmModal'
@@ -318,8 +319,9 @@ function FilePreviewModal({ url, filename, title, onClose }: { url: string; file
     )
   }
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+  if (typeof document === 'undefined') return null
+  return createPortal(
+    <div className="orienda-modal-overlay fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="flex h-[88vh] w-[90vw] max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex shrink-0 items-center gap-3 border-b border-[#e7dfd5] px-5 py-3.5">
@@ -340,7 +342,8 @@ function FilePreviewModal({ url, filename, title, onClose }: { url: string; file
           {body}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
