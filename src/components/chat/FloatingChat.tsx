@@ -2,16 +2,57 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { Send, X, Minimize2, Maximize2, Calendar, User, MapPin, FileText, Plus, ArrowLeft, MessageSquare } from 'lucide-react'
+import { Send, X, Minimize2, Maximize2, Calendar, User, MapPin, FileText, Plus, ArrowLeft, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import BookAppointmentModal from '@/components/shared/BookAppointmentModal'
 import LoginModal from '@/components/shared/LoginModal'
 
 type Message = {
   id: string
+  dbId?: string  // Supabase ai_chat_messages.id — present when loaded from history
   role: 'user' | 'ai'
   content: string
   timestamp: string
+  thumbs?: 'up' | 'down' | null
+}
+
+// ── Markdown renderer ──────────────────────────────────────────────────────────
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i}>{part.slice(2, -2)}</strong>
+    if (part.startsWith('*') && part.endsWith('*')) return <em key={i}>{part.slice(1, -1)}</em>
+    return part
+  })
+}
+
+function renderContent(text: string): React.ReactNode {
+  const lines = text.split('\n')
+  const elements: React.ReactNode[] = []
+  let i = 0
+  while (i < lines.length) {
+    const line = lines[i]
+    // Numbered list
+    if (/^\d+\.\s/.test(line)) {
+      const items: string[] = []
+      while (i < lines.length && /^\d+\.\s/.test(lines[i])) { items.push(lines[i].replace(/^\d+\.\s/, '')); i++ }
+      elements.push(<ol key={`ol-${i}`} style={{ paddingLeft: 16, margin: '4px 0' }}>{items.map((it, j) => <li key={j}>{renderInline(it)}</li>)}</ol>)
+      continue
+    }
+    // Bullet list
+    if (/^[-•]\s/.test(line)) {
+      const items: string[] = []
+      while (i < lines.length && /^[-•]\s/.test(lines[i])) { items.push(lines[i].replace(/^[-•]\s/, '')); i++ }
+      elements.push(<ul key={`ul-${i}`} style={{ paddingLeft: 16, margin: '4px 0' }}>{items.map((it, j) => <li key={j}>{renderInline(it)}</li>)}</ul>)
+      continue
+    }
+    // Empty line = small spacer
+    if (!line.trim()) { elements.push(<div key={`sp-${i}`} style={{ height: 6 }} />); i++; continue }
+    // Normal line
+    elements.push(<div key={`ln-${i}`}>{renderInline(line)}</div>)
+    i++
+  }
+  return <>{elements}</>
 }
 
 type Session = {
@@ -122,7 +163,11 @@ async function loadServerSessions(): Promise<Session[]> {
   const response = await fetch('/api/ai-chat')
   if (!response.ok) throw new Error('Failed to load chat history')
   const data = await response.json()
-  return data.docs || []
+  // Map server messages to include dbId + thumbs
+  return (data.docs || []).map((s: any) => ({
+    ...s,
+    messages: s.messages.map((m: any) => ({ ...m, dbId: m.id, thumbs: m.thumbs ?? null })),
+  }))
 }
 
 async function removeServerSession(sessionId: string) {
@@ -205,25 +250,82 @@ export default function FloatingChat() {
     setSessions(loadSessions())
   }, [messages, refreshSessions, sessionId, user?.id, userCount])
 
+  const handleThumb = useCallback(async (msgId: string, dbId: string | undefined, thumb: 'up' | 'down') => {
+    // Toggle off if same thumb clicked again
+    setMessages(prev => prev.map(m => {
+      if (m.id !== msgId) return m
+      const next = m.thumbs === thumb ? null : thumb
+      return { ...m, thumbs: next }
+    }))
+    if (!dbId || !user?.id) return
+    setMessages(prev => {
+      const msg = prev.find(m => m.id === msgId)
+      const next = msg?.thumbs === thumb ? null : thumb
+      fetch('/api/ai-chat/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message_id: dbId, thumbs: next }),
+      }).catch(() => {})
+      return prev
+    })
+  }, [user?.id])
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || isTyping || Date.now() - lastSentAt < COOLDOWN_MS || userCount >= MAX_MESSAGES) return
     setLastSentAt(Date.now())
     setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: text.trim(), timestamp: timeNow() }])
     setIsTyping(true)
+
+    const aiId = (Date.now() + 1).toString()
+
     try {
-      const res = await fetch('/api/ai-chat', {
+      const res = await fetch('/api/ai-chat?stream=true', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
         body: JSON.stringify({ message: text.trim(), session_key: sessionId, locale, user_id: user?.id ?? null }),
       })
-      const raw = await res.json()
-      const data = Array.isArray(raw) ? raw[0] : raw
-      const reply = data?.output ?? data?.message ?? data?.response ?? data?.text ?? JSON.stringify(data)
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', content: reply, timestamp: timeNow() }])
-    } catch {
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', content: 'Sorry, I could not reach the server. Please try again.', timestamp: timeNow() }])
-    } finally {
+
+      if (!res.body) throw new Error('no body')
+
+      // Add empty AI bubble — will fill as stream arrives
+      setMessages(prev => [...prev, { id: aiId, role: 'ai', content: '', timestamp: timeNow() }])
       setIsTyping(false)
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let fullText = ''
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const payload = line.slice(6).trim()
+          if (payload === '[DONE]') break
+          try {
+            const { text: chunk } = JSON.parse(payload)
+            if (chunk) {
+              fullText += chunk
+              setMessages(prev => prev.map(m => m.id === aiId ? { ...m, content: fullText } : m))
+            }
+          } catch {}
+        }
+      }
+
+      if (!fullText) {
+        setMessages(prev => prev.map(m => m.id === aiId ? { ...m, content: "Sorry, I couldn't get a response right now. Please try again." } : m))
+      }
+    } catch {
+      setIsTyping(false)
+      setMessages(prev => {
+        const hasAi = prev.some(m => m.id === aiId)
+        const errMsg = { id: aiId, role: 'ai' as const, content: 'Sorry, I could not reach the server. Please try again.', timestamp: timeNow() }
+        return hasAi ? prev.map(m => m.id === aiId ? errMsg : m) : [...prev, errMsg]
+      })
     }
   }
 
@@ -276,10 +378,34 @@ export default function FloatingChat() {
           background: msg.role === 'user' ? 'rgba(184,145,72,0.85)' : 'rgba(245,236,212,0.70)',
           color: msg.role === 'user' ? '#fff' : '#3b2d17',
           borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-          maxWidth: '85%', whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word',
+          maxWidth: '85%', wordBreak: 'break-word', overflowWrap: 'break-word',
         }}
-      >{msg.content}</div>
-      <span className="font-dm-sans text-[#7a5f2c]/70" style={{ fontSize: 10 }}>{msg.timestamp}</span>
+      >
+        {msg.role === 'ai' ? renderContent(msg.content) : msg.content}
+      </div>
+      <div className={`flex items-center gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+        <span className="font-dm-sans text-[#7a5f2c]/70" style={{ fontSize: 10 }}>{msg.timestamp}</span>
+        {msg.role === 'ai' && msg.content && (
+          <div className="flex items-center gap-[6px]">
+            <button
+              onClick={() => handleThumb(msg.id, msg.dbId, 'up')}
+              title="Helpful"
+              style={{ opacity: msg.thumbs === 'up' ? 1 : 0.35, transition: 'opacity 0.15s' }}
+              className="hover:opacity-80"
+            >
+              <ThumbsUp size={11} color={msg.thumbs === 'up' ? '#178348' : '#7a5f2c'} strokeWidth={2} />
+            </button>
+            <button
+              onClick={() => handleThumb(msg.id, msg.dbId, 'down')}
+              title="Not helpful"
+              style={{ opacity: msg.thumbs === 'down' ? 1 : 0.35, transition: 'opacity 0.15s' }}
+              className="hover:opacity-80"
+            >
+              <ThumbsDown size={11} color={msg.thumbs === 'down' ? '#c0392b' : '#7a5f2c'} strokeWidth={2} />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 

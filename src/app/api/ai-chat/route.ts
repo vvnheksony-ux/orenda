@@ -125,14 +125,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Empty message' }, { status: 400 })
   }
 
+  const wantsStream =
+    req.nextUrl.searchParams.get('stream') === 'true' ||
+    req.headers.get('accept')?.includes('text/event-stream')
+
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
   try {
-    // Call /api/rag2 directly — no n8n middleman
-    // rag2 handles validation, session saving, vector search, GPT
-    const rag2Url = new URL('/api/rag2', req.nextUrl.origin).toString()
-    const upstream = await fetch(rag2Url, {
+    const rag2Base = new URL('/api/rag2', req.nextUrl.origin).toString()
+
+    // Streaming path — pipe SSE from /api/rag2 directly through
+    if (wantsStream) {
+      const upstream = await fetch(`${rag2Base}?stream=true`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+        body: JSON.stringify({ message, session_key, locale, user_id }),
+        signal: controller.signal,
+      })
+      clearTimeout(timer)
+      return new Response(upstream.body, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'X-Accel-Buffering': 'no',
+        },
+      })
+    }
+
+    // Non-streaming path
+    const upstream = await fetch(rag2Base, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, session_key, locale, user_id }),
