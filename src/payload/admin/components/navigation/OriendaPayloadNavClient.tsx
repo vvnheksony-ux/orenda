@@ -1,14 +1,15 @@
 'use client'
 
 import { getTranslation } from '@payloadcms/translations'
-import { Hamburger, Link, useConfig, useNav, usePreferences, useTranslation } from '@payloadcms/ui'
+import { Link, useConfig, useNav, usePreferences, useTranslation } from '@payloadcms/ui'
 import type { NavGroupType } from '@payloadcms/ui/shared'
 import { EntityType } from '@payloadcms/ui/shared'
-import { ChevronRight, LogOut } from 'lucide-react'
+import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { formatAdminURL, PREFERENCE_KEYS } from 'payload/shared'
-import { useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 type NavPreferences = {
   groups?: Record<string, { open?: boolean }>
@@ -27,11 +28,27 @@ type OriendaPayloadNavClientProps = {
   accessControlLinks?: OperationLink[]
 }
 
+const systemLinks = [
+  { label: 'Settings', path: '/settings' },
+] as const
+
+const aiChatBotLinks = [
+  { label: 'Upload File', path: '/ai-chat-bot/upload' },
+  { label: 'Price Lists', path: '/ai-chat-bot/price-lists' },
+  { label: 'Static Docs', path: '/ai-chat-bot/static-docs' },
+] as const
 
 const baseClass = 'nav'
 const navLinkClass =
   'flex min-h-10 items-center rounded-xl px-3.5 py-3 text-md text-[#c2b49d] no-underline transition-colors hover:bg-white/[0.08] hover:text-white'
 const activeNavLinkClass = `${navLinkClass} bg-[#f7f0e4] font-bold text-black hover:bg-[#f7f0e4] hover:text-[#7d612d]`
+
+const SIDEBAR_SCROLL_KEY = 'orienda-admin-sidebar-scroll'
+
+// Matches /path exactly OR /path/anything — prevents false match on /collections/faq vs /collections/faqs
+function isRouteActive(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(href + '/')
+}
 
 function getUserInitial(name: string, email: string) {
   return (name || email || 'A').trim().charAt(0).toUpperCase()
@@ -66,13 +83,86 @@ export default function OriendaPayloadNavClient({
     allGroups.push({ entities: [], label: 'Access Control' })
   }
 
+  if (!allGroups.some((group) => group.label === 'AI Chat Bot')) {
+    allGroups.push({ entities: [], label: 'AI Chat Bot' })
+  }
+  // Systems always last
+  const systemsIdx = allGroups.findIndex((g) => g.label === 'Systems')
+  if (systemsIdx >= 0 && systemsIdx !== allGroups.length - 1) {
+    const [systems] = allGroups.splice(systemsIdx, 1)
+    allGroups.push(systems)
+  }
+
   const { setPreference } = usePreferences()
+  const adminRoute = config.routes.admin
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(allGroups.map(({ label }) => [label, navPreferences?.groups?.[label]?.open ?? true]))
   )
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
-  const adminRoute = config.routes.admin
+  // Ref for the inner <nav> which is the actual scrollable element (overflow-y-auto)
+  const innerNavRef = useRef<HTMLElement | null>(null)
+
+  // Auto-expand any group whose collection matches the current route
+  useEffect(() => {
+    const groupsToOpen: string[] = []
+    for (const { entities, label } of allGroups) {
+      for (const { slug, type } of entities) {
+        const href = formatAdminURL({
+          adminRoute,
+          path: type === EntityType.collection ? `/collections/${slug}` : `/globals/${slug}`,
+        })
+        if (isRouteActive(pathname, href)) {
+          groupsToOpen.push(label)
+          break
+        }
+      }
+    }
+    if (groupsToOpen.length > 0) {
+      setOpenGroups(current => {
+        const next = { ...current }
+        let changed = false
+        for (const lbl of groupsToOpen) {
+          if (!next[lbl]) { next[lbl] = true; changed = true }
+        }
+        return changed ? next : current
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
+
+  // Save scroll position on every scroll event
+  useEffect(() => {
+    const el = innerNavRef.current
+    if (!el) return
+    const save = () => sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(el.scrollTop))
+    el.addEventListener('scroll', save, { passive: true })
+    return () => el.removeEventListener('scroll', save)
+  }, [])
+
+  // Restore scroll after route changes — useLayoutEffect runs before paint
+  useLayoutEffect(() => {
+    const el = innerNavRef.current
+    if (!el) return
+    const saved = Number(sessionStorage.getItem(SIDEBAR_SCROLL_KEY) || 0)
+    requestAnimationFrame(() => {
+      el.scrollTop = saved
+      // If active item is outside viewport, scroll it into view without jumping to center
+      const active = el.querySelector('[data-nav-active="true"]') as HTMLElement | null
+      if (active) {
+        const elRect = el.getBoundingClientRect()
+        const activeRect = active.getBoundingClientRect()
+        const isAbove = activeRect.top < elRect.top
+        const isBelow = activeRect.bottom > elRect.bottom
+        if (isAbove || isBelow) {
+          active.scrollIntoView({ block: 'nearest', behavior: 'auto' })
+        }
+      }
+    })
+  }, [pathname])
+
   const logoutHref = formatAdminURL({ adminRoute, path: config.admin.routes.logout })
   const name = typeof user?.name === 'string' ? user.name : 'Admin Username'
   const email = typeof user?.email === 'string' ? user.email : 'admin'
@@ -87,7 +177,8 @@ export default function OriendaPayloadNavClient({
     .join(' ')
 
   const dashboardHref = formatAdminURL({ adminRoute, path: '/' })
-  const dashboardActive = pathname === dashboardHref || pathname === `${dashboardHref}/`
+  const dashboardActive = isRouteActive(pathname, dashboardHref)
+
   const toggleGroup = (label: string) => {
     setOpenGroups((current) => {
       const next = !current[label]
@@ -96,7 +187,24 @@ export default function OriendaPayloadNavClient({
     })
   }
 
+  function renderLink(href: string, label: string, id: string) {
+    const active = isRouteActive(pathname, href)
+    return (
+      <Link
+        className={active ? activeNavLinkClass : navLinkClass}
+        href={href}
+        id={id}
+        key={href}
+        prefetch={false}
+        data-nav-active={active ? 'true' : undefined}
+      >
+        {label}
+      </Link>
+    )
+  }
+
   return (
+    <>
     <aside className={navClassName} inert={!navOpen ? true : undefined}>
       <div className={`${baseClass}__scroll flex h-screen flex-col overflow-hidden`} ref={navRef}>
         <div className="flex min-h-[106px] flex-col items-center gap-1.5 bg-[#5a431f] text-center">
@@ -111,11 +219,15 @@ export default function OriendaPayloadNavClient({
           <p className="-mt-5 text-md font-medium text-[#d4c5ad] mb-4.5">Admin Portal</p>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 py-5">
+        <nav
+          className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 py-5"
+          ref={el => { innerNavRef.current = el }}
+        >
           <Link
             className={dashboardActive ? activeNavLinkClass : navLinkClass}
             href={dashboardHref}
             prefetch={false}
+            data-nav-active={dashboardActive ? 'true' : undefined}
           >
             Dashboard
           </Link>
@@ -142,37 +254,25 @@ export default function OriendaPayloadNavClient({
                     {label === 'Operations'
                       ? operationLinks.map((link) => {
                           const href = formatAdminURL({ adminRoute, path: link.path as `/${string}` })
-                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-
-                          return (
-                            <Link
-                              className={isActive ? activeNavLinkClass : navLinkClass}
-                              href={href}
-                              id={`nav-public-${link.path.replace(/\//g, '-')}`}
-                              key={link.path}
-                              prefetch={false}
-                            >
-                              {link.label}
-                            </Link>
-                          )
+                          return renderLink(href, link.label, `nav-public-${link.path.replace(/\//g, '-')}`)
                         })
                       : null}
                     {label === 'Access Control'
                       ? accessControlLinks.map((link) => {
                           const href = formatAdminURL({ adminRoute, path: link.path as `/${string}` })
-                          const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-
-                          return (
-                            <Link
-                              className={isActive ? activeNavLinkClass : navLinkClass}
-                              href={href}
-                              id={`nav-public-${link.path.replace(/\//g, '-')}`}
-                              key={link.path}
-                              prefetch={false}
-                            >
-                              {link.label}
-                            </Link>
-                          )
+                          return renderLink(href, link.label, `nav-access-${link.path.replace(/\//g, '-')}`)
+                        })
+                      : null}
+                    {label === 'AI Chat Bot'
+                      ? aiChatBotLinks.map((link) => {
+                          const href = formatAdminURL({ adminRoute, path: link.path })
+                          return renderLink(href, link.label, `nav-ai-chatbot-${link.path.replace(/\//g, '-')}`)
+                        })
+                      : null}
+                    {label === 'Systems'
+                      ? systemLinks.map((link) => {
+                          const href = formatAdminURL({ adminRoute, path: link.path })
+                          return renderLink(href, link.label, `nav-system-${link.path.replace(/\//g, '-')}`)
                         })
                       : null}
                     {entities.map(({ label: entityLabel, slug, type }) => {
@@ -180,15 +280,15 @@ export default function OriendaPayloadNavClient({
                         adminRoute,
                         path: type === EntityType.collection ? `/collections/${slug}` : `/globals/${slug}`,
                       })
-                      const isActive = pathname.startsWith(href) && ['/', undefined].includes(pathname[href.length])
-
+                      const active = isRouteActive(pathname, href)
                       return (
                         <Link
-                          className={isActive ? activeNavLinkClass : navLinkClass}
+                          className={active ? activeNavLinkClass : navLinkClass}
                           href={href}
                           id={type === EntityType.collection ? `nav-${slug}` : `nav-global-${slug}`}
                           key={`${type}-${slug}`}
                           prefetch={false}
+                          data-nav-active={active ? 'true' : undefined}
                         >
                           {getTranslation(entityLabel, i18n)}
                         </Link>
@@ -220,19 +320,22 @@ export default function OriendaPayloadNavClient({
           </Link>
         </footer>
 
-        <div className={`${baseClass}__header`}>
-          <div className={`${baseClass}__header-content`}>
-            <button
-              className={`${baseClass}__mobile-close`}
-              onClick={() => setNavOpen(false)}
-              tabIndex={!navOpen ? -1 : undefined}
-              type="button"
-            >
-              <Hamburger isActive />
-            </button>
-          </div>
-        </div>
       </div>
     </aside>
+    {mounted && createPortal(
+      <button
+        type="button"
+        onClick={() => setNavOpen(!navOpen)}
+        aria-label={navOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        className="orienda-sidebar-toggle"
+        style={{ left: navOpen ? 'calc(275px - 14px)' : '8px' }}
+      >
+        {navOpen
+          ? <ChevronLeft size={14} color="#5a431f" strokeWidth={2.5} />
+          : <ChevronRight size={14} color="#5a431f" strokeWidth={2.5} />}
+      </button>,
+      document.body
+    )}
+    </>
   )
 }

@@ -164,9 +164,17 @@ export default buildConfig({
           Component: '@/payload/admin/components/operations/OperationsAdminView',
           path: '/operations/testimonials/:mode?/:id?',
         },
-        aiChatBot: {
-          Component: '@/payload/admin/components/ai-chat-bot/AIChatBotAdminView',
-          path: '/ai-chat-bot/:mode?/:id?',
+        aiChatBotUpload: {
+          Component: '@/payload/admin/components/ai-chat-bot/AIChatBotUploadView',
+          path: '/ai-chat-bot/upload',
+        },
+        aiChatBotPriceLists: {
+          Component: '@/payload/admin/components/ai-chat-bot/AIChatBotPriceListsView',
+          path: '/ai-chat-bot/price-lists',
+        },
+        aiChatBotStaticDocs: {
+          Component: '@/payload/admin/components/ai-chat-bot/AIChatBotStaticDocsView',
+          path: '/ai-chat-bot/static-docs',
         },
         settings: {
           Component: '@/payload/admin/components/settings/SettingsAdminView',

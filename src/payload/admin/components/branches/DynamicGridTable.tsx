@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+
+import ConfirmModal from "../ui/ConfirmModal";
 import { useListQuery, useConfig } from "@payloadcms/ui";
 import { Eye, Pencil, Trash2, FileText } from "lucide-react";
 import Link from "next/link";
@@ -8,6 +10,7 @@ import Link from "next/link";
 export default function DynamicGridTable() {
   const { data, query, refineListData } = useListQuery();
   const config = useConfig();
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void; danger?: boolean } | null>(null);
 
   // 1. Automatically extract data and collection info from Payload's context
   const docs = data?.docs || [];
@@ -17,24 +20,29 @@ export default function DynamicGridTable() {
   // 2. Identify active filter columns dynamically
   const activeColumns = Array.isArray(query?.select) ? query.select : [];
 
-  const handleDelete = async (id: string | number) => {
-    if (!window.confirm("Are you sure you want to delete this record?")) return;
+  const handleDelete = (id: string | number) => {
+    setConfirm({
+      message: "Are you sure you want to delete this record?",
+      onConfirm: async () => {
+        const response = await fetch(
+          `/payload-api/${currentCollectionSlug}/${id}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        );
 
-    const response = await fetch(
-      `/payload-api/${currentCollectionSlug}/${id}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-      }
-    );
-
-    if (response.ok) {
-      await refineListData(query);
-    }
+        if (response.ok) {
+          await refineListData(query);
+        }
+      },
+    });
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 p-2">
+    <>
+      {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" danger onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 p-2">
       {docs.map((doc: any) => {
         const editURL = `${adminBase}/${doc.id}`;
 
@@ -161,5 +169,6 @@ export default function DynamicGridTable() {
         );
       })}
     </div>
+    </>
   );
 }

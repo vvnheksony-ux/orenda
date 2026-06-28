@@ -1,0 +1,450 @@
+'use client'
+
+import { FileSpreadsheet, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { ConfirmationModal, useModal } from '@payloadcms/ui'
+import { useRouter } from 'next/navigation'
+import ConfirmModal from '../ui/ConfirmModal'
+import type { PriceRow } from './AIChatBotPriceListsView'
+
+const LEAVE_MODAL_SLUG = 'price-lists-leave-without-saving'
+
+type PriceForm = {
+  service_name_en: string
+  service_name_km: string
+  price_khmer: string
+  price_foreign: string
+  price_emergency_khmer: string
+  price_emergency_foreign: string
+  department: string
+}
+
+const emptyForm: PriceForm = {
+  service_name_en: '',
+  service_name_km: '',
+  price_khmer: '',
+  price_foreign: '',
+  price_emergency_khmer: '',
+  price_emergency_foreign: '',
+  department: '',
+}
+
+function rowToForm(row: PriceRow): PriceForm {
+  return {
+    service_name_en: row.service_name_en ?? '',
+    service_name_km: row.service_name_km ?? '',
+    price_khmer: row.price_khmer != null ? String(row.price_khmer) : '',
+    price_foreign: row.price_foreign != null ? String(row.price_foreign) : '',
+    price_emergency_khmer: row.price_emergency_khmer != null ? String(row.price_emergency_khmer) : '',
+    price_emergency_foreign: row.price_emergency_foreign != null ? String(row.price_emergency_foreign) : '',
+    department: row.department ?? '',
+  }
+}
+
+const COLUMNS = [
+  { col: 'A', name: 'ល.រ', note: 'Row # (ignored)' },
+  { col: 'B', name: 'Khmer Name', sub: 'លេខាភាសាខ្មែរ', note: 'Khmer service name' },
+  { col: 'C', name: 'English Name', sub: 'លេខាភាសាអង់គ្លេស', note: 'Required' },
+  { col: 'D', name: 'Khmer Price', sub: 'ផ្នែកដាតិខ្មែរ', note: 'USD number' },
+  { col: 'E', name: 'Foreign Price', sub: 'ផ្នែកបរទេស', note: 'USD number' },
+  { col: 'F', name: 'Emrg. Khmer', sub: 'ផ្នែកដាតិខ្មែរ បន្ទាន់', note: 'USD number' },
+  { col: 'G', name: 'Emrg. Foreign', sub: 'ផ្នែកបរទេស បន្ទាន់', note: 'USD number' },
+]
+
+const EXAMPLE_ROWS = [
+  ['1', 'ការពិគ្រោះ (< ២០ នាទី)',  'Consultation ER (less than 20 min)',  '15', '15', '15', '15'],
+  ['2', 'ការពិគ្រោះ (> ២០ នាទី)',  'Consultation ER (more than 20 min)',  '35', '35', '35', '35'],
+  ['3', 'ការថែទាំស្បែក',           'Consultation Dermatology',            '25', '25', '25', '25'],
+]
+
+export default function AIChatBotPriceLists({ initialPrices }: { initialPrices: PriceRow[] }) {
+  const [prices, setPrices] = useState(initialPrices)
+  const [form, setForm] = useState<PriceForm>(emptyForm)
+  const [editing, setEditing] = useState<PriceRow | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [showUploadModal, setShowUploadModal] = useState(false)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void; danger?: boolean } | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [importMsg, setImportMsg] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const { openModal, closeModal } = useModal()
+  const router = useRouter()
+  const pendingHref = useRef<string | null>(null)
+  const isDirtyRef = useRef(false)
+
+  // Dirty = form open with unsaved changes
+  const isDirty = showForm && (
+    editing
+      ? JSON.stringify(form) !== JSON.stringify(rowToForm(editing))
+      : Object.values(form).some(v => v !== '')
+  )
+
+  useEffect(() => { isDirtyRef.current = isDirty }, [isDirty])
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!isDirtyRef.current) return
+      e.preventDefault(); e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [])
+
+  const handleNavClick = useCallback((e: MouseEvent) => {
+    if (!isDirtyRef.current) return
+    let el = e.target as HTMLElement | null
+    while (el && el.tagName.toLowerCase() !== 'a') el = el.parentElement
+    if (!el) return
+    const anchor = el as HTMLAnchorElement
+    const href = anchor.href
+    if (!href || href === window.location.href || anchor.target === '_blank' || anchor.download) return
+    e.preventDefault(); e.stopPropagation()
+    pendingHref.current = href
+    openModal(LEAVE_MODAL_SLUG)
+  }, [openModal])
+
+  useEffect(() => {
+    document.addEventListener('click', handleNavClick, true)
+    return () => document.removeEventListener('click', handleNavClick, true)
+  }, [handleNavClick])
+
+  function beginAdd() { setEditing(null); setForm(emptyForm); setShowForm(true); setError(null) }
+  function beginEdit(row: PriceRow) { setEditing(row); setForm(rowToForm(row)); setShowForm(true); setError(null) }
+  function cancel() { setShowForm(false); setEditing(null); setForm(emptyForm); setError(null) }
+  function set(key: keyof PriceForm, value: string) { setForm(f => ({ ...f, [key]: value })) }
+
+  function submit() {
+    if (!form.service_name_en.trim()) { setError('Service name (EN) required'); return }
+    setError(null)
+    startTransition(async () => {
+      const url = editing ? `/api/admin/ai-price-lists/${editing.id}` : '/api/admin/ai-price-lists'
+      const res = await fetch(url, {
+        method: editing ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(form),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok || !data?.price) { setError(data?.error || 'Save failed'); return }
+      setPrices(curr => editing ? curr.map(p => p.id === data.price.id ? data.price : p) : [...curr, data.price])
+      cancel()
+    })
+  }
+
+  function deleteRow(row: PriceRow) {
+    setConfirm({
+      message: `Delete "${row.service_name_en}"? This cannot be undone.`,
+      danger: true,
+      onConfirm: () => startTransition(async () => {
+        const res = await fetch(`/api/admin/ai-price-lists/${row.id}`, { method: 'DELETE', credentials: 'include' })
+        if (!res.ok) { const d = await res.json().catch(() => null); setError(d?.error || 'Delete failed'); return }
+        setPrices(curr => curr.filter(p => p.id !== row.id))
+      }),
+    })
+  }
+
+  async function downloadTemplate() {
+    const res = await fetch('/api/admin/ai-price-lists/template', { credentials: 'include' })
+    if (!res.ok) { setError('Download failed'); return }
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = 'price-list-template.xlsx'; a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function exportPrices() {
+    const XLSX = await import('xlsx')
+    const headers = [
+      'ល.រ',
+      'លេខាភាសាខ្មែរ (Khmer Name)',
+      'លេខាភាសាអង់គ្លេស (English Name)',
+      'ផ្នែកដាតិខ្មែរ (Khmer Price)',
+      'ផ្នែកបរទេស (Foreign Price)',
+      'ផ្នែកដាតិខ្មែរ សម្រាប់បន្ទាន់ (Emergency KH)',
+      'ផ្នែកបរទេស សម្រាប់បន្ទាន់ (Emergency FO)',
+    ]
+    const rows = prices.map((r, i) => [
+      i + 1,
+      r.service_name_km ?? '',
+      r.service_name_en ?? '',
+      r.price_khmer ?? '',
+      r.price_foreign ?? '',
+      r.price_emergency_khmer ?? '',
+      r.price_emergency_foreign ?? '',
+    ])
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows])
+    ws['!cols'] = [{ wch: 6 }, { wch: 38 }, { wch: 40 }, { wch: 20 }, { wch: 20 }, { wch: 28 }, { wch: 28 }]
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Price List')
+    XLSX.writeFile(wb, 'orienda-price-list.xlsx')
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPendingFile(file)
+    e.target.value = ''
+  }
+
+  async function runImport(replace: boolean) {
+    if (!pendingFile) return
+    setError(null); setImportMsg(null); setImporting(true); setPendingFile(null); setShowUploadModal(false)
+    const fd = new FormData(); fd.append('file', pendingFile)
+    const url = `/api/admin/ai-price-lists/import${replace ? '?replace=true' : ''}`
+    const res = await fetch(url, { method: 'POST', credentials: 'include', body: fd })
+    const data = await res.json().catch(() => null)
+    setImporting(false)
+    if (!res.ok) { setError(data?.error || 'Import failed'); return }
+    const total = data.total ?? data.imported ?? 0
+    setImportMsg(replace ? `Replaced all — ${total} prices loaded. Reloading...` : `${total} prices updated/added (duplicates merged). Reloading...`)
+    setTimeout(() => window.location.reload(), 1200)
+  }
+
+  return (
+    <section className="flex flex-col gap-5 pb-10">
+      <ConfirmationModal
+        body="Your changes have not been saved. If you leave now, you will lose your changes."
+        cancelLabel="Stay on this page"
+        confirmLabel="Leave anyway"
+        heading="Leave without saving"
+        modalSlug={LEAVE_MODAL_SLUG}
+        onCancel={() => closeModal(LEAVE_MODAL_SLUG)}
+        onConfirm={() => { closeModal(LEAVE_MODAL_SLUG); const href = pendingHref.current; if (href) router.push(href) }}
+      />
+      {confirm ? <ConfirmModal {...confirm} confirmLabel="Delete" onCancel={() => setConfirm(null)} onConfirm={() => { confirm.onConfirm(); setConfirm(null) }} /> : null}
+      {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+      {importMsg ? <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-700">{importMsg}</div> : null}
+
+      <input accept=".xlsx" className="hidden" onChange={handleFileSelect} ref={fileRef} type="file" />
+
+      <div className="flex flex-wrap justify-end gap-2">
+        {prices.length > 0 ? (
+          <button
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#e7dfd5] bg-white px-4 text-sm font-bold text-[#716b60] hover:bg-[#f4f0eb]"
+            onClick={exportPrices}
+            type="button"
+          >
+            <FileSpreadsheet size={15} /> Export XLSX
+          </button>
+        ) : null}
+        <button
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#e7dfd5] bg-white px-4 text-sm font-bold text-[#716b60] hover:bg-[#f4f0eb] disabled:opacity-50"
+          disabled={importing}
+          onClick={() => setShowUploadModal(true)}
+          type="button"
+        >
+          <Upload size={15} /> {importing ? 'Importing...' : 'Upload XLSX'}
+        </button>
+        <button
+          className="inline-flex h-10 items-center gap-2 rounded-xl border-none bg-[#b89148] px-5 text-sm font-bold text-white hover:bg-[#a37d3e]"
+          onClick={beginAdd}
+          type="button"
+        >
+          <Plus size={16} /> Add Price
+        </button>
+      </div>
+
+      {/* Upload modal */}
+      {showUploadModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2" onClick={e => { if (e.target === e.currentTarget) setShowUploadModal(false) }}>
+          <div className="relative w-[95vw] max-w-[1400px] rounded-2xl bg-white p-10 shadow-2xl">
+            <button
+              className="absolute right-4 top-4 rounded-lg border-none bg-transparent p-1 text-[#8c8982] hover:text-[#393733]"
+              onClick={() => setShowUploadModal(false)}
+              type="button"
+            >
+              <X size={18} />
+            </button>
+
+            <h2 className="mb-2 mt-0 text-xl font-bold text-[#2b2823]">Upload Price List</h2>
+            <p className="mb-6 mt-0 text-sm text-[#716b60]">
+              File must follow the exact column format below. Download the template, fill it in, then upload. Uploading will <strong>replace all existing prices</strong>.
+            </p>
+
+            {/* Spreadsheet-style horizontal preview */}
+            <div className="mb-5 rounded-xl border border-[#ccc5bb] overflow-x-auto">
+              <table className="w-full min-w-[860px] text-sm border-collapse table-fixed">
+                {/* Column letter row */}
+                <thead>
+                  <tr className="bg-[#3b2f1e] text-white">
+                    <th style={{ width: '24px' }} className="border-r border-white/20 px-0 py-2" />
+                    {COLUMNS.map(c => (
+                      <th className="border-r border-white/20 px-3 py-2 text-center font-bold last:border-r-0" key={c.col}>
+                        {c.col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Row 1: header names */}
+                  <tr className="bg-[#f7f4ef]">
+                    <td className="border-r border-b border-[#ccc5bb] bg-[#ede8e1] px-0 py-3 text-center font-mono text-[9px] text-[#8c8982]">1</td>
+                    {COLUMNS.map(c => (
+                      <td className="border-r border-b border-[#ccc5bb] px-3 py-3 last:border-r-0" key={c.col}>
+                        <div className="font-bold text-[#2b2823]">{c.name}</div>
+                        {'sub' in c && <div className="text-[#716b60] text-xs mt-0.5">{c.sub}</div>}
+                        <div className="text-[#8c8982] text-xs mt-1 italic">{c.note}</div>
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Example data rows */}
+                  {EXAMPLE_ROWS.map((row, i) => (
+                    <tr className="bg-white" key={i}>
+                      <td className="border-r border-b border-[#ccc5bb] bg-[#ede8e1] px-0 py-2.5 text-center font-mono text-[9px] text-[#8c8982]">{i + 2}</td>
+                      {row.map((val, j) => (
+                        <td className="border-r border-b border-[#ccc5bb] px-3 py-2.5 text-[#393733] last:border-r-0" key={j}>
+                          {val}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {pendingFile ? (
+              /* Styled confirm panel — replaces browser confirm() */
+              <div className="mt-6 rounded-2xl border border-[#e7dfd5] bg-[#f7f4ef] p-5">
+                <p className="mb-1 text-sm font-bold text-[#2b2823]">Ready to import:</p>
+                <p className="mb-4 text-sm text-[#716b60]">
+                  <span className="font-mono font-bold text-[#393733]">{pendingFile.name}</span>
+                  {' '}· {(pendingFile.size / 1024).toFixed(0)} KB
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    className="rounded-xl border-none bg-[#b89148] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#a37d3e]"
+                    onClick={() => runImport(false)}
+                    type="button"
+                  >
+                    Add to Existing Prices
+                  </button>
+                  <button
+                    className="rounded-xl border border-red-200 bg-red-50 px-5 py-2.5 text-sm font-bold text-red-600 hover:bg-red-100"
+                    onClick={() => runImport(true)}
+                    type="button"
+                  >
+                    Replace All Prices
+                  </button>
+                  <button
+                    className="rounded-xl border border-[#e7dfd5] bg-white px-5 py-2.5 text-sm font-bold text-[#716b60] hover:bg-[#f4f0eb]"
+                    onClick={() => setPendingFile(null)}
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-3 mt-6">
+                <button
+                  className="inline-flex items-center gap-2 rounded-xl border border-[#e7dfd5] bg-[#f7f4ef] px-5 py-3 text-sm font-bold text-[#716b60] hover:bg-[#efebe4]"
+                  onClick={downloadTemplate}
+                  type="button"
+                >
+                  <FileSpreadsheet size={15} /> Download Template
+                </button>
+                <button
+                  className="inline-flex items-center gap-2 rounded-xl border-none bg-[#b89148] px-5 py-3 text-sm font-bold text-white hover:bg-[#a37d3e]"
+                  onClick={() => fileRef.current?.click()}
+                  type="button"
+                >
+                  <Upload size={15} /> Choose File & Upload
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {showForm ? (
+        <div className="rounded-2xl border border-[#e7dfd5] bg-white p-5 shadow-sm">
+          <h2 className="mb-4 m-0 text-lg font-bold text-[#2b2823]">{editing ? 'Edit Price' : 'Add Price'}</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Service Name (EN) *">
+              <input className={inputCls} disabled={isPending} value={form.service_name_en} onChange={e => set('service_name_en', e.target.value)} placeholder="e.g. Consultation ER less than 20 min" />
+            </Field>
+            <Field label="Service Name (KM)">
+              <input className={inputCls} disabled={isPending} value={form.service_name_km} onChange={e => set('service_name_km', e.target.value)} placeholder="ការពិគ្រោះ..." />
+            </Field>
+            <Field label="Khmer Price ($)">
+              <input className={inputCls} disabled={isPending} type="number" step="0.01" value={form.price_khmer} onChange={e => set('price_khmer', e.target.value)} placeholder="15" />
+            </Field>
+            <Field label="Foreign Price ($)">
+              <input className={inputCls} disabled={isPending} type="number" step="0.01" value={form.price_foreign} onChange={e => set('price_foreign', e.target.value)} placeholder="15" />
+            </Field>
+            <Field label="Emergency Khmer ($)">
+              <input className={inputCls} disabled={isPending} type="number" step="0.01" value={form.price_emergency_khmer} onChange={e => set('price_emergency_khmer', e.target.value)} placeholder="15" />
+            </Field>
+            <Field label="Emergency Foreign ($)">
+              <input className={inputCls} disabled={isPending} type="number" step="0.01" value={form.price_emergency_foreign} onChange={e => set('price_emergency_foreign', e.target.value)} placeholder="15" />
+            </Field>
+            <Field label="Department" className="sm:col-span-2">
+              <input className={inputCls} disabled={isPending} value={form.department} onChange={e => set('department', e.target.value)} placeholder="e.g. Emergency, Dermatology" />
+            </Field>
+          </div>
+          <div className="mt-5 flex gap-3">
+            <button className="rounded-xl border-none bg-[#b89148] px-6 py-3 font-bold text-white disabled:opacity-60" disabled={isPending} onClick={submit} type="button">
+              {isPending ? 'Saving...' : 'Save'}
+            </button>
+            <button className="rounded-xl border-none bg-[#ebe7e1] px-6 py-3 font-bold text-[#2b2823]" disabled={isPending} onClick={cancel} type="button">Cancel</button>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="overflow-hidden rounded-2xl border border-[#e7dfd5] bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
+            <thead className="bg-[#efebe4] text-[#716b60]">
+              <tr>
+                <th className="px-4 py-3 font-bold w-[240px]">Service Name</th>
+                <th className="px-4 py-3 font-bold w-[160px]">Khmer Name</th>
+                <th className="px-4 py-3 font-bold w-[90px]">Khmer Price</th>
+                <th className="px-4 py-3 font-bold w-[100px]">Foreign Price</th>
+                <th className="px-4 py-3 font-bold w-[110px]">Emergency (KH)</th>
+                <th className="px-4 py-3 font-bold w-[110px]">Emergency (FO)</th>
+                <th className="px-4 py-3 font-bold w-[130px]">Department</th>
+                <th className="px-4 py-3 text-right font-bold w-[80px]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {prices.length ? prices.map(row => (
+                <tr className="border-t border-[#eee8dd] text-[#393733]" key={row.id}>
+                  <td className="px-4 py-3 font-medium">{row.service_name_en || '-'}</td>
+                  <td className="px-4 py-3 text-[#716b60] text-xs">{row.service_name_km || '-'}</td>
+                  <td className="px-4 py-3">{row.price_khmer != null ? `$${row.price_khmer}` : '-'}</td>
+                  <td className="px-4 py-3">{row.price_foreign != null ? `$${row.price_foreign}` : '-'}</td>
+                  <td className="px-4 py-3">{row.price_emergency_khmer != null ? `$${row.price_emergency_khmer}` : '-'}</td>
+                  <td className="px-4 py-3">{row.price_emergency_foreign != null ? `$${row.price_emergency_foreign}` : '-'}</td>
+                  <td className="px-4 py-3 text-[#716b60]">{row.department || '-'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-end gap-2">
+                      <button aria-label="Edit" className="border-none bg-transparent p-1 text-[#8c8982] hover:text-[#393733]" onClick={() => beginEdit(row)} type="button"><Pencil size={16} /></button>
+                      <button aria-label="Delete" className="border-none bg-transparent p-1 text-[#e5484d]" onClick={() => deleteRow(row)} type="button"><Trash2 size={16} /></button>
+                    </div>
+                  </td>
+                </tr>
+              )) : (
+                <tr><td className="px-4 py-8 text-center text-[#716b60]" colSpan={8}>No prices yet. Click Add Price to get started.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p className="text-xs text-[#8c8982]">{prices.length} price{prices.length !== 1 ? 's' : ''} · All changes auto-embed into AI search</p>
+    </section>
+  )
+}
+
+const inputCls = 'rounded-xl border border-[#e7dfd5] px-4 py-3 w-full text-sm text-[#393733] outline-none focus:border-[#b89148]'
+
+function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <label className={`flex flex-col gap-1.5 ${className ?? ''}`}>
+      <span className="text-xs font-bold text-[#716b60] uppercase tracking-wide">{label}</span>
+      {children}
+    </label>
+  )
+}
