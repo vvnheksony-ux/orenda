@@ -40,20 +40,7 @@ export const Hero: GlobalConfig = {
         description: 'Background image (used when type is Image, or as the video poster).',
       },
     },
-    {
-      name: 'testimonialName',
-      type: 'text',
-      localized: true,
-    },
-    {
-      name: 'testimonialRole',
-      type: 'text',
-      localized: true,
-    },
-    {
-      name: 'testimonialQuote',
-      type: 'text',
-      localized: true,
-    },
+    // The hero rating-card testimonial is pulled automatically from the real
+    // Testimonials (the latest one) via /api/testimonials — not entered here.
   ],
 }

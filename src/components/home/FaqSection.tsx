@@ -1,118 +1,31 @@
-'use client'
+import { headers } from 'next/headers'
+import FaqAccordion from './FaqAccordion'
 
-import Image from 'next/image'
-import { useState, useEffect } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { useTranslations, useLocale } from 'next-intl'
-import { ChevronUp } from 'lucide-react'
+type FaqItem = { q: string; a: string }
 
-export default function FaqSection() {
-  const t = useTranslations('FaqSection')
-  const locale = useLocale()
-  const [openIdx, setOpenIdx] = useState<number | null>(null)
-  const [FAQ_ITEMS, setFaqItems] = useState<{q:string;a:string}[]>([])
+// Fetch FAQs on the server so the section renders with data already in place
+// (no client-side "empty then pop-in" waterfall). Cached for 5 min via the
+// raw-pool /api/faqs route (the working DB path).
+async function getFaqs(locale: string): Promise<FaqItem[]> {
+  try {
+    const h = await headers()
+    const proto = h.get('x-forwarded-proto') ?? 'https'
+    const host = h.get('x-forwarded-host') ?? h.get('host')
+    const base = host
+      ? `${proto}://${host}`
+      : process.env.NEXT_PUBLIC_SITE_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
-  useEffect(() => {
-    fetch(`/api/faqs?locale=${locale}&limit=5`)
-      .then(r => r.json())
-      .then((data: any[]) => {
-        if (data?.length) {
-          setFaqItems(data.slice(0, 5).map((d: any) => ({ q: d.question, a: d.answer })))
-        }
-      })
-      .catch(() => {})
-  }, [locale])
+    const res = await fetch(`${base}/api/faqs?locale=${locale}&limit=5`, { next: { revalidate: 300 } })
+    if (!res.ok) return []
+    const data = await res.json()
+    return Array.isArray(data) ? data.slice(0, 5).map((d: any) => ({ q: d.question, a: d.answer })) : []
+  } catch {
+    return []
+  }
+}
 
-  return (
-    <section id="faq" className="w-full bg-[var(--background)] scroll-mt-[120px]">
-      <div className="page-shell flex flex-col md:flex-row gap-[40px] items-start relative">
-
-        {/* Mobile-only: title + subtitle above accordion */}
-        <div className="flex flex-col gap-[16px] items-center text-center w-full md:hidden">
-          <h2 className="font-cormorant font-bold text-[36px] text-[#3b2d17] leading-none">
-            {t('title')}
-          </h2>
-          <p className="font-dm-sans text-[18px] text-[#594522] leading-none max-w-[299px]">
-            {t('subtitle')}
-          </p>
-        </div>
-
-        {/* Left panel — anatomy image + glass overlay + FAQ text (desktop only) */}
-        <div
-          className="hidden md:block flex-1 rounded-[24px] relative overflow-hidden md:h-[640px]"
-          style={{ zIndex: 1 }}
-        >
-          {/* Layer 1: Anatomy illustration — locked to top */}
-          <div className="absolute top-0 left-0 right-0 flex justify-center pointer-events-none z-0">
-            <div className="relative" style={{ width: 490, height: 640, opacity: 0.7 }}>
-              <Image src="/images/faq-decor.png" alt="" fill className="object-contain" sizes="490px" />
-            </div>
-          </div>
-
-          {/* Layer 2: Frosted glass overlay */}
-          <div
-            className="absolute inset-0 z-10 border border-white/30 rounded-[24px]"
-            style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
-          />
-
-          {/* Layer 3: FAQ text on top — locked with fixed top padding */}
-          <div className="relative z-20 flex flex-col gap-[12px] text-center items-center pt-[80px] lg:pt-[220px] px-[24px]">
-            <h2 className="font-cormorant font-bold text-[32px] lg:text-[56px] text-[#3b2d17] leading-none w-full">
-              {t('title')}
-            </h2>
-            <p className="font-dm-sans text-[20px] text-[#594522] leading-none w-full">
-              {t('subtitle')}
-            </p>
-          </div>
-        </div>
-
-        {/* Right accordion */}
-        <div className="flex flex-col gap-[24px] flex-1 min-w-0 w-full" style={{ zIndex: 1 }}>
-          {FAQ_ITEMS.map((item, i) => {
-            const isOpen = openIdx === i
-            return (
-              <button
-                key={i}
-                onClick={() => setOpenIdx(isOpen ? null : i)}
-                className="bg-white w-full overflow-hidden rounded-[16px] p-[20px] sm:p-[24px] lg:p-[32px] flex flex-col items-start justify-start text-left focus:outline-none active:bg-white"
-                style={{ boxShadow: '0px 4px 16px 4px rgba(122,95,44,0.12)' }}
-              >
-                {/* Question row */}
-                <div className="flex items-center justify-between w-full">
-                  <p className="font-cormorant font-bold text-[18px] sm:text-[22px] lg:text-[24px] text-[#3b2d17] leading-none">
-                    {item.q}
-                  </p>
-                  {/* Figma: closed = rotate-90 (→), open = rotate-180 (↓) */}
-                  <div
-                    className="shrink-0 transition-transform duration-200 text-[#3b2d17]"
-                    style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(90deg)' }}
-                  >
-                    <ChevronUp size={24} />
-                  </div>
-                </div>
-
-                {/* Answer */}
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: 'easeInOut' }}
-                      className="overflow-hidden w-full"
-                    >
-                      <p className="font-dm-sans font-normal text-[16px] text-[#3b2d17] leading-[1.5] pt-[24px] w-full">
-                        {item.a}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </button>
-            )
-          })}
-        </div>
-
-      </div>
-    </section>
-  )
+export default async function FaqSection({ locale }: { locale: string }) {
+  const items = await getFaqs(locale)
+  return <FaqAccordion items={items} />
 }

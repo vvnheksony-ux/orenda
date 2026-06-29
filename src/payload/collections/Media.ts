@@ -14,7 +14,7 @@ export const Media: CollectionConfig = {
     delete: createRBACAccess('media', 'delete'),
   },
   upload: {
-    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'application/pdf'],
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'application/pdf', 'video/mp4', 'video/webm', 'video/quicktime'],
     imageSizes: [
       {
         name: 'thumbnail',

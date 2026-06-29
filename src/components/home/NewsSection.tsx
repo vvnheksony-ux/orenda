@@ -5,7 +5,7 @@ import type { ComponentProps } from 'react'
 import { ChevronRight, ArrowRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Reveal from '@/components/shared/Reveal'
 import { fetchJsonRetry } from '@/lib/fetch-retry'
 
@@ -14,13 +14,20 @@ interface NewsItem { id: string; title: string; slug: string; thumbnail: string 
 type LocalizedHref = ComponentProps<typeof Link>['href']
 const newsHref = (slug: string): LocalizedHref => `/news/${slug}` as LocalizedHref
 
-export default function NewsSection() {
+export default function NewsSection({ initialNews = [] }: { initialNews?: NewsItem[] }) {
   const t = useTranslations('NewsSection')
   const locale = useLocale()
-  const [news, setNews] = useState<NewsItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const [news, setNews] = useState<NewsItem[]>(initialNews)
+  const [loading, setLoading] = useState(initialNews.length === 0)
+  const didInit = useRef(false)
 
   useEffect(() => {
+    // Server already provided this locale's news on first render — skip the
+    // redundant client fetch. Only refetch when the locale changes afterwards.
+    if (!didInit.current) {
+      didInit.current = true
+      if (initialNews.length) return
+    }
     // Retries the flaky API so the skeleton stays up until the news arrives.
     fetchJsonRetry<{ docs?: NewsItem[] }>(`/api/news?locale=${locale}&limit=5`)
       .then(d => { if (d?.docs?.length) setNews(d.docs) })

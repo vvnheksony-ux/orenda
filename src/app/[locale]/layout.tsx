@@ -11,6 +11,38 @@ import ProfileGate from '@/components/shared/ProfileGate'
 import AuthErrorToast from '@/components/shared/AuthErrorToast'
 import { BranchProvider } from '@/lib/branch-context'
 import AppClientOverlays from '@/components/shared/AppClientOverlays'
+import { headers } from 'next/headers'
+
+// Fetch the branch list on the server (cached 5 min) so BranchProvider has it
+// immediately — removes the client "get branches" round-trip that used to run
+// before department/branch-dependent data could even start loading.
+async function getInitialBranches(locale: string) {
+  try {
+    const h = await headers()
+    const proto = h.get('x-forwarded-proto') ?? 'https'
+    const host = h.get('x-forwarded-host') ?? h.get('host')
+    const base = host
+      ? `${proto}://${host}`
+      : process.env.NEXT_PUBLIC_SITE_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
+    const res = await fetch(`${base}/api/branches?locale=${locale}`, { next: { revalidate: 300 } })
+    if (!res.ok) return []
+    const d = await res.json()
+    return (d.docs || []).map((b: any) => ({
+      id: String(b.id),
+      name: b.name?.trim() ?? '',
+      slug: b.slug ?? '',
+      address: b.address?.trim() ?? '',
+      phone: b.phone?.trim() ?? '',
+      email: b.email?.trim() ?? '',
+      hours: b.hours?.trim() ?? '',
+      mapUrl: b.mapUrl ?? '',
+    }))
+  } catch {
+    return []
+  }
+}
 
 export const metadata: Metadata = {
   title: {
@@ -47,6 +79,7 @@ export default async function RootLayout({
 }>) {
   const { locale } = await params;
   const messages = await getMessages();
+  const initialBranches = await getInitialBranches(locale);
 
   return (
     <html
@@ -70,7 +103,7 @@ export default async function RootLayout({
         />
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
-            <BranchProvider locale={locale}>
+            <BranchProvider locale={locale} initialBranches={initialBranches}>
               <GoogleAnalyticsLoader />
               <AnalyticsTracker />
               <ProfileGate />

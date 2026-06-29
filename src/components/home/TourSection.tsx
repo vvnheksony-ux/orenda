@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from '@/i18n/routing'
@@ -9,14 +9,23 @@ import { Link } from '@/i18n/routing'
 import { useAnalytics } from '@/lib/use-analytics'
 import { fetchTourScenes } from '@/lib/tour-cache'
 
-export default function TourSection() {
+type Room = { id: string; name: string; image: string }
+
+export default function TourSection({ initialRooms = [] }: { initialRooms?: Room[] }) {
   const t = useTranslations('TourSection')
   const locale = useLocale()
   const router = useRouter()
   const { trackTourView } = useAnalytics()
 
-  const [rooms, setRooms] = useState<{id:string;name:string;image:string}[]>([])
+  const [rooms, setRooms] = useState<Room[]>(initialRooms)
+  const didInit = useRef(false)
   useEffect(() => {
+    // Server already provided this locale's rooms on first render — skip the
+    // redundant client fetch. Only refetch when the locale changes afterwards.
+    if (!didInit.current) {
+      didInit.current = true
+      if (initialRooms.length) return
+    }
     fetchTourScenes(locale)
       .then(scenes => {
         if (scenes.length) setRooms(scenes.map(s => ({ id: s.id, name: s.title, image: s.thumbnailUrl ?? '/images/figma-room-1.jpg' })))

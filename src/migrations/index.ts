@@ -166,6 +166,6 @@ export const migrations = [
   {
     up: migration_20260626_063408_partners_hero.up,
     down: migration_20260626_063408_partners_hero.down,
-    name: '20260626_063408_partners_hero'
+    name: '20260626_063408_partners_hero',
   },
 ];

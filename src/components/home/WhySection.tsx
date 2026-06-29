@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Link } from '@/i18n/routing'
@@ -30,10 +30,11 @@ function StatCard({ value, label, body }: { value: string; label: string; body: 
 
 type Stat = { value: string; label: string; body: string }
 
-export default function WhySection() {
+export default function WhySection({ initialStats = null }: { initialStats?: Stat[] | null }) {
   const t = useTranslations('WhySection')
   const locale = useLocale()
-  const [apiStats, setApiStats] = useState<Stat[] | null>(null)
+  const [apiStats, setApiStats] = useState<Stat[] | null>(initialStats)
+  const didInit = useRef(false)
 
   // Fallback stats shown when the CMS (why-stats) returns nothing — translated.
   const staticStats: Stat[] = [
@@ -44,6 +45,12 @@ export default function WhySection() {
   ]
 
   useEffect(() => {
+    // Server already provided this locale's stats on first render — skip the
+    // redundant client fetch. Only fetch when the locale changes afterwards.
+    if (!didInit.current) {
+      didInit.current = true
+      if (initialStats) return
+    }
     fetch(`/api/why-stats?locale=${locale}`)
       .then(r => r.json())
       .then(d => setApiStats(d.docs?.length ? d.docs : null))

@@ -6,18 +6,6 @@ import { useTranslations, useLocale } from 'next-intl'
 import Reveal from '@/components/shared/Reveal'
 
 
-const STATIC_PARTNERS = [
-  { src: '/images/partner-1.png', alt: 'Partner' },
-  { src: '/images/partner-2.png', alt: 'Partner' },
-  { src: '/images/partner-3.png', alt: 'Partner' },
-  { src: '/images/partner-1.png', alt: 'Partner' },
-  { src: '/images/partner-2.png', alt: 'Partner' },
-  { src: '/images/partner-3.png', alt: 'Partner' },
-  { src: '/images/partner-1.png', alt: 'Partner' },
-  { src: '/images/partner-2.png', alt: 'Partner' },
-  { src: '/images/partner-3.png', alt: 'Partner' },
-]
-
 type PartnerItem = {
   logo?: string | null
   name?: string | null
@@ -26,13 +14,15 @@ type PartnerItem = {
 export default function PartnersSection() {
   const t = useTranslations('PartnersSection')
   const locale = useLocale()
-  const [partners, setPartners] = useState<{ src: string; alt: string }[]>(STATIC_PARTNERS)
+  const [partners, setPartners] = useState<{ src: string; alt: string }[]>([])
 
   useEffect(() => {
     fetch(`/api/partners?locale=${locale}`)
       .then(r => r.json())
-      .then(d => setPartners(d.docs?.length ? d.docs.map((p: PartnerItem) => ({ src: p.logo ?? '/images/partner-1.png', alt: p.name ?? 'Partner' })) : STATIC_PARTNERS))
-      .catch(() => setPartners(STATIC_PARTNERS))
+      .then(d => setPartners((d.docs ?? [])
+        .filter((p: PartnerItem) => p.logo)
+        .map((p: PartnerItem) => ({ src: p.logo as string, alt: p.name ?? 'Partner' }))))
+      .catch(() => setPartners([]))
   }, [locale])
 
   return (

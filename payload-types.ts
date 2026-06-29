@@ -2286,9 +2286,6 @@ export interface Hero {
    * Background image (used when type is Image, or as the video poster).
    */
   backgroundImage?: (number | null) | Media;
-  testimonialName?: string | null;
-  testimonialRole?: string | null;
-  testimonialQuote?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2379,9 +2376,6 @@ export interface HeroSelect<T extends boolean = true> {
   backgroundType?: T;
   backgroundVideo?: T;
   backgroundImage?: T;
-  testimonialName?: T;
-  testimonialRole?: T;
-  testimonialQuote?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

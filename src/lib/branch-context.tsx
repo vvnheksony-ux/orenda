@@ -18,14 +18,27 @@ const BranchContext = createContext<BranchContextValue>({
   ready: false,
 })
 
-export function BranchProvider({ children, locale }: { children: ReactNode; locale: string }) {
-  const [branches, setBranches] = useState<Branch[]>([])
+export function BranchProvider({ children, locale, initialBranches = [] }: { children: ReactNode; locale: string; initialBranches?: Branch[] }) {
+  const [branches, setBranches] = useState<Branch[]>(initialBranches)
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
   // `ready` flips true once the saved/default branch is resolved, so consumers can
   // wait and avoid firing a no-branch fetch that races the real branch fetch.
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
+    // Fast path: the server already provided the branch list, so resolve the
+    // selected branch straight from localStorage — no client round-trip. This
+    // removes the first of the two waterfalls (branches → departments).
+    if (initialBranches.length) {
+      setBranches(initialBranches)
+      const saved = localStorage.getItem('selectedBranchId')
+      const found = initialBranches.find(b => b.id === saved) ?? initialBranches[0] ?? null
+      setSelectedBranch(found)
+      setReady(true)
+      return
+    }
+
+    // Fallback (no server data): fetch the branch list on the client as before.
     fetch(`/api/branches?locale=${locale}`)
       .then(r => r.json())
       .then(d => {

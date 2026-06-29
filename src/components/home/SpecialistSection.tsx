@@ -194,6 +194,9 @@ export default function SpecialistSection() {
             specialty: d.specialty,
             image:     d.image_url || '/images/doctor-1.jpg',
           })))
+          // Clamp the starting index to the actual doctor count — otherwise the
+          // hardcoded 2 pushes the lone card off-screen in the mobile carousel.
+          setActiveIdx(Math.min(2, data.length - 1))
         }
       })
       .catch(() => {})

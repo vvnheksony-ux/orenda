@@ -18,15 +18,12 @@ export default function HeroSection() {
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  // Admin-editable hero content (Payload `hero` global). Falls back to the
-  // built-in video + translated text when unset, so the layout never changes.
+  // Admin-editable hero background (Payload `hero` global). Falls back to the
+  // built-in video when unset, so the layout never changes.
   type HeroData = {
     backgroundType?: string
     videoUrl?: string
     imageUrl?: string
-    testimonialName?: string
-    testimonialRole?: string
-    testimonialQuote?: string
   }
   const [hero, setHero] = useState<HeroData | null>(null)
   useEffect(() => {
@@ -35,15 +32,40 @@ export default function HeroSection() {
       .then(r => r.json())
       .then((d: Record<string, unknown> | null) => {
         if (!active || !d || !Object.keys(d).length) return
-        const media = (v: unknown) => (v && typeof v === 'object' && 'url' in v ? (v as { url?: string }).url : undefined)
+        // Resolve to the DIRECT Supabase Storage URL (CDN) — not the Payload
+        // /payload-api/media/file route, which is slow/unreliable on serverless.
+        const media = (v: unknown) => {
+          if (!v || typeof v !== 'object') return undefined
+          const f = v as { filename?: string; prefix?: string; url?: string }
+          if (f.filename) {
+            const base = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+            const prefix = f.prefix ? `${f.prefix}/` : ''
+            return `${base}/storage/v1/object/public/orienda-media/${prefix}${f.filename}`
+          }
+          return f.url
+        }
         setHero({
           backgroundType: typeof d.backgroundType === 'string' ? d.backgroundType : undefined,
           videoUrl: media(d.backgroundVideo),
           imageUrl: media(d.backgroundImage),
-          testimonialName: typeof d.testimonialName === 'string' ? d.testimonialName : undefined,
-          testimonialRole: typeof d.testimonialRole === 'string' ? d.testimonialRole : undefined,
-          testimonialQuote: typeof d.testimonialQuote === 'string' ? d.testimonialQuote : undefined,
         })
+      })
+      .catch(() => {})
+    return () => { active = false }
+  }, [locale])
+
+  // Rating-card testimonial — pulled from the real Testimonials (the latest one),
+  // so it stays in sync with the testimonials section. Falls back to translated
+  // copy when none exist.
+  const [testimonial, setTestimonial] = useState<{ name: string; quote: string } | null>(null)
+  useEffect(() => {
+    let active = true
+    fetch(`/api/testimonials?locale=${locale}`)
+      .then(r => r.json())
+      .then((d: { docs?: Array<{ author?: string; content?: string }> }) => {
+        const first = d?.docs?.[0]
+        if (!active || !first) return
+        setTestimonial({ name: first.author ?? '', quote: first.content ?? '' })
       })
       .catch(() => {})
     return () => { active = false }
@@ -118,10 +140,10 @@ export default function HeroSection() {
         <div className="flex flex-col gap-[6px]">
           <div className="flex flex-col gap-[2px]">
             <p className="font-dm-sans text-[16px] font-medium text-[#2c241b] capitalize leading-normal">
-              {hero?.testimonialName || t('testimonialName')}
+              {testimonial?.name || t('testimonialName')}
             </p>
             <p className="font-dm-sans text-[14px] text-[#6b5a45] capitalize leading-normal">
-              {hero?.testimonialRole || t('testimonialRole')}
+              {t('testimonialRole')}
             </p>
           </div>
           <div className="flex items-center gap-[2px]">
@@ -131,7 +153,7 @@ export default function HeroSection() {
           </div>
         </div>
         <p className="font-dm-sans text-[12px] text-[#8c7454] capitalize leading-normal overflow-hidden text-ellipsis whitespace-nowrap pt-1">
-          {hero?.testimonialQuote || t('testimonialQuote')}
+          {testimonial?.quote || t('testimonialQuote')}
         </p>
       </div>
 
@@ -156,10 +178,12 @@ export default function HeroSection() {
                 e.preventDefault()
                 handleSubmit(query)
               }}
-              className="w-full h-full flex items-center justify-between rounded-[200px]"
+              className="w-full h-full flex items-center justify-between rounded-[200px] liquid-glass"
               style={{
-                background: 'var(--background)',
-                boxShadow: '0px 4px 12px rgba(89,69,34,0.18), 0 0 0 22px var(--background), inset 0px 2px 10px rgba(89,69,34,0.12)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06)), rgba(250,249,246,0.90)',
+                backdropFilter: 'blur(24px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(24px) saturate(150%)',
+                boxShadow: '0px 3px 10px rgba(89,69,34,0.10), 0 0 0 14px var(--background)',
                 paddingLeft: 'clamp(20px, 3.5vw, 52px)',
                 paddingRight: 'clamp(14px, 2vw, 28px)',
                 paddingTop: 'clamp(14px, 1.8vw, 26px)',
