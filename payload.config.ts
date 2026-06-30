@@ -241,19 +241,14 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: (() => {
-        const custom = process.env.DIRECT_URL
-        if (custom) return custom
         const url = new URL(process.env.DATABASE_URL || '')
-        if (url.hostname.includes('pooler.supabase.com')) {
-          const projectRef = url.username.split('.').slice(1).join('.')
-          if (projectRef) url.hostname = `db.${projectRef}.supabase.co`
-        }
+        url.searchParams.set('pgbouncer', 'true')
+        url.searchParams.set('prepare_threshold', '0')
         return url.toString()
       })(),
-      max: 10,
+      max: 3,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 15000,
-      family: 4,
       ssl: {
         rejectUnauthorized: false,
       },
