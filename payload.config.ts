@@ -246,8 +246,8 @@ export default buildConfig({
         url.searchParams.set('prepare_threshold', '0')
         return url.toString()
       })(),
-      max: 5,
-      idleTimeoutMillis: 60000,
+      max: 3,
+      idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 15000,
       ssl: {
         rejectUnauthorized: false,

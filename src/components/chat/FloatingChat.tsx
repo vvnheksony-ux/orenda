@@ -523,7 +523,6 @@ export default function FloatingChat() {
                         if (a.action === 'booking') { setBookingOpen(true) }
                         else if (a.action === 'navigate' && a.path) { router.push(`/${locale}${a.path}`) }
                         else { sendMessage(t(a.textKey)) }
-                        setActiveActions([])
                       }}
                         className="flex items-center gap-[6px] shrink-0 font-dm-sans text-[#3b2d17] hover:opacity-80 transition-opacity whitespace-nowrap"
                         style={{ background: 'rgba(245,236,212,0.30)', borderRadius: 14, padding: '7px 10px', fontSize: 11, boxShadow: '0 1px 4px rgba(59,45,23,0.10)' }}

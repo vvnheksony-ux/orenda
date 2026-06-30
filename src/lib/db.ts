@@ -10,20 +10,31 @@ declare global {
   var __rawPool: any
 }
 
+/**
+ * Return a connection string that bypasses PgBouncer (direct Postgres).
+ * Falls back to DATABASE_URL if a direct URL can't be derived.
+ */
+function directConnectionString(): string {
+  const custom = process.env.DIRECT_URL
+  if (custom) return custom
+
+  const url = new URL(process.env.DATABASE_URL || '')
+  if (url.hostname.includes('pooler.supabase.com')) {
+    const projectRef = url.username.split('.').slice(1).join('.')
+    if (projectRef) {
+      url.hostname = `db.${projectRef}.supabase.co`
+    }
+  }
+  return url.toString()
+}
+
 function getRawPool(): any {
   if (!global.__rawPool) {
-    const connStr = (() => {
-      const url = new URL(process.env.DATABASE_URL || '')
-      url.searchParams.set('pgbouncer', 'true')
-      url.searchParams.set('prepare_threshold', '0')
-      return url.toString()
-    })()
-
     global.__rawPool = new pg.Pool({
-      connectionString: connStr,
+      connectionString: directConnectionString(),
       ssl: { rejectUnauthorized: false },
-      max: 1,
-      idleTimeoutMillis: 30000,
+      max: 3,
+      idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 10000,
     })
   }
