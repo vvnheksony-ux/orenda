@@ -6,7 +6,11 @@ import { createServiceClient } from '@/utils/supabase/server'
 
 export const runtime = 'nodejs'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+let _openai: OpenAI | null = null
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  return _openai
+}
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const VALID_DOC_TYPES = ['about', 'contact', 'policy', 'brand'] as const
 const VALID_LOCALES = ['en', 'km', 'zh'] as const
@@ -56,7 +60,7 @@ export async function PUT(req: NextRequest) {
   let embedded = false
   if (content.trim()) {
     try {
-      const res = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: content })
+      const res = await getOpenAI().embeddings.create({ model: EMBEDDING_MODEL, input: content })
       await db.from('ai_rag2_documents').insert({
         source_id: String(data.id),
         source_collection: docType,

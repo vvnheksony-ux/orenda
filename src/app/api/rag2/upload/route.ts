@@ -5,7 +5,11 @@ import { chunkText } from '@/lib/rag2/chunk-text'
 
 export const runtime = 'nodejs'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+let _openai: OpenAI | null = null
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  return _openai
+}
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const MAX_FILE_BYTES = 10 * 1024 * 1024
 
@@ -27,7 +31,7 @@ async function extractText(buffer: Buffer, filename: string): Promise<string> {
 }
 
 async function embedBatch(texts: string[]): Promise<number[][]> {
-  const res = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: texts })
+  const res = await getOpenAI().embeddings.create({ model: EMBEDDING_MODEL, input: texts })
   return res.data.map(d => d.embedding)
 }
 

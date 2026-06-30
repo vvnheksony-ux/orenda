@@ -8,7 +8,11 @@ import { embedQuery, parallelSearch } from '@/lib/rag1/vector-search'
 import { buildMessages } from '@/lib/rag1/build-prompt'
 import { validateInput, isGreeting, greetingReply } from '@/lib/rag1/validate-input'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+let _openai: OpenAI | null = null
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  return _openai
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
@@ -72,12 +76,12 @@ export async function POST(req: NextRequest) {
     const [history, intent, embedding] = await Promise.all([
       sessionId ? fetchHistory(sessionId) : Promise.resolve([]),
       Promise.resolve(detectIntent(message)),
-      embedQuery(message, openai),
+      embedQuery(message, getOpenAI()),
     ])
     const chunks = await parallelSearch(embedding, intent)
     const msgs = buildMessages(message, language, formatHistory(history), chunks)
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4.1-mini',
       messages: msgs,
       temperature: 0.3,

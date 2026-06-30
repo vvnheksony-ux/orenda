@@ -6,7 +6,11 @@ import { createServiceClient } from '@/utils/supabase/server'
 
 export const runtime = 'nodejs'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+let _openai: OpenAI | null = null
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  return _openai
+}
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 
 async function getPayloadAdmin(req: NextRequest) {
@@ -33,7 +37,7 @@ async function embedPrice(id: string, row: Record<string, unknown>) {
   const db = await createServiceClient()
   await db.from('ai_rag2_documents').delete().eq('source_id', id).eq('source_collection', 'price')
   const text = formatPrice(row)
-  const res = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: text })
+  const res = await getOpenAI().embeddings.create({ model: EMBEDDING_MODEL, input: text })
   await db.from('ai_rag2_documents').insert({
     source_id: id,
     source_collection: 'price',

@@ -6,7 +6,11 @@ import { createServiceClient } from '@/utils/supabase/server'
 
 export const runtime = 'nodejs'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+let _openai: OpenAI | null = null
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  return _openai
+}
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 
 async function getPayloadAdmin(req: NextRequest) {
@@ -145,7 +149,7 @@ export async function POST(req: NextRequest) {
 
   for (let i = 0; i < texts.length; i += 50) {
     const batch = texts.slice(i, i + 50)
-    const res = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: batch })
+    const res = await getOpenAI().embeddings.create({ model: EMBEDDING_MODEL, input: batch })
     for (let j = 0; j < batch.length; j++) {
       const row = allChanged[i + j]
       embedRows.push({

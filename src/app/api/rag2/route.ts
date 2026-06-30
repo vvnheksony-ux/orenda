@@ -10,7 +10,11 @@ import { embedQuery, parallelSearch } from '@/lib/rag2/vector-search'
 
 export const runtime = 'nodejs'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+let _openai: OpenAI | null = null
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  return _openai
+}
 
 async function saveAssistantMessage(sessionId: string, content: string): Promise<string | null> {
   try {
@@ -80,7 +84,7 @@ export async function POST(req: NextRequest) {
   const searchLocale = language === 'km' ? 'km' : language === 'zh' ? 'zh' : 'en'
   const [history, embedding] = await Promise.all([
     sessionId ? fetchHistory(sessionId) : Promise.resolve([]),
-    embedQuery(message, openai),
+    embedQuery(message, getOpenAI()),
   ])
   const chunks = await parallelSearch(embedding, intent, searchLocale)
   const msgs = buildMessages(message, language, formatHistory(history), chunks)
@@ -94,7 +98,7 @@ export async function POST(req: NextRequest) {
       async start(controller) {
         let fullReply = ''
         try {
-          const completion = await openai.chat.completions.create({
+          const completion = await getOpenAI().chat.completions.create({
             model: 'gpt-4.1-mini',
             messages: msgs,
             temperature: 0.3,
@@ -138,7 +142,7 @@ export async function POST(req: NextRequest) {
   // ── Non-streaming path (n8n / default) ───────────────────────────────────
   let reply: string
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4.1-mini',
       messages: msgs,
       temperature: 0.3,

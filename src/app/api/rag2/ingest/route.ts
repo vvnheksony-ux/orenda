@@ -5,7 +5,11 @@ import { ingestRecord, deleteRecord, rebuildDoctorsSummary } from '@/lib/rag2/in
 
 export const runtime = 'nodejs'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+let _openai: OpenAI | null = null
+function getOpenAI() {
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  return _openai
+}
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const rawBody = await req.text()
@@ -29,13 +33,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     if (event === 'published') {
-      await ingestRecord(openai, collection, docId)
+      await ingestRecord(getOpenAI(), collection, docId)
     } else if (event === 'deleted') {
       await deleteRecord(String(docId))
     }
     // Rebuild doctors summary after any doctor change so AI can count accurately
     if (collection === 'doctors') {
-      await rebuildDoctorsSummary(openai)
+      await rebuildDoctorsSummary(getOpenAI())
     }
   } catch (err: any) {
     console.error('[rag2/ingest] error:', err?.message ?? err)
