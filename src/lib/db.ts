@@ -36,6 +36,7 @@ function getRawPool(): any {
       max: 3,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 10000,
+      family: 4,
     })
   }
   return global.__rawPool

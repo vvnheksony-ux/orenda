@@ -253,6 +253,7 @@ export default buildConfig({
       max: 10,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 15000,
+      family: 4,
       ssl: {
         rejectUnauthorized: false,
       },
